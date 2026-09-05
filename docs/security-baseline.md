@@ -10,12 +10,14 @@ This checklist records security controls for KitDev Space.
 4. Block localhost, private IPs, link-local addresses, and cloud metadata hosts.
 5. Apply a timeout on remote fetch.
 6. Limit redirects and response body size for remote fetch.
-7. Rate-limit network and image APIs.
+7. Rate-limit network, image, and password APIs.
 8. Do not store tool input or output.
 9. Analytics events may include the tool id only. Do not include input or output.
 10. Image and archive uploads must stay in memory. Do not write user files to disk.
 11. Pass user image bytes into `Bun.Image`. Do not pass user-controlled filesystem paths.
 12. Reject image and archive bodies larger than 25 MB.
+13. Password Benchmarker must cap hash cost params and use a stricter rate limit.
+14. Do not log password request bodies.
 
 ## Current controls
 
@@ -28,6 +30,8 @@ This checklist records security controls for KitDev Space.
 | Image size limit | `server/utils/image/limits.ts` |
 | Image upload reader | `server/utils/image/read-upload.ts` |
 | Image APIs | `server/api/image/*.post.ts` |
+| Password cost ceilings | `server/utils/crypto/password.ts` |
+| Password API (5 req / 60s) | `server/api/crypto/password-benchmark.post.ts` |
 
 ## Residual risk
 

@@ -180,6 +180,19 @@ export const tools: Tool[] = [
     status: 'available'
   },
   {
+    id: 'password-benchmark',
+    slug: 'password-benchmark',
+    name: 'Password Benchmarker',
+    description: 'Compare Argon2id and bcrypt hash timing with safe cost limits.',
+    category: 'crypto',
+    icon: 'i-lucide-key-round',
+    keywords: ['password', 'argon2', 'bcrypt', 'hash', 'benchmark'],
+    route: '/crypto/password-benchmark',
+    clientOnly: false,
+    serverRequired: true,
+    status: 'available'
+  },
+  {
     id: 'color-converter',
     slug: 'converter',
     name: 'Color Converter',

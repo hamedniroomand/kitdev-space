@@ -36,4 +36,20 @@ describe('enforceRateLimit', () => {
 
     expect(() => enforceRateLimit(ip, 'headers')).not.toThrow()
   })
+
+  it('accepts a custom max request count', () => {
+    const ip = '203.0.113.4'
+    const key = 'password'
+
+    for (let i = 0; i < 5; i++) {
+      enforceRateLimit(ip, key, 5)
+    }
+
+    try {
+      enforceRateLimit(ip, key, 5)
+      throw new Error('expected a 429 error')
+    } catch (error) {
+      expect(error).toMatchObject({ statusCode: 429 })
+    }
+  })
 })

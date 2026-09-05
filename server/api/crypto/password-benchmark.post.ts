@@ -1,0 +1,48 @@
+import type { PasswordAlgorithm } from '../../utils/crypto/password'
+import { benchmarkPassword } from '../../utils/crypto/password'
+import { enforceRateLimit } from '../../utils/network/rate-limit'
+
+interface PasswordBody {
+  password?: string
+  algorithm?: PasswordAlgorithm
+  memoryCost?: number
+  timeCost?: number
+  cost?: number
+  verify?: boolean
+}
+
+const algorithms = new Set<PasswordAlgorithm>(['argon2id', 'bcrypt'])
+
+export default defineEventHandler(async (event) => {
+  const ip = getRequestIP(event, { xForwardedFor: true }) ?? 'anonymous'
+  enforceRateLimit(ip, 'crypto:password', 5)
+
+  const body = await readBody<PasswordBody>(event)
+  const algorithm = body.algorithm
+
+  if (!algorithm || !algorithms.has(algorithm)) {
+    throw createError({
+      statusCode: 400,
+      message: 'Choose argon2id or bcrypt.'
+    })
+  }
+
+  try {
+    const result = await benchmarkPassword({
+      password: body.password ?? '',
+      algorithm,
+      memoryCost: body.memoryCost,
+      timeCost: body.timeCost,
+      cost: body.cost,
+      verify: body.verify ?? true
+    })
+
+    return { result }
+  } catch (cause) {
+    const message = cause instanceof Error ? cause.message : 'The password benchmark failed.'
+    throw createError({
+      statusCode: 400,
+      message
+    })
+  }
+})
