@@ -67,4 +67,30 @@ describe('image pipeline', () => {
     )
     expect(convertImage(bad, { format: 'png' })).rejects.toThrow(/external resource/i)
   })
+
+  it('resizes svg inside box', async () => {
+    const out = await resizeImage(svg, {
+      width: 32,
+      height: 32,
+      fit: 'inside',
+      format: 'png'
+    })
+    expect(out.width).toBeLessThanOrEqual(32)
+    expect(out.height).toBeLessThanOrEqual(32)
+    expect(out.bytes.byteLength).toBeGreaterThan(0)
+  })
+
+  it('rasterizes large svg toward resize target', async () => {
+    const large = new TextEncoder().encode(
+      '<svg xmlns="http://www.w3.org/2000/svg" width="2000" height="1000"><rect width="2000" height="1000" fill="#123"/></svg>'
+    )
+    const out = await resizeImage(large, {
+      width: 40,
+      height: 40,
+      fit: 'inside',
+      format: 'png'
+    })
+    expect(out.width).toBeLessThanOrEqual(40)
+    expect(out.height).toBeLessThanOrEqual(40)
+  })
 })

@@ -153,11 +153,20 @@ export async function resizeImage(
 
   const format = opts.format ?? 'webp'
   const quality = clampQuality(opts.quality)
-  let img = createPipeline(input).resize(opts.width, opts.height, {
-    fit: opts.fit,
-    withoutEnlargement: opts.withoutEnlargement ?? false,
-    filter: opts.filter ?? 'lanczos3'
-  })
+
+  const bytes = isSvgBytes(input)
+    ? rasterizeSvg(input, { width: opts.width, height: opts.height })
+    : input
+
+  let img = new Bun.Image(bytes, { maxPixels: MAX_PIXELS, autoOrient: true }).resize(
+    opts.width,
+    opts.height,
+    {
+      fit: opts.fit,
+      withoutEnlargement: opts.withoutEnlargement ?? false,
+      filter: opts.filter ?? 'lanczos3'
+    }
+  )
   img = applyFormat(img, format, quality)
   return finish(img, format)
 }
