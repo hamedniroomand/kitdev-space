@@ -10,10 +10,12 @@ const toast = useToast()
 const { status, error, result, run, reset } = useTool<string>()
 const { copy } = useClipboard()
 const { downloadText } = useDownload()
+const { track } = useToolAnalytics()
 
-useSeoMeta({
-  title: 'JSON Formatter',
-  description: 'Format and validate JSON.'
+useToolSeo('json-formatter')
+
+onMounted(() => {
+  track('tool_open', { tool: 'json-formatter' })
 })
 
 function setStats(text: string) {
@@ -27,6 +29,9 @@ async function format() {
     output.value = result.value
     statusMessage.value = 'Valid JSON'
     setStats(output.value)
+    track('tool_execute', { tool: 'json-formatter' })
+  } else if (status.value === 'error') {
+    track('tool_error', { tool: 'json-formatter' })
   }
 }
 
@@ -36,6 +41,9 @@ async function minify() {
     output.value = result.value
     statusMessage.value = 'Valid JSON'
     setStats(output.value)
+    track('tool_execute', { tool: 'json-formatter' })
+  } else if (status.value === 'error') {
+    track('tool_error', { tool: 'json-formatter' })
   }
 }
 
@@ -50,6 +58,9 @@ async function validate() {
   if (status.value === 'success') {
     statusMessage.value = 'Valid JSON'
     setStats(input.value)
+    track('tool_execute', { tool: 'json-formatter' })
+  } else if (status.value === 'error') {
+    track('tool_error', { tool: 'json-formatter' })
   }
 }
 
@@ -59,6 +70,9 @@ async function handleCopy() {
   }
   const ok = await copy(output.value)
   toast.add({ title: ok ? 'Copied' : 'Copy failed', color: ok ? 'success' : 'error' })
+  if (ok) {
+    track('tool_copy', { tool: 'json-formatter' })
+  }
 }
 
 function handleDownload() {
@@ -66,6 +80,7 @@ function handleDownload() {
     return
   }
   downloadText('formatted.json', output.value)
+  track('tool_download', { tool: 'json-formatter' })
 }
 
 function handleClear() {

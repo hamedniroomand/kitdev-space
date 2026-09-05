@@ -7,6 +7,7 @@ const output = ref('')
 const toast = useToast()
 const { status, error, result, run, reset } = useTool<string>()
 const { copy } = useClipboard()
+const { track } = useToolAnalytics()
 
 const algorithmItems = [
   { label: 'SHA-256', value: 'sha256' },
@@ -16,9 +17,10 @@ const algorithmItems = [
   { label: 'MD5 (Legacy)', value: 'md5' }
 ]
 
-useSeoMeta({
-  title: 'Hash Generator',
-  description: 'Generate hashes from text input.'
+useToolSeo('hash')
+
+onMounted(() => {
+  track('tool_open', { tool: 'hash' })
 })
 
 async function hash() {
@@ -43,6 +45,9 @@ async function hash() {
 
   if (status.value === 'success' && result.value !== null) {
     output.value = result.value
+    track('tool_execute', { tool: 'hash' })
+  } else if (status.value === 'error') {
+    track('tool_error', { tool: 'hash' })
   }
 }
 
@@ -52,6 +57,9 @@ async function handleCopy() {
   }
   const ok = await copy(output.value)
   toast.add({ title: ok ? 'Copied' : 'Copy failed', color: ok ? 'success' : 'error' })
+  if (ok) {
+    track('tool_copy', { tool: 'hash' })
+  }
 }
 
 function handleClear() {

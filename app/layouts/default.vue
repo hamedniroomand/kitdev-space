@@ -1,8 +1,10 @@
 <script setup lang="ts">
 const searchOpen = ref(false)
+const { track } = useToolAnalytics()
 
 function openSearch() {
   searchOpen.value = true
+  track('tool_search', { tool: 'search' })
 }
 
 provide('openSearch', openSearch)
@@ -10,7 +12,7 @@ provide('openSearch', openSearch)
 defineShortcuts({
   meta_k: {
     handler: () => {
-      searchOpen.value = true
+      openSearch()
     }
   }
 })
