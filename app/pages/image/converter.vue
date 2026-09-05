@@ -167,7 +167,7 @@ defineShortcuts({
           WebP and AVIF often make smaller files than JPEG or PNG at a similar quality.
         </p>
         <p class="text-sm leading-relaxed text-muted">
-          Supported input: JPEG, PNG, WebP, GIF, BMP, TIFF, HEIC, and AVIF. SVG is not supported by Bun.Image.
+          Supported input: JPEG, PNG, WebP, GIF, BMP, TIFF, HEIC, AVIF, and SVG. SVG is rasterized with resvg, then processed with Bun.Image.
         </p>
         <p class="text-sm leading-relaxed text-muted">
           AVIF encode may fail on some servers. Use WebP, JPEG, or PNG when that happens.

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { formatBytes } from '~~/shared/utils/format'
+
 const props = defineProps<{
   modelValue: File | null
   accept?: string
@@ -62,13 +64,13 @@ defineExpose({ clear })
         {{ prompt ?? 'Drop an image here, or click to choose a file.' }}
       </p>
       <p class="text-xs text-muted">
-        {{ hint ?? 'Max size 25 MB. JPEG, PNG, WebP, GIF, BMP, TIFF, HEIC, or AVIF. Not SVG.' }}
+        {{ hint ?? 'Max size 25 MB. JPEG, PNG, WebP, GIF, BMP, TIFF, HEIC, AVIF, or SVG.' }}
       </p>
       <input
         ref="inputRef"
         type="file"
         class="sr-only"
-        :accept="accept ?? 'image/jpeg,image/png,image/webp,image/gif,image/bmp,image/tiff,image/heic,image/avif,.jpg,.jpeg,.png,.webp,.gif,.bmp,.tif,.tiff,.heic,.avif'"
+        :accept="accept ?? 'image/jpeg,image/png,image/webp,image/gif,image/bmp,image/tiff,image/heic,image/avif,image/svg+xml,.jpg,.jpeg,.png,.webp,.gif,.bmp,.tif,.tiff,.heic,.avif,.svg'"
         @change="onPick"
       >
     </div>
@@ -88,7 +90,7 @@ defineExpose({ clear })
           {{ modelValue.name }}
         </p>
         <p class="text-xs text-muted">
-          {{ (modelValue.size / 1024).toFixed(1) }} KB
+          {{ formatBytes(modelValue.size) }}
         </p>
       </div>
       <UButton
