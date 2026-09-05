@@ -24,7 +24,8 @@ export default defineNuxtConfig({
     '@nuxt/image',
     '@nuxt/scripts',
     '@nuxtjs/seo',
-    '@vueuse/nuxt'
+    '@vueuse/nuxt',
+    '@vercel/speed-insights'
   ],
 
   devtools: {
