@@ -28,7 +28,8 @@ export default defineNuxtConfig({
   },
 
   routeRules: {
-    '/': { prerender: true }
+    '/': { prerender: true },
+    '/api/**': { robots: false }
   },
 
   compatibilityDate: '2026-06-30',
@@ -36,7 +37,8 @@ export default defineNuxtConfig({
   nitro: {
     preset: nitroPreset(),
     prerender: {
-      crawlLinks: true
+      crawlLinks: true,
+      routes: ['/sitemap.xml', '/robots.txt']
     }
   },
 
@@ -47,5 +49,13 @@ export default defineNuxtConfig({
         braceStyle: '1tbs'
       }
     }
+  },
+
+  robots: {
+    disallow: ['/api']
+  },
+
+  sitemap: {
+    exclude: ['/api/**']
   }
 })
