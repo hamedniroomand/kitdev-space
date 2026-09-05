@@ -16,7 +16,7 @@
     :docs="[
       'XML uses tags to describe structured data.',
       'If the JSON value is not an object, or the object has more than one top-level key, the tool wraps it under a root element.',
-      'Keys that are not valid XML names are written as item elements with a key attribute, for example item key=\'@nuxt/ui\'.'
+      'Keys that are not valid XML names are written as item elements with a key attribute, for example item key=@nuxt/ui.'
     ]"
     :related="[
       { label: 'JSON ↔ YAML', to: '/hub/data/converters/json-yaml' },

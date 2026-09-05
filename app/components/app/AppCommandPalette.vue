@@ -46,7 +46,7 @@ function onSelect(item: CommandPaletteItem) {
 <template>
   <UModal v-model:open="open">
     <template #content>
-      <UCommandPalette
+      <LazyUCommandPalette
         close
         placeholder="Search tools..."
         :groups="groups"
