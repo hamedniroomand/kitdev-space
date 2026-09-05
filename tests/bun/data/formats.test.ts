@@ -39,6 +39,35 @@ describe('bun format engine', () => {
     expect(value).toEqual({ name: 'KitDev' })
   })
 
+  it('wraps multi-key json in an xml root element', () => {
+    const xmlText = transformWithBun('{"name":"KitDev","ready":true}', 'json', 'xml')
+    expect(xmlText).toContain('<root>')
+    expect(xmlText).toContain('<name>KitDev</name>')
+    expect(xmlText).toContain('<ready>true</ready>')
+    expect(parseWithBun(xmlText, 'xml')).toEqual({
+      root: { name: 'KitDev', ready: 'true' }
+    })
+  })
+
+  it('sanitizes scoped package keys for xml', () => {
+    const xmlText = transformWithBun(
+      '{"dependencies":{"@nuxt/ui":"^4.11.0","vue":"^3.5.42"}}',
+      'json',
+      'xml'
+    )
+    expect(xmlText).toContain('<nuxt_ui>^4.11.0</nuxt_ui>')
+    expect(xmlText).toContain('<vue>^3.5.42</vue>')
+  })
+
+  it('converts package.json shaped json to xml', async () => {
+    const input = await Bun.file(new URL('../../../package.json', import.meta.url)).text()
+    const xmlText = transformWithBun(input, 'json', 'xml')
+    expect(xmlText).toContain('<root>')
+    expect(xmlText).toContain('<name>kitdev-space</name>')
+    expect(xmlText).toContain('<iconify-json_lucide>')
+    expect(() => parseWithBun(xmlText, 'xml')).not.toThrow()
+  })
+
   it('rejects xml arrays without an object root', () => {
     expect(() => serializeWithBun([1, 2], 'xml')).toThrow(/object root/)
   })

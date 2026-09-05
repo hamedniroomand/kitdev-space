@@ -46,12 +46,11 @@ export function serializeWithBun(value: unknown, format: BunDataFormat): string 
       case 'toml':
         return requireText(Bun.TOML.stringify(value), format)
       case 'xml': {
-        // ponytail: arrays cannot be XML roots in Bun; require an object or wrap scalars.
+        // ponytail: Bun.XML needs one root and valid element names; sanitize + wrap.
         if (Array.isArray(value)) {
           throw new DataError('XML needs an object root.\n\nWrap the array in an object first.')
         }
-        const xmlValue = isPlainObject(value) ? value : { root: value }
-        return requireText(Bun.XML.stringify(xmlValue), format)
+        return requireText(Bun.XML.stringify(toXmlDocument(value), null, 2), format)
       }
       default:
         throw new DataError(`Unsupported format: ${format}`)
@@ -87,4 +86,63 @@ export function transformWithBun(input: string, from: DataFormat, to: DataFormat
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+/** Bun rejects multi-key roots and names with @, /, spaces, or leading digits. */
+function toXmlDocument(value: unknown): Record<string, unknown> {
+  if (!isPlainObject(value)) {
+    return { root: value }
+  }
+
+  const sanitized = sanitizeXmlValue(value) as Record<string, unknown>
+  const keys = Object.keys(sanitized)
+  if (keys.length === 1 && isXmlName(keys[0]!)) {
+    return sanitized
+  }
+  return { root: sanitized }
+}
+
+function sanitizeXmlValue(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value.map(item => sanitizeXmlValue(item))
+  }
+  if (!isPlainObject(value)) {
+    return value
+  }
+
+  const used = new Set<string>()
+  const out: Record<string, unknown> = {}
+  for (const [key, child] of Object.entries(value)) {
+    out[uniqueXmlName(toXmlName(key), used)] = sanitizeXmlValue(child)
+  }
+  return out
+}
+
+function toXmlName(key: string): string {
+  const withoutAt = key.startsWith('@') ? key.slice(1) : key
+  let name = withoutAt.replace(/[^A-Za-z0-9_.-]/g, '_')
+  if (!/^[A-Za-z_]/.test(name)) {
+    name = `_${name}`
+  }
+  return name || '_'
+}
+
+function uniqueXmlName(base: string, used: Set<string>): string {
+  if (!used.has(base)) {
+    used.add(base)
+    return base
+  }
+
+  let index = 2
+  let candidate = `${base}_${index}`
+  while (used.has(candidate)) {
+    index++
+    candidate = `${base}_${index}`
+  }
+  used.add(candidate)
+  return candidate
+}
+
+function isXmlName(name: string): boolean {
+  return /^[A-Za-z_][\w.-]*$/.test(name)
 }
