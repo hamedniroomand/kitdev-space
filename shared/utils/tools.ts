@@ -294,7 +294,7 @@ export const tools: Tool[] = [
     route: '/image/converter',
     clientOnly: false,
     serverRequired: true,
-    status: 'coming-soon'
+    status: 'available'
   },
   {
     id: 'image-resizer',
@@ -307,7 +307,7 @@ export const tools: Tool[] = [
     route: '/image/resizer',
     clientOnly: false,
     serverRequired: true,
-    status: 'coming-soon'
+    status: 'available'
   },
   {
     id: 'image-metadata',
@@ -320,7 +320,7 @@ export const tools: Tool[] = [
     route: '/image/metadata',
     clientOnly: false,
     serverRequired: true,
-    status: 'coming-soon'
+    status: 'available'
   },
   {
     id: 'image-transform',
@@ -333,7 +333,7 @@ export const tools: Tool[] = [
     route: '/image/transform',
     clientOnly: false,
     serverRequired: true,
-    status: 'coming-soon'
+    status: 'available'
   }
 ]
 
