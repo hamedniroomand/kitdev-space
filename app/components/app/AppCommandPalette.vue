@@ -48,7 +48,7 @@ function onSelect(item: CommandPaletteItem) {
     <template #content>
       <UCommandPalette
         close
-        placeholder="Search DevKit Space..."
+        placeholder="Search KitDev Space..."
         :groups="groups"
         class="h-80"
         @update:model-value="onSelect"

@@ -7,10 +7,17 @@ const openSearch = inject<() => void>('openSearch', () => {})
 const categories: ToolCategory[] = ['data', 'network', 'crypto', 'color']
 
 useSeoMeta({
-  title: 'DevKit Space',
+  title: 'KitDev Space',
   description: 'Developer tools for people who build things.',
-  ogTitle: 'DevKit Space',
-  ogDescription: 'Developer tools for people who build things.'
+  ogTitle: 'KitDev Space',
+  ogDescription: 'Developer tools for people who build things.',
+  twitterCard: 'summary_large_image'
+})
+
+useKitDevOgImage({
+  title: 'Tools for people who build.',
+  description: 'Fast, free developer utilities. No account.',
+  eyebrow: 'KitDev Space'
 })
 </script>
 
@@ -19,7 +26,7 @@ useSeoMeta({
     <UContainer class="py-16 sm:py-24">
       <div class="mx-auto max-w-2xl text-center">
         <p class="font-mono text-xs font-semibold tracking-widest text-primary uppercase">
-          DevKit Space
+          KitDev Space
         </p>
         <h1 class="mt-4 text-4xl font-medium tracking-tight text-highlighted sm:text-5xl lg:text-6xl lg:leading-[1.04]">
           Tools for people who build.

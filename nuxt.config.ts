@@ -1,6 +1,19 @@
+import { tools } from './shared/utils/tools'
+
 function nitroPreset(): string {
   return process.env.NITRO_PRESET ?? (process.env.VERCEL ? 'vercel' : 'bun')
 }
+
+const categoryRoutes = ['/data', '/crypto', '/color', '/network'] as const
+
+const prerenderRoutes = [
+  '/',
+  '/about',
+  ...categoryRoutes,
+  ...tools.map(tool => tool.route),
+  '/sitemap.xml',
+  '/robots.txt'
+]
 
 export default defineNuxtConfig({
   modules: [
@@ -22,7 +35,7 @@ export default defineNuxtConfig({
 
   site: {
     url: 'https://kitdev.space',
-    name: 'DevKit Space',
+    name: 'KitDev Space',
     description: 'Developer tools for people who build things.',
     defaultLocale: 'en'
   },
@@ -32,8 +45,8 @@ export default defineNuxtConfig({
   },
 
   routeRules: {
-    '/': { prerender: true },
-    '/api/**': { robots: false }
+    '/**': { prerender: true },
+    '/api/**': { prerender: false, robots: false }
   },
 
   compatibilityDate: '2026-06-30',
@@ -42,7 +55,7 @@ export default defineNuxtConfig({
     preset: nitroPreset(),
     prerender: {
       crawlLinks: true,
-      routes: ['/sitemap.xml', '/robots.txt']
+      routes: prerenderRoutes
     }
   },
 
@@ -52,6 +65,15 @@ export default defineNuxtConfig({
         commaDangle: 'never',
         braceStyle: '1tbs'
       }
+    }
+  },
+
+  ogImage: {
+    zeroRuntime: true,
+    defaults: {
+      width: 1200,
+      height: 630,
+      emojis: false
     }
   },
 

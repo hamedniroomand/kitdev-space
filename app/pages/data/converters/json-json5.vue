@@ -9,7 +9,7 @@
     ]"
     default-from="json"
     default-to="json5"
-    sample="{&quot;name&quot;:&quot;DevKit&quot;,&quot;ready&quot;:true}"
+    sample="{&quot;name&quot;:&quot;KitDev&quot;,&quot;ready&quot;:true}"
     download-name="converted.json5"
     download-mime="application/json5"
     docs-title="About JSON and JSON5"

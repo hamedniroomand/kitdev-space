@@ -2,7 +2,7 @@
 import { minifyJson } from '~~/shared/utils/data/json'
 import { getTextStats } from '~~/shared/utils/data/stats'
 
-const input = ref('{\n  "name": "DevKit",\n  "ready": true\n}')
+const input = ref('{\n  "name": "KitDev",\n  "ready": true\n}')
 const output = ref('')
 const statusMeta = ref('')
 const toast = useToast()

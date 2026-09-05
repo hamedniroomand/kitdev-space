@@ -9,7 +9,7 @@
     ]"
     default-from="json"
     default-to="yaml"
-    sample="{&quot;name&quot;:&quot;DevKit&quot;,&quot;ready&quot;:true}"
+    sample="{&quot;name&quot;:&quot;KitDev&quot;,&quot;ready&quot;:true}"
     download-name="converted.yaml"
     download-mime="text/yaml"
     docs-title="About JSON and YAML"

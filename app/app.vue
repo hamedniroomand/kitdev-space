@@ -1,10 +1,10 @@
 <script setup lang="ts">
 useHead({
   titleTemplate: (title?: string) => {
-    if (!title || title === 'DevKit Space') {
-      return 'DevKit Space'
+    if (!title || title === 'KitDev Space') {
+      return 'KitDev Space'
     }
-    return `${title} · DevKit Space`
+    return `${title} · KitDev Space`
   },
   meta: [
     { name: 'viewport', content: 'width=device-width, initial-scale=1' }

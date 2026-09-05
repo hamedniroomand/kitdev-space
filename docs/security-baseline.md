@@ -1,6 +1,6 @@
 # Security Baseline (Phase 1)
 
-This checklist records Phase 1 security controls for DevKit Space.
+This checklist records Phase 1 security controls for KitDev Space.
 
 ## Rules
 

@@ -35,7 +35,7 @@ Rules:
 - Avoid unnecessary words.
 - Use the same term for the same concept.
 - Use "user" for a person who uses the product.
-- Use "tool" for a DevKit Space utility.
+- Use "tool" for a KitDev Space utility.
 - Use "input" for data that the user provides.
 - Use "output" for data that the tool creates.
 - Use "result" for the final tool output.

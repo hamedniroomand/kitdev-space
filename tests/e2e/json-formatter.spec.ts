@@ -5,9 +5,9 @@ test('formats JSON on the JSON Formatter page', async ({ page }) => {
 
   const input = page.getByRole('textbox', { name: 'Input' })
   await expect(input).toBeVisible()
-  await input.fill('{"name":"DevKit","ready":true}')
+  await input.fill('{"name":"KitDev","ready":true}')
   await page.getByRole('button', { name: 'Format' }).click()
 
   await expect(page.getByText('Valid JSON')).toBeVisible({ timeout: 10_000 })
-  await expect(page.getByRole('textbox', { name: 'Output' })).toHaveValue(/"name": "DevKit"/)
+  await expect(page.getByRole('textbox', { name: 'Output' })).toHaveValue(/"name": "KitDev"/)
 })

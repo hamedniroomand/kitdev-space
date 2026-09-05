@@ -2,7 +2,7 @@
 import { validateJson } from '~~/shared/utils/data/json'
 import { getTextStats } from '~~/shared/utils/data/stats'
 
-const input = ref('{\n  "name": "DevKit"\n}')
+const input = ref('{\n  "name": "KitDev"\n}')
 const statusMessage = ref('')
 const statusMeta = ref('')
 const { status, error, run, reset } = useTool<string>()

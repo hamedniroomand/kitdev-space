@@ -17,7 +17,7 @@ const items = computed<NavigationMenuItem[]>(() => [
 
 <template>
   <UHeader
-    title="DevKit Space"
+    title="KitDev Space"
     class="border-b border-default"
   >
     <template #title>

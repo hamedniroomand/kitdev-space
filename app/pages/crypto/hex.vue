@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { decodeHex, encodeHex } from '~~/shared/utils/crypto/hex'
 
-const input = ref('DevKit')
+const input = ref('KitDev')
 const output = ref('')
 const toast = useToast()
 const { status, error, result, run, reset } = useTool<string>()

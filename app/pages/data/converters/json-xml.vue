@@ -9,7 +9,7 @@
     ]"
     default-from="json"
     default-to="xml"
-    sample="{&quot;name&quot;:&quot;DevKit&quot;,&quot;ready&quot;:true}"
+    sample="{&quot;name&quot;:&quot;KitDev&quot;,&quot;ready&quot;:true}"
     download-name="converted.xml"
     download-mime="application/xml"
     docs-title="About JSON and XML"

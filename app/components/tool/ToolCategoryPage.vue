@@ -12,7 +12,16 @@ const categoryTools = computed(() => getToolsByCategory(props.category))
 
 useSeoMeta({
   title: () => label.value,
-  description: () => `${label.value} tools in DevKit Space.`
+  description: () => `${label.value} tools in KitDev Space.`,
+  ogTitle: () => label.value,
+  ogDescription: () => `${label.value} tools in KitDev Space.`,
+  twitterCard: 'summary_large_image'
+})
+
+useKitDevOgImage({
+  title: () => label.value,
+  description: () => `${label.value} tools in KitDev Space.`,
+  eyebrow: 'Category'
 })
 </script>
 

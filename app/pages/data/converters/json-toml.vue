@@ -9,7 +9,7 @@
     ]"
     default-from="json"
     default-to="toml"
-    sample="{&quot;name&quot;:&quot;DevKit&quot;,&quot;ready&quot;:true}"
+    sample="{&quot;name&quot;:&quot;KitDev&quot;,&quot;ready&quot;:true}"
     download-name="converted.toml"
     download-mime="application/toml"
     docs-title="About JSON and TOML"

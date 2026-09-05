@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { decodeBase64, encodeBase64 } from '~~/shared/utils/crypto/base64'
 
-const input = ref('DevKit Space')
+const input = ref('KitDev Space')
 const output = ref('')
 const toast = useToast()
 const { status, error, result, run, reset } = useTool<string>()
