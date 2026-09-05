@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { formatBytes } from '~~/shared/utils/format'
+
 const props = defineProps<{
   blob: Blob | null
   inputBytes?: number | null
@@ -9,6 +11,7 @@ const props = defineProps<{
 }>()
 
 const previewUrl = useObjectUrl(() => props.blob)
+const { downloadBlob } = useDownload()
 
 const savedLabel = computed(() => {
   if (props.inputBytes == null || props.outputBytes == null || props.inputBytes <= 0) {
@@ -27,26 +30,11 @@ const savedLabel = computed(() => {
   return `Same size (${from})`
 })
 
-function formatBytes(value: number): string {
-  if (value < 1024) {
-    return `${value} B`
-  }
-  if (value < 1024 * 1024) {
-    return `${(value / 1024).toFixed(1)} KB`
-  }
-  return `${(value / (1024 * 1024)).toFixed(2)} MB`
-}
-
 function download() {
   if (!props.blob) {
     return
   }
-  const url = URL.createObjectURL(props.blob)
-  const anchor = document.createElement('a')
-  anchor.href = url
-  anchor.download = props.filename ?? 'result.webp'
-  anchor.click()
-  URL.revokeObjectURL(url)
+  downloadBlob(props.filename ?? 'result.webp', props.blob)
 }
 </script>
 

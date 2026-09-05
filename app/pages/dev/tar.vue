@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { formatBytes } from '~~/shared/utils/format'
+
 interface TarEntry {
   path: string
   size: number
@@ -10,6 +12,7 @@ const entries = ref<TarEntry[]>([])
 const archiveBytes = ref<number | null>(null)
 const { status, error, run, reset } = useTool<string>()
 const { track } = useToolAnalytics()
+const { downloadBlob } = useDownload()
 const toast = useToast()
 
 useToolSeo('tar-explorer')
@@ -17,16 +20,6 @@ useToolSeo('tar-explorer')
 onMounted(() => {
   track('tool_open', { tool: 'tar-explorer' })
 })
-
-function formatSize(size: number): string {
-  if (size < 1024) {
-    return `${size} B`
-  }
-  if (size < 1024 * 1024) {
-    return `${(size / 1024).toFixed(1)} KB`
-  }
-  return `${(size / (1024 * 1024)).toFixed(2)} MB`
-}
 
 async function inspect() {
   entries.value = []
@@ -80,12 +73,7 @@ async function downloadEntry(path: string) {
       throw new Error(payload?.message || payload?.statusMessage || 'Download failed.')
     }
     const blob = await response.blob()
-    const url = URL.createObjectURL(blob)
-    const anchor = document.createElement('a')
-    anchor.href = url
-    anchor.download = path.split('/').pop() || 'entry.bin'
-    anchor.click()
-    URL.revokeObjectURL(url)
+    downloadBlob(path.split('/').pop() || 'entry.bin', blob)
     toast.add({ title: 'Downloaded', color: 'success' })
   } catch (cause) {
     const message = cause instanceof Error ? cause.message : 'Download failed.'
@@ -160,7 +148,7 @@ defineShortcuts({
       v-if="archiveBytes != null"
       class="text-sm text-muted"
     >
-      Archive size {{ formatSize(archiveBytes) }} · {{ entries.length }} files
+      Archive size {{ formatBytes(archiveBytes) }} · {{ entries.length }} files
     </p>
 
     <div
@@ -191,7 +179,7 @@ defineShortcuts({
               {{ entry.path }}
             </td>
             <td class="px-3 py-2 text-muted">
-              {{ formatSize(entry.size) }}
+              {{ formatBytes(entry.size) }}
             </td>
             <td class="px-3 py-2">
               <UButton

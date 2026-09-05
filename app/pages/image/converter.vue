@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import type { ImageEncodeFormat } from '~~/shared/utils/image/types'
+import { imageExtensionFor } from '~~/shared/utils/image/format'
+import { readImageResponse } from '~~/shared/utils/image/response'
 
 const file = ref<File | null>(null)
 const format = ref<ImageEncodeFormat>('webp')
@@ -41,18 +43,13 @@ async function handleConvert() {
       body: form
     })
 
-    if (!response.ok) {
-      const payload = await response.json().catch(() => null) as { message?: string, statusMessage?: string } | null
-      throw new Error(payload?.message || payload?.statusMessage || 'The convert operation failed.')
-    }
-
-    inputBytes.value = Number(response.headers.get('x-input-bytes') ?? file.value.size)
-    outputBytes.value = Number(response.headers.get('x-output-bytes') ?? 0)
-    outWidth.value = Number(response.headers.get('x-image-width') ?? 0) || null
-    outHeight.value = Number(response.headers.get('x-image-height') ?? 0) || null
-    const blob = await response.blob()
-    outputBlob.value = blob
-    return blob
+    const processed = await readImageResponse(response, 'The convert operation failed.', file.value.size)
+    inputBytes.value = processed.inputBytes
+    outputBytes.value = processed.outputBytes
+    outWidth.value = processed.width
+    outHeight.value = processed.height
+    outputBlob.value = processed.blob
+    return processed.blob
   })
 
   if (status.value === 'success') {
@@ -70,10 +67,6 @@ function handleClear() {
   outWidth.value = null
   outHeight.value = null
   reset()
-}
-
-function extensionFor(formatValue: ImageEncodeFormat): string {
-  return formatValue === 'jpeg' ? 'jpg' : formatValue
 }
 
 defineShortcuts({
@@ -158,7 +151,7 @@ defineShortcuts({
       :output-bytes="outputBytes"
       :width="outWidth"
       :height="outHeight"
-      :filename="`converted.${extensionFor(format)}`"
+      :filename="`converted.${imageExtensionFor(format)}`"
     />
 
     <template #docs>

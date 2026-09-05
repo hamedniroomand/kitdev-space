@@ -1,3 +1,4 @@
+import { Buffer } from 'node:buffer'
 import { Resvg } from '@resvg/resvg-js'
 import { ImageError } from './errors'
 import { MAX_PIXELS } from './limits'
@@ -6,7 +7,7 @@ const SVG_HEAD = /^\s*(?:<\?xml\b[^>]*>\s*)?(?:<!--[\s\S]*?-->\s*)*<svg\b/i
 
 /** href / xlink:href / src with http(s) or protocol-relative // */
 const REMOTE_ATTR
-  = /(?:(?:xlink:)?href|src)\s*=\s*(["'])\s*(?:https?:|\/\/)/i
+  = /\b(?:href|xlink:href)\s*=\s*(['"]?)(?:https?:|\/\/)/i
 
 /** url(http…) or url(//…) in CSS */
 const REMOTE_URL = /url\(\s*(['"]?)\s*(?:https?:|\/\/)/i
@@ -27,7 +28,7 @@ export function isSvgBytes(input: Uint8Array): boolean {
   if (input.byteLength === 0) {
     return false
   }
-  const head = new TextDecoder().decode(input.subarray(0, Math.min(input.byteLength, 8192)))
+  const head = new TextDecoder().decode(input.subarray(0, 1024))
   return SVG_HEAD.test(head)
 }
 
@@ -45,7 +46,8 @@ export function rasterizeSvg(
   assertNoExternalSvgResources(input)
 
   try {
-    const base = new Resvg(input, { font: resvgFontOpts() })
+    const buf = Buffer.from(input.buffer, input.byteOffset, input.byteLength)
+    const base = new Resvg(buf, { font: resvgFontOpts() })
     const srcW = base.width
     const srcH = base.height
     if (!(srcW > 0 && srcH > 0)) {
@@ -66,7 +68,7 @@ export function rasterizeSvg(
     const renderer
       = fitTo.mode === 'original'
         ? base
-        : new Resvg(input, { font: resvgFontOpts(), fitTo })
+        : new Resvg(buf, { font: resvgFontOpts(), fitTo })
 
     const pngData = renderer.render()
     if (pngData.width * pngData.height > MAX_PIXELS) {

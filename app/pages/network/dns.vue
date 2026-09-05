@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { formatDnsRecord } from '~~/shared/utils/network/dns'
+
 type DnsRecordType = 'A' | 'AAAA' | 'CNAME' | 'MX' | 'NS' | 'TXT' | 'CAA'
 
 const domain = ref('')
@@ -19,19 +21,6 @@ const recordTypeItems = [
 ]
 
 useToolSeo('dns')
-
-function formatRecord(record: string | object): string {
-  if (typeof record === 'string') {
-    return record
-  }
-
-  const value = record as Record<string, unknown>
-  if (typeof value.priority === 'number' && typeof value.exchange === 'string') {
-    return `${value.priority} ${value.exchange}`
-  }
-
-  return JSON.stringify(record)
-}
 
 async function lookup() {
   await run(async () => {
@@ -54,7 +43,7 @@ async function lookup() {
   })
 
   if (status.value === 'success' && result.value !== null) {
-    rows.value = result.value.map(record => formatRecord(record))
+    rows.value = result.value.map(record => formatDnsRecord(record))
   }
 }
 
