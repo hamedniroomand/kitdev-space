@@ -1,4 +1,7 @@
-// https://nuxt.com/docs/api/configuration/nuxt-config
+function nitroPreset(): string {
+  return process.env.NITRO_PRESET ?? (process.env.VERCEL ? 'vercel' : 'bun')
+}
+
 export default defineNuxtConfig({
   modules: [
     '@nuxt/eslint',
@@ -31,7 +34,7 @@ export default defineNuxtConfig({
   compatibilityDate: '2026-06-30',
 
   nitro: {
-    preset: 'bun'
+    preset: nitroPreset()
   },
 
   eslint: {
