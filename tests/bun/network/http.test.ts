@@ -275,4 +275,26 @@ describe('walkRedirects', () => {
     expect(fetchSpy).toHaveBeenCalledTimes(1)
     expect((fetchSpy.mock.calls[0] as [URL, RequestInit])[0].href).toBe('https://example.com/')
   })
+
+  it('returns recorded hops when a later fetch times out', async () => {
+    fetchSpy
+      .mockResolvedValueOnce(mockResponse({
+        status: 302,
+        statusText: 'Found',
+        headers: { Location: 'https://example.com/next' },
+        url: 'https://example.com/'
+      }))
+      .mockRejectedValueOnce(new DOMException('The operation was aborted.', 'TimeoutError'))
+
+    const result = await walkRedirects('https://example.com/')
+
+    expect(result).toEqual([
+      {
+        url: 'https://example.com/',
+        status: 302,
+        location: 'https://example.com/next'
+      }
+    ])
+    expect(fetchSpy).toHaveBeenCalledTimes(2)
+  })
 })
