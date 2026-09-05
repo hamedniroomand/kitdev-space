@@ -7,10 +7,10 @@ useSeoMeta({
 
 <template>
   <UContainer class="py-16 sm:py-24 max-w-2xl">
-    <h1 class="text-3xl font-semibold tracking-tight text-highlighted">
+    <h1 class="text-3xl font-medium tracking-tight text-highlighted">
       About DevKit Space
     </h1>
-    <div class="mt-6 space-y-4 text-muted">
+    <div class="mt-6 space-y-4 text-base leading-relaxed text-muted">
       <p>
         DevKit Space is a set of developer tools for people who build software.
       </p>

@@ -16,7 +16,10 @@ const items = computed<NavigationMenuItem[]>(() => [
 </script>
 
 <template>
-  <UHeader title="DevKit Space">
+  <UHeader
+    title="DevKit Space"
+    class="border-b border-default"
+  >
     <template #title>
       <AppLogo />
     </template>

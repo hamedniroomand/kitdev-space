@@ -2,6 +2,64 @@
 @import "@nuxt/ui";
 
 @theme static {
-  --font-sans: 'Outfit', sans-serif;
+  --font-sans: 'Inter', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
+
+  /* Infrastructure Node primary — anchor #60A5FA / accent #1E3A8A */
+  --color-brand-50: #eff6ff;
+  --color-brand-100: #dbeafe;
+  --color-brand-200: #bfdbfe;
+  --color-brand-300: #93c5fd;
+  --color-brand-400: #60a5fa;
+  --color-brand-500: #3b82f6;
+  --color-brand-600: #2563eb;
+  --color-brand-700: #1d4ed8;
+  --color-brand-800: #1e3a8a;
+  --color-brand-900: #172554;
+  --color-brand-950: #0b1229;
+}
+
+:root {
+  --ui-radius: 0.5rem;
+  --ui-primary: var(--ui-color-primary-600);
+
+  --ui-bg: #f8fafc;
+  --ui-bg-muted: #f1f5f9;
+  --ui-bg-elevated: #ffffff;
+  --ui-bg-accented: #e2e8f0;
+  --ui-bg-inverted: #020617;
+
+  --ui-text-dimmed: var(--ui-color-neutral-400);
+  --ui-text-muted: #64748b;
+  --ui-text-toned: var(--ui-color-neutral-600);
+  --ui-text: var(--ui-color-neutral-700);
+  --ui-text-highlighted: #0f172a;
+  --ui-text-inverted: #ffffff;
+
+  --ui-border: #e2e8f0;
+  --ui-border-muted: #e2e8f0;
+  --ui-border-accented: #cbd5e1;
+  --ui-border-inverted: #020617;
+}
+
+.dark {
+  --ui-primary: var(--ui-color-primary-400);
+
+  --ui-bg: #020617;
+  --ui-bg-muted: #0f172a;
+  --ui-bg-elevated: #18181b;
+  --ui-bg-accented: #27272a;
+  --ui-bg-inverted: #ffffff;
+
+  --ui-text-dimmed: var(--ui-color-neutral-500);
+  --ui-text-muted: #a1a1aa;
+  --ui-text-toned: var(--ui-color-neutral-300);
+  --ui-text: var(--ui-color-neutral-200);
+  --ui-text-highlighted: #ffffff;
+  --ui-text-inverted: #020617;
+
+  --ui-border: #27272a;
+  --ui-border-muted: #3f3f46;
+  --ui-border-accented: #3f3f46;
+  --ui-border-inverted: #ffffff;
 }

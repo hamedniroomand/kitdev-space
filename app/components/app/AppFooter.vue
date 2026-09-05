@@ -1,7 +1,7 @@
 <template>
-  <UFooter>
+  <UFooter class="border-t border-default">
     <template #left>
-      <p class="text-sm text-muted">
+      <p class="font-mono text-xs tracking-wide text-muted">
         Built with Nuxt + Bun
       </p>
     </template>

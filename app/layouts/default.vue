@@ -19,7 +19,7 @@ defineShortcuts({
 </script>
 
 <template>
-  <div class="min-h-dvh flex flex-col">
+  <div class="min-h-dvh flex flex-col bg-default text-default">
     <AppHeader />
     <UMain class="flex-1">
       <slot />

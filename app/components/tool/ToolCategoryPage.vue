@@ -18,18 +18,21 @@ useSeoMeta({
 
 <template>
   <UContainer class="py-16 sm:py-24">
-    <h1 class="text-3xl font-semibold tracking-tight text-highlighted">
+    <p class="font-mono text-xs font-semibold tracking-widest text-primary uppercase">
+      Category
+    </p>
+    <h1 class="mt-3 text-3xl font-medium tracking-tight text-highlighted">
       {{ label }}
     </h1>
-    <p class="mt-2 text-muted">
+    <p class="mt-2 text-base leading-relaxed text-muted">
       Choose a tool to start.
     </p>
 
-    <ul class="mt-10 divide-y divide-default border-y border-default">
+    <ul class="mt-10 divide-y divide-default overflow-hidden rounded-md border border-default bg-elevated/60">
       <li
         v-for="tool in categoryTools"
         :key="tool.id"
-        class="py-4"
+        class="px-4 py-4 sm:px-6"
       >
         <NuxtLink
           v-if="tool.status === 'available'"

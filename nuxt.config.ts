@@ -27,6 +27,10 @@ export default defineNuxtConfig({
     defaultLocale: 'en'
   },
 
+  colorMode: {
+    preference: 'dark'
+  },
+
   routeRules: {
     '/': { prerender: true },
     '/api/**': { robots: false }

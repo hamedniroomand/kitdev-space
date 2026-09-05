@@ -18,13 +18,13 @@ useSeoMeta({
   <div>
     <UContainer class="py-16 sm:py-24">
       <div class="mx-auto max-w-2xl text-center">
-        <p class="text-sm font-medium tracking-wide text-primary uppercase">
+        <p class="font-mono text-xs font-semibold tracking-widest text-primary uppercase">
           DevKit Space
         </p>
-        <h1 class="mt-4 text-4xl font-semibold tracking-tight text-highlighted sm:text-5xl">
+        <h1 class="mt-4 text-4xl font-medium tracking-tight text-highlighted sm:text-5xl lg:text-6xl lg:leading-[1.04]">
           Tools for people who build.
         </h1>
-        <p class="mt-4 text-lg text-muted">
+        <p class="mt-4 text-base leading-relaxed text-muted sm:text-lg">
           Fast, free developer utilities. No account.
         </p>
 
@@ -50,9 +50,10 @@ useSeoMeta({
         <section
           v-for="category in categories"
           :key="category"
+          class="rounded-md border border-default bg-elevated/60 p-6"
         >
           <div class="flex items-baseline justify-between gap-3">
-            <h2 class="text-sm font-medium tracking-wide text-muted uppercase">
+            <h2 class="font-mono text-xs font-semibold tracking-widest text-muted uppercase">
               {{ categoryLabels[category].replace(' Lab', '') }}
             </h2>
             <NuxtLink
@@ -96,7 +97,7 @@ useSeoMeta({
         </section>
       </div>
 
-      <p class="mt-16 text-center text-sm text-muted">
+      <p class="mt-16 text-center font-mono text-xs tracking-wide text-muted">
         {{ tools.length }} tools in the catalog. More arrive each week.
       </p>
     </UContainer>
