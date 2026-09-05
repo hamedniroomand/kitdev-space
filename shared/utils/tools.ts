@@ -121,9 +121,9 @@ export const tools: Tool[] = [
     icon: 'i-lucide-hash',
     keywords: ['hash', 'sha', 'md5', 'digest'],
     route: '/crypto/hash',
-    clientOnly: true,
-    serverRequired: false,
-    status: 'coming-soon'
+    clientOnly: false,
+    serverRequired: true,
+    status: 'available'
   },
   {
     id: 'base64',
@@ -136,7 +136,7 @@ export const tools: Tool[] = [
     route: '/crypto/base64',
     clientOnly: true,
     serverRequired: false,
-    status: 'coming-soon'
+    status: 'available'
   },
   {
     id: 'hex',
@@ -149,7 +149,7 @@ export const tools: Tool[] = [
     route: '/crypto/hex',
     clientOnly: true,
     serverRequired: false,
-    status: 'coming-soon'
+    status: 'available'
   },
   {
     id: 'uuid',
@@ -162,7 +162,7 @@ export const tools: Tool[] = [
     route: '/crypto/uuid',
     clientOnly: true,
     serverRequired: false,
-    status: 'coming-soon'
+    status: 'available'
   },
   {
     id: 'random-string',
@@ -175,7 +175,7 @@ export const tools: Tool[] = [
     route: '/crypto/random-string',
     clientOnly: true,
     serverRequired: false,
-    status: 'coming-soon'
+    status: 'available'
   },
   {
     id: 'color-converter',
@@ -188,7 +188,7 @@ export const tools: Tool[] = [
     route: '/color/converter',
     clientOnly: true,
     serverRequired: false,
-    status: 'coming-soon'
+    status: 'available'
   },
   {
     id: 'contrast',
@@ -201,7 +201,7 @@ export const tools: Tool[] = [
     route: '/color/contrast',
     clientOnly: true,
     serverRequired: false,
-    status: 'coming-soon'
+    status: 'available'
   },
   {
     id: 'palette',
@@ -214,7 +214,7 @@ export const tools: Tool[] = [
     route: '/color/palette',
     clientOnly: true,
     serverRequired: false,
-    status: 'coming-soon'
+    status: 'available'
   },
   {
     id: 'color-inspector',
@@ -227,7 +227,7 @@ export const tools: Tool[] = [
     route: '/color/inspector',
     clientOnly: true,
     serverRequired: false,
-    status: 'coming-soon'
+    status: 'available'
   },
   {
     id: 'dns',
