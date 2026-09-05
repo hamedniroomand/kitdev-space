@@ -32,7 +32,7 @@ useKitDevOgImage({
           Tools for people who build.
         </h1>
         <p class="mt-4 text-base leading-relaxed text-muted sm:text-lg">
-          Fast, free developer utilities. No account.
+          Fast, free developer tools. No account.
         </p>
 
         <div class="mt-8">
@@ -105,7 +105,7 @@ useKitDevOgImage({
       </div>
 
       <p class="mt-16 text-center font-mono text-xs tracking-wide text-muted">
-        {{ tools.length }} tools in the catalog. More arrive each week.
+        {{ tools.length }} tools in the catalog.
       </p>
     </UContainer>
   </div>

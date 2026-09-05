@@ -7,7 +7,7 @@ const rgb = ref('')
 const hsl = ref('')
 const { status, error, run, reset } = useTool<string>()
 const toast = useToast()
-const { copy } = useClipboard()
+const { copy, copied } = useClipboard({ legacy: true })
 
 useToolSeo('color-converter')
 
@@ -22,8 +22,8 @@ async function convert() {
 }
 
 async function copyValue(value: string) {
-  const ok = await copy(value)
-  toast.add({ title: ok ? 'Copied' : 'Copy failed', color: ok ? 'success' : 'error' })
+  await copy(value)
+  toast.add({ title: copied.value ? 'Copied' : 'Copy failed', color: copied.value ? 'success' : 'error' })
 }
 
 function handleClear() {

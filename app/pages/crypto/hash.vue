@@ -6,7 +6,7 @@ const algorithm = ref<HashAlgorithm>('sha256')
 const output = ref('')
 const toast = useToast()
 const { status, error, result, run, reset } = useTool<string>()
-const { copy } = useClipboard()
+const { copy, copied } = useClipboard({ legacy: true })
 const { track } = useToolAnalytics()
 
 const algorithmItems = [
@@ -55,9 +55,9 @@ async function handleCopy() {
   if (!output.value) {
     return
   }
-  const ok = await copy(output.value)
-  toast.add({ title: ok ? 'Copied' : 'Copy failed', color: ok ? 'success' : 'error' })
-  if (ok) {
+  await copy(output.value)
+  toast.add({ title: copied.value ? 'Copied' : 'Copy failed', color: copied.value ? 'success' : 'error' })
+  if (copied.value) {
     track('tool_copy', { tool: 'hash' })
   }
 }

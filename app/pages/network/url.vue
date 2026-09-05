@@ -4,7 +4,7 @@ import { inspectUrl, type UrlParts } from '~~/shared/utils/network/url'
 const input = ref('https://user:pass@example.com:8443/path?q=1#top')
 const toast = useToast()
 const { status, error, result, run, reset } = useTool<UrlParts>()
-const { copy } = useClipboard()
+const { copy, copied } = useClipboard({ legacy: true })
 
 const fieldRows = computed(() => {
   if (!result.value) {
@@ -37,8 +37,8 @@ async function handleCopy() {
   if (status.value !== 'success' || result.value === null) {
     return
   }
-  const ok = await copy(JSON.stringify(result.value, null, 2))
-  toast.add({ title: ok ? 'Copied' : 'Copy failed', color: ok ? 'success' : 'error' })
+  await copy(JSON.stringify(result.value, null, 2))
+  toast.add({ title: copied.value ? 'Copied' : 'Copy failed', color: copied.value ? 'success' : 'error' })
 }
 
 function handleClear() {
@@ -151,7 +151,7 @@ defineShortcuts({
             This tool parses a URL into its parts.
           </p>
           <p>
-            Enter a URL. Then click Inspect.
+            Enter a URL. Then select Inspect.
           </p>
           <p>
             The tool does not fetch the URL. The tool does not store your input.

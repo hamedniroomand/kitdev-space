@@ -187,7 +187,6 @@ defineShortcuts({
       </UButton>
     </ToolActions>
 
-    <ToolStatus :status="status" />
     <ToolError
       v-if="error"
       :message="error"

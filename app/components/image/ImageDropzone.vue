@@ -11,20 +11,22 @@ const emit = defineEmits<{
 }>()
 
 const inputRef = ref<HTMLInputElement | null>(null)
+const dropZoneRef = ref<HTMLDivElement | null>(null)
 const previewUrl = useObjectUrl(() => props.modelValue)
+
+const { isOverDropZone } = useDropZone(dropZoneRef, {
+  onDrop(files) {
+    const file = files?.[0] ?? null
+    if (file) {
+      emit('update:modelValue', file)
+    }
+  }
+})
 
 function onPick(event: Event) {
   const input = event.target as HTMLInputElement
   const file = input.files?.[0] ?? null
   emit('update:modelValue', file)
-}
-
-function onDrop(event: DragEvent) {
-  event.preventDefault()
-  const file = event.dataTransfer?.files?.[0] ?? null
-  if (file) {
-    emit('update:modelValue', file)
-  }
 }
 
 function openPicker() {
@@ -44,13 +46,13 @@ defineExpose({ clear })
 <template>
   <div class="space-y-3">
     <div
+      ref="dropZoneRef"
       class="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-md border border-dashed border-default bg-elevated/30 px-4 py-10 text-center transition-colors hover:border-primary"
+      :class="{ 'border-primary bg-elevated/60': isOverDropZone }"
       role="button"
       tabindex="0"
       @click="openPicker"
       @keydown.enter.prevent="openPicker"
-      @dragover.prevent
-      @drop="onDrop"
     >
       <UIcon
         name="i-lucide-upload"

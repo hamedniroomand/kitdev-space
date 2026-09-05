@@ -6,7 +6,7 @@ const recordType = ref<DnsRecordType>('A')
 const rows = ref<string[]>([])
 const toast = useToast()
 const { status, error, result, run, reset } = useTool<string[] | object[]>()
-const { copy } = useClipboard()
+const { copy, copied } = useClipboard({ legacy: true })
 
 const recordTypeItems = [
   { label: 'A', value: 'A' },
@@ -62,8 +62,8 @@ async function handleCopy() {
   if (!rows.value.length) {
     return
   }
-  const ok = await copy(rows.value.join('\n'))
-  toast.add({ title: ok ? 'Copied' : 'Copy failed', color: ok ? 'success' : 'error' })
+  await copy(rows.value.join('\n'))
+  toast.add({ title: copied.value ? 'Copied' : 'Copy failed', color: copied.value ? 'success' : 'error' })
 }
 
 function handleClear() {

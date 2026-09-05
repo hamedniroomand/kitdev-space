@@ -8,7 +8,7 @@ const output = ref('')
 const statusMeta = ref('')
 const toast = useToast()
 const { status, error, result, run, reset } = useTool<string>()
-const { copy } = useClipboard()
+const { copy, copied } = useClipboard({ legacy: true })
 const { downloadText } = useDownload()
 
 useToolSeo('json-to-typescript')
@@ -26,8 +26,8 @@ async function handleCopy() {
   if (!output.value) {
     return
   }
-  const ok = await copy(output.value)
-  toast.add({ title: ok ? 'Copied' : 'Copy failed', color: ok ? 'success' : 'error' })
+  await copy(output.value)
+  toast.add({ title: copied.value ? 'Copied' : 'Copy failed', color: copied.value ? 'success' : 'error' })
 }
 
 function handleDownload() {

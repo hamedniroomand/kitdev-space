@@ -6,7 +6,7 @@ const count = ref(5)
 const palette = ref<string[]>([])
 const toast = useToast()
 const { status, error, run, reset } = useTool<string>()
-const { copy } = useClipboard()
+const { copy, copied } = useClipboard({ legacy: true })
 
 useToolSeo('palette')
 
@@ -18,8 +18,8 @@ async function generate() {
 }
 
 async function copyValue(value: string) {
-  const ok = await copy(value)
-  toast.add({ title: ok ? 'Copied' : 'Copy failed', color: ok ? 'success' : 'error' })
+  await copy(value)
+  toast.add({ title: copied.value ? 'Copied' : 'Copy failed', color: copied.value ? 'success' : 'error' })
 }
 
 function handleClear() {

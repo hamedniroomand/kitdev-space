@@ -12,7 +12,7 @@ const durationMs = ref<number | null>(null)
 const verified = ref<boolean | null>(null)
 const toast = useToast()
 const { status, error, run, reset } = useTool<string>()
-const { copy } = useClipboard()
+const { copy, copied } = useClipboard({ legacy: true })
 const { track } = useToolAnalytics()
 
 const algorithmItems = [
@@ -59,7 +59,7 @@ async function execute() {
     } catch (cause) {
       const fetchError = cause as { data?: { message?: string }, statusMessage?: string }
       throw new Error(
-        fetchError.data?.message || fetchError.statusMessage || 'The password benchmark failed.',
+        fetchError.data?.message || fetchError.statusMessage || 'The benchmark failed.',
         { cause }
       )
     }
@@ -76,8 +76,8 @@ async function handleCopy() {
   if (!hash.value) {
     return
   }
-  const ok = await copy(hash.value)
-  toast.add({ title: ok ? 'Copied' : 'Copy failed', color: ok ? 'success' : 'error' })
+  await copy(hash.value)
+  toast.add({ title: copied.value ? 'Copied' : 'Copy failed', color: copied.value ? 'success' : 'error' })
 }
 
 function handleClear() {
@@ -204,7 +204,6 @@ defineShortcuts({
       </UButton>
     </ToolActions>
 
-    <ToolStatus :status="status" />
     <ToolError
       v-if="error"
       :message="error"

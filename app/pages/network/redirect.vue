@@ -8,7 +8,7 @@ type RedirectHop = {
 const url = ref('')
 const toast = useToast()
 const { status, error, result, run, reset } = useTool<RedirectHop[]>()
-const { copy } = useClipboard()
+const { copy, copied } = useClipboard({ legacy: true })
 
 useToolSeo('redirect-checker')
 
@@ -36,8 +36,8 @@ async function handleCopy() {
   if (status.value !== 'success' || result.value === null) {
     return
   }
-  const ok = await copy(JSON.stringify(result.value, null, 2))
-  toast.add({ title: ok ? 'Copied' : 'Copy failed', color: ok ? 'success' : 'error' })
+  await copy(JSON.stringify(result.value, null, 2))
+  toast.add({ title: copied.value ? 'Copied' : 'Copy failed', color: copied.value ? 'success' : 'error' })
 }
 
 function handleClear() {

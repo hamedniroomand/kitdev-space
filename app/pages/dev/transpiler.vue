@@ -11,7 +11,7 @@ const loader = ref<TranspileLoader>('ts')
 const output = ref('')
 const toast = useToast()
 const { status, error, run, reset } = useTool<string>()
-const { copy } = useClipboard()
+const { copy, copied } = useClipboard({ legacy: true })
 const { downloadText } = useDownload()
 const { track } = useToolAnalytics()
 
@@ -61,8 +61,8 @@ async function handleCopy() {
   if (!output.value) {
     return
   }
-  const ok = await copy(output.value)
-  toast.add({ title: ok ? 'Copied' : 'Copy failed', color: ok ? 'success' : 'error' })
+  await copy(output.value)
+  toast.add({ title: copied.value ? 'Copied' : 'Copy failed', color: copied.value ? 'success' : 'error' })
 }
 
 function handleDownload() {
@@ -152,7 +152,6 @@ defineShortcuts({
       </UButton>
     </ToolActions>
 
-    <ToolStatus :status="status" />
     <ToolError
       v-if="error"
       :message="error"
