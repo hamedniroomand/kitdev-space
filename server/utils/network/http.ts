@@ -7,7 +7,15 @@ export interface HeaderInspectResult {
   url: string
 }
 
+export interface RedirectHop {
+  url: string
+  status: number
+  location?: string
+}
+
 const TIMEOUT_MS = 8000
+const MAX_REDIRECTS = 5
+const REDIRECT_STATUSES = new Set([301, 302, 303, 307, 308])
 
 function headersToRecord(headers: Headers): Record<string, string> {
   const record: Record<string, string> = {}
@@ -40,6 +48,14 @@ function discardBody(response: Response): void {
 
 function isTimeout(cause: unknown): boolean {
   return cause instanceof DOMException && cause.name === 'TimeoutError'
+}
+
+function isDeniedUrl(cause: unknown): boolean {
+  return typeof cause === 'object' && cause !== null && 'statusCode' in cause
+}
+
+function isRedirectStatus(status: number): boolean {
+  return REDIRECT_STATUSES.has(status)
 }
 
 async function fetchOnce(url: URL, method: 'HEAD' | 'GET'): Promise<Response> {
@@ -79,4 +95,51 @@ export async function fetchHeaders(input: string): Promise<HeaderInspectResult> 
 
     throw new Error('The request failed.', { cause })
   }
+}
+
+export async function walkRedirects(input: string): Promise<RedirectHop[]> {
+  const hops: RedirectHop[] = []
+  let current = await assertSafeUrl(input)
+
+  try {
+    for (let followed = 0; followed <= MAX_REDIRECTS; followed++) {
+      const response = await fetchOnce(current, 'GET')
+      discardBody(response)
+
+      const header = response.headers.get('location')
+      const location = header || undefined
+      const hop: RedirectHop = {
+        url: current.href,
+        status: response.status
+      }
+
+      if (location !== undefined) {
+        hop.location = location
+      }
+
+      hops.push(hop)
+
+      if (
+        !isRedirectStatus(response.status)
+        || location === undefined
+        || followed === MAX_REDIRECTS
+      ) {
+        break
+      }
+
+      current = await assertSafeUrl(new URL(location, current).href)
+    }
+  } catch (cause) {
+    if (isDeniedUrl(cause)) {
+      throw cause
+    }
+
+    if (isTimeout(cause)) {
+      throw new Error('The request timed out.', { cause })
+    }
+
+    throw new Error('The request failed.', { cause })
+  }
+
+  return hops
 }

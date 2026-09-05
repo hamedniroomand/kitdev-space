@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, mock, spyOn } from 'bun:test'
-import { fetchHeaders } from '../../../server/utils/network/http'
+import { fetchHeaders, walkRedirects } from '../../../server/utils/network/http'
 
 function mockResponse(init: {
   status?: number
@@ -163,5 +163,110 @@ describe('fetchHeaders', () => {
     fetchSpy.mockRejectedValue(new Error('Unable to connect'))
 
     await expect(fetchHeaders('https://example.com/')).rejects.toThrow('The request failed.')
+  })
+})
+
+describe('walkRedirects', () => {
+  let lookup: ReturnType<typeof spyOn<typeof Bun.dns, 'lookup'>>
+  let fetchSpy: ReturnType<typeof spyOn<typeof Bun, 'fetch'>>
+
+  beforeEach(() => {
+    lookup = spyOn(Bun.dns, 'lookup').mockResolvedValue([
+      { address: '93.184.216.34', family: 4, ttl: 0 }
+    ])
+    fetchSpy = spyOn(Bun, 'fetch')
+  })
+
+  afterEach(() => {
+    lookup.mockRestore()
+    fetchSpy.mockRestore()
+  })
+
+  it('returns the hop chain for followed redirects', async () => {
+    fetchSpy
+      .mockResolvedValueOnce(mockResponse({
+        status: 302,
+        statusText: 'Found',
+        headers: { Location: 'https://example.com/next' },
+        url: 'https://example.com/start'
+      }))
+      .mockResolvedValueOnce(mockResponse({
+        status: 301,
+        statusText: 'Moved Permanently',
+        headers: { Location: '/final' },
+        url: 'https://example.com/next'
+      }))
+      .mockResolvedValueOnce(mockResponse({
+        status: 200,
+        statusText: 'OK',
+        url: 'https://example.com/final'
+      }))
+
+    const result = await walkRedirects('https://example.com/start')
+
+    expect(result).toEqual([
+      {
+        url: 'https://example.com/start',
+        status: 302,
+        location: 'https://example.com/next'
+      },
+      {
+        url: 'https://example.com/next',
+        status: 301,
+        location: '/final'
+      },
+      {
+        url: 'https://example.com/final',
+        status: 200
+      }
+    ])
+    expect(fetchSpy).toHaveBeenCalledTimes(3)
+    const [url, options] = fetchSpy.mock.calls[0] as [URL, RequestInit]
+    expect(url.href).toBe('https://example.com/start')
+    expect(options.redirect).toBe('manual')
+    expect(options.signal).toBeInstanceOf(AbortSignal)
+  })
+
+  it('stops at maxRedirects', async () => {
+    for (let index = 0; index < 8; index++) {
+      fetchSpy.mockResolvedValueOnce(mockResponse({
+        status: 302,
+        statusText: 'Found',
+        headers: { Location: `https://example.com/${index + 1}` },
+        url: `https://example.com/${index}`
+      }))
+    }
+
+    const result = await walkRedirects('https://example.com/0')
+
+    expect(result).toHaveLength(6)
+    expect(result.map(hop => hop.url)).toEqual([
+      'https://example.com/0',
+      'https://example.com/1',
+      'https://example.com/2',
+      'https://example.com/3',
+      'https://example.com/4',
+      'https://example.com/5'
+    ])
+    expect(result[5]?.location).toBe('https://example.com/6')
+    expect(fetchSpy).toHaveBeenCalledTimes(6)
+    expect(
+      fetchSpy.mock.calls.map(call => (call[0] as URL).href)
+    ).not.toContain('https://example.com/6')
+  })
+
+  it('blocks a private Location before the next fetch', async () => {
+    fetchSpy.mockResolvedValueOnce(mockResponse({
+      status: 302,
+      statusText: 'Found',
+      headers: { Location: 'http://127.0.0.1/secret' },
+      url: 'https://example.com/'
+    }))
+
+    await expect(walkRedirects('https://example.com/')).rejects.toMatchObject({
+      statusCode: 400
+    })
+    expect(fetchSpy).toHaveBeenCalledTimes(1)
+    expect((fetchSpy.mock.calls[0] as [URL, RequestInit])[0].href).toBe('https://example.com/')
   })
 })

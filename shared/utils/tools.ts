@@ -279,7 +279,7 @@ export const tools: Tool[] = [
     route: '/network/redirect',
     clientOnly: false,
     serverRequired: true,
-    status: 'coming-soon'
+    status: 'available'
   }
 ]
 
