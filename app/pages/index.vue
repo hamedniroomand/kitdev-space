@@ -1,76 +1,102 @@
+<script setup lang="ts">
+import type { ToolCategory } from '~/types/tools'
+
+const { tools, categoryLabels, getToolsByCategory } = useTools()
+const openSearch = inject<() => void>('openSearch', () => {})
+
+const categories: ToolCategory[] = ['data', 'network', 'crypto', 'color']
+
+useSeoMeta({
+  title: 'DevKit Space',
+  description: 'Developer tools for people who build things.',
+  ogTitle: 'DevKit Space',
+  ogDescription: 'Developer tools for people who build things.'
+})
+</script>
+
 <template>
   <div>
-    <UPageHero
-      title="Nuxt Starter Template"
-      description="A production-ready starter template powered by Nuxt UI. Build beautiful, accessible, and performant applications in minutes, not hours."
-      :links="[{
-        label: 'Get started',
-        to: 'https://ui.nuxt.com/docs/getting-started/installation/nuxt',
-        target: '_blank',
-        trailingIcon: 'i-lucide-arrow-right',
-        size: 'xl'
-      }, {
-        label: 'Use this template',
-        to: 'https://github.com/nuxt-ui-templates/starter',
-        target: '_blank',
-        icon: 'i-simple-icons-github',
-        size: 'xl',
-        color: 'neutral',
-        variant: 'subtle'
-      }]"
-    />
+    <UContainer class="py-16 sm:py-24">
+      <div class="mx-auto max-w-2xl text-center">
+        <p class="text-sm font-medium tracking-wide text-primary uppercase">
+          DevKit Space
+        </p>
+        <h1 class="mt-4 text-4xl font-semibold tracking-tight text-highlighted sm:text-5xl">
+          Tools for people who build.
+        </h1>
+        <p class="mt-4 text-lg text-muted">
+          Fast, free developer utilities. No account.
+        </p>
 
-    <UPageSection
-      id="features"
-      title="Everything you need to build modern Nuxt apps"
-      description="Start with a solid foundation. This template includes all the essentials for building production-ready applications with Nuxt UI's powerful component system."
-      :features="[{
-        icon: 'i-lucide-rocket',
-        title: 'Production-ready from day one',
-        description: 'Pre-configured with TypeScript, ESLint, Tailwind CSS, and all the best practices. Focus on building features, not setting up tooling.'
-      }, {
-        icon: 'i-lucide-palette',
-        title: 'Beautiful by default',
-        description: 'Leveraging Nuxt UI\'s design system with automatic dark mode, consistent spacing, and polished components that look great out of the box.'
-      }, {
-        icon: 'i-lucide-zap',
-        title: 'Lightning fast',
-        description: 'Optimized for performance with SSR/SSG support, automatic code splitting, and edge-ready deployment. Your users will love the speed.'
-      }, {
-        icon: 'i-lucide-blocks',
-        title: '100+ components included',
-        description: 'Access Nuxt UI\'s comprehensive component library. From forms to navigation, everything is accessible, responsive, and customizable.'
-      }, {
-        icon: 'i-lucide-code-2',
-        title: 'Developer experience first',
-        description: 'Auto-imports, hot module replacement, and TypeScript support. Write less boilerplate and ship more features.'
-      }, {
-        icon: 'i-lucide-shield-check',
-        title: 'Built for scale',
-        description: 'Enterprise-ready architecture with proper error handling, SEO optimization, and security best practices built-in.'
-      }]"
-    />
+        <div class="mt-8">
+          <UButton
+            color="neutral"
+            variant="outline"
+            size="xl"
+            block
+            class="max-w-md mx-auto justify-between font-normal"
+            @click="openSearch"
+          >
+            <span class="text-muted">Search tools...</span>
+            <UKbd value="meta" />
+            <UKbd value="K" />
+          </UButton>
+        </div>
+      </div>
 
-    <UPageSection>
-      <UPageCTA
-        title="Ready to build your next Nuxt app?"
-        description="Join thousands of developers building with Nuxt and Nuxt UI. Get this template and start shipping today."
-        variant="subtle"
-        :links="[{
-          label: 'Start building',
-          to: 'https://ui.nuxt.com/docs/getting-started/installation/nuxt',
-          target: '_blank',
-          trailingIcon: 'i-lucide-arrow-right',
-          color: 'neutral'
-        }, {
-          label: 'View on GitHub',
-          to: 'https://github.com/nuxt-ui-templates/starter',
-          target: '_blank',
-          icon: 'i-simple-icons-github',
-          color: 'neutral',
-          variant: 'outline'
-        }]"
-      />
-    </UPageSection>
+      <div class="mt-20 grid gap-10 sm:grid-cols-2">
+        <section
+          v-for="category in categories"
+          :key="category"
+        >
+          <div class="flex items-baseline justify-between gap-3">
+            <h2 class="text-sm font-medium tracking-wide text-muted uppercase">
+              {{ categoryLabels[category].replace(' Lab', '') }}
+            </h2>
+            <NuxtLink
+              :to="`/${category}`"
+              class="text-sm text-primary hover:underline"
+            >
+              View all
+            </NuxtLink>
+          </div>
+          <ul class="mt-4 space-y-2">
+            <li
+              v-for="tool in getToolsByCategory(category).slice(0, 3)"
+              :key="tool.id"
+            >
+              <NuxtLink
+                v-if="tool.status === 'available'"
+                :to="tool.route"
+                class="group flex items-center justify-between gap-3 py-1 text-highlighted hover:text-primary"
+              >
+                <span>{{ tool.name }}</span>
+                <UIcon
+                  name="i-lucide-arrow-right"
+                  class="size-4 opacity-0 transition-opacity group-hover:opacity-100"
+                />
+              </NuxtLink>
+              <div
+                v-else
+                class="flex items-center justify-between gap-3 py-1 text-muted"
+              >
+                <span>{{ tool.name }}</span>
+                <UBadge
+                  color="neutral"
+                  variant="subtle"
+                  size="sm"
+                >
+                  Soon
+                </UBadge>
+              </div>
+            </li>
+          </ul>
+        </section>
+      </div>
+
+      <p class="mt-16 text-center text-sm text-muted">
+        {{ tools.length }} tools in the catalog. More arrive each week.
+      </p>
+    </UContainer>
   </div>
 </template>
