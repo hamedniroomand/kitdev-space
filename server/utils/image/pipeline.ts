@@ -5,6 +5,7 @@ import type {
 } from '../../../shared/utils/image/types'
 import { ImageError } from './errors'
 import { MAX_PIXELS } from './limits'
+import { isSvgBytes, rasterizeSvg } from './svg'
 
 export interface ImageResult {
   bytes: Uint8Array
@@ -19,8 +20,15 @@ export interface ImageMetadata {
   format: string
 }
 
+function normalizeInput(input: Uint8Array): Uint8Array {
+  if (!isSvgBytes(input)) {
+    return input
+  }
+  return rasterizeSvg(input)
+}
+
 function createPipeline(input: Uint8Array) {
-  return new Bun.Image(input, { maxPixels: MAX_PIXELS, autoOrient: true })
+  return new Bun.Image(normalizeInput(input), { maxPixels: MAX_PIXELS, autoOrient: true })
 }
 
 function mimeFor(format: ImageEncodeFormat): string {
@@ -35,7 +43,7 @@ export function mapImageCause(cause: unknown, fallback: string): ImageError {
   const code = (cause as { code?: string })?.code
   if (code === 'ERR_IMAGE_UNKNOWN_FORMAT') {
     return new ImageError(
-      'This file type is not supported.\n\nUse JPEG, PNG, WebP, GIF, BMP, TIFF, HEIC, or AVIF. SVG is not supported.',
+      'This file type is not supported.\n\nUse JPEG, PNG, WebP, GIF, BMP, TIFF, HEIC, AVIF, or SVG.',
       { cause }
     )
   }

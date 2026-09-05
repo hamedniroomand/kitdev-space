@@ -42,10 +42,29 @@ describe('image pipeline', () => {
     expect(out.bytes.byteLength).toBeGreaterThan(0)
   })
 
-  it('rejects svg with a clear error', async () => {
-    const svg = new TextEncoder().encode(
-      '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><rect width="10" height="10"/></svg>'
+  const svg = new TextEncoder().encode(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="8"><rect width="16" height="8" fill="#abc"/></svg>'
+  )
+
+  it('converts svg to webp', async () => {
+    const out = await convertImage(svg, { format: 'webp', quality: 80 })
+    expect(out.bytes.byteLength).toBeGreaterThan(0)
+    expect(out.mime).toBe('image/webp')
+    expect(out.width).toBeGreaterThan(0)
+    expect(out.height).toBeGreaterThan(0)
+  })
+
+  it('reads metadata from svg', async () => {
+    const meta = await getImageMetadata(svg)
+    expect(meta.width).toBeGreaterThan(0)
+    expect(meta.height).toBeGreaterThan(0)
+    expect(String(meta.format).toLowerCase()).toContain('png')
+  })
+
+  it('rejects svg with remote resource', async () => {
+    const bad = new TextEncoder().encode(
+      '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><image href="https://example.com/a.png" width="10" height="10"/></svg>'
     )
-    expect(convertImage(svg, { format: 'png' })).rejects.toThrow(/SVG is not supported/)
+    expect(convertImage(bad, { format: 'png' })).rejects.toThrow(/external resource/i)
   })
 })
