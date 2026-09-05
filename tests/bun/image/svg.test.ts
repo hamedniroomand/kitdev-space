@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'bun:test'
+import { MAX_PIXELS } from '../../../server/utils/image/limits'
 import {
   assertNoExternalSvgResources,
-  isSvgBytes
+  isSvgBytes,
+  rasterizeSvg
 } from '../../../server/utils/image/svg'
 
 const enc = new TextEncoder()
@@ -46,5 +48,43 @@ describe('assertNoExternalSvgResources', () => {
       '<svg xmlns="http://www.w3.org/2000/svg"><rect style="fill:url(https://example.com/p.png)"/></svg>'
     )
     expect(() => assertNoExternalSvgResources(bytes)).toThrow(/external resource/i)
+  })
+})
+
+describe('rasterizeSvg', () => {
+  it('returns png bytes for a simple svg', () => {
+    const bytes = enc.encode(
+      '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="10"><rect width="20" height="10" fill="#0f0"/></svg>'
+    )
+    const png = rasterizeSvg(bytes)
+    expect(png[0]).toBe(0x89)
+    expect(png[1]).toBe(0x50)
+    expect(png[2]).toBe(0x4e)
+    expect(png[3]).toBe(0x47)
+  })
+
+  it('rejects remote resources before render', () => {
+    const bytes = enc.encode(
+      '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><image href="https://example.com/a.png" width="10" height="10"/></svg>'
+    )
+    expect(() => rasterizeSvg(bytes)).toThrow(/external resource/i)
+  })
+
+  it('scales down when intrinsic pixels exceed MAX_PIXELS', () => {
+    const side = 10000
+    expect(side * side).toBeGreaterThan(MAX_PIXELS)
+    const bytes = enc.encode(
+      `<svg xmlns="http://www.w3.org/2000/svg" width="${side}" height="${side}"><rect width="100%" height="100%" fill="#00f"/></svg>`
+    )
+    const png = rasterizeSvg(bytes)
+    expect(png.byteLength).toBeGreaterThan(0)
+  })
+
+  it('respects target width and height box', () => {
+    const bytes = enc.encode(
+      '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="200"><rect width="400" height="200" fill="#f00"/></svg>'
+    )
+    const png = rasterizeSvg(bytes, { width: 100, height: 100 })
+    expect(png.byteLength).toBeGreaterThan(0)
   })
 })
