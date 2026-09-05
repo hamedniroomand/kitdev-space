@@ -8,7 +8,8 @@
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "lint": "eslint .",
-    "typecheck": "nuxt typecheck"
+    "typecheck": "nuxt typecheck",
+    "prepare": "husky"
   },
   "dependencies": {
     "@iconify-json/lucide": "^1.2.129",
@@ -26,10 +27,17 @@
     "vue": "^3.5.42"
   },
   "devDependencies": {
+    "@commitlint/cli": "^21.2.2",
+    "@commitlint/config-conventional": "^21.2.2",
     "@nuxt/eslint": "^1.17.0",
     "eslint": "^10.10.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.5.0",
     "typescript": "^6.0.3",
     "vue-tsc": "^3.3.11"
+  },
+  "lint-staged": {
+    "*.{ts,mts,cts,js,mjs,cjs,vue}": "bun lint --fix"
   },
   "packageManager": "bun@1.4.2"
 }
