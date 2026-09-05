@@ -14,6 +14,12 @@ describe('assertSafeUrl', () => {
     })
   })
 
+  it('rejects 0.0.0.0/8', async () => {
+    await expect(assertSafeUrl('http://0.0.0.0/')).rejects.toMatchObject({
+      statusCode: 400
+    })
+  })
+
   it('rejects 10.0.0.0/8', async () => {
     await expect(assertSafeUrl('http://10.1.2.3/')).rejects.toMatchObject({
       statusCode: 400
@@ -50,6 +56,12 @@ describe('assertSafeUrl', () => {
     })
   })
 
+  it('rejects the IPv6 unspecified address', async () => {
+    await expect(assertSafeUrl('http://[::]/')).rejects.toMatchObject({
+      statusCode: 400
+    })
+  })
+
   it('rejects IPv6 unique local addresses', async () => {
     await expect(assertSafeUrl('http://[fd00::1]/')).rejects.toMatchObject({
       statusCode: 400
@@ -78,6 +90,20 @@ describe('assertSafeUrl', () => {
 
     try {
       await expect(assertSafeUrl('http://[::ffff:10.0.0.1]/')).rejects.toMatchObject({
+        statusCode: 400
+      })
+    } finally {
+      lookup.mockRestore()
+    }
+  })
+
+  it('rejects IPv4-mapped unspecified addresses', async () => {
+    const lookup = spyOn(Bun.dns, 'lookup').mockResolvedValue([
+      { address: '8.8.8.8', family: 4, ttl: 0 }
+    ])
+
+    try {
+      await expect(assertSafeUrl('http://[::ffff:0:0]/')).rejects.toMatchObject({
         statusCode: 400
       })
     } finally {
