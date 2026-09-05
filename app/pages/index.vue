@@ -4,7 +4,7 @@ import type { ToolCategory } from '~/types/tools'
 const { tools, categoryLabels, getToolsByCategory } = useTools()
 const openSearch = inject<() => void>('openSearch', () => {})
 
-const categories: ToolCategory[] = ['data', 'network', 'crypto', 'color']
+const categories: ToolCategory[] = ['data', 'network', 'crypto', 'color', 'image', 'dev']
 
 useSeoMeta({
   title: 'KitDev Space',

@@ -4,7 +4,9 @@ export const categoryLabels: Record<ToolCategory, string> = {
   data: 'Data Lab',
   crypto: 'Crypto Lab',
   color: 'Color Lab',
-  network: 'Network Lab'
+  network: 'Network Lab',
+  image: 'Image Lab',
+  dev: 'Dev Lab'
 }
 
 export const tools: Tool[] = [
@@ -280,6 +282,58 @@ export const tools: Tool[] = [
     clientOnly: false,
     serverRequired: true,
     status: 'available'
+  },
+  {
+    id: 'image-converter',
+    slug: 'converter',
+    name: 'Image Converter',
+    description: 'Convert images to WebP, AVIF, JPEG, or PNG.',
+    category: 'image',
+    icon: 'i-lucide-image',
+    keywords: ['image', 'webp', 'avif', 'convert', 'compress'],
+    route: '/image/converter',
+    clientOnly: false,
+    serverRequired: true,
+    status: 'coming-soon'
+  },
+  {
+    id: 'image-resizer',
+    slug: 'resizer',
+    name: 'Smart Resizer',
+    description: 'Resize images with social presets.',
+    category: 'image',
+    icon: 'i-lucide-scaling',
+    keywords: ['image', 'resize', 'thumbnail', 'opengraph', 'favicon'],
+    route: '/image/resizer',
+    clientOnly: false,
+    serverRequired: true,
+    status: 'coming-soon'
+  },
+  {
+    id: 'image-metadata',
+    slug: 'metadata',
+    name: 'Metadata Inspector',
+    description: 'Inspect image size and strip metadata.',
+    category: 'image',
+    icon: 'i-lucide-info',
+    keywords: ['image', 'exif', 'metadata', 'privacy'],
+    route: '/image/metadata',
+    clientOnly: false,
+    serverRequired: true,
+    status: 'coming-soon'
+  },
+  {
+    id: 'image-transform',
+    slug: 'transform',
+    name: 'Orientation & Grayscale',
+    description: 'Rotate, mirror, and convert images to grayscale.',
+    category: 'image',
+    icon: 'i-lucide-flip-horizontal-2',
+    keywords: ['image', 'rotate', 'flip', 'grayscale', 'orientation'],
+    route: '/image/transform',
+    clientOnly: false,
+    serverRequired: true,
+    status: 'coming-soon'
   }
 ]
 

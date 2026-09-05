@@ -1,4 +1,4 @@
-export type ToolCategory = 'data' | 'crypto' | 'color' | 'network'
+export type ToolCategory = 'data' | 'crypto' | 'color' | 'network' | 'image' | 'dev'
 
 export type ToolStatus = 'available' | 'coming-soon'
 

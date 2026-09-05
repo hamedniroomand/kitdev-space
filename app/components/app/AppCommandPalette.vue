@@ -5,7 +5,7 @@ import { categoryLabels, tools } from '~~/shared/utils/tools'
 
 const open = defineModel<boolean>('open', { default: false })
 
-const categories: ToolCategory[] = ['data', 'crypto', 'color', 'network']
+const categories: ToolCategory[] = ['data', 'crypto', 'color', 'network', 'image', 'dev']
 
 const groups = computed<CommandPaletteGroup[]>(() => {
   return categories.map((category) => {
