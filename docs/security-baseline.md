@@ -18,6 +18,8 @@ This checklist records security controls for KitDev Space.
 12. Reject image and archive bodies larger than 25 MB.
 13. Password Benchmarker must cap hash cost params and use a stricter rate limit.
 14. Do not log password request bodies.
+15. OpenGraph preview must use the same SSRF controls as other network fetch tools.
+16. Cap OpenGraph HTML responses (1 MB).
 
 ## Current controls
 
@@ -32,6 +34,9 @@ This checklist records security controls for KitDev Space.
 | Image APIs | `server/api/image/*.post.ts` |
 | Password cost ceilings | `server/utils/crypto/password.ts` |
 | Password API (5 req / 60s) | `server/api/crypto/password-benchmark.post.ts` |
+| HTML fetch (SSRF + size cap) | `server/utils/network/fetch-html.ts` |
+| OpenGraph extractor | `server/utils/network/og.ts` |
+| OpenGraph API | `server/api/network/og-preview.post.ts` |
 
 ## Residual risk
 

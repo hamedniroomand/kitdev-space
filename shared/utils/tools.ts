@@ -297,6 +297,19 @@ export const tools: Tool[] = [
     status: 'available'
   },
   {
+    id: 'og-preview',
+    slug: 'og-preview',
+    name: 'OpenGraph Previewer',
+    description: 'Preview how a page may look when shared on social platforms.',
+    category: 'network',
+    icon: 'i-lucide-share-2',
+    keywords: ['opengraph', 'og', 'twitter', 'meta', 'social', 'preview'],
+    route: '/network/og-preview',
+    clientOnly: false,
+    serverRequired: true,
+    status: 'available'
+  },
+  {
     id: 'image-converter',
     slug: 'converter',
     name: 'Image Converter',
