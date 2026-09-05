@@ -59,9 +59,9 @@ function closeMobile() {
 </script>
 
 <template>
-  <div class="min-h-dvh flex flex-col bg-default text-default">
+  <div class="h-dvh flex flex-col overflow-hidden bg-default text-default">
     <!-- Top Bar -->
-    <header class="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-default bg-default/90 px-4 backdrop-blur">
+    <header class="shrink-0 z-30 flex h-14 items-center justify-between border-b border-default bg-default/90 px-4 backdrop-blur">
       <div class="flex items-center gap-3">
         <UButton
           color="neutral"
@@ -109,10 +109,10 @@ function closeMobile() {
     </header>
 
     <!-- App Body: Sidebar + Content -->
-    <div class="flex flex-1 overflow-hidden">
+    <div class="flex flex-1 min-h-0 overflow-hidden">
       <!-- Desktop Sidebar -->
-      <aside class="hidden w-72 shrink-0 border-r border-default bg-elevated/20 lg:flex lg:flex-col">
-        <div class="p-3 border-b border-default">
+      <aside class="hidden w-72 shrink-0 border-r border-default bg-elevated/20 lg:flex lg:flex-col h-full overflow-hidden">
+        <div class="shrink-0 p-3 border-b border-default">
           <UInput
             v-model="searchQuery"
             icon="i-lucide-search"
@@ -215,7 +215,7 @@ function closeMobile() {
           </div>
         </nav>
 
-        <div class="p-3 border-t border-default flex items-center justify-between text-xs text-muted">
+        <div class="shrink-0 p-3 border-t border-default flex items-center justify-between text-xs text-muted">
           <NuxtLink
             to="/"
             class="flex items-center gap-1 hover:text-highlighted transition-colors"
@@ -313,7 +313,7 @@ function closeMobile() {
       </USlideover>
 
       <!-- Main Hub Content Area -->
-      <main class="flex-1 overflow-y-auto">
+      <main class="flex-1 min-h-0 overflow-y-auto">
         <NuxtPage />
       </main>
     </div>

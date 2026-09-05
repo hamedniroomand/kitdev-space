@@ -1,3 +1,4 @@
+import { legacyRedirects } from './shared/utils/redirects'
 import { categoryLabels, tools } from './shared/utils/tools'
 
 function nitroPreset(): string {
@@ -6,11 +7,18 @@ function nitroPreset(): string {
 
 const googleAnalyticsId = process.env.NUXT_PUBLIC_GOOGLE_ANALYTICS_ID || ''
 
+const legacyRouteRules: Record<string, { redirect: { to: string, statusCode: number } }> = {}
+for (const [oldPath, newPath] of Object.entries(legacyRedirects)) {
+  legacyRouteRules[oldPath] = { redirect: { to: newPath, statusCode: 301 } }
+  legacyRouteRules[`${oldPath}/`] = { redirect: { to: newPath, statusCode: 301 } }
+}
+
 const prerenderRoutes = [
   '/',
   '/about',
   '/hub',
   ...tools.map(tool => tool.route),
+  ...Object.keys(legacyRedirects),
   '/sitemap.xml',
   '/robots.txt',
   '/llms.txt'
@@ -68,18 +76,7 @@ export default defineNuxtConfig({
   routeRules: {
     '/**': { prerender: true },
     '/api/**': { prerender: false, robots: false },
-    '/data': { redirect: { to: '/hub/data/json-formatter', statusCode: 301 } },
-    '/network': { redirect: { to: '/hub/network/dns-lookup', statusCode: 301 } },
-    '/crypto': { redirect: { to: '/hub/crypto/hash-generator', statusCode: 301 } },
-    '/color': { redirect: { to: '/hub/color/converter', statusCode: 301 } },
-    '/image': { redirect: { to: '/hub/image/converter', statusCode: 301 } },
-    '/dev': { redirect: { to: '/hub/dev/cron', statusCode: 301 } },
-    '/network/dns': { redirect: { to: '/hub/network/dns-lookup', statusCode: 301 } },
-    '/network/headers': { redirect: { to: '/hub/network/http-headers', statusCode: 301 } },
-    '/network/url': { redirect: { to: '/hub/network/url-inspector', statusCode: 301 } },
-    '/crypto/hash': { redirect: { to: '/hub/crypto/hash-generator', statusCode: 301 } },
-    '/color/contrast': { redirect: { to: '/hub/color/contrast-checker', statusCode: 301 } },
-    '/color/palette': { redirect: { to: '/hub/color/palette-generator', statusCode: 301 } },
+    ...legacyRouteRules,
     '/data/**': { redirect: { to: '/hub/data/**', statusCode: 301 } },
     '/network/**': { redirect: { to: '/hub/network/**', statusCode: 301 } },
     '/crypto/**': { redirect: { to: '/hub/crypto/**', statusCode: 301 } },
@@ -147,6 +144,16 @@ export default defineNuxtConfig({
     : {},
 
   sitemap: {
-    exclude: ['/api/**']
+    exclude: [
+      '/api/**',
+      ...Object.keys(legacyRedirects),
+      ...Object.keys(legacyRedirects).map(path => `${path}/`),
+      '/data/**',
+      '/network/**',
+      '/crypto/**',
+      '/color/**',
+      '/image/**',
+      '/dev/**'
+    ]
   }
 })

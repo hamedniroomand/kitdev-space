@@ -1,0 +1,41 @@
+import { describe, expect, it } from 'vitest'
+import { legacyRedirects, resolveLegacyRedirect } from '../../shared/utils/redirects'
+
+describe('legacy redirects', () => {
+  it('contains category roots and renamed tool slugs', () => {
+    expect(legacyRedirects['/data']).toBe('/hub/data/json-formatter')
+    expect(legacyRedirects['/network']).toBe('/hub/network/dns-lookup')
+    expect(legacyRedirects['/network/dns']).toBe('/hub/network/dns-lookup')
+    expect(legacyRedirects['/network/headers']).toBe('/hub/network/http-headers')
+    expect(legacyRedirects['/network/url']).toBe('/hub/network/url-inspector')
+    expect(legacyRedirects['/crypto/hash']).toBe('/hub/crypto/hash-generator')
+    expect(legacyRedirects['/color/contrast']).toBe('/hub/color/contrast-checker')
+    expect(legacyRedirects['/color/palette']).toBe('/hub/color/palette-generator')
+  })
+
+  it('resolves exact legacy paths', () => {
+    expect(resolveLegacyRedirect('/data/json-formatter')).toBe('/hub/data/json-formatter')
+    expect(resolveLegacyRedirect('/crypto/uuid')).toBe('/hub/crypto/uuid')
+    expect(resolveLegacyRedirect('/image/converter')).toBe('/hub/image/converter')
+    expect(resolveLegacyRedirect('/dev/cron')).toBe('/hub/dev/cron')
+  })
+
+  it('handles paths with trailing slashes', () => {
+    expect(resolveLegacyRedirect('/network/dns/')).toBe('/hub/network/dns-lookup')
+    expect(resolveLegacyRedirect('/data/')).toBe('/hub/data/json-formatter')
+    expect(resolveLegacyRedirect('/color/contrast/')).toBe('/hub/color/contrast-checker')
+  })
+
+  it('uses prefix fallback for unmapped legacy paths', () => {
+    expect(resolveLegacyRedirect('/data/custom-tool')).toBe('/hub/data/custom-tool')
+    expect(resolveLegacyRedirect('/image/custom-tool')).toBe('/hub/image/custom-tool')
+  })
+
+  it('returns null for non-legacy routes', () => {
+    expect(resolveLegacyRedirect('/')).toBeNull()
+    expect(resolveLegacyRedirect('/about')).toBeNull()
+    expect(resolveLegacyRedirect('/hub')).toBeNull()
+    expect(resolveLegacyRedirect('/hub/data/json-formatter')).toBeNull()
+    expect(resolveLegacyRedirect('/unknown')).toBeNull()
+  })
+})
