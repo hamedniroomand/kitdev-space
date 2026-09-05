@@ -1,0 +1,13 @@
+import { expect, test } from '@playwright/test'
+
+test('formats JSON on the JSON Formatter page', async ({ page }) => {
+  await page.goto('/data/json-formatter')
+
+  const input = page.getByRole('textbox', { name: 'Input' })
+  await expect(input).toBeVisible()
+  await input.fill('{"name":"DevKit","ready":true}')
+  await page.getByRole('button', { name: 'Format' }).click()
+
+  await expect(page.getByText('Valid JSON')).toBeVisible({ timeout: 10_000 })
+  await expect(page.getByRole('textbox', { name: 'Output' })).toHaveValue(/"name": "DevKit"/)
+})

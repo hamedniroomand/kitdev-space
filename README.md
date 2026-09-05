@@ -14,6 +14,14 @@ bun install
 bun run dev
 ```
 
+## Tests
+
+```bash
+bun run test
+bunx playwright install chromium
+bun run test:e2e
+```
+
 ## Production
 
 ```bash
