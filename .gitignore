@@ -6,6 +6,7 @@
 .cache
 dist
 docs/superpowers
+.superpowers
 
 # Node dependencies
 node_modules
