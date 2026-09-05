@@ -102,6 +102,19 @@ export const tools: Tool[] = [
     status: 'available'
   },
   {
+    id: 'text-diff',
+    slug: 'text-diff',
+    name: 'Text Diff',
+    description: 'Compare two texts and show line changes.',
+    category: 'data',
+    icon: 'i-lucide-git-compare',
+    keywords: ['diff', 'compare', 'text', 'patch', 'unified'],
+    route: '/data/text-diff',
+    clientOnly: true,
+    serverRequired: false,
+    status: 'available'
+  },
+  {
     id: 'json-json5',
     slug: 'json-json5',
     name: 'JSON ↔ JSON5',
