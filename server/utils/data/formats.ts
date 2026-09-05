@@ -42,7 +42,7 @@ export function serializeWithBun(value: unknown, format: BunDataFormat): string 
       case 'json5':
         return requireText(Bun.JSON5.stringify(value, null, 2), format)
       case 'yaml':
-        return requireText(Bun.YAML.stringify(value), format)
+        return requireText(Bun.YAML.stringify(value, null, 2), format)
       case 'toml':
         return requireText(Bun.TOML.stringify(value), format)
       case 'xml': {
