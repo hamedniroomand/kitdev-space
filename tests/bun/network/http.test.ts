@@ -44,6 +44,22 @@ describe('fetchHeaders', () => {
     expect(fetchSpy).not.toHaveBeenCalled()
   })
 
+  it('preserves multiple Set-Cookie headers', async () => {
+    const headers = new Headers()
+    headers.append('Set-Cookie', 'session=abc; Path=/')
+    headers.append('Set-Cookie', 'theme=dark; Path=/')
+
+    fetchSpy.mockResolvedValue(new Response(null, {
+      status: 200,
+      statusText: 'OK',
+      headers
+    }))
+
+    const result = await fetchHeaders('https://example.com/')
+
+    expect(result.headers['set-cookie']).toBe('session=abc; Path=/\ntheme=dark; Path=/')
+  })
+
   it('returns status, headers, and the final URL from HEAD', async () => {
     fetchSpy.mockResolvedValue(mockResponse({
       status: 200,

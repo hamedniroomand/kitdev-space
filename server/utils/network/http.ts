@@ -11,9 +11,26 @@ const TIMEOUT_MS = 8000
 
 function headersToRecord(headers: Headers): Record<string, string> {
   const record: Record<string, string> = {}
+
+  if (typeof headers.getSetCookie === 'function') {
+    const cookies = headers.getSetCookie()
+    if (cookies.length > 0) {
+      record['set-cookie'] = cookies.join('\n')
+    }
+  }
+
   headers.forEach((value, key) => {
-    record[key] = value
+    if (key.toLowerCase() === 'set-cookie') {
+      if (!record['set-cookie']) {
+        record['set-cookie'] = value
+      }
+      return
+    }
+
+    const existing = record[key]
+    record[key] = existing === undefined ? value : `${existing}\n${value}`
   })
+
   return record
 }
 
