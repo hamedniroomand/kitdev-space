@@ -45,13 +45,9 @@ function handleClear() {
 
 defineShortcuts({
   meta_enter: {
+    usingInput: true,
     handler: () => {
       execute()
-    }
-  },
-  meta_l: {
-    handler: () => {
-      handleClear()
     }
   }
 })
