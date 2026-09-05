@@ -240,7 +240,7 @@ export const tools: Tool[] = [
     route: '/network/dns',
     clientOnly: false,
     serverRequired: true,
-    status: 'coming-soon'
+    status: 'available'
   },
   {
     id: 'headers',
