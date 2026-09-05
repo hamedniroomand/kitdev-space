@@ -104,6 +104,33 @@ export default defineNuxtConfig({
     }
   },
 
+  fonts: {
+    defaults: {
+      weights: [400, 500, 600],
+      styles: ['normal'],
+      subsets: ['latin'],
+      preload: true
+    },
+    families: [
+      {
+        name: 'Inter',
+        provider: 'google',
+        weights: [400, 500, 600],
+        styles: ['normal'],
+        subsets: ['latin'],
+        preload: true
+      },
+      {
+        name: 'JetBrains Mono',
+        provider: 'google',
+        weights: [400, 500, 600],
+        styles: ['normal'],
+        subsets: ['latin'],
+        preload: false
+      }
+    ]
+  },
+
   llms: {
     domain: 'https://kitdev.space',
     title: 'KitDev Space',
@@ -129,9 +156,7 @@ export default defineNuxtConfig({
         registry: {
           googleAnalytics: {
             id: googleAnalyticsId,
-            trigger: 'onNuxtReady',
-            // Deny ads by default. Analytics on for tool usage metrics.
-            // Add a consent UI later for EEA if you need stricter defaults.
+            trigger: { idleTimeout: 3500 },
             defaultConsent: {
               ad_storage: 'denied',
               ad_user_data: 'denied',
