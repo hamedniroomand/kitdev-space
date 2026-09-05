@@ -1,5 +1,5 @@
 {
-  "name": "kitdev",
+  "name": "devkit-space",
   "private": true,
   "type": "module",
   "scripts": {
@@ -9,6 +9,8 @@
     "postinstall": "nuxt prepare",
     "lint": "eslint .",
     "typecheck": "nuxt typecheck",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "prepare": "husky"
   },
   "dependencies": {
