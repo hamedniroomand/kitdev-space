@@ -373,6 +373,19 @@ export const tools: Tool[] = [
     clientOnly: false,
     serverRequired: true,
     status: 'available'
+  },
+  {
+    id: 'tar-explorer',
+    slug: 'tar',
+    name: 'Tar Explorer',
+    description: 'Inspect tar and tar.gz archives in memory.',
+    category: 'dev',
+    icon: 'i-lucide-folder-archive',
+    keywords: ['tar', 'gzip', 'archive', 'tarball'],
+    route: '/dev/tar',
+    clientOnly: false,
+    serverRequired: true,
+    status: 'available'
   }
 ]
 

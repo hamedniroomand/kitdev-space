@@ -2,6 +2,8 @@
 const props = defineProps<{
   modelValue: File | null
   accept?: string
+  hint?: string
+  prompt?: string
 }>()
 
 const emit = defineEmits<{
@@ -55,10 +57,10 @@ defineExpose({ clear })
         class="size-6 text-muted"
       />
       <p class="text-sm text-highlighted">
-        Drop an image here, or click to choose a file.
+        {{ prompt ?? 'Drop an image here, or click to choose a file.' }}
       </p>
       <p class="text-xs text-muted">
-        Max size 25 MB. JPEG, PNG, WebP, GIF, BMP, TIFF, HEIC, or AVIF. Not SVG.
+        {{ hint ?? 'Max size 25 MB. JPEG, PNG, WebP, GIF, BMP, TIFF, HEIC, or AVIF. Not SVG.' }}
       </p>
       <input
         ref="inputRef"
