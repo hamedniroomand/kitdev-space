@@ -46,4 +46,10 @@ describe('tool registry', () => {
     expect(categoryLabels.image).toBe('Image Lab')
     expect(getToolsByCategory('image').length).toBe(4)
   })
+
+  it('lists tools for dev category', () => {
+    expect(categoryLabels.dev).toBe('Dev Lab')
+    expect(getToolsByCategory('dev').some(t => t.id === 'semver')).toBe(true)
+    expect(getToolsByCategory('dev').some(t => t.id === 'cron')).toBe(true)
+  })
 })

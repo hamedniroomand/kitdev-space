@@ -334,6 +334,32 @@ export const tools: Tool[] = [
     clientOnly: false,
     serverRequired: true,
     status: 'available'
+  },
+  {
+    id: 'semver',
+    slug: 'semver',
+    name: 'Semver Calculator',
+    description: 'Test ranges, sort versions, and bump releases.',
+    category: 'dev',
+    icon: 'i-lucide-git-branch',
+    keywords: ['semver', 'version', 'npm', 'range', 'bump'],
+    route: '/dev/semver',
+    clientOnly: false,
+    serverRequired: true,
+    status: 'available'
+  },
+  {
+    id: 'cron',
+    slug: 'cron',
+    name: 'Cron Visualizer',
+    description: 'Validate cron expressions and preview next runs.',
+    category: 'dev',
+    icon: 'i-lucide-calendar-clock',
+    keywords: ['cron', 'schedule', 'crontab', 'timezone'],
+    route: '/dev/cron',
+    clientOnly: false,
+    serverRequired: true,
+    status: 'available'
   }
 ]
 
