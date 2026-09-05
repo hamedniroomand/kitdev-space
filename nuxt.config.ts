@@ -51,10 +51,6 @@ export default defineNuxtConfig({
     }
   },
 
-  robots: {
-    disallow: ['/api']
-  },
-
   sitemap: {
     exclude: ['/api/**']
   }
