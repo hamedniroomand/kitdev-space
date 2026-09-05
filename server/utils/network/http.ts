@@ -127,11 +127,20 @@ export async function walkRedirects(input: string): Promise<RedirectHop[]> {
         break
       }
 
-      current = await assertSafeUrl(new URL(location, current).href)
+      try {
+        current = await assertSafeUrl(new URL(location, current).href)
+      } catch (cause) {
+        // Keep hops. Do not fetch the blocked Location.
+        if (isDeniedUrl(cause)) {
+          return hops
+        }
+        throw cause
+      }
     }
   } catch (cause) {
-    if (isDeniedUrl(cause)) {
-      throw cause
+    // Keep hops already recorded when a later hop times out or fails.
+    if (hops.length > 0) {
+      return hops
     }
 
     if (isTimeout(cause)) {

@@ -263,9 +263,15 @@ describe('walkRedirects', () => {
       url: 'https://example.com/'
     }))
 
-    await expect(walkRedirects('https://example.com/')).rejects.toMatchObject({
-      statusCode: 400
-    })
+    const result = await walkRedirects('https://example.com/')
+
+    expect(result).toEqual([
+      {
+        url: 'https://example.com/',
+        status: 302,
+        location: 'http://127.0.0.1/secret'
+      }
+    ])
     expect(fetchSpy).toHaveBeenCalledTimes(1)
     expect((fetchSpy.mock.calls[0] as [URL, RequestInit])[0].href).toBe('https://example.com/')
   })
