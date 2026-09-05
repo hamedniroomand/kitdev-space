@@ -15,7 +15,10 @@ type BunDnsResolvers = typeof Bun.dns & {
   resolveCaa: (hostname: string) => Promise<object[]>
 }
 
-const bunDns = Bun.dns as BunDnsResolvers
+// Nitro prerender loads this module in Node. Read Bun.dns only when a lookup runs.
+function bunDns(): BunDnsResolvers {
+  return Bun.dns as BunDnsResolvers
+}
 
 export function isDnsRecordType(value: string): value is DnsRecordType {
   return DNS_RECORD_TYPES.includes(value as DnsRecordType)
@@ -71,21 +74,23 @@ function isNoData(cause: unknown): boolean {
 }
 
 async function resolveRecords(domain: string, type: DnsRecordType): Promise<string[] | object[]> {
+  const dns = bunDns()
+
   switch (type) {
     case 'A':
-      return addresses(await bunDns.resolve(domain, 'A'))
+      return addresses(await dns.resolve(domain, 'A'))
     case 'AAAA':
-      return addresses(await bunDns.resolve(domain, 'AAAA'))
+      return addresses(await dns.resolve(domain, 'AAAA'))
     case 'CNAME':
-      return bunDns.resolveCname(domain)
+      return dns.resolveCname(domain)
     case 'MX':
-      return bunDns.resolveMx(domain)
+      return dns.resolveMx(domain)
     case 'NS':
-      return bunDns.resolveNs(domain)
+      return dns.resolveNs(domain)
     case 'TXT':
-      return (await bunDns.resolveTxt(domain)).map(parts => parts.join(''))
+      return (await dns.resolveTxt(domain)).map(parts => parts.join(''))
     case 'CAA':
-      return bunDns.resolveCaa(domain)
+      return dns.resolveCaa(domain)
   }
 }
 
