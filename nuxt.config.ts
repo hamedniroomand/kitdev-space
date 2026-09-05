@@ -1,4 +1,4 @@
-import { tools } from './shared/utils/tools'
+import { categoryLabels, tools } from './shared/utils/tools'
 
 function nitroPreset(): string {
   return process.env.NITRO_PRESET ?? (process.env.VERCEL ? 'vercel' : 'bun')
@@ -14,8 +14,21 @@ const prerenderRoutes = [
   ...categoryRoutes,
   ...tools.map(tool => tool.route),
   '/sitemap.xml',
-  '/robots.txt'
+  '/robots.txt',
+  '/llms.txt'
 ]
+
+const llmsSections = Object.entries(categoryLabels).map(([category, label]) => ({
+  title: label,
+  description: `Tools for ${category} operations.`,
+  links: tools
+    .filter(tool => tool.category === category)
+    .map(tool => ({
+      title: tool.name,
+      description: tool.description,
+      href: tool.route
+    }))
+}))
 
 export default defineNuxtConfig({
   modules: [
@@ -27,7 +40,8 @@ export default defineNuxtConfig({
     '@nuxt/scripts',
     '@nuxtjs/seo',
     '@vueuse/nuxt',
-    '@vercel/speed-insights'
+    '@vercel/speed-insights',
+    'nuxt-llms'
   ],
 
   devtools: {
@@ -75,6 +89,17 @@ export default defineNuxtConfig({
         braceStyle: '1tbs'
       }
     }
+  },
+
+  llms: {
+    domain: 'https://kitdev.space',
+    title: 'KitDev Space',
+    description: 'Developer tools for people who build things.',
+    notes: [
+      'KitDev Space provides tools for developers.',
+      'Tools run in the browser or on the server without data persistence.'
+    ],
+    sections: llmsSections
   },
 
   ogImage: {
