@@ -264,9 +264,9 @@ export const tools: Tool[] = [
     icon: 'i-lucide-link',
     keywords: ['url', 'uri', 'parse', 'inspect'],
     route: '/network/url',
-    clientOnly: false,
-    serverRequired: true,
-    status: 'coming-soon'
+    clientOnly: true,
+    serverRequired: false,
+    status: 'available'
   },
   {
     id: 'redirect-checker',
