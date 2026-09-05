@@ -1,0 +1,29 @@
+{
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+  "editor.formatOnSaveMode": "file",
+  "oxc.typeAware": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "always",
+    "source.fixAll": "explicit",
+    "source.removeUnusedImports": "explicit"
+  },
+  "[vue]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+    "editor.formatOnSave": true
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+    "editor.formatOnSave": true
+  },
+  "files.trimTrailingWhitespace": true,
+  "js/ts.tsdk.path": "node_modules/typescript/lib",
+  "js/ts.tsserver.maxMemory": 8192,
+  "js/ts.preferences.importModuleSpecifier": "non-relative",
+  "eslint.useFlatConfig": true,
+  "eslint.validate": [
+    "javascript",
+    "typescript",
+    "vue"
+  ]
+}
