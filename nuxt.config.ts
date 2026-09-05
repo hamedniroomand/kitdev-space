@@ -21,7 +21,7 @@ export default defineNuxtConfig({
   css: ['~/assets/css/main.css'],
 
   site: {
-    url: 'https://devkit.space',
+    url: 'https://kitdev.space',
     name: 'DevKit Space',
     description: 'Developer tools for people who build things.',
     defaultLocale: 'en'
