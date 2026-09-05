@@ -386,6 +386,19 @@ export const tools: Tool[] = [
     clientOnly: false,
     serverRequired: true,
     status: 'available'
+  },
+  {
+    id: 'transpiler',
+    slug: 'transpiler',
+    name: 'TS / JSX Transpiler',
+    description: 'Transpile TypeScript and JSX to plain JavaScript with Bun.',
+    category: 'dev',
+    icon: 'i-lucide-code-xml',
+    keywords: ['typescript', 'tsx', 'jsx', 'transpile', 'bun'],
+    route: '/dev/transpiler',
+    clientOnly: false,
+    serverRequired: true,
+    status: 'available'
   }
 ]
 
