@@ -5,6 +5,7 @@
 .nitro
 .cache
 dist
+docs/superpowers
 
 # Node dependencies
 node_modules
