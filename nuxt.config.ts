@@ -17,6 +17,13 @@ export default defineNuxtConfig({
 
   css: ['~/assets/css/main.css'],
 
+  site: {
+    url: 'https://devkit.space',
+    name: 'DevKit Space',
+    description: 'Developer tools for people who build things.',
+    defaultLocale: 'en'
+  },
+
   routeRules: {
     '/': { prerender: true }
   },
