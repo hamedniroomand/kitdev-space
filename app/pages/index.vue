@@ -38,8 +38,10 @@ useSeoMeta({
             @click="openSearch"
           >
             <span class="text-muted">Search tools...</span>
-            <UKbd value="meta" />
-            <UKbd value="K" />
+            <span class="flex items-center gap-1">
+              <UKbd value="meta" />
+              <UKbd value="K" />
+            </span>
           </UButton>
         </div>
       </div>
