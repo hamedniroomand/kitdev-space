@@ -18,7 +18,7 @@ export const tools: Tool[] = [
     category: 'data',
     icon: 'i-lucide-braces',
     keywords: ['json', 'format', 'pretty', 'beautify'],
-    route: '/data/json-formatter',
+    route: '/hub/data/json-formatter',
     clientOnly: true,
     serverRequired: false,
     status: 'available'
@@ -31,7 +31,7 @@ export const tools: Tool[] = [
     category: 'data',
     icon: 'i-lucide-circle-check',
     keywords: ['json', 'validate', 'lint'],
-    route: '/data/json-validator',
+    route: '/hub/data/json-validator',
     clientOnly: true,
     serverRequired: false,
     status: 'available'
@@ -44,7 +44,7 @@ export const tools: Tool[] = [
     category: 'data',
     icon: 'i-lucide-minimize-2',
     keywords: ['json', 'minify', 'compress'],
-    route: '/data/json-minifier',
+    route: '/hub/data/json-minifier',
     clientOnly: true,
     serverRequired: false,
     status: 'available'
@@ -57,7 +57,7 @@ export const tools: Tool[] = [
     category: 'data',
     icon: 'i-lucide-file-type',
     keywords: ['json', 'typescript', 'interface', 'types'],
-    route: '/data/json-to-typescript',
+    route: '/hub/data/json-to-typescript',
     clientOnly: true,
     serverRequired: false,
     status: 'available'
@@ -70,7 +70,7 @@ export const tools: Tool[] = [
     category: 'data',
     icon: 'i-lucide-arrow-left-right',
     keywords: ['json', 'yaml', 'yml', 'convert'],
-    route: '/data/converters/json-yaml',
+    route: '/hub/data/converters/json-yaml',
     clientOnly: false,
     serverRequired: true,
     status: 'available'
@@ -83,7 +83,7 @@ export const tools: Tool[] = [
     category: 'data',
     icon: 'i-lucide-arrow-left-right',
     keywords: ['json', 'toml', 'convert'],
-    route: '/data/converters/json-toml',
+    route: '/hub/data/converters/json-toml',
     clientOnly: false,
     serverRequired: true,
     status: 'available'
@@ -96,7 +96,7 @@ export const tools: Tool[] = [
     category: 'data',
     icon: 'i-lucide-arrow-left-right',
     keywords: ['json', 'xml', 'convert'],
-    route: '/data/converters/json-xml',
+    route: '/hub/data/converters/json-xml',
     clientOnly: false,
     serverRequired: true,
     status: 'available'
@@ -109,7 +109,7 @@ export const tools: Tool[] = [
     category: 'data',
     icon: 'i-lucide-git-compare',
     keywords: ['diff', 'compare', 'text', 'patch', 'unified'],
-    route: '/data/text-diff',
+    route: '/hub/data/text-diff',
     clientOnly: true,
     serverRequired: false,
     status: 'available'
@@ -122,20 +122,20 @@ export const tools: Tool[] = [
     category: 'data',
     icon: 'i-lucide-arrow-left-right',
     keywords: ['json', 'json5', 'convert'],
-    route: '/data/converters/json-json5',
+    route: '/hub/data/converters/json-json5',
     clientOnly: false,
     serverRequired: true,
     status: 'available'
   },
   {
     id: 'hash',
-    slug: 'hash',
+    slug: 'hash-generator',
     name: 'Hash Generator',
     description: 'Generate hashes from text input.',
     category: 'crypto',
     icon: 'i-lucide-hash',
     keywords: ['hash', 'sha', 'md5', 'digest'],
-    route: '/crypto/hash',
+    route: '/hub/crypto/hash-generator',
     clientOnly: false,
     serverRequired: true,
     status: 'available'
@@ -148,7 +148,7 @@ export const tools: Tool[] = [
     category: 'crypto',
     icon: 'i-lucide-binary',
     keywords: ['base64', 'encode', 'decode'],
-    route: '/crypto/base64',
+    route: '/hub/crypto/base64',
     clientOnly: true,
     serverRequired: false,
     status: 'available'
@@ -161,7 +161,7 @@ export const tools: Tool[] = [
     category: 'crypto',
     icon: 'i-lucide-hexagon',
     keywords: ['hex', 'encode', 'decode'],
-    route: '/crypto/hex',
+    route: '/hub/crypto/hex',
     clientOnly: true,
     serverRequired: false,
     status: 'available'
@@ -174,7 +174,7 @@ export const tools: Tool[] = [
     category: 'crypto',
     icon: 'i-lucide-fingerprint',
     keywords: ['uuid', 'guid', 'random', 'id'],
-    route: '/crypto/uuid',
+    route: '/hub/crypto/uuid',
     clientOnly: true,
     serverRequired: false,
     status: 'available'
@@ -187,7 +187,7 @@ export const tools: Tool[] = [
     category: 'crypto',
     icon: 'i-lucide-shuffle',
     keywords: ['random', 'string', 'token', 'password'],
-    route: '/crypto/random-string',
+    route: '/hub/crypto/random-string',
     clientOnly: true,
     serverRequired: false,
     status: 'available'
@@ -200,7 +200,7 @@ export const tools: Tool[] = [
     category: 'crypto',
     icon: 'i-lucide-key-round',
     keywords: ['password', 'argon2', 'bcrypt', 'hash', 'benchmark'],
-    route: '/crypto/password-benchmark',
+    route: '/hub/crypto/password-benchmark',
     clientOnly: false,
     serverRequired: true,
     status: 'available'
@@ -213,33 +213,33 @@ export const tools: Tool[] = [
     category: 'color',
     icon: 'i-lucide-palette',
     keywords: ['color', 'hex', 'rgb', 'hsl', 'oklch'],
-    route: '/color/converter',
+    route: '/hub/color/converter',
     clientOnly: true,
     serverRequired: false,
     status: 'available'
   },
   {
     id: 'contrast',
-    slug: 'contrast',
+    slug: 'contrast-checker',
     name: 'Contrast Checker',
     description: 'Check contrast for accessibility.',
     category: 'color',
     icon: 'i-lucide-contrast',
     keywords: ['contrast', 'a11y', 'wcag', 'accessibility'],
-    route: '/color/contrast',
+    route: '/hub/color/contrast-checker',
     clientOnly: true,
     serverRequired: false,
     status: 'available'
   },
   {
     id: 'palette',
-    slug: 'palette',
+    slug: 'palette-generator',
     name: 'Palette Generator',
     description: 'Generate color palettes.',
     category: 'color',
     icon: 'i-lucide-swatch-book',
     keywords: ['palette', 'colors', 'scheme'],
-    route: '/color/palette',
+    route: '/hub/color/palette-generator',
     clientOnly: true,
     serverRequired: false,
     status: 'available'
@@ -252,46 +252,46 @@ export const tools: Tool[] = [
     category: 'color',
     icon: 'i-lucide-pipette',
     keywords: ['color', 'inspect', 'picker'],
-    route: '/color/inspector',
+    route: '/hub/color/inspector',
     clientOnly: true,
     serverRequired: false,
     status: 'available'
   },
   {
     id: 'dns',
-    slug: 'dns',
+    slug: 'dns-lookup',
     name: 'DNS Lookup',
     description: 'Look up DNS records for a domain.',
     category: 'network',
     icon: 'i-lucide-globe',
     keywords: ['dns', 'lookup', 'a', 'mx', 'txt'],
-    route: '/network/dns',
+    route: '/hub/network/dns-lookup',
     clientOnly: false,
     serverRequired: true,
     status: 'available'
   },
   {
     id: 'headers',
-    slug: 'headers',
+    slug: 'http-headers',
     name: 'HTTP Headers',
     description: 'Inspect HTTP response headers.',
     category: 'network',
     icon: 'i-lucide-list-tree',
     keywords: ['http', 'headers', 'response'],
-    route: '/network/headers',
+    route: '/hub/network/http-headers',
     clientOnly: false,
     serverRequired: true,
     status: 'available'
   },
   {
     id: 'url-inspector',
-    slug: 'url',
+    slug: 'url-inspector',
     name: 'URL Inspector',
     description: 'Inspect and parse URL parts.',
     category: 'network',
     icon: 'i-lucide-link',
     keywords: ['url', 'uri', 'parse', 'inspect'],
-    route: '/network/url',
+    route: '/hub/network/url-inspector',
     clientOnly: true,
     serverRequired: false,
     status: 'available'
@@ -304,7 +304,7 @@ export const tools: Tool[] = [
     category: 'network',
     icon: 'i-lucide-route',
     keywords: ['redirect', 'http', 'location'],
-    route: '/network/redirect',
+    route: '/hub/network/redirect',
     clientOnly: false,
     serverRequired: true,
     status: 'available'
@@ -317,7 +317,7 @@ export const tools: Tool[] = [
     category: 'network',
     icon: 'i-lucide-share-2',
     keywords: ['opengraph', 'og', 'twitter', 'meta', 'social', 'preview'],
-    route: '/network/og-preview',
+    route: '/hub/network/og-preview',
     clientOnly: false,
     serverRequired: true,
     status: 'available'
@@ -330,7 +330,7 @@ export const tools: Tool[] = [
     category: 'image',
     icon: 'i-lucide-image',
     keywords: ['image', 'webp', 'avif', 'convert', 'compress'],
-    route: '/image/converter',
+    route: '/hub/image/converter',
     clientOnly: false,
     serverRequired: true,
     status: 'available'
@@ -343,7 +343,7 @@ export const tools: Tool[] = [
     category: 'image',
     icon: 'i-lucide-scaling',
     keywords: ['image', 'resize', 'thumbnail', 'opengraph', 'favicon'],
-    route: '/image/resizer',
+    route: '/hub/image/resizer',
     clientOnly: false,
     serverRequired: true,
     status: 'available'
@@ -356,7 +356,7 @@ export const tools: Tool[] = [
     category: 'image',
     icon: 'i-lucide-info',
     keywords: ['image', 'exif', 'metadata', 'privacy'],
-    route: '/image/metadata',
+    route: '/hub/image/metadata',
     clientOnly: false,
     serverRequired: true,
     status: 'available'
@@ -369,7 +369,7 @@ export const tools: Tool[] = [
     category: 'image',
     icon: 'i-lucide-flip-horizontal-2',
     keywords: ['image', 'rotate', 'flip', 'grayscale', 'orientation'],
-    route: '/image/transform',
+    route: '/hub/image/transform',
     clientOnly: false,
     serverRequired: true,
     status: 'available'
@@ -382,7 +382,7 @@ export const tools: Tool[] = [
     category: 'dev',
     icon: 'i-lucide-git-branch',
     keywords: ['semver', 'version', 'npm', 'range', 'bump'],
-    route: '/dev/semver',
+    route: '/hub/dev/semver',
     clientOnly: false,
     serverRequired: true,
     status: 'available'
@@ -395,7 +395,7 @@ export const tools: Tool[] = [
     category: 'dev',
     icon: 'i-lucide-calendar-clock',
     keywords: ['cron', 'schedule', 'crontab', 'timezone'],
-    route: '/dev/cron',
+    route: '/hub/dev/cron',
     clientOnly: false,
     serverRequired: true,
     status: 'available'
@@ -408,7 +408,7 @@ export const tools: Tool[] = [
     category: 'dev',
     icon: 'i-lucide-folder-archive',
     keywords: ['tar', 'gzip', 'archive', 'tarball'],
-    route: '/dev/tar',
+    route: '/hub/dev/tar',
     clientOnly: false,
     serverRequired: true,
     status: 'available'
@@ -421,7 +421,7 @@ export const tools: Tool[] = [
     category: 'dev',
     icon: 'i-lucide-code-xml',
     keywords: ['typescript', 'tsx', 'jsx', 'transpile', 'bun'],
-    route: '/dev/transpiler',
+    route: '/hub/dev/transpiler',
     clientOnly: false,
     serverRequired: true,
     status: 'available'

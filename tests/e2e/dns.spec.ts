@@ -4,7 +4,7 @@ import { expect, test } from '@playwright/test'
 test('looks up DNS A records for example.com', async ({ page }) => {
   test.skip(!!process.env.CI, 'CI may block outbound DNS')
 
-  await page.goto('/network/dns')
+  await page.goto('/hub/network/dns-lookup')
 
   await page.getByLabel('Domain').fill('example.com')
   await page.getByRole('button', { name: 'Lookup' }).click()

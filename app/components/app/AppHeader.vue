@@ -5,8 +5,8 @@ const openSearch = inject<() => void>('openSearch', () => {})
 
 const items = computed<NavigationMenuItem[]>(() => [
   {
-    label: 'Tools',
-    to: '/'
+    label: 'Hub',
+    to: '/hub'
   },
   {
     label: 'About',

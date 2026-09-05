@@ -9,5 +9,5 @@ test('serves llms.txt with site tools', async ({ request }) => {
   expect(text).toContain('# KitDev Space')
   expect(text).toContain('## Data Lab')
   expect(text).toContain('## Crypto Lab')
-  expect(text).toContain('/data/json-formatter')
+  expect(text).toContain('/hub/data/json-formatter')
 })

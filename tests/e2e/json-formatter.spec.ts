@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 
 test('formats JSON on the JSON Formatter page', async ({ page }) => {
-  await page.goto('/data/json-formatter')
+  await page.goto('/hub/data/json-formatter')
 
   const input = page.getByRole('textbox', { name: 'Input' })
   await expect(input).toBeVisible()

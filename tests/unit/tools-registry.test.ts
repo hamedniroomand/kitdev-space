@@ -18,7 +18,7 @@ describe('tool registry', () => {
 
   it('finds a tool by id', () => {
     const tool = getToolById('json-formatter')
-    expect(tool?.route).toBe('/data/json-formatter')
+    expect(tool?.route).toBe('/hub/data/json-formatter')
     expect(tool?.clientOnly).toBe(true)
   })
 

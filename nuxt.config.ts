@@ -6,12 +6,10 @@ function nitroPreset(): string {
 
 const googleAnalyticsId = process.env.NUXT_PUBLIC_GOOGLE_ANALYTICS_ID || ''
 
-const categoryRoutes = ['/data', '/crypto', '/color', '/network', '/image', '/dev'] as const
-
 const prerenderRoutes = [
   '/',
   '/about',
-  ...categoryRoutes,
+  '/hub',
   ...tools.map(tool => tool.route),
   '/sitemap.xml',
   '/robots.txt',
@@ -69,7 +67,25 @@ export default defineNuxtConfig({
 
   routeRules: {
     '/**': { prerender: true },
-    '/api/**': { prerender: false, robots: false }
+    '/api/**': { prerender: false, robots: false },
+    '/data': { redirect: { to: '/hub/data/json-formatter', statusCode: 301 } },
+    '/network': { redirect: { to: '/hub/network/dns-lookup', statusCode: 301 } },
+    '/crypto': { redirect: { to: '/hub/crypto/hash-generator', statusCode: 301 } },
+    '/color': { redirect: { to: '/hub/color/converter', statusCode: 301 } },
+    '/image': { redirect: { to: '/hub/image/converter', statusCode: 301 } },
+    '/dev': { redirect: { to: '/hub/dev/cron', statusCode: 301 } },
+    '/network/dns': { redirect: { to: '/hub/network/dns-lookup', statusCode: 301 } },
+    '/network/headers': { redirect: { to: '/hub/network/http-headers', statusCode: 301 } },
+    '/network/url': { redirect: { to: '/hub/network/url-inspector', statusCode: 301 } },
+    '/crypto/hash': { redirect: { to: '/hub/crypto/hash-generator', statusCode: 301 } },
+    '/color/contrast': { redirect: { to: '/hub/color/contrast-checker', statusCode: 301 } },
+    '/color/palette': { redirect: { to: '/hub/color/palette-generator', statusCode: 301 } },
+    '/data/**': { redirect: { to: '/hub/data/**', statusCode: 301 } },
+    '/network/**': { redirect: { to: '/hub/network/**', statusCode: 301 } },
+    '/crypto/**': { redirect: { to: '/hub/crypto/**', statusCode: 301 } },
+    '/color/**': { redirect: { to: '/hub/color/**', statusCode: 301 } },
+    '/image/**': { redirect: { to: '/hub/image/**', statusCode: 301 } },
+    '/dev/**': { redirect: { to: '/hub/dev/**', statusCode: 301 } }
   },
 
   compatibilityDate: '2026-06-30',
