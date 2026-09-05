@@ -13,6 +13,7 @@ This checklist records security controls for KitDev Space.
 7. Rate-limit network, image, and password APIs.
 8. Do not store tool input or output.
 9. Analytics events may include the tool id only. Do not include input or output.
+9a. Google Analytics must not receive tool input or output. Ads consent stays denied by default.
 10. Image and archive uploads must stay in memory. Do not write user files to disk.
 11. Pass user image bytes into `Bun.Image`. Do not pass user-controlled filesystem paths.
 12. Reject image and archive bodies larger than 25 MB.
@@ -29,6 +30,7 @@ This checklist records security controls for KitDev Space.
 | Rate limit | `server/utils/network/rate-limit.ts` |
 | Safe fetch | `server/utils/network/http.ts` |
 | Analytics stub | `app/composables/useToolAnalytics.ts` |
+| Google Analytics (tool id only) | `app/composables/useToolAnalytics.ts`, `app/plugins/google-analytics.client.ts` |
 | Image size limit | `server/utils/image/limits.ts` |
 | Image upload reader | `server/utils/image/read-upload.ts` |
 | Image APIs | `server/api/image/*.post.ts` |

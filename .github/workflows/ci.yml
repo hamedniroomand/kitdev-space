@@ -18,7 +18,7 @@ jobs:
       - run: bun ci
       - run: bun lint
       - run: bun typecheck
-      - run: bun test
+      - run: bun run test
       - run: bun run build
         env:
           NITRO_PRESET: bun

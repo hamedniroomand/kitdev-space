@@ -4,7 +4,9 @@ function nitroPreset(): string {
   return process.env.NITRO_PRESET ?? (process.env.VERCEL ? 'vercel' : 'bun')
 }
 
-const categoryRoutes = ['/data', '/crypto', '/color', '/network'] as const
+const googleAnalyticsId = process.env.NUXT_PUBLIC_GOOGLE_ANALYTICS_ID || ''
+
+const categoryRoutes = ['/data', '/crypto', '/color', '/network', '/image', '/dev'] as const
 
 const prerenderRoutes = [
   '/',
@@ -45,6 +47,12 @@ export default defineNuxtConfig({
     preference: 'dark'
   },
 
+  runtimeConfig: {
+    public: {
+      googleAnalyticsId
+    }
+  },
+
   routeRules: {
     '/**': { prerender: true },
     '/api/**': { prerender: false, robots: false }
@@ -77,6 +85,25 @@ export default defineNuxtConfig({
       emojis: false
     }
   },
+
+  scripts: googleAnalyticsId
+    ? {
+        registry: {
+          googleAnalytics: {
+            id: googleAnalyticsId,
+            trigger: 'onNuxtReady',
+            // Deny ads by default. Analytics on for tool usage metrics.
+            // Add a consent UI later for EEA if you need stricter defaults.
+            defaultConsent: {
+              ad_storage: 'denied',
+              ad_user_data: 'denied',
+              ad_personalization: 'denied',
+              analytics_storage: 'granted'
+            }
+          }
+        }
+      }
+    : {},
 
   sitemap: {
     exclude: ['/api/**']
