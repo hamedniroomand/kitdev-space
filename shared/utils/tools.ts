@@ -9,19 +9,6 @@ export const categoryLabels: Record<ToolCategory, string> = {
 
 export const tools: Tool[] = [
   {
-    id: 'demo',
-    slug: 'demo',
-    name: 'Tool Demo',
-    description: 'Prove the shared tool UI.',
-    category: 'data',
-    icon: 'i-lucide-flask-conical',
-    keywords: ['demo', 'tool', 'ui'],
-    route: '/tools/demo',
-    clientOnly: true,
-    serverRequired: false,
-    status: 'available'
-  },
-  {
     id: 'json-formatter',
     slug: 'json-formatter',
     name: 'JSON Formatter',
@@ -32,7 +19,7 @@ export const tools: Tool[] = [
     route: '/data/json-formatter',
     clientOnly: true,
     serverRequired: false,
-    status: 'coming-soon'
+    status: 'available'
   },
   {
     id: 'json-validator',
@@ -45,7 +32,7 @@ export const tools: Tool[] = [
     route: '/data/json-validator',
     clientOnly: true,
     serverRequired: false,
-    status: 'coming-soon'
+    status: 'available'
   },
   {
     id: 'json-minifier',
@@ -58,7 +45,7 @@ export const tools: Tool[] = [
     route: '/data/json-minifier',
     clientOnly: true,
     serverRequired: false,
-    status: 'coming-soon'
+    status: 'available'
   },
   {
     id: 'json-to-typescript',
@@ -71,7 +58,7 @@ export const tools: Tool[] = [
     route: '/data/json-to-typescript',
     clientOnly: true,
     serverRequired: false,
-    status: 'coming-soon'
+    status: 'available'
   },
   {
     id: 'json-yaml',
@@ -82,9 +69,9 @@ export const tools: Tool[] = [
     icon: 'i-lucide-arrow-left-right',
     keywords: ['json', 'yaml', 'yml', 'convert'],
     route: '/data/converters/json-yaml',
-    clientOnly: true,
-    serverRequired: false,
-    status: 'coming-soon'
+    clientOnly: false,
+    serverRequired: true,
+    status: 'available'
   },
   {
     id: 'json-toml',
@@ -95,9 +82,9 @@ export const tools: Tool[] = [
     icon: 'i-lucide-arrow-left-right',
     keywords: ['json', 'toml', 'convert'],
     route: '/data/converters/json-toml',
-    clientOnly: true,
-    serverRequired: false,
-    status: 'coming-soon'
+    clientOnly: false,
+    serverRequired: true,
+    status: 'available'
   },
   {
     id: 'json-xml',
@@ -108,9 +95,9 @@ export const tools: Tool[] = [
     icon: 'i-lucide-arrow-left-right',
     keywords: ['json', 'xml', 'convert'],
     route: '/data/converters/json-xml',
-    clientOnly: true,
-    serverRequired: false,
-    status: 'coming-soon'
+    clientOnly: false,
+    serverRequired: true,
+    status: 'available'
   },
   {
     id: 'json-json5',
@@ -121,9 +108,9 @@ export const tools: Tool[] = [
     icon: 'i-lucide-arrow-left-right',
     keywords: ['json', 'json5', 'convert'],
     route: '/data/converters/json-json5',
-    clientOnly: true,
-    serverRequired: false,
-    status: 'coming-soon'
+    clientOnly: false,
+    serverRequired: true,
+    status: 'available'
   },
   {
     id: 'hash',
