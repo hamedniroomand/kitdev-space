@@ -151,6 +151,20 @@ export default defineNuxtConfig({
     }
   },
 
+  // Included with @nuxtjs/seo. Identity links WebSite/WebPage to the brand.
+  schemaOrg: {
+    identity: {
+      type: 'Organization',
+      name: 'KitDev Space',
+      url: 'https://kitdev.space',
+      logo: '/apple-touch-icon.png',
+      description: 'Developer tools for people who build things.',
+      sameAs: [
+        'https://github.com/hamedniroomand/devkit-space'
+      ]
+    }
+  },
+
   scripts: googleAnalyticsId
     ? {
         registry: {
