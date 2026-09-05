@@ -144,16 +144,12 @@ defineShortcuts({
       </UFormField>
     </template>
 
-    <UFormField
+    <ToolEditor
       v-else-if="action === 'sort'"
+      v-model="versionsText"
       label="Versions (one per line)"
-    >
-      <UTextarea
-        v-model="versionsText"
-        :rows="8"
-        class="w-full font-mono"
-      />
-    </UFormField>
+      :rows="8"
+    />
 
     <template v-else>
       <UFormField label="Version">
@@ -201,17 +197,13 @@ defineShortcuts({
       :message="error"
     />
 
-    <UFormField
+    <ToolEditor
       v-if="output"
+      :model-value="output"
       label="Result"
-    >
-      <UTextarea
-        :model-value="output"
-        readonly
-        :rows="6"
-        class="w-full font-mono"
-      />
-    </UFormField>
+      readonly
+      :rows="6"
+    />
 
     <template #docs>
       <DataToolDocs title="About semver">

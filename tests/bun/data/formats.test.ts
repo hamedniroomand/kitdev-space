@@ -49,13 +49,13 @@ describe('bun format engine', () => {
     })
   })
 
-  it('sanitizes scoped package keys for xml', () => {
+  it('preserves invalid keys as item key attributes', () => {
     const xmlText = transformWithBun(
       '{"dependencies":{"@nuxt/ui":"^4.11.0","vue":"^3.5.42"}}',
       'json',
       'xml'
     )
-    expect(xmlText).toContain('<nuxt_ui>^4.11.0</nuxt_ui>')
+    expect(xmlText).toContain('<item key="@nuxt/ui">^4.11.0</item>')
     expect(xmlText).toContain('<vue>^3.5.42</vue>')
   })
 
@@ -64,7 +64,9 @@ describe('bun format engine', () => {
     const xmlText = transformWithBun(input, 'json', 'xml')
     expect(xmlText).toContain('<root>')
     expect(xmlText).toContain('<name>kitdev-space</name>')
-    expect(xmlText).toContain('<iconify-json_lucide>')
+    expect(xmlText).toContain('<item key="@iconify-json/lucide">')
+    expect(xmlText).toContain('<item key="test:watch">')
+    expect(xmlText).toContain('<item key="*.{ts,mts,cts,js,mjs,cjs,vue}">')
     expect(() => parseWithBun(xmlText, 'xml')).not.toThrow()
   })
 
