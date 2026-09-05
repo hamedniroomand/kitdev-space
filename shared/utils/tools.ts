@@ -253,7 +253,7 @@ export const tools: Tool[] = [
     route: '/network/headers',
     clientOnly: false,
     serverRequired: true,
-    status: 'coming-soon'
+    status: 'available'
   },
   {
     id: 'url-inspector',
