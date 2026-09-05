@@ -4,13 +4,14 @@
   "type": "module",
   "scripts": {
     "build": "nuxt build",
-    "dev": "nuxt dev",
+    "dev": "bun --bun nuxt dev",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "lint": "eslint .",
     "typecheck": "nuxt typecheck",
-    "test": "vitest run",
+    "test": "vitest run && bun test tests/bun",
     "test:watch": "vitest",
+    "test:bun": "bun test tests/bun",
     "prepare": "husky"
   },
   "dependencies": {
@@ -33,6 +34,7 @@
     "@commitlint/config-conventional": "^21.2.2",
     "@nuxt/eslint": "^1.17.0",
     "@nuxt/test-utils": "^4.2.0",
+    "@types/bun": "^1.4.1",
     "@vue/test-utils": "^2.5.0",
     "eslint": "^10.10.0",
     "happy-dom": "^20.14.0",
