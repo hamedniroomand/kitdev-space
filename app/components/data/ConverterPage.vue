@@ -3,6 +3,7 @@ import type { DataFormat } from '~~/shared/utils/data/types'
 import { getTextStats } from '~~/shared/utils/data/stats'
 
 const props = defineProps<{
+  toolId: string
   title: string
   description: string
   formats: { label: string, value: Exclude<DataFormat, 'typescript'> }[]
@@ -26,10 +27,7 @@ const { status, error, result, run, reset } = useTool<string>()
 const { copy } = useClipboard()
 const { downloadText } = useDownload()
 
-useSeoMeta({
-  title: () => props.title,
-  description: () => props.description
-})
+useToolSeo(props.toolId)
 
 async function convert() {
   await run(async () => {

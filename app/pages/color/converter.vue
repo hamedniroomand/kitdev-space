@@ -9,10 +9,7 @@ const { status, error, run, reset } = useTool<string>()
 const toast = useToast()
 const { copy } = useClipboard()
 
-useSeoMeta({
-  title: 'Color Converter',
-  description: 'Convert colors between formats.'
-})
+useToolSeo('color-converter')
 
 async function convert() {
   await run(() => {

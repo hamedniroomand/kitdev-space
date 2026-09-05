@@ -7,10 +7,7 @@ const toast = useToast()
 const { status, error, result, run, reset } = useTool<string>()
 const { copy } = useClipboard()
 
-useSeoMeta({
-  title: 'Base64 Encoder',
-  description: 'Encode and decode Base64.'
-})
+useToolSeo('base64')
 
 async function encode() {
   await run(() => encodeBase64(input.value))

@@ -15,10 +15,7 @@ const charsetItems = [
   { label: 'Hex', value: 'hex' }
 ]
 
-useSeoMeta({
-  title: 'Random String Generator',
-  description: 'Generate random strings.'
-})
+useToolSeo('random-string')
 
 async function generate() {
   await run(() => createRandomString({ length: length.value, charset: charset.value }))

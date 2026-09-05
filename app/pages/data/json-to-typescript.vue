@@ -11,10 +11,7 @@ const { status, error, result, run, reset } = useTool<string>()
 const { copy } = useClipboard()
 const { downloadText } = useDownload()
 
-useSeoMeta({
-  title: 'JSON → TypeScript',
-  description: 'Convert JSON into TypeScript interfaces.'
-})
+useToolSeo('json-to-typescript')
 
 async function convert() {
   await run(() => jsonToTypeScript(parseJson(input.value)))

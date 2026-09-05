@@ -7,10 +7,7 @@ const toast = useToast()
 const { status, error, result, run, reset } = useTool<string>()
 const { copy } = useClipboard()
 
-useSeoMeta({
-  title: 'Hex Encoder',
-  description: 'Encode and decode hex values.'
-})
+useToolSeo('hex')
 
 async function encode() {
   await run(() => encodeHex(input.value))

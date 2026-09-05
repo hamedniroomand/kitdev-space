@@ -1,5 +1,6 @@
 <template>
   <DataConverterPage
+    tool-id="json-toml"
     title="JSON ↔ TOML"
     description="Convert between JSON and TOML."
     :formats="[

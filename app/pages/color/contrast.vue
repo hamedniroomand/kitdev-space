@@ -7,10 +7,7 @@ const ratio = ref<number | null>(null)
 const levels = ref<{ aa: boolean, aaa: boolean } | null>(null)
 const { status, error, run, reset } = useTool<string>()
 
-useSeoMeta({
-  title: 'Contrast Checker',
-  description: 'Check contrast for accessibility.'
-})
+useToolSeo('contrast')
 
 async function check() {
   await run(() => {

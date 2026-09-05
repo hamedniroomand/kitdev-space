@@ -8,10 +8,7 @@ const toast = useToast()
 const { status, error, run, reset } = useTool<string>()
 const { copy } = useClipboard()
 
-useSeoMeta({
-  title: 'Palette Generator',
-  description: 'Generate color palettes.'
-})
+useToolSeo('palette')
 
 async function generate() {
   await run(() => {

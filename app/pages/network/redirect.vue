@@ -10,10 +10,7 @@ const toast = useToast()
 const { status, error, result, run, reset } = useTool<RedirectHop[]>()
 const { copy } = useClipboard()
 
-useSeoMeta({
-  title: 'Redirect Checker',
-  description: 'Follow and inspect URL redirects.'
-})
+useToolSeo('redirect-checker')
 
 async function check() {
   await run(async () => {

@@ -18,10 +18,7 @@ const recordTypeItems = [
   { label: 'CAA', value: 'CAA' }
 ]
 
-useSeoMeta({
-  title: 'DNS Lookup',
-  description: 'Look up DNS records for a domain.'
-})
+useToolSeo('dns')
 
 function formatRecord(record: string | object): string {
   if (typeof record === 'string') {

@@ -7,10 +7,7 @@ const toast = useToast()
 const { status, error, result, run, reset } = useTool<string>()
 const { copy } = useClipboard()
 
-useSeoMeta({
-  title: 'UUID Generator',
-  description: 'Generate UUID values.'
-})
+useToolSeo('uuid')
 
 async function generate() {
   await run(() => {

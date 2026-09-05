@@ -27,10 +27,7 @@ const fieldRows = computed(() => {
   ]
 })
 
-useSeoMeta({
-  title: 'URL Inspector',
-  description: 'Inspect and parse URL parts.'
-})
+useToolSeo('url-inspector')
 
 async function inspect() {
   await run(() => inspectUrl(input.value))

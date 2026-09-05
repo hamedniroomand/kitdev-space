@@ -8,10 +8,7 @@ const hsl = ref('')
 const channels = ref({ r: 0, g: 0, b: 0 })
 const { status, error, run, reset } = useTool<string>()
 
-useSeoMeta({
-  title: 'Color Inspector',
-  description: 'Inspect color values and details.'
-})
+useToolSeo('color-inspector')
 
 async function inspect() {
   await run(() => {

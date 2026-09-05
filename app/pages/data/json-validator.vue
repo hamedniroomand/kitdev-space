@@ -7,10 +7,7 @@ const statusMessage = ref('')
 const statusMeta = ref('')
 const { status, error, run, reset } = useTool<string>()
 
-useSeoMeta({
-  title: 'JSON Validator',
-  description: 'Validate JSON and show clear errors.'
-})
+useToolSeo('json-validator')
 
 async function validate() {
   await run(() => {

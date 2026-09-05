@@ -22,10 +22,7 @@ const headerRows = computed(() => {
   }))
 })
 
-useSeoMeta({
-  title: 'HTTP Headers',
-  description: 'Inspect HTTP response headers.'
-})
+useToolSeo('headers')
 
 async function inspect() {
   await run(async () => {

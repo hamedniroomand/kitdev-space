@@ -10,10 +10,7 @@ const { status, error, result, run, reset } = useTool<string>()
 const { copy } = useClipboard()
 const { downloadText } = useDownload()
 
-useSeoMeta({
-  title: 'JSON Minifier',
-  description: 'Minify JSON for smaller payloads.'
-})
+useToolSeo('json-minifier')
 
 async function minify() {
   await run(() => minifyJson(input.value))
