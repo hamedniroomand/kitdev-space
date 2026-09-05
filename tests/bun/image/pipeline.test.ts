@@ -41,4 +41,11 @@ describe('image pipeline', () => {
     const out = await transformImage(fixture, { grayscale: true, format: 'png' })
     expect(out.bytes.byteLength).toBeGreaterThan(0)
   })
+
+  it('rejects svg with a clear error', async () => {
+    const svg = new TextEncoder().encode(
+      '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><rect width="10" height="10"/></svg>'
+    )
+    expect(convertImage(svg, { format: 'png' })).rejects.toThrow(/SVG is not supported/)
+  })
 })

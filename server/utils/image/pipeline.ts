@@ -27,6 +27,28 @@ function mimeFor(format: ImageEncodeFormat): string {
   return format === 'jpeg' ? 'image/jpeg' : `image/${format}`
 }
 
+export function mapImageCause(cause: unknown, fallback: string): ImageError {
+  if (cause instanceof ImageError) {
+    return cause
+  }
+
+  const code = (cause as { code?: string })?.code
+  if (code === 'ERR_IMAGE_UNKNOWN_FORMAT') {
+    return new ImageError(
+      'This file type is not supported.\n\nUse JPEG, PNG, WebP, GIF, BMP, TIFF, HEIC, or AVIF. SVG is not supported.',
+      { cause }
+    )
+  }
+  if (code === 'ERR_IMAGE_FORMAT_UNSUPPORTED') {
+    return new ImageError(
+      'This image format is not supported on this server.\n\nTry WebP, JPEG, or PNG.',
+      { cause }
+    )
+  }
+
+  return new ImageError(fallback, { cause })
+}
+
 function applyFormat(img: Bun.Image, format: ImageEncodeFormat, quality = 80) {
   switch (format) {
     case 'webp':
@@ -53,13 +75,10 @@ async function finish(
       height: img.height
     }
   } catch (cause) {
-    const code = (cause as { code?: string })?.code
-    if (code === 'ERR_IMAGE_FORMAT_UNSUPPORTED') {
-      throw new ImageError(
-        'This image format is not supported on this server.\n\nTry WebP, JPEG, or PNG.'
-      )
-    }
-    throw new ImageError('The image operation failed.\n\nCheck the file and try again.', { cause })
+    throw mapImageCause(
+      cause,
+      'The image operation failed.\n\nCheck the file and try again.'
+    )
   }
 }
 
@@ -82,10 +101,10 @@ export async function getImageMetadata(input: Uint8Array): Promise<ImageMetadata
       format: String(meta.format)
     }
   } catch (cause) {
-    if (cause instanceof ImageError) {
-      throw cause
-    }
-    throw new ImageError('The image could not be read.\n\nCheck the file and try again.', { cause })
+    throw mapImageCause(
+      cause,
+      'The image could not be read.\n\nCheck the file and try again.'
+    )
   }
 }
 
@@ -93,9 +112,16 @@ export async function convertImage(
   input: Uint8Array,
   opts: { format: ImageEncodeFormat, quality?: number }
 ): Promise<ImageResult> {
-  const quality = clampQuality(opts.quality)
-  const img = applyFormat(createPipeline(input), opts.format, quality)
-  return finish(img, opts.format)
+  try {
+    const quality = clampQuality(opts.quality)
+    const img = applyFormat(createPipeline(input), opts.format, quality)
+    return await finish(img, opts.format)
+  } catch (cause) {
+    throw mapImageCause(
+      cause,
+      'The image operation failed.\n\nCheck the file and try again.'
+    )
+  }
 }
 
 export async function resizeImage(

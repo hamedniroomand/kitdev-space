@@ -58,13 +58,13 @@ defineExpose({ clear })
         Drop an image here, or click to choose a file.
       </p>
       <p class="text-xs text-muted">
-        Max size 25 MB.
+        Max size 25 MB. JPEG, PNG, WebP, GIF, BMP, TIFF, HEIC, or AVIF. Not SVG.
       </p>
       <input
         ref="inputRef"
         type="file"
         class="sr-only"
-        :accept="accept ?? 'image/*'"
+        :accept="accept ?? 'image/jpeg,image/png,image/webp,image/gif,image/bmp,image/tiff,image/heic,image/avif,.jpg,.jpeg,.png,.webp,.gif,.bmp,.tif,.tiff,.heic,.avif'"
         @change="onPick"
       >
     </div>
