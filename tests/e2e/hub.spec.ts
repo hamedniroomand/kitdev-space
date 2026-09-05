@@ -78,3 +78,24 @@ test('scrolling content area does not scroll the fixed sidebar', async ({ page }
   const sidebarBox = await sidebar.boundingBox()
   expect(sidebarBox?.y).toBe(56)
 })
+
+test('clicking on a page from the sidebar scrolls content area to top', async ({ page }) => {
+  await page.goto('/hub/data/json-formatter')
+
+  const main = page.locator('main')
+  // Scroll down
+  await main.evaluate((el) => {
+    el.scrollTop = 500
+  })
+
+  const scrolledTop = await main.evaluate(el => el.scrollTop)
+  expect(scrolledTop).toBeGreaterThan(0)
+
+  // Click on another tool from the sidebar
+  await page.getByRole('link', { name: /UUID Generator/ }).first().click()
+  await expect(page).toHaveURL(/\/hub\/crypto\/uuid/)
+
+  // Content area must be scrolled back to top
+  const resetTop = await main.evaluate(el => el.scrollTop)
+  expect(resetTop).toBe(0)
+})

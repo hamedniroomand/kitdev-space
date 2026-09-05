@@ -56,6 +56,20 @@ const categorizedTools = computed(() => {
 function closeMobile() {
   mobileOpen.value = false
 }
+
+const contentArea = ref<HTMLElement | null>(null)
+const { y: contentScrollY } = useScroll(contentArea)
+
+function scrollToTop() {
+  contentScrollY.value = 0
+  if (contentArea.value) {
+    contentArea.value.scrollTop = 0
+  }
+}
+
+watch(() => route.path, () => {
+  scrollToTop()
+})
 </script>
 
 <template>
@@ -174,6 +188,7 @@ function closeMobile() {
                   :class="route.path === tool.route
                     ? 'bg-primary/10 text-primary font-medium'
                     : 'text-default/80 hover:bg-elevated hover:text-highlighted'"
+                  @click="scrollToTop"
                 >
                   <div class="flex items-center gap-2 truncate">
                     <UIcon
@@ -277,7 +292,7 @@ function closeMobile() {
                       :class="route.path === tool.route
                         ? 'bg-primary/10 text-primary font-medium'
                         : 'text-default/80 hover:bg-elevated hover:text-highlighted'"
-                      @click="closeMobile"
+                      @click="() => { closeMobile(); scrollToTop(); }"
                     >
                       <div class="flex items-center gap-2 truncate">
                         <UIcon
@@ -313,7 +328,10 @@ function closeMobile() {
       </USlideover>
 
       <!-- Main Hub Content Area -->
-      <main class="flex-1 min-h-0 overflow-y-auto">
+      <main
+        ref="contentArea"
+        class="flex-1 min-h-0 overflow-y-auto"
+      >
         <NuxtPage />
       </main>
     </div>
