@@ -263,13 +263,13 @@ export const tools: Tool[] = [
     id: 'hash',
     slug: 'hash-generator',
     name: 'Hash Generator',
-    description: 'Generate hashes from text input.',
+    description: 'Hash text or a file with SHA-256, SHA-512, MD5, CRC32, and more.',
     category: 'crypto',
     icon: 'i-lucide-hash',
-    keywords: ['hash', 'sha', 'md5', 'digest'],
+    keywords: ['hash', 'sha', 'sha256', 'md5', 'digest', 'checksum', 'file', 'crc32'],
     route: '/hub/crypto/hash-generator',
     clientOnly: false,
-    serverRequired: true,
+    serverRequired: false,
     status: 'available'
   },
   {
