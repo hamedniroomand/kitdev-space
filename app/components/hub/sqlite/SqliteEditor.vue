@@ -57,7 +57,7 @@ onKeyStroke('Enter', (event) => {
 
     <div
       v-if="error"
-      class="px-3 py-2 bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 text-xs border-b border-red-200 dark:border-red-900 font-mono"
+      class="px-3 py-2 bg-error/10 text-error text-xs border-b border-error/30 font-mono"
     >
       {{ error }}
     </div>

@@ -93,12 +93,10 @@ async function copyValue(val: string, key: string) {
       />
     </ToolActions>
 
-    <div
+    <ToolError
       v-if="!parsedDate && input"
-      class="rounded-[12px] border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-500"
-    >
-      Invalid timestamp or date format.
-    </div>
+      message="The timestamp or the date format is not valid."
+    />
 
     <div
       v-else-if="items.length > 0"

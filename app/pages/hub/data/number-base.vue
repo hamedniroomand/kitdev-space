@@ -58,12 +58,10 @@ useSeoMeta({
   >
     <div class="space-y-6">
       <!-- Error notice -->
-      <div
+      <ToolError
         v-if="error"
-        class="p-3 bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 text-xs rounded-xl border border-red-200 dark:border-red-900 font-mono"
-      >
-        {{ error }}
-      </div>
+        :message="error"
+      />
 
       <!-- Presets -->
       <div class="flex flex-wrap items-center gap-2">

@@ -37,27 +37,34 @@ const sampleData = JSON.stringify(
 
 const schemaInput = ref(sampleSchema)
 const dataInput = ref(sampleData)
+const generateError = ref<string | null>(null)
 
 const result = computed(() => validateJsonSchema(schemaInput.value, dataInput.value))
 
 function handleLoadSample() {
   schemaInput.value = sampleSchema
   dataInput.value = sampleData
+  generateError.value = null
 }
 
 function handleGenerateSchema() {
+  generateError.value = null
+
   try {
     const parsed = JSON.parse(dataInput.value)
     const generated = generateSchemaFromJson(parsed)
     schemaInput.value = JSON.stringify(generated, null, 2)
   } catch (err) {
-    alert(err instanceof Error ? err.message : 'Cannot parse JSON data to create schema.')
+    generateError.value = err instanceof Error
+      ? err.message
+      : 'Cannot parse the JSON data to make a schema.'
   }
 }
 
 function handleClear() {
   schemaInput.value = ''
   dataInput.value = ''
+  generateError.value = null
 }
 
 useSeoMeta({
@@ -72,6 +79,11 @@ useSeoMeta({
     description="Validate JSON data against JSON Schema specifications and find path errors."
   >
     <div class="space-y-6">
+      <ToolError
+        v-if="generateError"
+        :message="generateError"
+      />
+
       <!-- Toolbar -->
       <div class="flex flex-wrap items-center justify-between gap-3 p-3 border border-default rounded-xl bg-elevated/40">
         <div class="flex items-center gap-2">
