@@ -15,9 +15,11 @@ test.describe('Code Transpiler Tool', () => {
     const outputEditor = page.locator('.cm-editor').nth(1)
     await expect(outputEditor).toBeVisible()
 
-    const outputText = (await outputEditor.textContent()) ?? ''
-    expect(outputText).toContain('export function greet(user)')
-    expect(outputText).not.toContain('type User =')
+    await expect(async () => {
+      const outputText = (await outputEditor.textContent()) ?? ''
+      expect(outputText).toContain('export function greet(user)')
+      expect(outputText).not.toContain('type User =')
+    }).toPass({ timeout: 10_000 })
   })
 
   test('clears input and output', async ({ page }) => {

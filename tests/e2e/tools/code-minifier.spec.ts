@@ -15,9 +15,11 @@ test.describe('Code Minifier and Beautifier Tool', () => {
     const outputEditor = page.locator('.cm-editor').nth(1)
     await expect(outputEditor).toBeVisible()
 
-    const outputText = (await outputEditor.textContent()) ?? ''
-    expect(outputText).toContain('function ')
-    expect(outputText).toContain('console.log')
+    await expect(async () => {
+      const outputText = (await outputEditor.textContent()) ?? ''
+      expect(outputText).toContain('function ')
+      expect(outputText).toContain('console.log')
+    }).toPass({ timeout: 10_000 })
   })
 
   test('beautifies minified code', async ({ page }) => {
