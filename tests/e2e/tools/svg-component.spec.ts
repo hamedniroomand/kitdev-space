@@ -2,31 +2,28 @@ import { expect, test } from '@playwright/test'
 import { gotoHydrated } from '../utils'
 
 test.describe('SVG to React Component Tool', () => {
-  test.beforeEach(async ({ page }) => {
+  test('converts default SVG icon sample and toggles spread props', async ({ page }) => {
     await gotoHydrated(page, '/hub/dev/svg-component')
-  })
-
-  test('converts default SVG icon sample with props spread', async ({ page }) => {
-    await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
 
     const outputEditor = page.locator('.cm-editor').nth(1)
-    await expect(outputEditor).toBeVisible()
 
-    const outputText = (await outputEditor.textContent()) ?? ''
-    expect(outputText).toContain('export default function SvgIcon(props)')
-    expect(outputText).toContain('{...props}')
-    expect(outputText).toContain('strokeWidth="2"')
-    expect(outputText).toContain('strokeLinecap="round"')
-  })
+    await test.step('converts default SVG icon sample with props spread', async () => {
+      await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+      await expect(outputEditor).toBeVisible()
 
-  test('toggles spread props', async ({ page }) => {
-    const outputEditor = page.locator('.cm-editor').nth(1)
+      const outputText = (await outputEditor.textContent()) ?? ''
+      expect(outputText).toContain('export default function SvgIcon(props)')
+      expect(outputText).toContain('{...props}')
+      expect(outputText).toContain('strokeWidth="2"')
+      expect(outputText).toContain('strokeLinecap="round"')
+    })
 
-    // Uncheck spread props
-    await page.getByLabel('Spread props').uncheck()
+    await test.step('toggles spread props', async () => {
+      await page.getByLabel('Spread props').uncheck()
 
-    const outputText = (await outputEditor.textContent()) ?? ''
-    expect(outputText).not.toContain('{...props}')
-    expect(outputText).toContain('export default function SvgIcon()')
+      const outputText = (await outputEditor.textContent()) ?? ''
+      expect(outputText).not.toContain('{...props}')
+      expect(outputText).toContain('export default function SvgIcon()')
+    })
   })
 })
