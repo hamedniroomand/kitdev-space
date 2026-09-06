@@ -30,7 +30,7 @@
 
 :root {
   --ui-radius: 0.5rem;
-  --ui-primary: #e65c00;
+  --ui-primary: #b84300;
 
   /* PaperFlow surface & background */
   --ui-bg: #fdfbf7;
@@ -55,7 +55,7 @@
 }
 
 .dark {
-  --ui-primary: #f06a14;
+  --ui-primary: #f9883e;
 
   --ui-bg: #141312;
   --ui-bg-muted: #1c1b18;
