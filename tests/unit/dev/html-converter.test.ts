@@ -54,3 +54,31 @@ describe('html-converter', () => {
     expect(vue).toContain('<button @click="handleClick()"><img src="icon.png" />Click me</button>')
   })
 })
+
+describe('convertHtmlToJsx with an SVG', () => {
+  const svg = '<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke-width="2"/>'
+    + '<path d="m9 12 2 2 4-4" stroke-linecap="round"/></svg>'
+
+  it('converts the hyphenated SVG attributes', () => {
+    const out = convertHtmlToJsx(svg)
+    expect(out).toContain('strokeWidth="2"')
+    expect(out).toContain('strokeLinecap="round"')
+    expect(out).not.toContain('stroke-width')
+  })
+
+  it('spreads props on the root tag for an icon component', () => {
+    const out = convertHtmlToJsx(svg, {
+      wrapComponent: true,
+      componentName: 'SvgIcon',
+      spreadProps: true
+    })
+    expect(out).toContain('export default function SvgIcon(props)')
+    expect(out).toContain('<svg {...props}')
+  })
+
+  it('takes no props parameter when the spread is off', () => {
+    const out = convertHtmlToJsx(svg, { wrapComponent: true, componentName: 'SvgIcon' })
+    expect(out).toContain('export default function SvgIcon()')
+    expect(out).not.toContain('{...props}')
+  })
+})

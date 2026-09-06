@@ -73,7 +73,9 @@ export const legacyRedirects: Record<string, string> = {
   '/dev/cron': '/hub/dev/cron',
   '/dev/semver': '/hub/dev/semver',
   '/dev/transpiler': '/hub/dev/transpiler',
-  '/dev/tar': '/hub/dev/tar'
+  '/dev/tar': '/hub/dev/tar',
+  '/hub/dev/svg-component': '/hub/dev/html-converter',
+  '/dev/svg-component': '/hub/dev/html-converter'
 }
 
 const legacyPrefixes = ['/data/', '/network/', '/crypto/', '/color/', '/image/', '/dev/']

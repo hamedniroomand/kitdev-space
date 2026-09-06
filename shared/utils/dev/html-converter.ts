@@ -1,6 +1,8 @@
 export interface JsxConvertOptions {
   wrapComponent?: boolean
   componentName?: string
+  /** Adds a props parameter and spreads it on the root tag. An icon needs this. */
+  spreadProps?: boolean
 }
 
 export interface VueConvertOptions {
@@ -117,12 +119,19 @@ export function convertHtmlToJsx(html: string, options: JsxConvertOptions = {}):
   // 4. Component wrapper
   if (options.wrapComponent) {
     const name = options.componentName?.trim() || 'MyComponent'
+
+    // A caller of an icon needs to pass className, width, and the rest.
+    if (options.spreadProps) {
+      output = output.replace(/^<([a-zA-Z0-9_-]+)/, '<$1 {...props}')
+    }
+
     const indented = output
       .split('\n')
       .map(line => (line ? `    ${line}` : ''))
       .join('\n')
 
-    return `export default function ${name}() {\n  return (\n${indented}\n  );\n}`
+    const params = options.spreadProps ? 'props' : ''
+    return `export default function ${name}(${params}) {\n  return (\n${indented}\n  );\n}`
   }
 
   return output

@@ -805,19 +805,6 @@ export const tools: Tool[] = [
     status: 'available'
   },
   {
-    id: 'svg-component',
-    slug: 'svg-component',
-    name: 'SVG to Component',
-    description: 'Convert SVG markup into a React JSX or Vue 3 component.',
-    category: 'dev',
-    icon: 'i-lucide-component',
-    keywords: ['svg', 'react', 'vue', 'jsx', 'component'],
-    route: '/hub/dev/svg-component',
-    clientOnly: true,
-    serverRequired: false,
-    status: 'available'
-  },
-  {
     id: 'qr-code',
     slug: 'qr-code',
     name: 'QR Code Studio',
@@ -898,11 +885,13 @@ export const tools: Tool[] = [
   {
     id: 'html-converter',
     slug: 'html-converter',
-    name: 'HTML to JSX / Vue Converter',
-    description: 'Convert standard HTML markup and inline styles into JSX or Vue component templates.',
+    name: 'HTML & SVG to JSX / Vue',
+    description: 'Convert HTML or SVG markup into a React JSX or Vue component.',
     category: 'dev',
     icon: 'i-lucide-code-xml',
-    keywords: ['html', 'jsx', 'react', 'vue', 'converter', 'sfc', 'style', 'svg'],
+    keywords: [
+      'html', 'svg', 'jsx', 'react', 'vue', 'converter', 'sfc', 'style', 'component', 'icon'
+    ],
     route: '/hub/dev/html-converter',
     clientOnly: true,
     serverRequired: false,

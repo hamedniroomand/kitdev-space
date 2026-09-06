@@ -29,6 +29,7 @@ const htmlInput = ref(sampleHtml)
 const targetFormat = ref<TargetFormat>('jsx')
 const wrapJsxComponent = ref(true)
 const componentName = ref('UserProfileCard')
+const spreadProps = ref(false)
 
 const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
 const { downloadText } = useDownload()
@@ -37,6 +38,13 @@ useToolSeo('html-converter')
 
 function loadSample(type: 'card' | 'svg') {
   htmlInput.value = type === 'card' ? sampleHtml : sampleSvg
+  // An icon component takes props, so turn the spread on with the SVG sample.
+  if (type === 'svg') {
+    targetFormat.value = 'jsx'
+    wrapJsxComponent.value = true
+    spreadProps.value = true
+    componentName.value = 'SvgIcon'
+  }
 }
 
 function handleClear() {
@@ -49,7 +57,8 @@ const convertedOutput = computed(() => {
   if (targetFormat.value === 'jsx') {
     return convertHtmlToJsx(htmlInput.value, {
       wrapComponent: wrapJsxComponent.value,
-      componentName: componentName.value
+      componentName: componentName.value,
+      spreadProps: spreadProps.value
     })
   }
 
@@ -207,6 +216,19 @@ function handleDownload() {
                 class="rounded border-default text-primary"
               >
               Wrap in component function
+            </label>
+
+            <label
+              v-if="wrapJsxComponent"
+              class="flex items-center gap-2 text-xs font-medium text-default cursor-pointer select-none"
+              title="Adds a props parameter and spreads it on the root tag. An icon needs this."
+            >
+              <input
+                v-model="spreadProps"
+                type="checkbox"
+                class="rounded border-default text-primary"
+              >
+              Spread props
             </label>
 
             <div
