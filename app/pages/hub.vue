@@ -252,12 +252,6 @@ watch(() => route.path, () => {
             />
             <span>Landing Page</span>
           </NuxtLink>
-          <NuxtLink
-            to="/about"
-            class="hover:text-highlighted transition-colors"
-          >
-            About
-          </NuxtLink>
         </div>
       </aside>
 

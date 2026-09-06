@@ -6,6 +6,8 @@ import {
   type HmacEncoding
 } from '#shared/utils/crypto/hmac'
 
+useToolSeo('hmac')
+
 const message = ref('The quick brown fox jumps over the lazy dog')
 const secret = ref('secret-key-12345')
 const algorithm = ref<HmacAlgorithm>('SHA-256')

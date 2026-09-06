@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { parseUserAgent } from '#shared/utils/network/user-agent'
 
+useToolSeo('user-agent')
+
 const input = ref('')
 const { copy } = useCopyFeedback()
 

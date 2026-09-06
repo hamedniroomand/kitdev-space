@@ -1,4 +1,6 @@
 <script setup lang="ts">
+useToolSeo('sqlite-studio')
+
 const {
   isReady,
   isExecuting,
@@ -20,11 +22,6 @@ const {
   exportJson,
   closeDatabase
 } = useSqliteStudio()
-
-useSeoMeta({
-  title: 'SQLite Studio — KitDev Space',
-  description: 'In-browser SQLite database inspector, editor, and query runner.'
-})
 </script>
 
 <template>

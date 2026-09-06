@@ -6,6 +6,8 @@ import {
   type TableRow
 } from '#shared/utils/data/table-viewer'
 
+useToolSeo('table-viewer')
+
 const sampleCsv = `id,name,role,department,salary
 1,Alice Smith,Staff Engineer,Platform,165000
 2,Bob Jones,Product Designer,Design,125000

@@ -4,6 +4,8 @@ import {
   type NumberBase
 } from '#shared/utils/data/number-base'
 
+useToolSeo('number-base')
+
 const decimalVal = ref('255')
 const hexVal = ref('FF')
 const binaryVal = ref('11111111')

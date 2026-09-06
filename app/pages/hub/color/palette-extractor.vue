@@ -4,6 +4,8 @@ import {
   type ExtractedColor
 } from '#shared/utils/color/palette-extractor'
 
+useToolSeo('image-palette')
+
 const SAMPLE_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200"><rect width="100" height="200" fill="#3b82f6"/><rect x="100" width="100" height="200" fill="#10b981"/><rect x="200" width="100" height="200" fill="#f43f5e"/></svg>'
 
 const file = ref<File | null>(null)

@@ -7,6 +7,8 @@ import {
   type TailwindShade
 } from '#shared/utils/color/tailwind'
 
+useToolSeo('tailwind-shades')
+
 const inputColor = ref('#3b82f6')
 const colorName = ref('brand')
 const format = ref<'v4' | 'v3' | 'css'>('v4')

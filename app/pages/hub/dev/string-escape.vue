@@ -5,6 +5,8 @@ import {
   unescapeString
 } from '#shared/utils/dev/string-escape'
 
+useToolSeo('string-escape')
+
 const input = ref('Hello "World"\nNew line with \'quotes\' and <tags>')
 const mode = ref<EscapeMode>('json')
 const action = ref<'escape' | 'unescape'>('escape')

@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { decryptAesGcm, encryptAesGcm } from '#shared/utils/crypto/aes'
 
+useToolSeo('aes')
+
 type AesMode = 'encrypt' | 'decrypt'
 
 const mode = ref<AesMode>('encrypt')

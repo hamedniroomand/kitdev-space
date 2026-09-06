@@ -5,6 +5,8 @@ import {
 } from '#shared/utils/dev/curl-converter'
 import type { ToolEditorLang } from '#shared/utils/dev/editor-lang'
 
+useToolSeo('curl-to-code')
+
 const samplePostCurl = `curl -X POST "https://api.example.com/v1/users" \\
   -H "Content-Type: application/json" \\
   -H "Authorization: Bearer my-secret-token" \\

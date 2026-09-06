@@ -6,6 +6,8 @@ import {
   permissionsToSymbolic
 } from '#shared/utils/dev/chmod'
 
+useToolSeo('chmod')
+
 const permissions = ref<ChmodPermissions>(octalToPermissions('755'))
 const octalInput = ref('755')
 const fileName = ref('file.txt')

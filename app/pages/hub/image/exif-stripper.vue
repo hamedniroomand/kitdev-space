@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import type { ImageEncodeFormat } from '#shared/utils/image/types'
 
+useToolSeo('exif-stripper')
+
 const file = ref<File | null>(null)
 const format = ref<ImageEncodeFormat>('jpeg')
 const cleanedBlob = ref<Blob | null>(null)

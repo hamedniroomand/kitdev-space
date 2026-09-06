@@ -8,6 +8,8 @@ import {
 } from '#shared/utils/data/fake-generator'
 import type { ToolEditorLang } from '#shared/utils/dev/editor-lang'
 
+useToolSeo('fake-data')
+
 type OutputFormat = 'json' | 'csv' | 'sql'
 
 const format = ref<OutputFormat>('json')

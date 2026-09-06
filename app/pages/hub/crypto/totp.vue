@@ -7,6 +7,8 @@ import {
   type TotpOptions
 } from '#shared/utils/crypto/totp'
 
+useToolSeo('totp')
+
 const secretInput = ref('JBSWY3DPEHPK3PXP')
 const digits = ref(6)
 const period = ref(30)

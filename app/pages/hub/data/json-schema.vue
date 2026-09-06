@@ -4,6 +4,8 @@ import {
   validateJsonSchema
 } from '#shared/utils/data/json-schema'
 
+useToolSeo('json-schema')
+
 const sampleSchema = JSON.stringify(
   {
     $schema: 'http://json-schema.org/draft-07/schema#',

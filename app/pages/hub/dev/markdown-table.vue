@@ -4,6 +4,8 @@ import {
   formatMarkdownTable
 } from '#shared/utils/dev/markdown-table'
 
+useToolSeo('markdown-table')
+
 const headers = ref<string[]>(['Feature', 'Status', 'Notes'])
 const alignments = ref<ColumnAlign[]>(['left', 'center', 'left'])
 const rows = ref<string[][]>([

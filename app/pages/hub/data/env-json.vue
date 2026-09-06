@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { envToJson, jsonToEnv } from '#shared/utils/data/env-parser'
 
+useToolSeo('env-json')
+
 type ConversionMode = 'env-to-json' | 'json-to-env'
 
 const mode = ref<ConversionMode>('env-to-json')

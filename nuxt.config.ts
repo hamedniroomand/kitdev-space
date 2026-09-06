@@ -17,7 +17,6 @@ const hubCategoryRoutes = Object.keys(categoryLabels).map(category => `/hub/${ca
 
 const prerenderRoutes = [
   '/',
-  '/about',
   '/hub',
   ...hubCategoryRoutes,
   ...tools.map(tool => tool.route),
@@ -148,11 +147,6 @@ export default defineNuxtConfig({
       crawlLinks: true,
       routes: prerenderRoutes
     },
-    // Every API route needs Bun globals (`Bun.*` and `HTMLRewriter`). Nitro
-    // reads `"Bun" in globalThis` at build time to pick the Vercel function
-    // runtime, and `nuxt build` runs under Node, so the default result is
-    // `nodejs22.x`. On that runtime every API route fails with
-    // "Bun is not defined". Keep this pin. CI checks it after the build.
     vercel: {
       functions: {
         runtime: 'bun1.x'

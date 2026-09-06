@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import type { IpInfo } from '#shared/utils/network/ip-info'
 
+useToolSeo('ip-info')
+
 interface ExtendedIpInfo extends IpInfo {
   clientIp?: string
 }

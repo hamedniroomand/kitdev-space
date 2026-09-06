@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { validateYaml } from '#shared/utils/data/yaml-validator'
 
+useToolSeo('yaml-validator')
+
 const sampleValidYaml = `server:
   port: 8080
   host: 0.0.0.0

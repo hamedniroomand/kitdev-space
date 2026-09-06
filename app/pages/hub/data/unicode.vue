@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { inspectUnicode } from '#shared/utils/data/unicode'
 
+useToolSeo('unicode')
+
 const input = ref('Hello 👋 World! \u200B\u00E9')
 const { copy } = useCopyFeedback()
 

@@ -12,6 +12,8 @@ export function useToolSeo(toolId: string) {
 
   const breadcrumbs = computed(() => buildToolBreadcrumbs(tool))
   provide('toolBreadcrumbs', breadcrumbs)
+  // `RelatedTools` reads this to suggest other tools in the same category.
+  provide('currentTool', computed(() => tool))
 
   onMounted(() => {
     try {

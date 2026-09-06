@@ -1,18 +1,5 @@
 <script setup lang="ts">
-import type { NavigationMenuItem } from '@nuxt/ui'
-
 const openSearch = inject<() => void>('openSearch', () => {})
-
-const items = computed<NavigationMenuItem[]>(() => [
-  {
-    label: 'Hub',
-    to: '/hub'
-  },
-  {
-    label: 'About',
-    to: '/about'
-  }
-])
 </script>
 
 <template>
@@ -23,11 +10,6 @@ const items = computed<NavigationMenuItem[]>(() => [
     <template #title>
       <AppLogo />
     </template>
-
-    <UNavigationMenu
-      :items="items"
-      class="hidden lg:flex"
-    />
 
     <template #right>
       <UTooltip
@@ -43,14 +25,6 @@ const items = computed<NavigationMenuItem[]>(() => [
         />
       </UTooltip>
       <UColorModeButton />
-    </template>
-
-    <template #body>
-      <UNavigationMenu
-        :items="items"
-        orientation="vertical"
-        class="-mx-2.5"
-      />
     </template>
   </UHeader>
 </template>

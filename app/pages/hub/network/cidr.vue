@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { parseCidr } from '#shared/utils/network/cidr'
 
+useToolSeo('cidr')
+
 const input = ref('192.168.1.0/24')
 const { copy } = useCopyFeedback()
 

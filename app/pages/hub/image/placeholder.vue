@@ -4,6 +4,8 @@ import {
   svgToDataUri
 } from '#shared/utils/image/placeholder'
 
+useToolSeo('placeholder')
+
 const width = ref(600)
 const height = ref(400)
 const bgType = ref<'solid' | 'gradient'>('solid')

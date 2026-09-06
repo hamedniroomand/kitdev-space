@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { testGlobMatch } from '#shared/utils/dev/glob-matcher'
 
+useToolSeo('glob-tester')
+
 const globPattern = ref('src/**/*.vue')
 const testPaths = ref<string>(
   [
