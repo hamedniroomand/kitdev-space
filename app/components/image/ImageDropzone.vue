@@ -15,6 +15,7 @@ const emit = defineEmits<{
 const inputRef = ref<HTMLInputElement | null>(null)
 const dropZoneRef = ref<HTMLDivElement | null>(null)
 const previewUrl = useObjectUrl(() => props.modelValue)
+const isImage = computed(() => props.modelValue?.type.startsWith('image/') ?? false)
 
 const { isOverDropZone } = useDropZone(dropZoneRef, {
   onDrop(files) {
@@ -80,7 +81,7 @@ defineExpose({ clear })
       class="flex items-center gap-3 rounded-md border border-default bg-elevated/40 p-3"
     >
       <img
-        v-if="previewUrl"
+        v-if="previewUrl && isImage"
         :src="previewUrl"
         alt="Selected image preview"
         class="size-14 rounded object-cover"
