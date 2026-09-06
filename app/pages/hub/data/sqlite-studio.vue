@@ -7,21 +7,40 @@ const {
   error,
   tables,
   activeTable,
+  activeTableInfo,
   activeQuery,
   queryResult,
   databaseName,
   databaseSizeBytes,
+  tableQuery,
+  tableTotal,
+  isCustomQuery,
+  selectedRowid,
+  schemaSql,
+  schemaOpen,
+  history,
+  snippets,
   loadDatabaseFile,
   createBlankDatabase,
   loadSampleDatabase,
   executeQuery,
   selectTable,
+  updateTableQuery,
+  toggleSort,
+  backToTable,
   updateCell,
+  insertRow,
+  duplicateRow,
+  deleteRow,
+  showSchema,
+  selectRow,
   downloadDatabase,
   exportCsv,
   exportJson,
   closeDatabase
 } = useSqliteStudio()
+
+const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
 </script>
 
 <template>
@@ -52,8 +71,11 @@ const {
               </p>
               <p>
                 Open a file, or start with a blank database or the sample. Select a table to see its
-                rows. Write a query and run it. Then download the database to keep your changes,
-                because the browser does not save the file for you.
+                rows. Search the text columns, add a filter, sort a column, and page through the rows.
+                Each control writes the SQL that it runs into the editor, so you can read it, change
+                it, and run it. Select a row to duplicate it or delete it. Double-click a cell to edit
+                it. Then download the database to keep your changes, because the browser does not save
+                the file for you.
               </p>
             </div>
             <RelatedTools
@@ -94,17 +116,58 @@ const {
             :error="error"
             :duration-ms="queryResult?.durationMs"
             :row-count="queryResult?.rowCount"
+            :history="history"
+            :snippets="snippets"
             @run="executeQuery"
           />
-
+          <SqliteQueryBar
+            v-if="activeTableInfo && tableQuery"
+            :table="activeTableInfo"
+            :state="tableQuery"
+            :total="tableTotal"
+            :shown-rows="queryResult?.rows.length ?? 0"
+            :custom="isCustomQuery"
+            :selected-rowid="selectedRowid"
+            :busy="isExecuting"
+            @update="updateTableQuery"
+            @add-row="insertRow"
+            @duplicate-row="duplicateRow"
+            @delete-row="deleteRow"
+            @show-schema="showSchema"
+            @back-to-table="backToTable"
+          />
           <SqliteGrid
             :result="queryResult"
             :active-table="activeTable"
-            :can-edit="true"
+            :offset="isCustomQuery ? 0 : tableQuery?.offset"
+            :sort="isCustomQuery ? null : tableQuery?.sort"
+            :sortable="!isCustomQuery"
+            :selected-rowid="selectedRowid"
             @update-cell="updateCell($event.table, $event.rowid, $event.column, $event.value)"
+            @sort="toggleSort"
+            @select-row="selectRow"
           />
         </main>
       </div>
+
+      <USlideover
+        v-model:open="schemaOpen"
+        :title="`Schema of ${activeTable}`"
+        description="The CREATE statements that the database holds for this table and its indexes."
+      >
+        <template #body>
+          <pre class="overflow-x-auto whitespace-pre-wrap rounded-md border border-default bg-elevated/40 p-3 font-mono text-xs text-highlighted">{{ schemaSql }}</pre>
+        </template>
+        <template #footer>
+          <UButton
+            :label="copyLabel('default', 'Copy the schema')"
+            :color="copyColor()"
+            variant="subtle"
+            :icon="copyIcon()"
+            @click="copy(schemaSql ?? '')"
+          />
+        </template>
+      </USlideover>
     </template>
   </div>
 </template>

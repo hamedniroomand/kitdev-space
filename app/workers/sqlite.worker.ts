@@ -2,6 +2,7 @@ import initSqlJs, { type Database } from 'sql.js'
 import type { ColumnInfo, TableInfo, WorkerMessage, WorkerResponse } from '~/types/sqlite'
 import { buildUpdateQuery } from '~/types/sqlite'
 import { getSampleSqlScript } from '~/utils/sqlite/sample-data'
+import { quoteIdentifier } from '~/utils/sqlite/query-builder'
 
 let db: Database | null = null
 let SQL: Awaited<ReturnType<typeof initSqlJs>> | null = null
@@ -70,6 +71,39 @@ function introspectSchema(database: Database): TableInfo[] {
   return tables
 }
 
+function countRows(database: Database, table: string): number {
+  const result = database.exec(`SELECT COUNT(*) FROM ${quoteIdentifier(table)};`)
+  return Number(result[0]?.values?.[0]?.[0] ?? 0)
+}
+
+/** The columns to copy when a row is duplicated. An INTEGER PRIMARY KEY is the rowid, so it gets a new value. */
+function copyableColumns(database: Database, table: string): string[] {
+  const info = database.exec(`PRAGMA table_info(${quoteIdentifier(table)});`)
+  return (info[0]?.values ?? [])
+    .filter(row => !(Number(row[5]) === 1 && String(row[2]).toUpperCase() === 'INTEGER'))
+    .map(row => String(row[1]))
+}
+
+/**
+ * Inserts one row. A NOT NULL column with no default gets an empty string
+ * when it holds text and a zero otherwise, so the insert works on a real
+ * table and the user fills the cells afterwards.
+ */
+function insertBlankRow(database: Database, table: string): void {
+  const info = database.exec(`PRAGMA table_info(${quoteIdentifier(table)});`)
+  const required = (info[0]?.values ?? []).filter((row) => {
+    const isRowidAlias = Number(row[5]) === 1 && String(row[2]).toUpperCase() === 'INTEGER'
+    return Number(row[3]) === 1 && row[4] === null && !isRowidAlias
+  })
+  if (!required.length) {
+    database.run(`INSERT INTO ${quoteIdentifier(table)} DEFAULT VALUES;`)
+    return
+  }
+  const columns = required.map(row => quoteIdentifier(String(row[1]))).join(', ')
+  const values = required.map(row => (/CHAR|CLOB|TEXT/i.test(String(row[2])) || String(row[2]) === '' ? '\'\'' : '0')).join(', ')
+  database.run(`INSERT INTO ${quoteIdentifier(table)} (${columns}) VALUES (${values});`)
+}
+
 self.onmessage = async (event: MessageEvent<WorkerMessage>) => {
   const message = event.data
 
@@ -126,10 +160,61 @@ self.onmessage = async (event: MessageEvent<WorkerMessage>) => {
         const totalRows = allRows.length
         const slicedRows = allRows.slice(0, 1000)
 
+        const total = message.countSql
+          ? Number(db.exec(message.countSql)[0]?.values?.[0]?.[0] ?? totalRows)
+          : undefined
+
         const response: WorkerResponse = {
           type: 'QUERY_RESULT',
-          result: { columns, rows: slicedRows, rowCount: totalRows, durationMs }
+          result: { columns, rows: slicedRows, rowCount: totalRows, durationMs },
+          total
         }
+        self.postMessage(response)
+        break
+      }
+
+      case 'INSERT_ROW': {
+        if (!db) {
+          throw new Error('Database is not loaded.')
+        }
+        insertBlankRow(db, message.table)
+        const response: WorkerResponse = { type: 'MUTATION_SUCCESS', table: message.table, rowCount: countRows(db, message.table) }
+        self.postMessage(response)
+        break
+      }
+
+      case 'DUPLICATE_ROW': {
+        if (!db) {
+          throw new Error('Database is not loaded.')
+        }
+        const table = quoteIdentifier(message.table)
+        const columns = copyableColumns(db, message.table).map(quoteIdentifier).join(', ')
+        if (!columns) {
+          throw new Error('This table has no column to copy.')
+        }
+        db.run(`INSERT INTO ${table} (${columns}) SELECT ${columns} FROM ${table} WHERE rowid = :rowid;`, { ':rowid': message.rowid })
+        const response: WorkerResponse = { type: 'MUTATION_SUCCESS', table: message.table, rowCount: countRows(db, message.table) }
+        self.postMessage(response)
+        break
+      }
+
+      case 'DELETE_ROW': {
+        if (!db) {
+          throw new Error('Database is not loaded.')
+        }
+        db.run(`DELETE FROM ${quoteIdentifier(message.table)} WHERE rowid = :rowid;`, { ':rowid': message.rowid })
+        const response: WorkerResponse = { type: 'MUTATION_SUCCESS', table: message.table, rowCount: countRows(db, message.table) }
+        self.postMessage(response)
+        break
+      }
+
+      case 'TABLE_SCHEMA': {
+        if (!db) {
+          throw new Error('Database is not loaded.')
+        }
+        const result = db.exec('SELECT sql FROM sqlite_master WHERE name = :name AND sql IS NOT NULL;', { ':name': message.table })
+        const sql = (result[0]?.values ?? []).map(row => `${String(row[0])};`).join('\n\n')
+        const response: WorkerResponse = { type: 'SCHEMA_RESULT', table: message.table, sql }
         self.postMessage(response)
         break
       }

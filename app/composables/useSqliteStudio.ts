@@ -1,5 +1,9 @@
 import type { QueryResult, SqlValue, TableInfo, WorkerResponse } from '~/types/sqlite'
+import type { TableQueryState, TableSort } from '~/utils/sqlite/query-builder'
+import { buildTableQuery, initialTableQuery, isTextColumn, tableSnippets } from '~/utils/sqlite/query-builder'
 import { rowsToCsv, rowsToJson } from '~/utils/sqlite/export'
+
+const HISTORY_LIMIT = 20
 
 export function useSqliteStudio() {
   const { downloadBlob, downloadText } = useDownload()
@@ -13,7 +17,33 @@ export function useSqliteStudio() {
   const databaseName = ref<string>('database.sqlite')
   const databaseSizeBytes = ref<number>(0)
 
+  /** The state of the query bar for the active table. */
+  const tableQuery = ref<TableQueryState | null>(null)
+  /** The row count of the active table after the search and the filters. */
+  const tableTotal = ref<number | null>(null)
+  /** True when the editor holds a query that the query bar did not build. */
+  const isCustomQuery = ref(false)
+  const selectedRowid = ref<number | null>(null)
+  const schemaSql = ref<string | null>(null)
+  const schemaOpen = ref(false)
+  /** The queries that the user ran, newest first. Kept for the browser tab only. */
+  const history = useSessionStorage<string[]>('kitdev:sqlite:history', [])
+
   let worker: Worker | null = null
+  let generatedSql = ''
+
+  const activeTableInfo = computed(() => tables.value.find(table => table.name === activeTable.value) ?? null)
+  const textColumns = computed(() => activeTableInfo.value?.columns.filter(isTextColumn).map(column => column.name) ?? [])
+  const snippets = computed(() => (activeTableInfo.value ? tableSnippets(activeTableInfo.value.name, activeTableInfo.value.columns) : []))
+
+  function post(message: Parameters<Worker['postMessage']>[0]) {
+    if (!worker) {
+      return
+    }
+    isExecuting.value = true
+    error.value = null
+    worker.postMessage(message)
+  }
 
   function initWorker() {
     if (worker || !import.meta.client) {
@@ -41,13 +71,27 @@ export function useSqliteStudio() {
 
         case 'QUERY_RESULT':
           queryResult.value = response.result
+          tableTotal.value = response.total ?? null
           error.value = null
           break
 
         case 'UPDATE_SUCCESS':
-          if (activeTable.value) {
-            selectTable(activeTable.value)
+          refreshRows()
+          break
+
+        case 'MUTATION_SUCCESS': {
+          const table = tables.value.find(item => item.name === response.table)
+          if (table) {
+            table.rowCount = response.rowCount
           }
+          selectedRowid.value = null
+          refreshRows()
+          break
+        }
+
+        case 'SCHEMA_RESULT':
+          schemaSql.value = response.sql || '-- The database holds no CREATE statement for this table.'
+          schemaOpen.value = true
           break
 
         case 'EXPORT_RESULT': {
@@ -81,46 +125,128 @@ export function useSqliteStudio() {
   function createBlankDatabase() {
     initWorker()
     databaseName.value = 'blank.sqlite'
-    isExecuting.value = true
-    worker?.postMessage({ type: 'INIT_DB' })
+    post({ type: 'INIT_DB' })
   }
 
   function loadSampleDatabase() {
     initWorker()
     databaseName.value = 'ecommerce-sample.sqlite'
-    isExecuting.value = true
-    worker?.postMessage({ type: 'LOAD_SAMPLE' })
+    post({ type: 'LOAD_SAMPLE' })
   }
 
-  function executeQuery(sql: string) {
-    if (!worker || !sql.trim()) {
+  function pushHistory(sql: string) {
+    const clean = sql.trim()
+    if (!clean) {
       return
     }
-    isExecuting.value = true
-    error.value = null
-    worker.postMessage({ type: 'EXECUTE_QUERY', sql })
+    history.value = [clean, ...history.value.filter(item => item !== clean)].slice(0, HISTORY_LIMIT)
+  }
+
+  /** Runs the SQL in the editor. A query that the bar did not build turns the filters off. */
+  function executeQuery(sql: string) {
+    if (!sql.trim()) {
+      return
+    }
+    activeQuery.value = sql
+    isCustomQuery.value = sql.trim() !== generatedSql.trim()
+    selectedRowid.value = null
+    pushHistory(sql)
+    if (isCustomQuery.value) {
+      tableTotal.value = null
+      post({ type: 'EXECUTE_QUERY', sql })
+    } else {
+      runTableQuery()
+    }
+  }
+
+  /** Builds the page query from the query bar and runs it with its count. */
+  function runTableQuery() {
+    const state = tableQuery.value
+    const info = activeTableInfo.value
+    if (!state || !info) {
+      return
+    }
+    const { sql, countSql } = buildTableQuery(state, { hasRowId: info.hasRowId, textColumns: textColumns.value })
+    generatedSql = sql
+    activeQuery.value = sql
+    isCustomQuery.value = false
+    post({ type: 'EXECUTE_QUERY', sql, countSql })
+  }
+
+  function refreshRows() {
+    if (isCustomQuery.value) {
+      post({ type: 'EXECUTE_QUERY', sql: activeQuery.value })
+    } else {
+      runTableQuery()
+    }
   }
 
   function selectTable(tableName: string) {
     activeTable.value = tableName
-    const query = `SELECT * FROM "${tableName}" LIMIT 100;`
-    activeQuery.value = query
-    executeQuery(query)
+    tableQuery.value = initialTableQuery(tableName, tableQuery.value?.limit ?? 100)
+    selectedRowid.value = null
+    runTableQuery()
+  }
+
+  /** Changes the query bar. A change other than the offset starts again from the first page. */
+  function updateTableQuery(patch: Partial<TableQueryState>) {
+    if (!tableQuery.value) {
+      return
+    }
+    const offsetOnly = Object.keys(patch).every(key => key === 'offset')
+    tableQuery.value = { ...tableQuery.value, ...patch, ...(offsetOnly ? {} : { offset: 0 }) }
+    selectedRowid.value = null
+    runTableQuery()
+  }
+
+  function toggleSort(column: string) {
+    const current: TableSort | null = tableQuery.value?.sort ?? null
+    const direction = current?.column === column && current.direction === 'asc' ? 'desc' : 'asc'
+    updateTableQuery({ sort: { column, direction } })
+  }
+
+  function backToTable() {
+    if (activeTable.value) {
+      selectTable(activeTable.value)
+    }
   }
 
   function updateCell(table: string, rowid: number, column: string, value: SqlValue) {
-    if (!worker) {
-      return
+    post({ type: 'UPDATE_CELL', table, rowid, column, value })
+  }
+
+  function insertRow() {
+    if (activeTable.value) {
+      post({ type: 'INSERT_ROW', table: activeTable.value })
     }
-    isExecuting.value = true
-    worker.postMessage({ type: 'UPDATE_CELL', table, rowid, column, value })
+  }
+
+  function duplicateRow() {
+    if (activeTable.value && selectedRowid.value !== null) {
+      post({ type: 'DUPLICATE_ROW', table: activeTable.value, rowid: selectedRowid.value })
+    }
+  }
+
+  function deleteRow() {
+    if (activeTable.value && selectedRowid.value !== null) {
+      post({ type: 'DELETE_ROW', table: activeTable.value, rowid: selectedRowid.value })
+    }
+  }
+
+  function showSchema() {
+    if (activeTable.value) {
+      post({ type: 'TABLE_SCHEMA', table: activeTable.value })
+    }
+  }
+
+  function selectRow(rowid: number | null) {
+    selectedRowid.value = selectedRowid.value === rowid ? null : rowid
   }
 
   function downloadDatabase() {
-    if (!worker) {
-      return
+    if (worker) {
+      worker.postMessage({ type: 'EXPORT_DB' })
     }
-    worker.postMessage({ type: 'EXPORT_DB' })
   }
 
   function exportCsv() {
@@ -145,6 +271,11 @@ export function useSqliteStudio() {
     isReady.value = false
     tables.value = []
     activeTable.value = null
+    tableQuery.value = null
+    tableTotal.value = null
+    isCustomQuery.value = false
+    selectedRowid.value = null
+    schemaSql.value = null
     queryResult.value = null
     error.value = null
   }
@@ -155,16 +286,34 @@ export function useSqliteStudio() {
     error,
     tables,
     activeTable,
+    activeTableInfo,
     activeQuery,
     queryResult,
     databaseName,
     databaseSizeBytes,
+    tableQuery,
+    tableTotal,
+    textColumns,
+    isCustomQuery,
+    selectedRowid,
+    schemaSql,
+    schemaOpen,
+    history,
+    snippets,
     loadDatabaseFile,
     createBlankDatabase,
     loadSampleDatabase,
     executeQuery,
     selectTable,
+    updateTableQuery,
+    toggleSort,
+    backToTable,
     updateCell,
+    insertRow,
+    duplicateRow,
+    deleteRow,
+    showSchema,
+    selectRow,
     downloadDatabase,
     exportCsv,
     exportJson,

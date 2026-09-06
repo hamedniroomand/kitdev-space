@@ -1,120 +1,180 @@
 <script setup lang="ts">
 import type { QueryResult, SqlValue } from '~/types/sqlite'
+import type { TableSort } from '~/utils/sqlite/query-builder'
+import { ROWID_ALIAS } from '~/utils/sqlite/query-builder'
 
+/**
+ * The result grid. When the result carries the rowid alias, a row can be
+ * selected and a cell can be edited. The rowid comes from that column, so an
+ * edit hits the right row whatever the first column is.
+ */
 const props = defineProps<{
   result: QueryResult | null
   activeTable: string | null
-  canEdit?: boolean
+  /** The offset of the first row, so the row numbers continue across pages. */
+  offset?: number
+  sort?: TableSort | null
+  sortable?: boolean
+  selectedRowid?: number | null
 }>()
 
 const emit = defineEmits<{
   updateCell: [payload: { table: string, rowid: number, column: string, value: SqlValue }]
+  sort: [column: string]
+  selectRow: [rowid: number]
 }>()
 
-const page = ref(1)
-const pageSize = ref(50)
+const rowidIndex = computed(() => props.result?.columns.indexOf(ROWID_ALIAS) ?? -1)
+const canEdit = computed(() => rowidIndex.value >= 0 && !!props.activeTable)
+
+/** The columns to show, with the index of each one in a row. */
+const visibleColumns = computed(() => (props.result?.columns ?? [])
+  .map((name, index) => ({ name, index }))
+  .filter(column => column.index !== rowidIndex.value))
 
 const editingCell = ref<{ rowIndex: number, colIndex: number } | null>(null)
-const editValue = ref<string>('')
+const editValue = ref('')
 
-const totalRows = computed(() => props.result?.rows.length ?? 0)
+function rowidOf(row: unknown[]): number | null {
+  return rowidIndex.value >= 0 ? Number(row[rowidIndex.value]) : null
+}
 
-const paginatedRows = computed(() => {
-  if (!props.result) return []
-  const start = (page.value - 1) * pageSize.value
-  return props.result.rows.slice(start, start + pageSize.value)
-})
-
-function startEdit(rowIndex: number, colIndex: number, currentVal: unknown) {
-  if (!props.canEdit || !props.activeTable) {
+function startEdit(rowIndex: number, colIndex: number, currentValue: unknown) {
+  if (!canEdit.value) {
     return
   }
   editingCell.value = { rowIndex, colIndex }
-  editValue.value = currentVal === null || currentVal === undefined ? '' : String(currentVal)
+  editValue.value = currentValue === null || currentValue === undefined ? '' : String(currentValue)
 }
 
-function commitEdit(tableRow: unknown[], colName: string) {
-  if (!editingCell.value || !props.activeTable) {
+function commit(row: unknown[], column: string, value: SqlValue) {
+  const rowid = rowidOf(row)
+  if (!editingCell.value || !props.activeTable || rowid === null) {
     return
   }
-
-  const rowid = Number(tableRow[0])
-  emit('updateCell', {
-    table: props.activeTable,
-    rowid,
-    column: colName,
-    value: editValue.value
-  })
-
   editingCell.value = null
+  emit('updateCell', { table: props.activeTable, rowid, column, value })
+}
+
+function commitEdit(row: unknown[], column: string) {
+  commit(row, column, editValue.value)
+}
+
+function setNull(row: unknown[], column: string) {
+  commit(row, column, null)
 }
 
 function cancelEdit() {
   editingCell.value = null
 }
+
+function sortIcon(column: string): string {
+  if (props.sort?.column !== column) {
+    return 'i-lucide-chevrons-up-down'
+  }
+  return props.sort.direction === 'asc' ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'
+}
 </script>
 
 <template>
-  <div class="flex-1 flex flex-col overflow-hidden bg-white dark:bg-gray-900">
+  <div class="flex flex-1 flex-col overflow-hidden bg-default">
     <div
       v-if="!result || result.columns.length === 0"
-      class="flex-1 flex items-center justify-center text-sm text-gray-400"
+      class="flex flex-1 items-center justify-center text-sm text-muted"
     >
-      No query results. Run a query or select a table from the sidebar.
+      No rows to show. Select a table in the sidebar or run a query.
     </div>
 
     <div
       v-else
       class="flex-1 overflow-auto"
     >
-      <table class="w-full text-left text-xs border-collapse">
-        <thead class="sticky top-0 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 font-semibold border-b border-gray-200 dark:border-gray-700 select-none">
+      <table class="w-full border-collapse text-left text-xs">
+        <thead class="sticky top-0 select-none border-b border-default bg-elevated font-semibold text-muted">
           <tr>
-            <th class="w-12 px-2 py-1.5 text-center text-gray-400 font-mono">
+            <th class="w-12 px-2 py-1.5 text-center font-mono text-dimmed">
               #
             </th>
             <th
-              v-for="col in result.columns"
-              :key="col"
-              class="px-3 py-1.5 font-mono border-r border-gray-200 dark:border-gray-700 last:border-r-0"
+              v-for="column in visibleColumns"
+              :key="column.name"
+              class="border-r border-default px-3 py-1.5 font-mono last:border-r-0"
             >
-              {{ col }}
+              <button
+                v-if="sortable"
+                type="button"
+                class="inline-flex items-center gap-1 hover:text-highlighted"
+                :aria-label="`Sort by ${column.name}`"
+                @click="emit('sort', column.name)"
+              >
+                {{ column.name }}
+                <UIcon
+                  :name="sortIcon(column.name)"
+                  class="size-3"
+                  :class="sort?.column === column.name ? 'text-primary' : 'text-dimmed'"
+                />
+              </button>
+              <span v-else>{{ column.name }}</span>
             </th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-gray-100 dark:divide-gray-800 text-gray-800 dark:text-gray-200 font-mono">
+        <tbody class="divide-y divide-default font-mono text-default">
           <tr
-            v-for="(row, rIndex) in paginatedRows"
-            :key="rIndex"
-            class="hover:bg-gray-50/80 dark:hover:bg-gray-800/50 transition-colors"
+            v-for="(row, rowIndex) in result.rows"
+            :key="rowIndex"
+            class="transition-colors hover:bg-elevated/60"
+            :class="{ 'bg-primary/10': selectedRowid !== null && selectedRowid !== undefined && rowidOf(row) === selectedRowid }"
           >
-            <td class="px-2 py-1 text-center text-gray-400 select-none">
-              {{ (page - 1) * pageSize + rIndex + 1 }}
+            <td class="px-2 py-1 text-center text-dimmed">
+              <button
+                v-if="canEdit"
+                type="button"
+                class="w-full select-none rounded hover:text-primary"
+                :aria-label="`Select row ${(offset ?? 0) + rowIndex + 1}`"
+                @click="emit('selectRow', rowidOf(row)!)"
+              >
+                {{ (offset ?? 0) + rowIndex + 1 }}
+              </button>
+              <span
+                v-else
+                class="select-none"
+              >{{ (offset ?? 0) + rowIndex + 1 }}</span>
             </td>
             <td
-              v-for="(cell, cIndex) in row"
-              :key="cIndex"
-              class="px-3 py-1 truncate max-w-xs border-r border-gray-100 dark:border-gray-800 last:border-r-0 cursor-pointer"
-              @dblclick="startEdit(rIndex, cIndex, cell)"
+              v-for="column in visibleColumns"
+              :key="column.index"
+              class="max-w-xs truncate border-r border-default px-3 py-1 last:border-r-0"
+              :class="{ 'cursor-pointer': canEdit }"
+              :title="canEdit ? 'Double-click to edit' : undefined"
+              @dblclick="startEdit(rowIndex, column.index, row[column.index])"
             >
               <div
-                v-if="editingCell?.rowIndex === rIndex && editingCell?.colIndex === cIndex"
-                class="flex items-center"
+                v-if="editingCell?.rowIndex === rowIndex && editingCell?.colIndex === column.index"
+                class="flex items-center gap-1"
               >
                 <input
                   v-model="editValue"
-                  class="w-full bg-white dark:bg-gray-950 border border-primary rounded px-1.5 py-0.5 text-xs text-gray-900 dark:text-gray-100 focus:outline-none"
+                  class="w-full rounded border border-primary bg-default px-1.5 py-0.5 text-xs text-highlighted focus:outline-none"
+                  :aria-label="`Edit ${column.name}`"
                   autofocus
-                  @keydown.enter="commitEdit(row, result.columns[cIndex]!)"
+                  @keydown.enter="commitEdit(row, column.name)"
                   @keydown.esc="cancelEdit"
-                  @blur="commitEdit(row, result.columns[cIndex]!)"
+                  @blur="commitEdit(row, column.name)"
                 >
+                <UButton
+                  size="xs"
+                  color="neutral"
+                  variant="subtle"
+                  label="NULL"
+                  class="shrink-0"
+                  @mousedown.prevent="setNull(row, column.name)"
+                />
               </div>
               <span
-                v-else-if="cell === null"
-                class="text-gray-400 italic font-sans text-[11px]"
+                v-else-if="row[column.index] === null"
+                class="font-sans text-[11px] italic text-dimmed"
               >NULL</span>
-              <span v-else>{{ cell }}</span>
+              <span v-else>{{ row[column.index] }}</span>
             </td>
           </tr>
         </tbody>
@@ -122,29 +182,13 @@ function cancelEdit() {
     </div>
 
     <div
-      v-if="result && totalRows > 0"
-      class="h-10 px-4 border-t border-gray-200 dark:border-gray-800 flex items-center justify-between bg-gray-50 dark:bg-gray-950 text-xs text-gray-500"
+      v-if="result && result.rows.length > 0"
+      class="flex h-9 items-center justify-between border-t border-default bg-elevated/40 px-4 text-xs text-muted"
     >
-      <span>Total: {{ totalRows }} rows</span>
-      <div class="flex items-center gap-2">
-        <UButton
-          icon="i-lucide-chevron-left"
-          size="xs"
-          color="neutral"
-          variant="ghost"
-          :disabled="page <= 1"
-          @click="page--"
-        />
-        <span>Page {{ page }} of {{ Math.ceil(totalRows / pageSize) || 1 }}</span>
-        <UButton
-          icon="i-lucide-chevron-right"
-          size="xs"
-          color="neutral"
-          variant="ghost"
-          :disabled="page >= Math.ceil(totalRows / pageSize)"
-          @click="page++"
-        />
-      </div>
+      <span>
+        {{ result.rows.length }} rows shown<template v-if="result.rowCount > result.rows.length"> of {{ result.rowCount }}. Add a LIMIT to see the rest.</template>
+      </span>
+      <span v-if="canEdit">Click a row number to select it. Double-click a cell to edit it.</span>
     </div>
   </div>
 </template>
