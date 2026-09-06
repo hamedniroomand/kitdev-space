@@ -2,6 +2,7 @@ import { format } from 'sql-formatter'
 import type { Extension } from '@codemirror/state'
 import { linter, type Diagnostic } from '@codemirror/lint'
 import { sql, PostgreSQL, MySQL, SQLite } from '@codemirror/lang-sql'
+import type { Parser, SyntaxNodeRef } from '@lezer/common'
 import { DataError, positionToLineColumn } from './errors'
 
 export type SqlDialect = 'sql' | 'postgresql' | 'mysql' | 'sqlite' | 'transactsql'
@@ -21,18 +22,18 @@ export interface SqlValidationResult {
   column?: number
 }
 
-function resolveDialectParser(dialect: SqlDialect = 'sql') {
+function resolveDialectParser(dialect: SqlDialect = 'sql'): Parser {
   switch (dialect) {
     case 'postgresql':
-      return PostgreSQL
+      return PostgreSQL.language.parser
     case 'mysql':
-      return MySQL
+      return MySQL.language.parser
     case 'sqlite':
-      return SQLite
+      return SQLite.language.parser
     case 'transactsql':
     case 'sql':
     default:
-      return sql().language
+      return sql().language.parser
   }
 }
 
@@ -80,12 +81,12 @@ export function validateSql(sqlText: string, dialect: SqlDialect = 'sql'): SqlVa
   }
 
   // 1. Check syntax tree error nodes via Lezer SQL parser
-  const parser = resolveDialectParser(dialect).parser
+  const parser = resolveDialectParser(dialect)
   const tree = parser.parse(sqlText)
   let syntaxError: { from: number, to: number } | null = null
 
   tree.iterate({
-    enter(node) {
+    enter(node: SyntaxNodeRef) {
       if (node.type.isError) {
         syntaxError = { from: node.from, to: node.to }
         return false
@@ -93,8 +94,9 @@ export function validateSql(sqlText: string, dialect: SqlDialect = 'sql'): SqlVa
     }
   })
 
-  if (syntaxError) {
-    const { line, column } = positionToLineColumn(sqlText, syntaxError.from)
+  if (syntaxError !== null) {
+    const errorLocation: { from: number, to: number } = syntaxError
+    const { line, column } = positionToLineColumn(sqlText, errorLocation.from)
     return {
       valid: false,
       error: `Syntax error near line ${line}, column ${column}`,
@@ -133,11 +135,11 @@ export function createSqlLinter(getDialect: () => SqlDialect): Extension {
 
     const diagnostics: Diagnostic[] = []
     const dialect = getDialect()
-    const parser = resolveDialectParser(dialect).parser
+    const parser = resolveDialectParser(dialect)
     const tree = parser.parse(text)
 
     tree.iterate({
-      enter(node) {
+      enter(node: SyntaxNodeRef) {
         if (node.type.isError) {
           diagnostics.push({
             from: node.from,

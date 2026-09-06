@@ -17,10 +17,12 @@ const props = withDefaults(defineProps<{
   rows?: number
   lang?: ToolEditorLang
   wrap?: boolean
+  extensions?: Extension[]
 }>(), {
   rows: 12,
   lang: 'text',
-  wrap: true
+  wrap: true,
+  extensions: () => []
 })
 
 const colorMode = useColorMode()
@@ -61,6 +63,10 @@ const extensions = computed((): Extension[] => {
 
   if (isDark.value) {
     list.push(oneDark)
+  }
+
+  if (props.extensions?.length) {
+    list.push(...props.extensions)
   }
 
   return list
