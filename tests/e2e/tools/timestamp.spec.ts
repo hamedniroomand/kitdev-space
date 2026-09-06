@@ -1,0 +1,24 @@
+import { expect, test } from '@playwright/test'
+import { gotoHydrated } from '../utils'
+
+test.describe('Timestamp Studio tool', () => {
+  test('parses timestamps and converts between ISO and Unix epoch', async ({ page }) => {
+    await gotoHydrated(page, '/hub/dev/timestamp')
+
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+
+    // Test epoch 0
+    const input = page.locator('main').getByPlaceholder('e.g. 1700000000 or 2024-01-01T00:00:00Z')
+    await input.fill('0')
+
+    await expect(page.locator('main').getByText('1970-01-01T00:00:00.000Z')).toBeVisible()
+
+    // Click Set Now button
+    await page.getByRole('button', { name: 'Set Now' }).click()
+    await expect(input).not.toHaveValue('0')
+
+    // Click Clear
+    await page.getByRole('button', { name: 'Clear' }).click()
+    await expect(input).toHaveValue('')
+  })
+})

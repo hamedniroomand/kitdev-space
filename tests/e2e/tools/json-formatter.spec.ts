@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { gotoHydrated } from './utils'
+import { gotoHydrated } from '../utils'
 
 test('formats JSON on the JSON Formatter page', async ({ page }) => {
   await gotoHydrated(page, '/hub/data/json-formatter')

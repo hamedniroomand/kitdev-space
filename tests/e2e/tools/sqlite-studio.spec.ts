@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { gotoHydrated } from './utils'
+import { gotoHydrated } from '../utils'
 
 test.describe('SQLite Studio', () => {
   test('loads sample database and runs query', async ({ page }) => {

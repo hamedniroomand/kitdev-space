@@ -10,5 +10,28 @@ import type { Page } from '@playwright/test'
  */
 export async function gotoHydrated(page: Page, path: string) {
   await page.goto(path)
-  await page.waitForLoadState('networkidle')
+  await page.waitForLoadState('domcontentloaded')
+  try {
+    await page.waitForLoadState('networkidle', { timeout: 15_000 })
+  } catch {
+    // Ignore timeout when background requests remain active
+  }
+}
+
+/**
+ * Fill text into a CodeMirror editor with the given accessibility label.
+ */
+export async function fillCodeMirror(page: Page, label: string, text: string) {
+  const editor = page.getByRole('textbox', { name: label })
+  await editor.waitFor({ state: 'visible' })
+  await editor.fill(text)
+}
+
+/**
+ * Read the text content of a CodeMirror editor with the given accessibility label.
+ */
+export async function getCodeMirrorValue(page: Page, label: string): Promise<string> {
+  const editor = page.getByRole('textbox', { name: label })
+  await editor.waitFor({ state: 'visible' })
+  return (await editor.textContent()) ?? ''
 }
