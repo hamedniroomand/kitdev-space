@@ -142,7 +142,9 @@ export default defineNuxtConfig({
     payloadExtraction: 'client',
     defaults: {
       nuxtLink: {
-        prefetchOn: { interaction: true }
+        // Both flags are needed: Nuxt merges this object with its default
+        // `{ visibility: true }`, so `interaction` alone keeps visibility on.
+        prefetchOn: { visibility: false, interaction: true }
       }
     },
     viewTransition: true
