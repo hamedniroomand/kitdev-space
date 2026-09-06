@@ -1,0 +1,156 @@
+<script setup lang="ts">
+import { svgToComponent, type SvgComponentTarget } from '~~/shared/utils/dev/svg-component'
+
+const input = ref(`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <circle cx="12" cy="12" r="10"/>
+  <path d="M8 12h8"/>
+</svg>`)
+const output = ref('')
+const target = ref<SvgComponentTarget>('react')
+const toast = useToast()
+const { status, error, result, run, reset } = useTool<string>()
+const { copy, copied } = useClipboard({ legacy: true })
+const { downloadText } = useDownload()
+
+const targetItems = [
+  { label: 'React (JSX)', value: 'react' },
+  { label: 'Vue 3', value: 'vue' }
+]
+
+useToolSeo('svg-component')
+
+async function convert() {
+  await run(() => svgToComponent(input.value, target.value))
+  if (status.value === 'success' && result.value !== null) {
+    output.value = result.value
+  }
+}
+
+async function handleCopy() {
+  if (!output.value) {
+    return
+  }
+  await copy(output.value)
+  toast.add({ title: copied.value ? 'Copied' : 'Copy failed', color: copied.value ? 'success' : 'error' })
+}
+
+function handleDownload() {
+  if (!output.value) {
+    return
+  }
+  const filename = target.value === 'vue' ? 'Icon.vue' : 'SvgIcon.jsx'
+  const mime = target.value === 'vue' ? 'text/plain' : 'text/javascript'
+  downloadText(filename, output.value, mime)
+}
+
+function handleClear() {
+  input.value = ''
+  output.value = ''
+  reset()
+}
+
+defineShortcuts({
+  meta_enter: {
+    usingInput: true,
+    handler: () => {
+      convert()
+    }
+  }
+})
+</script>
+
+<template>
+  <ToolPage>
+    <template #header>
+      <ToolHeader
+        title="SVG to Component"
+        description="Convert SVG markup into a React JSX or Vue 3 component."
+      />
+    </template>
+
+    <UAlert
+      color="neutral"
+      variant="subtle"
+      title="Processed locally"
+      description="This tool runs in the browser."
+    />
+
+    <ToolEditor
+      v-model="input"
+      label="SVG input"
+      placeholder="Paste SVG code here"
+    />
+
+    <UFormField label="Target">
+      <USelect
+        v-model="target"
+        :items="targetItems"
+        class="w-48"
+      />
+    </UFormField>
+
+    <ToolActions>
+      <UButton
+        label="Convert"
+        icon="i-lucide-code-xml"
+        :loading="status === 'processing'"
+        @click="convert"
+      />
+      <UButton
+        label="Copy"
+        color="neutral"
+        variant="subtle"
+        icon="i-lucide-copy"
+        :disabled="!output"
+        @click="handleCopy"
+      />
+      <UButton
+        label="Download"
+        color="neutral"
+        variant="subtle"
+        icon="i-lucide-download"
+        :disabled="!output"
+        @click="handleDownload"
+      />
+      <UButton
+        label="Clear"
+        color="neutral"
+        variant="ghost"
+        icon="i-lucide-eraser"
+        @click="handleClear"
+      />
+    </ToolActions>
+
+    <ToolError
+      v-if="error"
+      :message="error"
+    />
+
+    <ToolEditor
+      v-model="output"
+      label="Output"
+      readonly
+      placeholder="Result appears here"
+    />
+
+    <template #docs>
+      <DataToolDocs title="About SVG components">
+        <div class="space-y-4 text-muted">
+          <p>
+            React output maps common SVG attributes to camelCase JSX names and spreads props onto the root svg element.
+          </p>
+          <p>
+            Vue output wraps the cleaned SVG in a template block.
+          </p>
+        </div>
+        <DataRelatedTools
+          class="mt-8"
+          :items="[
+            { label: 'SVG to PNG / WebP', to: '/hub/image/svg-converter' },
+            { label: 'TS / JSX Transpiler', to: '/hub/dev/transpiler' }
+          ]"
+        />
+      </DataToolDocs>
+    </template>
+  </ToolPage>
+</template>

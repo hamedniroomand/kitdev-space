@@ -132,6 +132,36 @@ export async function convertImage(
   }
 }
 
+const SVG_SCALES = new Set([1, 2, 4])
+
+export async function convertSvgAtScale(
+  input: Uint8Array,
+  opts: { scale: number, format: 'png' | 'webp', quality?: number }
+): Promise<ImageResult> {
+  if (!SVG_SCALES.has(opts.scale)) {
+    throw new ImageError('Choose a scale of 1, 2, or 4.')
+  }
+  if (!isSvgBytes(input)) {
+    throw new ImageError('Provide valid SVG input.')
+  }
+
+  try {
+    const png = rasterizeSvg(input, { scale: opts.scale })
+    const quality = clampQuality(opts.quality)
+    const img = applyFormat(
+      new Bun.Image(png, { maxPixels: MAX_PIXELS, autoOrient: true }),
+      opts.format,
+      quality
+    )
+    return await finish(img, opts.format)
+  } catch (cause) {
+    throw mapImageCause(
+      cause,
+      'The SVG convert operation failed.\n\nCheck the input and try again.'
+    )
+  }
+}
+
 export async function resizeImage(
   input: Uint8Array,
   opts: {

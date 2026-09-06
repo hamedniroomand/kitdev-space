@@ -1,0 +1,220 @@
+<script setup lang="ts">
+import {
+  buildQrPayload,
+  generateQrSvg,
+  type QrPayloadKind
+} from '~~/shared/utils/dev/qrcode'
+
+definePageMeta({
+  ssr: false
+})
+
+const kind = ref<QrPayloadKind>('url')
+const text = ref('https://kitdev.space')
+const ssid = ref('HomeNet')
+const password = ref('')
+const security = ref<'WPA' | 'WEP' | 'nopass'>('WPA')
+const hidden = ref(false)
+const svg = ref('')
+const previewUrl = computed(() => {
+  if (!svg.value) {
+    return null
+  }
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg.value)}`
+})
+const toast = useToast()
+const { status, error, run, reset } = useTool<string>()
+const { copy, copied } = useClipboard({ legacy: true })
+const { downloadText } = useDownload()
+
+const kindItems = [
+  { label: 'URL', value: 'url' },
+  { label: 'Plain text', value: 'text' },
+  { label: 'Wi-Fi', value: 'wifi' }
+]
+
+const securityItems = [
+  { label: 'WPA / WPA2', value: 'WPA' },
+  { label: 'WEP', value: 'WEP' },
+  { label: 'Open', value: 'nopass' }
+]
+
+useToolSeo('qr-code')
+
+async function generate() {
+  await run(async () => {
+    const payload = buildQrPayload(
+      kind.value,
+      text.value,
+      kind.value === 'wifi'
+        ? {
+            ssid: ssid.value,
+            password: password.value,
+            security: security.value,
+            hidden: hidden.value
+          }
+        : undefined
+    )
+    svg.value = await generateQrSvg(payload)
+    return svg.value
+  })
+}
+
+async function handleCopy() {
+  if (!svg.value) {
+    return
+  }
+  await copy(svg.value)
+  toast.add({ title: copied.value ? 'Copied' : 'Copy failed', color: copied.value ? 'success' : 'error' })
+}
+
+function handleDownload() {
+  if (!svg.value) {
+    return
+  }
+  downloadText('qr-code.svg', svg.value, 'image/svg+xml')
+}
+
+function handleClear() {
+  svg.value = ''
+  reset()
+}
+
+defineShortcuts({
+  meta_enter: {
+    usingInput: true,
+    handler: () => {
+      generate()
+    }
+  }
+})
+</script>
+
+<template>
+  <ToolPage>
+    <template #header>
+      <ToolHeader
+        title="QR Code Studio"
+        description="Generate SVG QR codes for URLs, text, and Wi-Fi networks."
+      />
+    </template>
+
+    <UAlert
+      color="neutral"
+      variant="subtle"
+      title="Processed locally"
+      description="This tool runs in the browser."
+    />
+
+    <UFormField label="Type">
+      <USelect
+        v-model="kind"
+        :items="kindItems"
+        class="w-48"
+      />
+    </UFormField>
+
+    <ToolEditor
+      v-if="kind !== 'wifi'"
+      v-model="text"
+      :label="kind === 'url' ? 'URL' : 'Text'"
+      :placeholder="kind === 'url' ? 'https://example.com' : 'Paste text here'"
+    />
+
+    <div
+      v-else
+      class="grid gap-4 sm:grid-cols-2"
+    >
+      <UFormField label="Network name (SSID)">
+        <UInput
+          v-model="ssid"
+          class="w-full"
+        />
+      </UFormField>
+      <UFormField label="Security">
+        <USelect
+          v-model="security"
+          :items="securityItems"
+          class="w-full"
+        />
+      </UFormField>
+      <UFormField
+        v-if="security !== 'nopass'"
+        label="Password"
+      >
+        <UInput
+          v-model="password"
+          type="password"
+          class="w-full"
+        />
+      </UFormField>
+      <UFormField label="Hidden network">
+        <USwitch v-model="hidden" />
+      </UFormField>
+    </div>
+
+    <ToolActions>
+      <UButton
+        label="Generate"
+        icon="i-lucide-qr-code"
+        :loading="status === 'processing'"
+        @click="generate"
+      />
+      <UButton
+        label="Copy SVG"
+        color="neutral"
+        variant="subtle"
+        icon="i-lucide-copy"
+        :disabled="!svg"
+        @click="handleCopy"
+      />
+      <UButton
+        label="Download SVG"
+        color="neutral"
+        variant="subtle"
+        icon="i-lucide-download"
+        :disabled="!svg"
+        @click="handleDownload"
+      />
+      <UButton
+        label="Clear"
+        color="neutral"
+        variant="ghost"
+        icon="i-lucide-eraser"
+        @click="handleClear"
+      />
+    </ToolActions>
+
+    <ToolError
+      v-if="error"
+      :message="error"
+    />
+
+    <img
+      v-if="previewUrl"
+      :src="previewUrl"
+      alt="QR code preview"
+      class="max-w-xs rounded-md border border-default bg-elevated/40 p-4"
+    >
+
+    <template #docs>
+      <DataToolDocs title="About QR codes">
+        <div class="space-y-4 text-muted">
+          <p>
+            The tool builds an SVG QR code in the browser and lets you download the file.
+          </p>
+          <p>
+            Wi-Fi codes use the standard WIFI: payload format.
+          </p>
+        </div>
+        <DataRelatedTools
+          class="mt-8"
+          :items="[
+            { label: 'URL Inspector', to: '/hub/network/url-inspector' },
+            { label: 'Lorem Ipsum & Mock Data', to: '/hub/data/lorem' }
+          ]"
+        />
+      </DataToolDocs>
+    </template>
+  </ToolPage>
+</template>

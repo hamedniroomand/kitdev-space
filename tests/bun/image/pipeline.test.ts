@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import {
   convertImage,
+  convertSvgAtScale,
   getImageMetadata,
   resizeImage,
   transformImage
@@ -92,5 +93,12 @@ describe('image pipeline', () => {
     })
     expect(out.width).toBeLessThanOrEqual(40)
     expect(out.height).toBeLessThanOrEqual(40)
+  })
+
+  it('converts svg at 2x scale to png', async () => {
+    const out = await convertSvgAtScale(svg, { scale: 2, format: 'png' })
+    expect(out.mime).toBe('image/png')
+    expect(out.width).toBe(32)
+    expect(out.height).toBe(16)
   })
 })

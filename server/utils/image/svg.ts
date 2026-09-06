@@ -41,7 +41,7 @@ export function assertNoExternalSvgResources(input: Uint8Array): void {
 
 export function rasterizeSvg(
   input: Uint8Array,
-  opts?: { width?: number, height?: number }
+  opts?: { width?: number, height?: number, scale?: number }
 ): Uint8Array {
   assertNoExternalSvgResources(input)
 
@@ -58,7 +58,12 @@ export function rasterizeSvg(
 
     let fitTo: { mode: 'original' } | { mode: 'zoom', value: number } = { mode: 'original' }
 
-    if (opts?.width != null && opts?.height != null) {
+    if (opts?.scale != null) {
+      if (!Number.isFinite(opts.scale) || opts.scale <= 0) {
+        throw new ImageError('Scale must be a number greater than 0.')
+      }
+      fitTo = { mode: 'zoom', value: opts.scale }
+    } else if (opts?.width != null && opts?.height != null) {
       fitTo = fitInside(srcW, srcH, opts.width, opts.height)
     } else if (srcW * srcH > MAX_PIXELS) {
       const zoom = Math.sqrt(MAX_PIXELS / (srcW * srcH))
