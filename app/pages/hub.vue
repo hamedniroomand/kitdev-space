@@ -67,9 +67,21 @@ function scrollToTop() {
   }
 }
 
+const sidebarNav = ref<HTMLElement | null>(null)
+
+/** Keeps the active tool in view. A tool low in the list is off screen on a fresh load. */
+function revealActiveTool() {
+  nextTick(() => {
+    sidebarNav.value?.querySelector('[aria-current="page"]')?.scrollIntoView({ block: 'nearest' })
+  })
+}
+
 watch(() => route.path, () => {
   scrollToTop()
+  revealActiveTool()
 })
+
+onMounted(revealActiveTool)
 </script>
 
 <template>
@@ -154,7 +166,10 @@ watch(() => route.path, () => {
           </UButton>
         </div>
 
-        <nav class="flex-1 overflow-y-auto p-3 space-y-6">
+        <nav
+          ref="sidebarNav"
+          class="flex-1 overflow-y-auto p-3 space-y-6"
+        >
           <div
             v-for="group in categorizedTools"
             :key="group.category"
