@@ -622,6 +622,45 @@ export const tools: Tool[] = [
     status: 'available'
   },
   {
+    id: 'image-base64',
+    slug: 'base64',
+    name: 'Image to Base64',
+    description: 'Convert images to Base64 data URIs and decode Base64 back to images.',
+    category: 'image',
+    icon: 'i-lucide-file-code',
+    keywords: ['image', 'base64', 'data uri', 'encode', 'decode', 'img'],
+    route: '/hub/image/base64',
+    clientOnly: true,
+    serverRequired: false,
+    status: 'available'
+  },
+  {
+    id: 'placeholder',
+    slug: 'placeholder',
+    name: 'Placeholder Image Generator',
+    description: 'Create solid or gradient placeholder images with custom dimensions and text.',
+    category: 'image',
+    icon: 'i-lucide-box',
+    keywords: ['image', 'placeholder', 'svg', 'dimensions', 'banner', 'mockup'],
+    route: '/hub/image/placeholder',
+    clientOnly: true,
+    serverRequired: false,
+    status: 'available'
+  },
+  {
+    id: 'exif-stripper',
+    slug: 'exif-stripper',
+    name: 'EXIF Metadata Stripper',
+    description: 'Remove EXIF metadata, GPS locations, and camera tags from photos.',
+    category: 'image',
+    icon: 'i-lucide-shield-alert',
+    keywords: ['image', 'exif', 'metadata', 'privacy', 'gps', 'strip', 'clean'],
+    route: '/hub/image/exif-stripper',
+    clientOnly: false,
+    serverRequired: true,
+    status: 'available'
+  },
+  {
     id: 'semver',
     slug: 'semver',
     name: 'Semver Calculator',

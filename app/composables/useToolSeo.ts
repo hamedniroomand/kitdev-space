@@ -13,6 +13,15 @@ export function useToolSeo(toolId: string) {
   const breadcrumbs = computed(() => buildToolBreadcrumbs(tool))
   provide('toolBreadcrumbs', breadcrumbs)
 
+  onMounted(() => {
+    try {
+      const { recordRecent } = useToolPreferences()
+      recordRecent(tool.id)
+    } catch {
+      // Ignore storage errors
+    }
+  })
+
   useSeoMeta({
     title: tool.name,
     description: tool.description,
