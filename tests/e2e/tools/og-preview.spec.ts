@@ -1,22 +1,14 @@
 import { expect, test } from '@playwright/test'
+import ogPreviewFixture from '../fixtures/og-preview.json' with { type: 'json' }
 import { gotoHydrated } from '../utils'
 
 test.describe('Open Graph Preview tool', () => {
   test('previews Open Graph cards with mock response', async ({ page }) => {
-    await page.route('**/api/network/og-preview', async (route) => {
+    await page.route('/api/network/og-preview', async (route) => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify({
-          result: {
-            title: 'Sample OpenGraph Title',
-            description: 'Sample description of the page for testing preview.',
-            image: 'https://example.com/og.png',
-            url: 'https://example.com/post/1',
-            siteName: 'Example Portal',
-            twitterCard: 'summary_large_image',
-          },
-        }),
+        body: JSON.stringify(ogPreviewFixture),
       })
     })
 

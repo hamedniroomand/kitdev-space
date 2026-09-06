@@ -1,0 +1,10 @@
+{
+  "result": {
+    "title": "Sample OpenGraph Title",
+    "description": "Sample description of the page for testing preview.",
+    "image": "https://example.com/og.png",
+    "url": "https://example.com/post/1",
+    "siteName": "Example Portal",
+    "twitterCard": "summary_large_image"
+  }
+}

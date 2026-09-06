@@ -1,0 +1,29 @@
+{
+  "result": {
+    "query": "github.com",
+    "type": "domain",
+    "found": true,
+    "registrationDate": "2007-10-09T18:20:50Z",
+    "expirationDate": "2028-10-09T18:20:50Z",
+    "daysUntilExpiration": 760,
+    "dnssec": true,
+    "registrar": {
+      "name": "MarkMonitor Inc.",
+      "ianaId": "292",
+      "abuseEmail": "abusecomplaints@markmonitor.com",
+      "abusePhone": "+1.2083895740"
+    },
+    "status": [
+      "clientDeleteProhibited",
+      "clientTransferProhibited"
+    ],
+    "nameservers": [
+      "dns1.p08.nsone.net",
+      "dns2.p08.nsone.net"
+    ],
+    "raw": {
+      "objectClassName": "domain",
+      "handle": "github.com"
+    }
+  }
+}

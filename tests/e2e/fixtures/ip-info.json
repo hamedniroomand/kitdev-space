@@ -1,0 +1,10 @@
+{
+  "ip": "1.1.1.1",
+  "version": 4,
+  "type": "public",
+  "isSpecial": false,
+  "hostname": "one.one.one.one",
+  "decimal": 16843009,
+  "hex": "0x01010101",
+  "binary": "00000001.00000001.00000001.00000001"
+}
