@@ -362,6 +362,19 @@ export const tools: Tool[] = [
     status: 'available'
   },
   {
+    id: 'aes',
+    slug: 'aes',
+    name: 'AES Encrypt & Decrypt',
+    description: 'Encrypt and decrypt text with AES-256-GCM and PBKDF2 password derivation.',
+    category: 'crypto',
+    icon: 'i-lucide-shield-check',
+    keywords: ['aes', 'encrypt', 'decrypt', 'gcm', 'pbkdf2', 'password', 'cipher'],
+    route: '/hub/crypto/aes',
+    clientOnly: true,
+    serverRequired: false,
+    status: 'available'
+  },
+  {
     id: 'color-converter',
     slug: 'converter',
     name: 'Color Converter',
@@ -422,6 +435,19 @@ export const tools: Tool[] = [
     icon: 'i-lucide-blend',
     keywords: ['css', 'gradient', 'linear', 'radial', 'color', 'stops', 'contrast'],
     route: '/hub/color/gradient-studio',
+    clientOnly: true,
+    serverRequired: false,
+    status: 'available'
+  },
+  {
+    id: 'tailwind-shades',
+    slug: 'tailwind-shades',
+    name: 'Tailwind Shade Generator',
+    description: 'Generate complete 50 to 950 color shade scales in Tailwind CSS format.',
+    category: 'color',
+    icon: 'i-lucide-palette',
+    keywords: ['tailwind', 'color', 'shades', 'palette', 'css', 'generator', 'scale'],
+    route: '/hub/color/tailwind-shades',
     clientOnly: true,
     serverRequired: false,
     status: 'available'
@@ -890,6 +916,19 @@ export const tools: Tool[] = [
     icon: 'i-lucide-file-search',
     keywords: ['glob', 'pattern', 'regex', 'match', 'wildcard', 'path'],
     route: '/hub/dev/glob-tester',
+    clientOnly: true,
+    serverRequired: false,
+    status: 'available'
+  },
+  {
+    id: 'curl-to-code',
+    slug: 'curl-to-code',
+    name: 'cURL to Code Converter',
+    description: 'Convert cURL commands to Fetch, Axios, Python Requests, and Go.',
+    category: 'dev',
+    icon: 'i-lucide-terminal',
+    keywords: ['curl', 'code', 'fetch', 'axios', 'python', 'go', 'convert', 'http'],
+    route: '/hub/dev/curl-converter',
     clientOnly: true,
     serverRequired: false,
     status: 'available'
