@@ -126,7 +126,7 @@ async function handleCopy() {
     />
 
     <template #docs>
-      <DataToolDocs title="About Encoding and Decoding">
+      <ToolDocs title="About Encoding and Decoding">
         <div class="space-y-4 text-muted">
           <p>
             URL encoding replaces unsafe ASCII characters with percentage hexadecimal triplets.
@@ -138,14 +138,14 @@ async function handleCopy() {
             Use the swap action to chain encoding or decoding operations.
           </p>
         </div>
-        <DataRelatedTools
+        <RelatedTools
           class="mt-8"
           :items="[
             { label: 'Base64 Encoder', to: '/hub/crypto/base64' },
             { label: 'Hex Encoder', to: '/hub/crypto/hex' }
           ]"
         />
-      </DataToolDocs>
+      </ToolDocs>
     </template>
   </ToolPage>
 </template>

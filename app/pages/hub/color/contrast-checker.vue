@@ -100,7 +100,7 @@ onMounted(() => {
     </div>
 
     <template #docs>
-      <DataToolDocs title="About contrast">
+      <ToolDocs title="About contrast">
         <div class="space-y-4 text-muted">
           <p>
             Contrast ratio helps people read text on a background.
@@ -109,7 +109,7 @@ onMounted(() => {
             WCAG AA for normal text needs a ratio of at least 4.5:1.
           </p>
         </div>
-        <DataRelatedTools
+        <RelatedTools
           class="mt-8"
           :items="[
             { label: 'Color Converter', to: '/hub/color/converter' },
@@ -117,7 +117,7 @@ onMounted(() => {
             { label: 'CSS Gradient Studio', to: '/hub/color/gradient-studio' }
           ]"
         />
-      </DataToolDocs>
+      </ToolDocs>
     </template>
   </ToolPage>
 </template>

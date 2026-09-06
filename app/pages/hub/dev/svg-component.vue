@@ -136,7 +136,7 @@ defineShortcuts({
     />
 
     <template #docs>
-      <DataToolDocs title="About SVG components">
+      <ToolDocs title="About SVG components">
         <div class="space-y-4 text-muted">
           <p>
             React output maps common SVG attributes to camelCase JSX names and spreads props onto the root svg element.
@@ -145,14 +145,14 @@ defineShortcuts({
             Vue output wraps the cleaned SVG in a template block.
           </p>
         </div>
-        <DataRelatedTools
+        <RelatedTools
           class="mt-8"
           :items="[
             { label: 'SVG to PNG / WebP', to: '/hub/image/svg-converter' },
             { label: 'TS / JSX Transpiler', to: '/hub/dev/transpiler' }
           ]"
         />
-      </DataToolDocs>
+      </ToolDocs>
     </template>
   </ToolPage>
 </template>

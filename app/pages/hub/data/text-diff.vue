@@ -166,12 +166,12 @@ defineShortcuts({
       />
 
       <ClientOnly v-if="diff.lines.length > 0">
-        <DataDiffResult :lines="diff.lines" />
+        <DiffResult :lines="diff.lines" />
       </ClientOnly>
     </template>
 
     <template #docs>
-      <DataToolDocs title="About text diff">
+      <ToolDocs title="About text diff">
         <div class="space-y-4 text-muted">
           <p>
             This tool compares two texts line by line and shows inserts and deletes.
@@ -183,7 +183,7 @@ defineShortcuts({
             The tool uses an optimized Myers diff. It skips shared start and end lines so long similar texts stay fast.
           </p>
         </div>
-        <DataRelatedTools
+        <RelatedTools
           class="mt-8"
           :items="[
             { label: 'JSON Formatter', to: '/hub/data/json-formatter' },
@@ -191,7 +191,7 @@ defineShortcuts({
             { label: 'TS / JSX Transpiler', to: '/hub/dev/transpiler' }
           ]"
         />
-      </DataToolDocs>
+      </ToolDocs>
     </template>
   </ToolPage>
 </template>

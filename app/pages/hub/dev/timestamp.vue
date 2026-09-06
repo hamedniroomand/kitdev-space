@@ -129,7 +129,7 @@ async function copyValue(val: string, key: string) {
     </div>
 
     <template #docs>
-      <DataToolDocs title="About Unix Timestamps">
+      <ToolDocs title="About Unix Timestamps">
         <div class="space-y-4 text-muted">
           <p>
             A Unix timestamp counts elapsed seconds since January 1, 1970 UTC.
@@ -141,14 +141,14 @@ async function copyValue(val: string, key: string) {
             ISO 8601 represents dates and times in a universal, unambiguous text format.
           </p>
         </div>
-        <DataRelatedTools
+        <RelatedTools
           class="mt-8"
           :items="[
             { label: 'Cron Visualizer', to: '/hub/dev/cron' },
             { label: 'UUID Generator', to: '/hub/crypto/uuid' }
           ]"
         />
-      </DataToolDocs>
+      </ToolDocs>
     </template>
   </ToolPage>
 </template>

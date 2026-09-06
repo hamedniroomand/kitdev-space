@@ -206,7 +206,7 @@ defineShortcuts({
     />
 
     <template #docs>
-      <DataToolDocs title="About JSON formatting">
+      <ToolDocs title="About JSON formatting">
         <div class="space-y-4 text-muted">
           <p>
             JSON formatting adds spaces and line breaks so humans can read the data.
@@ -218,7 +218,7 @@ defineShortcuts({
             Common errors include missing commas, trailing commas, and unquoted keys.
           </p>
         </div>
-        <DataRelatedTools
+        <RelatedTools
           class="mt-8"
           :items="[
             { label: 'JSON → TypeScript', to: '/hub/data/json-to-typescript' },
@@ -226,7 +226,7 @@ defineShortcuts({
             { label: 'Text Diff', to: '/hub/data/text-diff' }
           ]"
         />
-      </DataToolDocs>
+      </ToolDocs>
     </template>
   </ToolPage>
 </template>

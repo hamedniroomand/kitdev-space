@@ -145,7 +145,7 @@ defineShortcuts({
     />
 
     <template #docs>
-      <DataToolDocs title="About Diceware passphrases">
+      <ToolDocs title="About Diceware passphrases">
         <div class="space-y-4 text-muted">
           <p>
             The tool picks words from the EFF large list with secure random values.
@@ -154,14 +154,14 @@ defineShortcuts({
             Prefer six or more words for important accounts. Do not use this tool as a password manager.
           </p>
         </div>
-        <DataRelatedTools
+        <RelatedTools
           class="mt-8"
           :items="[
             { label: 'Random String Generator', to: '/hub/crypto/random-string' },
             { label: 'Password Benchmarker', to: '/hub/crypto/password-benchmark' }
           ]"
         />
-      </DataToolDocs>
+      </ToolDocs>
     </template>
   </ToolPage>
 </template>

@@ -171,18 +171,18 @@ defineShortcuts({
     />
 
     <template #docs>
-      <DataToolDocs title="About Bun.Transpiler">
+      <ToolDocs title="About Bun.Transpiler">
         <p class="text-sm leading-relaxed text-muted">
           Bun strips TypeScript types and converts JSX without loading Babel or the TypeScript compiler.
         </p>
-        <DataRelatedTools
+        <RelatedTools
           :items="[
             { label: 'Code Minifier and Beautifier', to: '/hub/dev/code-minifier' },
             { label: 'JSON → TypeScript', to: '/hub/data/json-to-typescript' },
             { label: 'Tar Explorer', to: '/hub/dev/tar' }
           ]"
         />
-      </DataToolDocs>
+      </ToolDocs>
     </template>
   </ToolPage>
 </template>

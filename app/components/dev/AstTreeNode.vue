@@ -62,7 +62,7 @@ function selectNode() {
       v-if="open && node.children.length"
       class="ml-3 border-l border-default pl-2"
     >
-      <DevAstTreeNode
+      <AstTreeNode
         v-for="child in node.children"
         :key="child.id"
         :node="child"

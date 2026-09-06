@@ -1,5 +1,5 @@
 <template>
-  <DataConverterPage
+  <ConverterPage
     tool-id="json-json5"
     title="JSON ↔ JSON5"
     description="Convert between JSON and JSON5."

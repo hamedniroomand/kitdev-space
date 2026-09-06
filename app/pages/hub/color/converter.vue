@@ -119,20 +119,20 @@ onMounted(() => {
     </div>
 
     <template #docs>
-      <DataToolDocs title="About color conversion">
+      <ToolDocs title="About color conversion">
         <div class="space-y-4 text-muted">
           <p>
             This tool converts between HEX, RGB, and HSL color values.
           </p>
         </div>
-        <DataRelatedTools
+        <RelatedTools
           class="mt-8"
           :items="[
             { label: 'Contrast Checker', to: '/hub/color/contrast-checker' },
             { label: 'Color Inspector', to: '/hub/color/inspector' }
           ]"
         />
-      </DataToolDocs>
+      </ToolDocs>
     </template>
   </ToolPage>
 </template>

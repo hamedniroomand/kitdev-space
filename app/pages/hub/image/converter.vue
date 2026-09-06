@@ -156,7 +156,7 @@ defineShortcuts({
     />
 
     <template #docs>
-      <DataToolDocs title="About image conversion">
+      <ToolDocs title="About image conversion">
         <p class="text-sm leading-relaxed text-muted">
           WebP and AVIF often make smaller files than JPEG or PNG at a similar quality.
         </p>
@@ -166,13 +166,13 @@ defineShortcuts({
         <p class="text-sm leading-relaxed text-muted">
           AVIF encode may fail on some servers. Use WebP, JPEG, or PNG when that happens.
         </p>
-        <DataRelatedTools
+        <RelatedTools
           :items="[
             { label: 'Smart Resizer', to: '/hub/image/resizer' },
             { label: 'Metadata Inspector', to: '/hub/image/metadata' }
           ]"
         />
-      </DataToolDocs>
+      </ToolDocs>
     </template>
   </ToolPage>
 </template>

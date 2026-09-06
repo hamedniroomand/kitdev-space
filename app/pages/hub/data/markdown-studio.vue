@@ -222,7 +222,7 @@ function handleClear() {
     </ToolActions>
 
     <template #docs>
-      <DataToolDocs title="About Markdown Live Studio">
+      <ToolDocs title="About Markdown Live Studio">
         <div class="space-y-4 text-muted">
           <p>
             Markdown Live Studio converts plain text Markdown into formatted HTML in real time.
@@ -237,7 +237,7 @@ function handleClear() {
             Select <strong>Download HTML</strong> to export a complete, styled HTML file ready for publishing or sharing.
           </p>
         </div>
-        <DataRelatedTools
+        <RelatedTools
           class="mt-8"
           :items="[
             { label: 'Text Diff', to: '/hub/data/text-diff' },
@@ -245,7 +245,7 @@ function handleClear() {
             { label: 'HTML & URL Codec', to: '/hub/dev/html-url-codec' }
           ]"
         />
-      </DataToolDocs>
+      </ToolDocs>
     </template>
   </ToolPage>
 </template>

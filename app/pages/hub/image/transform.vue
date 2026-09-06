@@ -200,17 +200,17 @@ defineShortcuts({
     />
 
     <template #docs>
-      <DataToolDocs title="About orientation tools">
+      <ToolDocs title="About orientation tools">
         <p class="text-sm leading-relaxed text-muted">
           Rotate turns the image in 90 degree steps. Flip and flop mirror the image. Grayscale removes color.
         </p>
-        <DataRelatedTools
+        <RelatedTools
           :items="[
             { label: 'Image Converter', to: '/hub/image/converter' },
             { label: 'Smart Resizer', to: '/hub/image/resizer' }
           ]"
         />
-      </DataToolDocs>
+      </ToolDocs>
     </template>
   </ToolPage>
 </template>

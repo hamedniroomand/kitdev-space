@@ -196,17 +196,17 @@ defineShortcuts({
     />
 
     <template #docs>
-      <DataToolDocs title="About semver">
+      <ToolDocs title="About semver">
         <p class="text-sm leading-relaxed text-muted">
           Semver ranges like ^1.2.0 and ~1.2.0 are common in npm package.json files.
         </p>
-        <DataRelatedTools
+        <RelatedTools
           :items="[
             { label: 'Cron Visualizer', to: '/hub/dev/cron' },
             { label: 'Hash Generator', to: '/hub/crypto/hash-generator' }
           ]"
         />
-      </DataToolDocs>
+      </ToolDocs>
     </template>
   </ToolPage>
 </template>

@@ -131,20 +131,20 @@ onMounted(() => {
     </div>
 
     <template #docs>
-      <DataToolDocs title="About color inspection">
+      <ToolDocs title="About color inspection">
         <div class="space-y-4 text-muted">
           <p>
             This tool shows a color swatch and the main channel values.
           </p>
         </div>
-        <DataRelatedTools
+        <RelatedTools
           class="mt-8"
           :items="[
             { label: 'Color Converter', to: '/hub/color/converter' },
             { label: 'Palette Generator', to: '/hub/color/palette-generator' }
           ]"
         />
-      </DataToolDocs>
+      </ToolDocs>
     </template>
   </ToolPage>
 </template>

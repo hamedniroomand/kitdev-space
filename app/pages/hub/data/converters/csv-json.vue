@@ -282,7 +282,7 @@ defineShortcuts({
     />
 
     <template #docs>
-      <DataToolDocs title="About CSV, JSON, and SQL">
+      <ToolDocs title="About CSV, JSON, and SQL">
         <div class="space-y-4 text-muted">
           <p>
             This tool converts tabular CSV text into JSON arrays or SQL INSERT statements.
@@ -297,7 +297,7 @@ defineShortcuts({
             This tool does not store your input.
           </p>
         </div>
-        <DataRelatedTools
+        <RelatedTools
           class="mt-8"
           :items="[
             { label: 'JSON Formatter', to: '/hub/data/json-formatter' },
@@ -305,7 +305,7 @@ defineShortcuts({
             { label: 'JSON → TypeScript', to: '/hub/data/json-to-typescript' }
           ]"
         />
-      </DataToolDocs>
+      </ToolDocs>
     </template>
   </ToolPage>
 </template>

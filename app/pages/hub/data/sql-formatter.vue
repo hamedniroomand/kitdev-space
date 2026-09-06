@@ -273,7 +273,7 @@ defineShortcuts({
     />
 
     <template #docs>
-      <DataToolDocs title="About SQL query formatting">
+      <ToolDocs title="About SQL query formatting">
         <div class="space-y-4 text-muted">
           <p>
             SQL query formatting indents clauses, aligns keywords, and wraps expressions.
@@ -289,7 +289,7 @@ defineShortcuts({
             Select Format or press <UKbd value="meta" /> + <UKbd value="enter" /> to run the formatter.
           </p>
         </div>
-        <DataRelatedTools
+        <RelatedTools
           class="mt-8"
           :items="[
             { label: 'JSON Formatter', to: '/hub/data/json-formatter' },
@@ -297,7 +297,7 @@ defineShortcuts({
             { label: 'Code Minifier', to: '/hub/dev/code-minifier' }
           ]"
         />
-      </DataToolDocs>
+      </ToolDocs>
     </template>
   </ToolPage>
 </template>

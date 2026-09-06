@@ -164,7 +164,7 @@ defineShortcuts({
     </div>
 
     <template #docs>
-      <DataToolDocs title="About HTTP headers">
+      <ToolDocs title="About HTTP headers">
         <div class="space-y-4 text-muted">
           <p>
             This tool reads response headers for a URL.
@@ -176,7 +176,7 @@ defineShortcuts({
             The tool does not follow redirects. The tool does not store your input.
           </p>
         </div>
-        <DataRelatedTools
+        <RelatedTools
           class="mt-8"
           :items="[
             { label: 'CORS and Security Header Inspector', to: '/hub/network/security-headers' },
@@ -184,7 +184,7 @@ defineShortcuts({
             { label: 'Redirect Checker', to: '/hub/network/redirect' }
           ]"
         />
-      </DataToolDocs>
+      </ToolDocs>
     </template>
   </ToolPage>
 </template>

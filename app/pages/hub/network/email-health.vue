@@ -332,7 +332,7 @@ defineShortcuts({
     </div>
 
     <template #docs>
-      <DataToolDocs title="About email health">
+      <ToolDocs title="About email health">
         <div class="space-y-4 text-muted">
           <p>
             This tool inspects email DNS records for a domain.
@@ -347,7 +347,7 @@ defineShortcuts({
             This tool does not store your input.
           </p>
         </div>
-        <DataRelatedTools
+        <RelatedTools
           class="mt-8"
           :items="[
             { label: 'DNS Lookup', to: '/hub/network/dns-lookup' },
@@ -355,7 +355,7 @@ defineShortcuts({
             { label: 'URL Inspector', to: '/hub/network/url-inspector' }
           ]"
         />
-      </DataToolDocs>
+      </ToolDocs>
     </template>
   </ToolPage>
 </template>

@@ -237,17 +237,17 @@ defineShortcuts({
     />
 
     <template #docs>
-      <DataToolDocs title="About smart resize">
+      <ToolDocs title="About smart resize">
         <p class="text-sm leading-relaxed text-muted">
           Use Inside to keep the aspect ratio. Use Fill to stretch to the exact size.
         </p>
-        <DataRelatedTools
+        <RelatedTools
           :items="[
             { label: 'Image Converter', to: '/hub/image/converter' },
             { label: 'Orientation & Grayscale', to: '/hub/image/transform' }
           ]"
         />
-      </DataToolDocs>
+      </ToolDocs>
     </template>
   </ToolPage>
 </template>

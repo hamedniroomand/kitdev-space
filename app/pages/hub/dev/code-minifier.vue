@@ -290,7 +290,7 @@ defineShortcuts({
     />
 
     <template #docs>
-      <DataToolDocs title="About minify and beautify">
+      <ToolDocs title="About minify and beautify">
         <div class="space-y-4 text-muted">
           <p>
             This tool compresses or formats source code for common web languages.
@@ -308,7 +308,7 @@ defineShortcuts({
             This tool does not store your input.
           </p>
         </div>
-        <DataRelatedTools
+        <RelatedTools
           class="mt-8"
           :items="[
             { label: 'AST Playground and Resolver', to: '/hub/dev/ast-playground' },
@@ -316,7 +316,7 @@ defineShortcuts({
             { label: 'JSON Formatter', to: '/hub/data/json-formatter' }
           ]"
         />
-      </DataToolDocs>
+      </ToolDocs>
     </template>
   </ToolPage>
 </template>

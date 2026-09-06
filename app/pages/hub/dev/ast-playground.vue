@@ -221,7 +221,7 @@ defineShortcuts({
       :description="item.codeframe || undefined"
     />
 
-    <DevAstSelectedNode
+    <AstSelectedNode
       v-if="selected"
       :node="selected"
       :snippet="selectedSnippet"
@@ -231,7 +231,7 @@ defineShortcuts({
       v-if="panel === 'ast' && parseResult"
       class="max-h-[32rem] overflow-auto rounded-md border border-default p-2"
     >
-      <DevAstTreeNode
+      <AstTreeNode
         :node="parseResult.tree"
         :selected-id="selected?.id ?? null"
         @select="handleSelect"
@@ -284,14 +284,14 @@ defineShortcuts({
       />
     </div>
 
-    <DevAstResolvePanel
+    <AstResolvePanel
       v-show="panel === 'resolve'"
       ref="resolvePanel"
       :imports="parseResult?.imports ?? []"
     />
 
     <template #docs>
-      <DataToolDocs title="About the AST playground">
+      <ToolDocs title="About the AST playground">
         <div class="space-y-4 text-muted">
           <p>
             This tool parses JavaScript, TypeScript, and JSX with oxc-parser into an ESTree JSON tree.
@@ -306,7 +306,7 @@ defineShortcuts({
             This tool does not store your input.
           </p>
         </div>
-        <DataRelatedTools
+        <RelatedTools
           class="mt-8"
           :items="[
             { label: 'TS / JSX Transpiler', to: '/hub/dev/transpiler' },
@@ -314,7 +314,7 @@ defineShortcuts({
             { label: 'JSON Formatter', to: '/hub/data/json-formatter' }
           ]"
         />
-      </DataToolDocs>
+      </ToolDocs>
     </template>
   </ToolPage>
 </template>

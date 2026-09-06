@@ -111,20 +111,20 @@ defineShortcuts({
     />
 
     <template #docs>
-      <DataToolDocs title="About Base64">
+      <ToolDocs title="About Base64">
         <div class="space-y-4 text-muted">
           <p>
             Base64 encodes binary data as text so it can travel in text-only channels.
           </p>
         </div>
-        <DataRelatedTools
+        <RelatedTools
           class="mt-8"
           :items="[
             { label: 'Hex Encoder', to: '/hub/crypto/hex' },
             { label: 'Hash Generator', to: '/hub/crypto/hash-generator' }
           ]"
         />
-      </DataToolDocs>
+      </ToolDocs>
     </template>
   </ToolPage>
 </template>

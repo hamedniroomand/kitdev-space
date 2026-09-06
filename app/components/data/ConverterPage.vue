@@ -100,7 +100,7 @@ defineShortcuts({
       class="mb-2"
     />
 
-    <DataFormatSelector
+    <FormatSelector
       v-model:from="from"
       v-model:to="to"
       :formats="formats"
@@ -165,7 +165,7 @@ defineShortcuts({
     />
 
     <template #docs>
-      <DataToolDocs :title="docsTitle">
+      <ToolDocs :title="docsTitle">
         <div class="space-y-4 text-muted">
           <p
             v-for="(paragraph, index) in docs"
@@ -177,11 +177,11 @@ defineShortcuts({
             The server uses Bun native parsers. No extra format packages are required.
           </p>
         </div>
-        <DataRelatedTools
+        <RelatedTools
           class="mt-8"
           :items="related"
         />
-      </DataToolDocs>
+      </ToolDocs>
     </template>
   </ToolPage>
 </template>

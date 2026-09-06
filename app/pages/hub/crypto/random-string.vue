@@ -116,7 +116,7 @@ defineShortcuts({
     />
 
     <template #docs>
-      <DataToolDocs title="About random strings">
+      <ToolDocs title="About random strings">
         <div class="space-y-4 text-muted">
           <p>
             This tool creates random text with the browser secure random API.
@@ -125,14 +125,14 @@ defineShortcuts({
             Do not use this tool as a password manager.
           </p>
         </div>
-        <DataRelatedTools
+        <RelatedTools
           class="mt-8"
           :items="[
             { label: 'UUID Generator', to: '/hub/crypto/uuid' },
             { label: 'Hash Generator', to: '/hub/crypto/hash-generator' }
           ]"
         />
-      </DataToolDocs>
+      </ToolDocs>
     </template>
   </ToolPage>
 </template>

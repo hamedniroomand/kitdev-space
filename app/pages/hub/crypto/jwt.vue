@@ -215,7 +215,7 @@ defineShortcuts({
     </div>
 
     <template #docs>
-      <DataToolDocs title="About JWT debugging">
+      <ToolDocs title="About JWT debugging">
         <div class="space-y-4 text-muted">
           <p>
             The tool parses Base64URL header and payload data and formats them as JSON.
@@ -224,14 +224,14 @@ defineShortcuts({
             Expiration uses the <code>exp</code> claim. Signature checks use Web Crypto for HS256 only.
           </p>
         </div>
-        <DataRelatedTools
+        <RelatedTools
           class="mt-8"
           :items="[
             { label: 'Base64 Encoder', to: '/hub/crypto/base64' },
             { label: 'Hash Generator', to: '/hub/crypto/hash-generator' }
           ]"
         />
-      </DataToolDocs>
+      </ToolDocs>
     </template>
   </ToolPage>
 </template>

@@ -241,17 +241,17 @@ defineShortcuts({
     />
 
     <template #docs>
-      <DataToolDocs title="About image metadata">
+      <ToolDocs title="About image metadata">
         <p class="text-sm leading-relaxed text-muted">
           Many cameras store location and device data in image files. A clean re-encode removes that data.
         </p>
-        <DataRelatedTools
+        <RelatedTools
           :items="[
             { label: 'Image Converter', to: '/hub/image/converter' },
             { label: 'Smart Resizer', to: '/hub/image/resizer' }
           ]"
         />
-      </DataToolDocs>
+      </ToolDocs>
     </template>
   </ToolPage>
 </template>

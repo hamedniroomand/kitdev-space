@@ -112,7 +112,7 @@ onMounted(() => {
     </div>
 
     <template #docs>
-      <DataToolDocs title="About palettes">
+      <ToolDocs title="About palettes">
         <div class="space-y-4 text-muted">
           <p>
             This tool builds lighter and darker stops from one base color.
@@ -121,14 +121,14 @@ onMounted(() => {
             Select a swatch to copy its HEX value.
           </p>
         </div>
-        <DataRelatedTools
+        <RelatedTools
           class="mt-8"
           :items="[
             { label: 'Color Converter', to: '/hub/color/converter' },
             { label: 'Contrast Checker', to: '/hub/color/contrast-checker' }
           ]"
         />
-      </DataToolDocs>
+      </ToolDocs>
     </template>
   </ToolPage>
 </template>

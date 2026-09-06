@@ -157,7 +157,7 @@ defineShortcuts({
     />
 
     <template #docs>
-      <DataToolDocs title="About mock data">
+      <ToolDocs title="About mock data">
         <div class="space-y-4 text-muted">
           <p>
             Use this tool for layout drafts and demo UI data.
@@ -166,14 +166,14 @@ defineShortcuts({
             Generated profiles are fake. Do not treat them as real people.
           </p>
         </div>
-        <DataRelatedTools
+        <RelatedTools
           class="mt-8"
           :items="[
             { label: 'JSON Formatter', to: '/hub/data/json-formatter' },
             { label: 'JSON → TypeScript', to: '/hub/data/json-to-typescript' }
           ]"
         />
-      </DataToolDocs>
+      </ToolDocs>
     </template>
   </ToolPage>
 </template>

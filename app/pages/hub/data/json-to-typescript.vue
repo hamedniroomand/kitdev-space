@@ -120,7 +120,7 @@ defineShortcuts({
     />
 
     <template #docs>
-      <DataToolDocs title="About JSON to TypeScript">
+      <ToolDocs title="About JSON to TypeScript">
         <div class="space-y-4 text-muted">
           <p>
             This tool reads JSON and creates TypeScript interfaces from the shape of the data.
@@ -129,14 +129,14 @@ defineShortcuts({
             Use the result as a start point. Review the types before you use them in production code.
           </p>
         </div>
-        <DataRelatedTools
+        <RelatedTools
           class="mt-8"
           :items="[
             { label: 'JSON Formatter', to: '/hub/data/json-formatter' },
             { label: 'JSON ↔ YAML', to: '/hub/data/converters/json-yaml' }
           ]"
         />
-      </DataToolDocs>
+      </ToolDocs>
     </template>
   </ToolPage>
 </template>

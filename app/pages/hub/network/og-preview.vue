@@ -100,7 +100,7 @@ defineShortcuts({
       v-if="result"
       class="grid gap-4 lg:grid-cols-2"
     >
-      <NetworkOgCardMock
+      <OgCardMock
         variant="x"
         :title="result.title"
         :description="result.description"
@@ -108,7 +108,7 @@ defineShortcuts({
         :url="result.url"
         :site-name="result.siteName"
       />
-      <NetworkOgCardMock
+      <OgCardMock
         variant="linkedin"
         :title="result.title"
         :description="result.description"
@@ -116,7 +116,7 @@ defineShortcuts({
         :url="result.url"
         :site-name="result.siteName"
       />
-      <NetworkOgCardMock
+      <OgCardMock
         variant="discord"
         :title="result.title"
         :description="result.description"
@@ -124,7 +124,7 @@ defineShortcuts({
         :url="result.url"
         :site-name="result.siteName"
       />
-      <NetworkOgCardMock
+      <OgCardMock
         variant="search"
         :title="result.title"
         :description="result.description"
@@ -189,20 +189,20 @@ defineShortcuts({
     </dl>
 
     <template #docs>
-      <DataToolDocs title="About Open Graph">
+      <ToolDocs title="About Open Graph">
         <p class="text-sm leading-relaxed text-muted">
           Open Graph meta tags help apps show a title, description, and image when a link is shared.
         </p>
         <p class="text-sm leading-relaxed text-muted">
           This tool reads public HTML only. It does not take screenshots and does not copy official social UI designs.
         </p>
-        <DataRelatedTools
+        <RelatedTools
           :items="[
             { label: 'HTTP Headers', to: '/hub/network/http-headers' },
             { label: 'Redirect Checker', to: '/hub/network/redirect' }
           ]"
         />
-      </DataToolDocs>
+      </ToolDocs>
     </template>
   </ToolPage>
 </template>

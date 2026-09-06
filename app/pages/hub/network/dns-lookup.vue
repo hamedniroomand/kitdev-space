@@ -156,7 +156,7 @@ defineShortcuts({
     </div>
 
     <template #docs>
-      <DataToolDocs title="About DNS lookup">
+      <ToolDocs title="About DNS lookup">
         <div class="space-y-4 text-muted">
           <p>
             A DNS lookup asks name servers for records for a domain.
@@ -168,7 +168,7 @@ defineShortcuts({
             This tool does not store your input.
           </p>
         </div>
-        <DataRelatedTools
+        <RelatedTools
           class="mt-8"
           :items="[
             { label: 'Email Health Inspector', to: '/hub/network/email-health' },
@@ -176,7 +176,7 @@ defineShortcuts({
             { label: 'URL Inspector', to: '/hub/network/url-inspector' }
           ]"
         />
-      </DataToolDocs>
+      </ToolDocs>
     </template>
   </ToolPage>
 </template>

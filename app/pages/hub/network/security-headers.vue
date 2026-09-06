@@ -230,7 +230,7 @@ defineShortcuts({
     </div>
 
     <template #docs>
-      <DataToolDocs title="About CORS and security headers">
+      <ToolDocs title="About CORS and security headers">
         <div class="space-y-4 text-muted">
           <p>
             This tool audits response headers for CORS and common browser security controls.
@@ -245,7 +245,7 @@ defineShortcuts({
             This tool does not store your input.
           </p>
         </div>
-        <DataRelatedTools
+        <RelatedTools
           class="mt-8"
           :items="[
             { label: 'HTTP Headers', to: '/hub/network/http-headers' },
@@ -253,7 +253,7 @@ defineShortcuts({
             { label: 'URL Inspector', to: '/hub/network/url-inspector' }
           ]"
         />
-      </DataToolDocs>
+      </ToolDocs>
     </template>
   </ToolPage>
 </template>

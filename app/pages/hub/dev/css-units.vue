@@ -168,7 +168,7 @@ function handleReset() {
     </div>
 
     <template #docs>
-      <DataToolDocs title="About CSS Units">
+      <ToolDocs title="About CSS Units">
         <div class="space-y-4 text-muted">
           <p>
             Pixels (px) provide absolute lengths on screens.
@@ -180,14 +180,14 @@ function handleReset() {
             Viewport Width (vw) and Viewport Height (vh) calculate lengths relative to browser window dimensions.
           </p>
         </div>
-        <DataRelatedTools
+        <RelatedTools
           class="mt-8"
           :items="[
             { label: 'Color Converter', to: '/hub/color/converter' },
             { label: 'Contrast Checker', to: '/hub/color/contrast-checker' }
           ]"
         />
-      </DataToolDocs>
+      </ToolDocs>
     </template>
   </ToolPage>
 </template>

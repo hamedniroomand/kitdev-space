@@ -111,20 +111,20 @@ defineShortcuts({
     />
 
     <template #docs>
-      <DataToolDocs title="About hex encoding">
+      <ToolDocs title="About hex encoding">
         <div class="space-y-4 text-muted">
           <p>
             Hex encoding writes each byte as two hexadecimal digits.
           </p>
         </div>
-        <DataRelatedTools
+        <RelatedTools
           class="mt-8"
           :items="[
             { label: 'Base64 Encoder', to: '/hub/crypto/base64' },
             { label: 'Hash Generator', to: '/hub/crypto/hash-generator' }
           ]"
         />
-      </DataToolDocs>
+      </ToolDocs>
     </template>
   </ToolPage>
 </template>

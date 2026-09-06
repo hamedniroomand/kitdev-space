@@ -251,20 +251,20 @@ defineShortcuts({
     </div>
 
     <template #docs>
-      <DataToolDocs title="About SVG conversion">
+      <ToolDocs title="About SVG conversion">
         <p class="text-sm leading-relaxed text-muted">
           The tool rasterizes SVG with resvg, then encodes PNG or WebP with Bun.Image.
         </p>
         <p class="text-sm leading-relaxed text-muted">
           Remote resources in SVG are blocked.
         </p>
-        <DataRelatedTools
+        <RelatedTools
           :items="[
             { label: 'Image Converter', to: '/hub/image/converter' },
             { label: 'Smart Resizer', to: '/hub/image/resizer' }
           ]"
         />
-      </DataToolDocs>
+      </ToolDocs>
     </template>
   </ToolPage>
 </template>

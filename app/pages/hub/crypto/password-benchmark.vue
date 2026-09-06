@@ -230,20 +230,20 @@ defineShortcuts({
     </dl>
 
     <template #docs>
-      <DataToolDocs title="About password hashing">
+      <ToolDocs title="About password hashing">
         <p class="text-sm leading-relaxed text-muted">
           Use this tool to compare hash cost settings. Higher cost values take more time and memory.
         </p>
         <p class="text-sm leading-relaxed text-muted">
           Do not use MD5, SHA-1, or plain digests to store passwords.
         </p>
-        <DataRelatedTools
+        <RelatedTools
           :items="[
             { label: 'Hash Generator', to: '/hub/crypto/hash-generator' },
             { label: 'Random String Generator', to: '/hub/crypto/random-string' }
           ]"
         />
-      </DataToolDocs>
+      </ToolDocs>
     </template>
   </ToolPage>
 </template>

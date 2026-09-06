@@ -156,7 +156,7 @@ defineShortcuts({
     />
 
     <template #docs>
-      <DataToolDocs title="About Identifier Types">
+      <ToolDocs title="About Identifier Types">
         <div class="space-y-4 text-muted">
           <p>
             UUID version 4 uses random values from the Web Crypto API.
@@ -171,14 +171,14 @@ defineShortcuts({
             NanoID creates compact, URL-safe identifiers with customizable length.
           </p>
         </div>
-        <DataRelatedTools
+        <RelatedTools
           class="mt-8"
           :items="[
             { label: 'Random String Generator', to: '/hub/crypto/random-string' },
             { label: 'Hash Generator', to: '/hub/crypto/hash-generator' }
           ]"
         />
-      </DataToolDocs>
+      </ToolDocs>
     </template>
   </ToolPage>
 </template>

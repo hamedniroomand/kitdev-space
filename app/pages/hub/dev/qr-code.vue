@@ -196,7 +196,7 @@ defineShortcuts({
     >
 
     <template #docs>
-      <DataToolDocs title="About QR codes">
+      <ToolDocs title="About QR codes">
         <div class="space-y-4 text-muted">
           <p>
             The tool builds an SVG QR code in the browser with uqr and lets you download the file.
@@ -205,14 +205,14 @@ defineShortcuts({
             Wi-Fi codes use the standard WIFI: payload format.
           </p>
         </div>
-        <DataRelatedTools
+        <RelatedTools
           class="mt-8"
           :items="[
             { label: 'URL Inspector', to: '/hub/network/url-inspector' },
             { label: 'Lorem Ipsum & Mock Data', to: '/hub/data/lorem' }
           ]"
         />
-      </DataToolDocs>
+      </ToolDocs>
     </template>
   </ToolPage>
 </template>

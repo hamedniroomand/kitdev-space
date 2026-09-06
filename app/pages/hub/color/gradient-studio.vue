@@ -303,7 +303,7 @@ defineShortcuts({
     </div>
 
     <template #docs>
-      <DataToolDocs title="About CSS gradients">
+      <ToolDocs title="About CSS gradients">
         <div class="space-y-4 text-muted">
           <p>
             This tool builds linear and radial CSS gradients from color stops.
@@ -318,7 +318,7 @@ defineShortcuts({
             This tool does not store your input.
           </p>
         </div>
-        <DataRelatedTools
+        <RelatedTools
           class="mt-8"
           :items="[
             { label: 'Contrast Checker', to: '/hub/color/contrast-checker' },
@@ -326,7 +326,7 @@ defineShortcuts({
             { label: 'Color Converter', to: '/hub/color/converter' }
           ]"
         />
-      </DataToolDocs>
+      </ToolDocs>
     </template>
   </ToolPage>
 </template>

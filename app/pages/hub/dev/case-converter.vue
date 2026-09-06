@@ -111,7 +111,7 @@ function handleClear() {
     </div>
 
     <template #docs>
-      <DataToolDocs title="About Text Case and Slugs">
+      <ToolDocs title="About Text Case and Slugs">
         <div class="space-y-4 text-muted">
           <p>
             Programming languages use different naming styles for variables, functions, and files.
@@ -126,14 +126,14 @@ function handleClear() {
             Use kebab-case and URL slugs for web paths, filenames, and CSS class names.
           </p>
         </div>
-        <DataRelatedTools
+        <RelatedTools
           class="mt-8"
           :items="[
             { label: 'JSON Formatter', to: '/hub/data/json-formatter' },
             { label: 'Random String Generator', to: '/hub/crypto/random-string' }
           ]"
         />
-      </DataToolDocs>
+      </ToolDocs>
     </template>
   </ToolPage>
 </template>

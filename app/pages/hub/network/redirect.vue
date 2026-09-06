@@ -161,7 +161,7 @@ defineShortcuts({
     </div>
 
     <template #docs>
-      <DataToolDocs title="About redirect checker">
+      <ToolDocs title="About redirect checker">
         <div class="space-y-4 text-muted">
           <p>
             This tool follows HTTP redirects for a URL.
@@ -173,7 +173,7 @@ defineShortcuts({
             The tool follows a maximum of 5 redirects. The tool checks each hop. The tool does not store your input.
           </p>
         </div>
-        <DataRelatedTools
+        <RelatedTools
           class="mt-8"
           :items="[
             { label: 'DNS Lookup', to: '/hub/network/dns-lookup' },
@@ -181,7 +181,7 @@ defineShortcuts({
             { label: 'URL Inspector', to: '/hub/network/url-inspector' }
           ]"
         />
-      </DataToolDocs>
+      </ToolDocs>
     </template>
   </ToolPage>
 </template>

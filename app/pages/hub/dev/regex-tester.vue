@@ -205,7 +205,7 @@ function handleClear() {
     </div>
 
     <template #docs>
-      <DataToolDocs title="About the RegEx tester">
+      <ToolDocs title="About the RegEx tester">
         <div class="space-y-4 text-muted">
           <p>
             This tool tests a regular expression against sample text in the browser.
@@ -220,7 +220,7 @@ function handleClear() {
             This tool does not store your input.
           </p>
         </div>
-        <DataRelatedTools
+        <RelatedTools
           class="mt-8"
           :items="[
             { label: 'Text Diff', to: '/hub/data/text-diff' },
@@ -228,7 +228,7 @@ function handleClear() {
             { label: 'Case and Slug Converter', to: '/hub/dev/case-converter' }
           ]"
         />
-      </DataToolDocs>
+      </ToolDocs>
     </template>
   </ToolPage>
 </template>

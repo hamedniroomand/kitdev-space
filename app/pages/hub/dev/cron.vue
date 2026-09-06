@@ -159,20 +159,20 @@ defineShortcuts({
     </div>
 
     <template #docs>
-      <DataToolDocs title="About cron">
+      <ToolDocs title="About cron">
         <p class="text-sm leading-relaxed text-muted">
           A standard cron expression has five fields: minute, hour, day of month, month, and weekday.
         </p>
         <p class="text-sm leading-relaxed text-muted">
           Nicknames like @daily and @hourly also work when Bun accepts them.
         </p>
-        <DataRelatedTools
+        <RelatedTools
           :items="[
             { label: 'Semver Calculator', to: '/hub/dev/semver' },
             { label: 'URL Inspector', to: '/hub/network/url-inspector' }
           ]"
         />
-      </DataToolDocs>
+      </ToolDocs>
     </template>
   </ToolPage>
 </template>

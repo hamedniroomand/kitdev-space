@@ -189,17 +189,17 @@ defineShortcuts({
     </div>
 
     <template #docs>
-      <DataToolDocs title="About tar archives">
+      <ToolDocs title="About tar archives">
         <p class="text-sm leading-relaxed text-muted">
           Use this tool to inspect .tar and .tar.gz files without extracting the full archive to disk.
         </p>
-        <DataRelatedTools
+        <RelatedTools
           :items="[
             { label: 'Semver Calculator', to: '/hub/dev/semver' },
             { label: 'Cron Visualizer', to: '/hub/dev/cron' }
           ]"
         />
-      </DataToolDocs>
+      </ToolDocs>
     </template>
   </ToolPage>
 </template>

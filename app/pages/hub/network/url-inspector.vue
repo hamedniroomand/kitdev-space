@@ -143,7 +143,7 @@ defineShortcuts({
     </div>
 
     <template #docs>
-      <DataToolDocs title="About URL inspection">
+      <ToolDocs title="About URL inspection">
         <div class="space-y-4 text-muted">
           <p>
             This tool parses a URL into its parts.
@@ -155,7 +155,7 @@ defineShortcuts({
             The tool does not fetch the URL. The tool does not store your input.
           </p>
         </div>
-        <DataRelatedTools
+        <RelatedTools
           class="mt-8"
           :items="[
             { label: 'DNS Lookup', to: '/hub/network/dns-lookup' },
@@ -163,7 +163,7 @@ defineShortcuts({
             { label: 'Redirect Checker', to: '/hub/network/redirect' }
           ]"
         />
-      </DataToolDocs>
+      </ToolDocs>
     </template>
   </ToolPage>
 </template>

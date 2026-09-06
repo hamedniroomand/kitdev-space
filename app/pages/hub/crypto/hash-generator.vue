@@ -147,7 +147,7 @@ defineShortcuts({
     />
 
     <template #docs>
-      <DataToolDocs title="About hashing">
+      <ToolDocs title="About hashing">
         <div class="space-y-4 text-muted">
           <p>
             A hash turns input into a fixed-length digest.
@@ -156,14 +156,14 @@ defineShortcuts({
             These digests are not password hashes. Do not store passwords with MD5 or SHA-1.
           </p>
         </div>
-        <DataRelatedTools
+        <RelatedTools
           class="mt-8"
           :items="[
             { label: 'Base64 Encoder', to: '/hub/crypto/base64' },
             { label: 'Hex Encoder', to: '/hub/crypto/hex' }
           ]"
         />
-      </DataToolDocs>
+      </ToolDocs>
     </template>
   </ToolPage>
 </template>
