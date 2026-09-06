@@ -1,12 +1,24 @@
 <script setup lang="ts">
+import type { ComputedRef } from 'vue'
+import type { BreadcrumbCrumb } from '~~/shared/utils/breadcrumbs'
+
 defineProps<{
   title: string
   description: string
 }>()
+
+const breadcrumbs = inject<ComputedRef<BreadcrumbCrumb[]> | undefined>(
+  'toolBreadcrumbs',
+  undefined
+)
 </script>
 
 <template>
   <header class="mb-8">
+    <ToolBreadcrumbs
+      v-if="breadcrumbs?.length"
+      :items="breadcrumbs"
+    />
     <h1 class="text-3xl font-medium tracking-tight text-highlighted">
       {{ title }}
     </h1>

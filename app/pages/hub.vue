@@ -172,7 +172,13 @@ watch(() => route.path, () => {
             class="space-y-1.5"
           >
             <div class="flex items-center justify-between px-2 py-1 text-xs font-mono font-semibold tracking-wider text-muted uppercase">
-              <span>{{ group.label }}</span>
+              <NuxtLink
+                :to="`/hub/${group.category}`"
+                class="hover:text-highlighted transition-colors"
+                @click="scrollToTop"
+              >
+                {{ group.label }}
+              </NuxtLink>
               <UBadge
                 color="neutral"
                 variant="subtle"
@@ -276,7 +282,13 @@ watch(() => route.path, () => {
                 class="space-y-1.5"
               >
                 <div class="flex items-center justify-between px-2 py-1 text-xs font-mono font-semibold tracking-wider text-muted uppercase">
-                  <span>{{ group.label }}</span>
+                  <NuxtLink
+                    :to="`/hub/${group.category}`"
+                    class="hover:text-highlighted transition-colors"
+                    @click="() => { closeMobile(); scrollToTop(); }"
+                  >
+                    {{ group.label }}
+                  </NuxtLink>
                   <UBadge
                     color="neutral"
                     variant="subtle"

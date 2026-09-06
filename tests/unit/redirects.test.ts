@@ -3,8 +3,9 @@ import { legacyRedirects, resolveLegacyRedirect } from '../../shared/utils/redir
 
 describe('legacy redirects', () => {
   it('contains category roots and renamed tool slugs', () => {
-    expect(legacyRedirects['/data']).toBe('/hub/data/json-formatter')
-    expect(legacyRedirects['/network']).toBe('/hub/network/dns-lookup')
+    expect(legacyRedirects['/data']).toBe('/hub/data')
+    expect(legacyRedirects['/network']).toBe('/hub/network')
+    expect(legacyRedirects['/crypto']).toBe('/hub/crypto')
     expect(legacyRedirects['/network/dns']).toBe('/hub/network/dns-lookup')
     expect(legacyRedirects['/network/headers']).toBe('/hub/network/http-headers')
     expect(legacyRedirects['/network/url']).toBe('/hub/network/url-inspector')
@@ -14,6 +15,7 @@ describe('legacy redirects', () => {
   })
 
   it('resolves exact legacy paths', () => {
+    expect(resolveLegacyRedirect('/data')).toBe('/hub/data')
     expect(resolveLegacyRedirect('/data/json-formatter')).toBe('/hub/data/json-formatter')
     expect(resolveLegacyRedirect('/data/json-validator')).toBe('/hub/data/json-formatter')
     expect(resolveLegacyRedirect('/data/json-minifier')).toBe('/hub/data/json-formatter')
@@ -26,7 +28,7 @@ describe('legacy redirects', () => {
 
   it('handles paths with trailing slashes', () => {
     expect(resolveLegacyRedirect('/network/dns/')).toBe('/hub/network/dns-lookup')
-    expect(resolveLegacyRedirect('/data/')).toBe('/hub/data/json-formatter')
+    expect(resolveLegacyRedirect('/data/')).toBe('/hub/data')
     expect(resolveLegacyRedirect('/color/contrast/')).toBe('/hub/color/contrast-checker')
   })
 
@@ -39,6 +41,7 @@ describe('legacy redirects', () => {
     expect(resolveLegacyRedirect('/')).toBeNull()
     expect(resolveLegacyRedirect('/about')).toBeNull()
     expect(resolveLegacyRedirect('/hub')).toBeNull()
+    expect(resolveLegacyRedirect('/hub/data')).toBeNull()
     expect(resolveLegacyRedirect('/hub/data/json-formatter')).toBeNull()
     expect(resolveLegacyRedirect('/unknown')).toBeNull()
   })

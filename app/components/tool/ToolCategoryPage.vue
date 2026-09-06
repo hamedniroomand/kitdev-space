@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { ToolCategory } from '~/types/tools'
+import { buildCategoryBreadcrumbs } from '~~/shared/utils/breadcrumbs'
 
 const props = defineProps<{
   category: ToolCategory
@@ -9,6 +10,7 @@ const { categoryLabels, getToolsByCategory } = useTools()
 
 const label = computed(() => categoryLabels[props.category])
 const categoryTools = computed(() => getToolsByCategory(props.category))
+const breadcrumbs = computed(() => buildCategoryBreadcrumbs(props.category))
 
 useSeoMeta({
   title: () => label.value,
@@ -23,10 +25,22 @@ useKitDevOgImage({
   description: () => `${label.value} tools in KitDev Space.`,
   eyebrow: 'Category'
 })
+
+useSchemaOrg([
+  defineBreadcrumb({
+    itemListElement: [
+      { name: 'Home', item: '/' },
+      { name: 'Hub', item: '/hub' },
+      { name: categoryLabels[props.category], item: `/hub/${props.category}` }
+    ]
+  })
+])
 </script>
 
 <template>
-  <UContainer class="py-16 sm:py-20 max-w-4xl">
+  <UContainer class="py-12 sm:py-16 max-w-5xl">
+    <ToolBreadcrumbs :items="breadcrumbs" />
+
     <p class="font-mono text-xs font-semibold tracking-widest text-primary uppercase leading-[1.2]">
       Category
     </p>

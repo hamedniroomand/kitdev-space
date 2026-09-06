@@ -1,11 +1,11 @@
 export const legacyRedirects: Record<string, string> = {
   // Category roots
-  '/data': '/hub/data/json-formatter',
-  '/network': '/hub/network/dns-lookup',
-  '/crypto': '/hub/crypto/hash-generator',
-  '/color': '/hub/color/converter',
-  '/image': '/hub/image/converter',
-  '/dev': '/hub/dev/cron',
+  '/data': '/hub/data',
+  '/network': '/hub/network',
+  '/crypto': '/hub/crypto',
+  '/color': '/hub/color',
+  '/image': '/hub/image',
+  '/dev': '/hub/dev',
 
   // Renamed tool slugs
   '/network/dns': '/hub/network/dns-lookup',

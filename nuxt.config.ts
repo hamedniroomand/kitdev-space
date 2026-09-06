@@ -13,10 +13,13 @@ for (const [oldPath, newPath] of Object.entries(legacyRedirects)) {
   legacyRouteRules[`${oldPath}/`] = { redirect: { to: newPath, statusCode: 301 } }
 }
 
+const hubCategoryRoutes = Object.keys(categoryLabels).map(category => `/hub/${category}`)
+
 const prerenderRoutes = [
   '/',
   '/about',
   '/hub',
+  ...hubCategoryRoutes,
   ...tools.map(tool => tool.route),
   ...Object.keys(legacyRedirects),
   '/sitemap.xml',

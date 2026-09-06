@@ -1,9 +1,16 @@
 import { expect, test } from '@playwright/test'
 
-test('hub redirects /hub to default active tool /hub/data/json-formatter', async ({ page }) => {
+test('hub shows Tools Hub landing at /hub', async ({ page }) => {
   await page.goto('/hub')
-  await expect(page).toHaveURL(/\/hub\/data\/json-formatter/)
-  await expect(page.getByRole('heading', { name: 'JSON Formatter' })).toBeVisible()
+  await expect(page).toHaveURL(/\/hub\/?$/)
+  await expect(page.getByRole('heading', { name: 'Tools Hub' })).toBeVisible()
+  await expect(page.getByRole('link', { name: /Data Lab/ })).toBeVisible()
+})
+
+test('hub category page lists tools', async ({ page }) => {
+  await page.goto('/hub/data')
+  await expect(page.getByRole('heading', { name: 'Data Lab' })).toBeVisible()
+  await expect(page.getByRole('link', { name: /JSON Formatter/ })).toBeVisible()
 })
 
 test('hub persistent sidebar allows searching and switching tools', async ({ page }) => {
@@ -51,7 +58,8 @@ test('redirects legacy URLs to new hub tool URLs', async ({ page }) => {
 
   // Test category root redirect
   await page.goto('/crypto')
-  await expect(page).toHaveURL(/\/hub\/crypto\/hash-generator/)
+  await expect(page).toHaveURL(/\/hub\/crypto\/?$/)
+  await expect(page.getByRole('heading', { name: 'Crypto Lab' })).toBeVisible()
 
   // Test nested converter redirect
   await page.goto('/data/converters/json-yaml')

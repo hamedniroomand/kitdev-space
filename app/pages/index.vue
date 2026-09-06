@@ -174,10 +174,10 @@ useKitDevOgImage({
 
             <div class="mt-6 pt-4 border-t border-default/60">
               <NuxtLink
-                :to="getToolsByCategory(category)[0]?.route ?? '/hub'"
+                :to="`/hub/${category}`"
                 class="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
               >
-                <span>Launch category in Hub</span>
+                <span>Open category in Hub</span>
                 <UIcon
                   name="i-lucide-chevron-right"
                   class="size-3"

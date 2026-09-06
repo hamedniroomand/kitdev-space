@@ -1,11 +1,17 @@
 import { categoryLabels, getToolById } from '~~/shared/utils/tools'
+import { buildToolBreadcrumbs } from '~~/shared/utils/breadcrumbs'
 
 export function useToolSeo(toolId: string) {
   const tool = getToolById(toolId)
 
   if (!tool) {
-    return
+    return {
+      breadcrumbs: computed(() => [])
+    }
   }
+
+  const breadcrumbs = computed(() => buildToolBreadcrumbs(tool))
+  provide('toolBreadcrumbs', breadcrumbs)
 
   useSeoMeta({
     title: tool.name,
@@ -20,4 +26,30 @@ export function useToolSeo(toolId: string) {
     description: tool.description,
     eyebrow: categoryLabels[tool.category]
   })
+
+  useSchemaOrg([
+    defineBreadcrumb({
+      itemListElement: [
+        { name: 'Home', item: '/' },
+        { name: 'Hub', item: '/hub' },
+        { name: categoryLabels[tool.category], item: `/hub/${tool.category}` },
+        { name: tool.name, item: tool.route }
+      ]
+    }),
+    defineSoftwareApp({
+      name: tool.name,
+      description: tool.description,
+      url: tool.route,
+      applicationCategory: 'DeveloperApplication',
+      operatingSystem: 'Any',
+      offers: {
+        price: 0,
+        priceCurrency: 'USD'
+      }
+    })
+  ])
+
+  return {
+    breadcrumbs
+  }
 }
