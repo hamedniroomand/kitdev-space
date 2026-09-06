@@ -505,6 +505,19 @@ export const tools: Tool[] = [
     status: 'available'
   },
   {
+    id: 'code-minifier',
+    slug: 'code-minifier',
+    name: 'Code Minifier and Beautifier',
+    description: 'Minify and format JavaScript, TypeScript, HTML, CSS, and JSON.',
+    category: 'dev',
+    icon: 'i-lucide-minimize-2',
+    keywords: ['minify', 'beautify', 'format', 'oxc', 'prettier', 'javascript', 'typescript', 'html', 'css', 'json'],
+    route: '/hub/dev/code-minifier',
+    clientOnly: false,
+    serverRequired: true,
+    status: 'available'
+  },
+  {
     id: 'case-converter',
     slug: 'case-converter',
     name: 'Case and Slug Converter',

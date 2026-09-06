@@ -171,6 +171,7 @@ defineShortcuts({
         </p>
         <DataRelatedTools
           :items="[
+            { label: 'Code Minifier and Beautifier', to: '/hub/dev/code-minifier' },
             { label: 'JSON → TypeScript', to: '/hub/data/json-to-typescript' },
             { label: 'Tar Explorer', to: '/hub/dev/tar' }
           ]"
