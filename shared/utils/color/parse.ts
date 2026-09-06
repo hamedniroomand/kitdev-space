@@ -1,5 +1,6 @@
-import type { Hsl, ParsedColor, Rgb } from './types'
+import type { Hsl, Oklch, ParsedColor, Rgb } from './types'
 import { rgbToHsl } from './convert'
+import { oklchToRgb, rgbToOklch } from './oklch'
 
 function clampByte(value: number): number {
   return Math.min(255, Math.max(0, Math.round(value)))
@@ -7,6 +8,15 @@ function clampByte(value: number): number {
 
 export function rgbToHex({ r, g, b }: Rgb): string {
   return `#${[r, g, b].map(value => clampByte(value).toString(16).padStart(2, '0')).join('')}`
+}
+
+function describe(rgb: Rgb, hsl?: Hsl): ParsedColor {
+  return {
+    hex: rgbToHex(rgb),
+    rgb,
+    hsl: hsl ?? rgbToHsl(rgb),
+    oklch: rgbToOklch(rgb)
+  }
 }
 
 export function parseColor(input: string): ParsedColor {
@@ -23,7 +33,7 @@ export function parseColor(input: string): ParsedColor {
       g: Number.parseInt(full.slice(2, 4), 16),
       b: Number.parseInt(full.slice(4, 6), 16)
     }
-    return { hex: rgbToHex(rgb), rgb, hsl: rgbToHsl(rgb) }
+    return describe(rgb)
   }
 
   const rgbMatch = /^rgba?\(\s*([0-9.]+)\s*,\s*([0-9.]+)\s*,\s*([0-9.]+)/i.exec(text)
@@ -33,7 +43,7 @@ export function parseColor(input: string): ParsedColor {
       g: clampByte(Number(rgbMatch[2])),
       b: clampByte(Number(rgbMatch[3]))
     }
-    return { hex: rgbToHex(rgb), rgb, hsl: rgbToHsl(rgb) }
+    return describe(rgb)
   }
 
   const hslMatch = /^hsla?\(\s*([0-9.]+)\s*,\s*([0-9.]+)%\s*,\s*([0-9.]+)%/i.exec(text)
@@ -43,11 +53,20 @@ export function parseColor(input: string): ParsedColor {
       s: Math.min(100, Math.max(0, Number(hslMatch[2]))),
       l: Math.min(100, Math.max(0, Number(hslMatch[3])))
     }
-    const rgb = hslToRgb(hsl)
-    return { hex: rgbToHex(rgb), rgb, hsl }
+    return describe(hslToRgb(hsl), hsl)
   }
 
-  throw new Error('Invalid color.\n\nUse HEX, RGB, or HSL.')
+  const oklchMatch = /^oklch\(\s*([0-9.]+)%?\s+([0-9.]+)\s+([0-9.]+)/i.exec(text)
+  if (oklchMatch) {
+    const oklch: Oklch = {
+      l: Math.min(100, Math.max(0, Number(oklchMatch[1]))),
+      c: Math.max(0, Number(oklchMatch[2])),
+      h: ((Number(oklchMatch[3]) % 360) + 360) % 360
+    }
+    return describe(oklchToRgb(oklch))
+  }
+
+  throw new Error('Invalid color.\n\nUse HEX, RGB, HSL, or OKLCH.')
 }
 
 export function toRgbString({ r, g, b }: Rgb): string {

@@ -406,7 +406,7 @@ export const tools: Tool[] = [
     id: 'color-converter',
     slug: 'converter',
     name: 'Color Converter',
-    description: 'Convert colors between formats.',
+    description: 'Convert colors between HEX, RGB, HSL, and OKLCH.',
     category: 'color',
     icon: 'i-lucide-palette',
     keywords: ['color', 'hex', 'rgb', 'hsl', 'oklch'],

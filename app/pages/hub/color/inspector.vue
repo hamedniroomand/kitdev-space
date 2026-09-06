@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { parseColor, toHslString, toRgbString } from '#shared/utils/color/parse'
+import { toOklchString } from '#shared/utils/color/oklch'
 
 const input = ref('#7c3aed')
 const hex = ref('')
 const rgb = ref('')
 const hsl = ref('')
+const oklch = ref('')
 const channels = ref({ r: 0, g: 0, b: 0 })
 const { status, error, run, reset } = useTool<string>()
 
@@ -16,6 +18,7 @@ async function inspect() {
     hex.value = color.hex
     rgb.value = toRgbString(color.rgb)
     hsl.value = toHslString(color.hsl)
+    oklch.value = toOklchString(color.oklch)
     channels.value = color.rgb
     return color.hex
   })
@@ -25,6 +28,7 @@ function handleClear() {
   hex.value = ''
   rgb.value = ''
   hsl.value = ''
+  oklch.value = ''
   reset()
 }
 
@@ -54,7 +58,7 @@ onMounted(() => {
     <UFormField label="Color">
       <UInput
         v-model="input"
-        placeholder="#7c3aed"
+        placeholder="#7c3aed, rgb(124 58 237), or oklch(53% 0.24 293)"
         class="max-w-sm"
       />
     </UFormField>
@@ -93,7 +97,7 @@ onMounted(() => {
         </p>
       </div>
 
-      <dl class="grid gap-3 font-mono text-sm sm:grid-cols-3">
+      <dl class="grid gap-3 font-mono text-sm sm:grid-cols-4">
         <div>
           <dt class="text-muted">
             HEX
@@ -116,6 +120,14 @@ onMounted(() => {
           </dt>
           <dd class="text-highlighted">
             {{ hsl }}
+          </dd>
+        </div>
+        <div>
+          <dt class="text-muted">
+            OKLCH
+          </dt>
+          <dd class="break-all text-highlighted">
+            {{ oklch }}
           </dd>
         </div>
       </dl>
