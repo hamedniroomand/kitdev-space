@@ -142,11 +142,12 @@ defineShortcuts({
       >
         <div class="flex w-56 items-center gap-3">
           <USlider
-            v-model="angle"
+            :model-value="angle"
             :min="0"
             :max="360"
             :step="1"
             class="flex-1"
+            @update:model-value="angle = Number($event)"
           />
           <span class="w-12 font-mono text-sm text-muted">{{ angle }}°</span>
         </div>

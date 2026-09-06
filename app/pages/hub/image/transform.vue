@@ -157,11 +157,12 @@ defineShortcuts({
     >
       <div class="flex items-center gap-3">
         <USlider
-          v-model="quality"
+          :model-value="quality"
           :min="1"
           :max="100"
           :step="1"
           class="flex-1"
+          @update:model-value="quality = Number($event)"
         />
         <span class="w-10 font-mono text-sm text-muted">{{ quality }}</span>
       </div>
