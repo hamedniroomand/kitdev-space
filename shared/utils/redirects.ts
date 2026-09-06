@@ -26,7 +26,8 @@ export const legacyRedirects: Record<string, string> = {
   '/data/converters/json-toml': '/hub/data/converters/json-toml',
   '/data/converters/json-xml': '/hub/data/converters/json-xml',
   '/data/text-diff': '/hub/data/text-diff',
-  '/data/converters/json-json5': '/hub/data/converters/json-json5',
+  '/data/converters/json-json5': '/hub/data/json-formatter',
+  '/hub/data/converters/json-json5': '/hub/data/json-formatter',
   '/data/sql-formatter': '/hub/data/sql-formatter',
   '/hub/dev/sql-formatter': '/hub/data/sql-formatter',
 

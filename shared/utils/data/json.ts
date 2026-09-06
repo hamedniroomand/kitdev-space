@@ -1,10 +1,20 @@
 import { DataError, formatJsonError } from './errors'
+import { toStrictJson } from './json5'
 
+/**
+ * Parses JSON. When strict JSON fails, it retries with the JSON5 and JSONC
+ * forms: comments, trailing commas, single quotes, and unquoted keys.
+ */
 export function parseJson(input: string): unknown {
   try {
     return JSON.parse(input)
   } catch (cause) {
-    throw formatJsonError(cause, input)
+    try {
+      return JSON.parse(toStrictJson(input))
+    } catch {
+      // Report the error of the strict parse, because it names the true position.
+      throw formatJsonError(cause, input)
+    }
   }
 }
 

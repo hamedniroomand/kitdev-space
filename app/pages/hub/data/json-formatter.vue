@@ -191,7 +191,12 @@ defineShortcuts({
             Paste JSON in the input. Select Format to create indented output.
           </p>
           <p>
-            Common errors include missing commas, trailing commas, and unquoted keys.
+            The input also accepts JSON5 and JSONC. A comment, a trailing comma, a single quote, and
+            an unquoted key are all read, and the output is strict JSON. This lets you paste a
+            tsconfig.json or another config file with no edit.
+          </p>
+          <p>
+            A common error is a missing comma or a missing bracket. The error message names the line.
           </p>
         </div>
         <RelatedTools

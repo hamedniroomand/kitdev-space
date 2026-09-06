@@ -16,10 +16,10 @@ export const tools: Tool[] = [
     id: 'json-formatter',
     slug: 'json-formatter',
     name: 'JSON Formatter',
-    description: 'Format, minify, and validate JSON.',
+    description: 'Format, minify, and validate JSON. Accepts JSON5 and JSONC input.',
     category: 'data',
     icon: 'i-lucide-braces',
-    keywords: ['json', 'format', 'pretty', 'beautify', 'minify', 'validate', 'lint', 'compress'],
+    keywords: ['json', 'json5', 'jsonc', 'format', 'pretty', 'beautify', 'minify', 'validate', 'lint', 'compress', 'comments'],
     route: '/hub/data/json-formatter',
     clientOnly: true,
     serverRequired: false,
@@ -127,19 +127,6 @@ export const tools: Tool[] = [
     route: '/hub/data/sql-formatter',
     clientOnly: true,
     serverRequired: false,
-    status: 'available'
-  },
-  {
-    id: 'json-json5',
-    slug: 'json-json5',
-    name: 'JSON ↔ JSON5',
-    description: 'Convert between JSON and JSON5.',
-    category: 'data',
-    icon: 'i-lucide-arrow-left-right',
-    keywords: ['json', 'json5', 'convert'],
-    route: '/hub/data/converters/json-json5',
-    clientOnly: false,
-    serverRequired: true,
     status: 'available'
   },
   {
