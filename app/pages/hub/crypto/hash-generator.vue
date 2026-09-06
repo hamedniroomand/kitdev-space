@@ -2,11 +2,14 @@
 import type { HashAlgorithm } from '#shared/utils/crypto/types'
 import { canHashInBrowser, hashBytes, hashString } from '#shared/utils/crypto/hash'
 import { formatBytes } from '#shared/utils/format'
+import { parseJson } from '#shared/utils/data/json'
+import { stableStringify } from '#shared/utils/data/stable-json'
 
-type Source = 'text' | 'file'
+type Source = 'text' | 'json' | 'file'
 
 const SOURCE_ITEMS: { label: string, value: Source, icon: string }[] = [
   { label: 'Text', value: 'text', icon: 'i-lucide-type' },
+  { label: 'JSON object', value: 'json', icon: 'i-lucide-braces' },
   { label: 'File', value: 'file', icon: 'i-lucide-file' }
 ]
 
@@ -23,6 +26,8 @@ const algorithmItems = [
 
 const source = ref<Source>('text')
 const input = ref('hello')
+const jsonInput = ref('{\n  "name": "KitDev",\n  "tags": ["hash", "json"],\n  "ready": true\n}')
+const canonical = ref('')
 const file = ref<File | null>(null)
 const algorithm = ref<HashAlgorithm>('sha256')
 const output = ref('')
@@ -39,6 +44,7 @@ const fileNeedsSha = computed(() => source.value === 'file' && !inBrowser.value)
 
 watch([source, algorithm], () => {
   output.value = ''
+  canonical.value = ''
   reset()
 })
 
@@ -56,14 +62,22 @@ async function hash() {
       return hashBytes(await file.value.arrayBuffer(), algorithm.value)
     }
 
+    // A JSON object is hashed in its canonical form: sorted keys, no spaces.
+    // Two objects with the same content then give the same digest.
+    let text = input.value
+    if (source.value === 'json') {
+      canonical.value = stableStringify(parseJson(jsonInput.value))
+      text = canonical.value
+    }
+
     if (inBrowser.value) {
-      return hashString(input.value, algorithm.value)
+      return hashString(text, algorithm.value)
     }
 
     const data = await $fetch<{ result: string }>('/api/crypto/hash', {
       method: 'POST',
       body: {
-        input: input.value,
+        input: text,
         algorithm: algorithm.value
       }
     })
@@ -84,6 +98,8 @@ async function handleCopy() {
 
 function handleClear() {
   input.value = ''
+  jsonInput.value = ''
+  canonical.value = ''
   file.value = null
   output.value = ''
   reset()
@@ -165,6 +181,21 @@ defineShortcuts({
       placeholder="Paste text here"
     />
 
+    <template v-else-if="source === 'json'">
+      <LazyToolEditor
+        v-model="jsonInput"
+        hydrate-on-idle
+        label="JSON object"
+        lang="json"
+        placeholder="Paste a JSON object here"
+        :rows="8"
+      />
+      <p class="text-xs text-muted">
+        The keys are sorted at every level and the spaces are removed before the hash. The key order
+        of the input does not change the digest. To reproduce it, hash the canonical text below.
+      </p>
+    </template>
+
     <template v-else>
       <ImageDropzone
         v-model="file"
@@ -218,6 +249,16 @@ defineShortcuts({
       placeholder="Hash appears here"
     />
 
+    <LazyToolEditor
+      v-if="source === 'json' && canonical"
+      v-model="canonical"
+      hydrate-on-idle
+      label="Canonical JSON"
+      lang="json"
+      readonly
+      :rows="4"
+    />
+
     <template #docs>
       <ToolDocs title="About hashing">
         <div class="space-y-4 text-muted">
@@ -228,6 +269,11 @@ defineShortcuts({
           <p>
             Use the File source to check a download against the checksum of the publisher. The tool
             reads the file on your device with Web Crypto, so a large file never leaves your browser.
+          </p>
+          <p>
+            The JSON object source gives a stable digest for an object. The keys are sorted at every
+            level and the spaces are removed, so the same content in a different key order gives the same
+            hash. Use it as a cache key, a deduplication key, or a change detector for a config object.
           </p>
           <p>
             These digests are not password hashes. A password needs a slow algorithm such as bcrypt,
