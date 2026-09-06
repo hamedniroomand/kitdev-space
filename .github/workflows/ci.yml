@@ -4,7 +4,13 @@ on:
   push:
     branches: [main]
   pull_request:
-    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   check:
@@ -19,6 +25,8 @@ jobs:
       - run: bun lint
       - run: bun typecheck
       - run: bun run test
+      - name: Build for Vercel
+        run: bun run build
         env:
           NITRO_PRESET: vercel
       - name: Check the Vercel function runtime
