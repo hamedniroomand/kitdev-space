@@ -44,7 +44,7 @@ describe('tool registry', () => {
 
   it('lists tools for image category', () => {
     expect(categoryLabels.image).toBe('Image Lab')
-    expect(getToolsByCategory('image').length).toBe(9)
+    expect(getToolsByCategory('image').length).toBe(8)
   })
 
   it('lists tools for dev category', () => {

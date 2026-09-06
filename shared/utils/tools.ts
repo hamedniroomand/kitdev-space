@@ -678,14 +678,14 @@ export const tools: Tool[] = [
   {
     id: 'image-metadata',
     slug: 'metadata',
-    name: 'Metadata Inspector',
-    description: 'Inspect image size and strip metadata.',
+    name: 'EXIF & Metadata Inspector',
+    description: 'Read EXIF, GPS, and text metadata in an image, then remove it with no re-encode.',
     category: 'image',
-    icon: 'i-lucide-info',
-    keywords: ['image', 'exif', 'metadata', 'privacy'],
+    icon: 'i-lucide-file-search',
+    keywords: ['image', 'exif', 'metadata', 'privacy', 'gps', 'strip', 'clean', 'stripper', 'iptc', 'xmp'],
     route: '/hub/image/metadata',
-    clientOnly: false,
-    serverRequired: true,
+    clientOnly: true,
+    serverRequired: false,
     status: 'available'
   },
   {
@@ -738,19 +738,6 @@ export const tools: Tool[] = [
     route: '/hub/image/placeholder',
     clientOnly: true,
     serverRequired: false,
-    status: 'available'
-  },
-  {
-    id: 'exif-stripper',
-    slug: 'exif-stripper',
-    name: 'EXIF Metadata Stripper',
-    description: 'Remove EXIF metadata, GPS locations, and camera tags from photos.',
-    category: 'image',
-    icon: 'i-lucide-shield-alert',
-    keywords: ['image', 'exif', 'metadata', 'privacy', 'gps', 'strip', 'clean'],
-    route: '/hub/image/exif-stripper',
-    clientOnly: false,
-    serverRequired: true,
     status: 'available'
   },
   {

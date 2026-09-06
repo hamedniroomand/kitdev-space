@@ -46,6 +46,8 @@ export const legacyRedirects: Record<string, string> = {
   '/color/inspector': '/hub/color/inspector',
 
   // Image tools
+  '/hub/image/exif-stripper': '/hub/image/metadata',
+  '/image/exif-stripper': '/hub/image/metadata',
   '/image/converter': '/hub/image/converter',
   '/image/resizer': '/hub/image/resizer',
   '/image/transform': '/hub/image/transform',

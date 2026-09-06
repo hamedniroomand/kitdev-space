@@ -231,11 +231,3 @@ export async function transformImage(
 
   return finish(applyFormat(img, format, quality), format)
 }
-
-export async function stripMetadata(
-  input: Uint8Array,
-  opts?: { format?: ImageEncodeFormat, quality?: number }
-): Promise<ImageResult> {
-  const format = opts?.format ?? 'webp'
-  return convertImage(input, { format, quality: opts?.quality })
-}

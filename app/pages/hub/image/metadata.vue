@@ -1,251 +1,339 @@
 <script setup lang="ts">
-import type { ImageEncodeFormat } from '#shared/utils/image/types'
+import type { ImageMetadata, MetadataGroup } from '#shared/utils/image/exif'
+import { readImageMetadata } from '#shared/utils/image/exif'
+import { canStripInPlace, stripImageMetadata } from '#shared/utils/image/strip'
+import { formatBytes } from '#shared/utils/format'
+
+const GROUP_ORDER: MetadataGroup[] = ['Image', 'EXIF', 'GPS', 'Text', 'XMP']
 
 const file = ref<File | null>(null)
-const meta = ref<{ width: number, height: number, format: string, bytes: number } | null>(null)
-const format = ref<ImageEncodeFormat>('webp')
-const quality = ref(80)
+const meta = ref<ImageMetadata | null>(null)
 const cleanedBlob = ref<Blob | null>(null)
-const inputBytes = ref<number | null>(null)
-const outputBytes = ref<number | null>(null)
-const outWidth = ref<number | null>(null)
-const outHeight = ref<number | null>(null)
-const { status, error, run, reset } = useTool<string>()
-const { track } = useToolAnalytics()
+const cleanedBytes = ref<number | null>(null)
+const removedBlocks = ref<string[]>([])
+const showAllTags = ref(false)
 
-const formatItems = [
-  { label: 'WebP', value: 'webp' },
-  { label: 'AVIF', value: 'avif' },
-  { label: 'JPEG', value: 'jpeg' },
-  { label: 'PNG', value: 'png' }
-]
+const { status, error, run, reset } = useTool<string>()
+const { downloadBlob } = useDownload()
 
 useToolSeo('image-metadata')
 
-onMounted(() => {
-  track('tool_open', { tool: 'image-metadata' })
+const container = computed(() => meta.value?.container ?? 'unknown')
+const inPlace = computed(() => canStripInPlace(container.value))
+const privateTags = computed(() => meta.value?.tags.filter(item => item.private) ?? [])
+const visibleTags = computed(() => {
+  const tags = meta.value?.tags ?? []
+  const list = showAllTags.value ? tags : privateTags.value
+  return [...list].sort((a, b) => GROUP_ORDER.indexOf(a.group) - GROUP_ORDER.indexOf(b.group))
 })
 
-async function handleInspect() {
+const mapLink = computed(() => {
+  const gps = meta.value?.gps
+  return gps ? `https://www.openstreetmap.org/?mlat=${gps.latitude}&mlon=${gps.longitude}#map=16/${gps.latitude}/${gps.longitude}` : null
+})
+
+const cleanedName = computed(() => {
+  const name = file.value?.name ?? 'image'
+  return `clean-${name}`
+})
+
+function clearResult() {
   cleanedBlob.value = null
-  meta.value = null
-  await run(async () => {
-    if (!file.value) {
-      throw new Error('Choose an image file before you run the tool.')
-    }
-    const form = new FormData()
-    form.append('file', file.value)
-
-    const data = await $fetch<{ width: number, height: number, format: string, bytes: number }>(
-      '/api/image/metadata',
-      { method: 'POST', body: form }
-    )
-    meta.value = data
-    return `${data.width}×${data.height} ${data.format}`
-  })
-
-  if (status.value === 'success') {
-    track('tool_execute', { tool: 'image-metadata' })
-  } else if (status.value === 'error') {
-    track('tool_error', { tool: 'image-metadata' })
-  }
+  cleanedBytes.value = null
+  removedBlocks.value = []
 }
 
-async function handleStrip() {
-  cleanedBlob.value = null
+watch(file, async (selected) => {
+  meta.value = null
+  showAllTags.value = false
+  clearResult()
+  reset()
+
+  if (!selected) {
+    return
+  }
+
   await run(async () => {
-    if (!file.value) {
-      throw new Error('Choose an image file before you run the tool.')
-    }
-    const form = new FormData()
-    form.append('file', file.value)
-    form.append('strip', '1')
-    form.append('format', format.value)
-    form.append('quality', String(quality.value))
+    const bytes = new Uint8Array(await selected.arrayBuffer())
+    const result = readImageMetadata(bytes)
 
-    const response = await fetch('/api/image/metadata', {
-      method: 'POST',
-      body: form
-    })
-
-    if (!response.ok) {
-      const payload = await response.json().catch(() => null) as { message?: string, statusMessage?: string } | null
-      throw new Error(payload?.message || payload?.statusMessage || 'The strip operation failed.')
+    if (result.container === 'unknown') {
+      throw new Error('This file is not a JPEG, a PNG, a WebP, or an AVIF image.')
     }
 
-    inputBytes.value = Number(response.headers.get('x-input-bytes') ?? file.value.size)
-    outputBytes.value = Number(response.headers.get('x-output-bytes') ?? 0)
-    outWidth.value = Number(response.headers.get('x-image-width') ?? 0) || null
-    outHeight.value = Number(response.headers.get('x-image-height') ?? 0) || null
-    const blob = await response.blob()
-    cleanedBlob.value = blob
+    meta.value = result
+    return `${result.tags.length} tags`
+  }, 'The file could not be read.')
+})
+
+async function handleStrip() {
+  if (!file.value) {
+    return
+  }
+
+  clearResult()
+
+  await run(async () => {
+    const bytes = new Uint8Array(await file.value!.arrayBuffer())
+    const result = stripImageMetadata(bytes)
+
+    if (!result) {
+      throw new Error('This format needs a re-encode. Use the Image Converter to make a clean copy.')
+    }
+
+    // A copy keeps the blob independent of the source buffer.
+    cleanedBlob.value = new Blob([result.bytes.slice()], { type: result.mime })
+    cleanedBytes.value = result.bytes.byteLength
+    removedBlocks.value = result.removed
     return 'cleaned'
-  })
+  }, 'The metadata could not be removed.')
+}
 
-  if (status.value === 'success') {
-    track('tool_execute', { tool: 'image-metadata' })
-  } else if (status.value === 'error') {
-    track('tool_error', { tool: 'image-metadata' })
+function handleDownload() {
+  if (cleanedBlob.value) {
+    downloadBlob(cleanedName.value, cleanedBlob.value)
   }
 }
 
 function handleClear() {
   file.value = null
   meta.value = null
-  cleanedBlob.value = null
-  inputBytes.value = null
-  outputBytes.value = null
-  outWidth.value = null
-  outHeight.value = null
+  clearResult()
   reset()
 }
-
-defineShortcuts({
-  meta_enter: {
-    usingInput: true,
-    handler: () => {
-      handleInspect()
-    }
-  }
-})
 </script>
 
 <template>
   <ToolPage>
-    <template #header>
-      <ToolHeader
-        title="Metadata Inspector"
-        description="Inspect image size and strip metadata."
-      />
-    </template>
-
     <UAlert
-      color="info"
+      color="success"
       variant="subtle"
-      icon="i-lucide-server"
-      title="Processed with Bun"
-      description="Re-encoding removes camera and location metadata. Files are not stored."
+      icon="i-lucide-lock"
+      title="The image stays in your browser"
+      description="This tool reads and removes the metadata on your device. The file is not uploaded."
     />
 
-    <ImageDropzone v-model="file" />
-
-    <ToolActions>
-      <UButton
-        color="primary"
-        :loading="status === 'processing'"
-        @click="handleInspect"
-      >
-        Inspect
-      </UButton>
-      <UButton
-        color="neutral"
-        variant="ghost"
-        @click="handleClear"
-      >
-        Clear
-      </UButton>
-    </ToolActions>
+    <ImageDropzone
+      v-model="file"
+      accept="image/jpeg,image/png,image/webp,image/avif"
+      prompt="Drop a photo here, or click to choose a file."
+      hint="JPEG, PNG, and WebP are cleaned in place. AVIF is read only."
+    />
 
     <ToolError
       v-if="error"
       :message="error"
     />
 
-    <dl
-      v-if="meta"
-      class="grid gap-3 rounded-md border border-default bg-elevated/40 p-4 sm:grid-cols-2"
-    >
-      <div>
-        <dt class="text-xs text-muted">
-          Width
-        </dt>
-        <dd class="font-mono text-sm text-highlighted">
-          {{ meta.width }}
-        </dd>
-      </div>
-      <div>
-        <dt class="text-xs text-muted">
-          Height
-        </dt>
-        <dd class="font-mono text-sm text-highlighted">
-          {{ meta.height }}
-        </dd>
-      </div>
-      <div>
-        <dt class="text-xs text-muted">
-          Format
-        </dt>
-        <dd class="font-mono text-sm text-highlighted">
-          {{ meta.format }}
-        </dd>
-      </div>
-      <div>
-        <dt class="text-xs text-muted">
-          Bytes
-        </dt>
-        <dd class="font-mono text-sm text-highlighted">
-          {{ meta.bytes }}
-        </dd>
-      </div>
-    </dl>
+    <template v-if="meta">
+      <dl class="grid gap-3 rounded-md border border-default bg-elevated/40 p-4 sm:grid-cols-4">
+        <div>
+          <dt class="text-xs text-muted">
+            Format
+          </dt>
+          <dd class="font-mono text-sm uppercase text-highlighted">
+            {{ meta.container }}
+          </dd>
+        </div>
+        <div>
+          <dt class="text-xs text-muted">
+            Size
+          </dt>
+          <dd class="font-mono text-sm text-highlighted">
+            {{ meta.width ?? '—' }} × {{ meta.height ?? '—' }}
+          </dd>
+        </div>
+        <div>
+          <dt class="text-xs text-muted">
+            Bytes
+          </dt>
+          <dd class="font-mono text-sm text-highlighted">
+            {{ formatBytes(meta.bytes) }}
+          </dd>
+        </div>
+        <div>
+          <dt class="text-xs text-muted">
+            Metadata blocks
+          </dt>
+          <dd class="font-mono text-sm text-highlighted">
+            {{ meta.blocks.join(', ') || 'none' }}
+          </dd>
+        </div>
+      </dl>
 
-    <div
-      v-if="meta"
-      class="space-y-4 rounded-md border border-default bg-elevated/40 p-4"
-    >
-      <p class="text-sm text-highlighted">
-        Download a cleaned copy
-      </p>
-      <div class="grid gap-4 sm:grid-cols-2">
-        <UFormField label="Output format">
-          <USelect
-            v-model="format"
-            :items="formatItems"
-            class="w-full"
-          />
-        </UFormField>
-        <UFormField
-          v-if="format !== 'png'"
-          label="Quality"
-        >
-          <div class="flex items-center gap-3">
-            <USlider
-              :model-value="quality"
-              :min="1"
-              :max="100"
-              :step="1"
-              class="flex-1"
-              @update:model-value="quality = Number($event)"
-            />
-            <span class="w-10 font-mono text-sm text-muted">{{ quality }}</span>
-          </div>
-        </UFormField>
-      </div>
-      <UButton
-        color="primary"
-        variant="soft"
-        :loading="status === 'processing'"
-        @click="handleStrip"
+      <UAlert
+        v-if="meta.gps"
+        color="error"
+        variant="subtle"
+        icon="i-lucide-map-pin"
+        title="This photo holds a GPS position"
       >
-        Strip metadata
-      </UButton>
-    </div>
+        <template #description>
+          <span class="font-mono">{{ meta.gps.latitude }}, {{ meta.gps.longitude }}</span>
+          <ULink
+            v-if="mapLink"
+            :to="mapLink"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="ml-2 underline"
+          >
+            Open the map
+          </ULink>
+        </template>
+      </UAlert>
 
-    <ImageResult
-      :blob="cleanedBlob"
-      :input-bytes="inputBytes"
-      :output-bytes="outputBytes"
-      :width="outWidth"
-      :height="outHeight"
-      :filename="`cleaned.${format === 'jpeg' ? 'jpg' : format}`"
-    />
+      <UAlert
+        v-else-if="meta.tags.length === 0"
+        color="success"
+        variant="subtle"
+        icon="i-lucide-shield-check"
+        title="No metadata found"
+        description="This image holds no EXIF tag, no GPS position, and no text block."
+      />
+
+      <section
+        v-if="meta.tags.length"
+        class="space-y-3"
+      >
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <h2 class="text-sm font-medium text-highlighted">
+            {{ visibleTags.length }} of {{ meta.tags.length }} tags
+          </h2>
+          <UButton
+            size="xs"
+            color="neutral"
+            variant="ghost"
+            :icon="showAllTags ? 'i-lucide-eye-off' : 'i-lucide-eye'"
+            :label="showAllTags ? 'Show private tags only' : 'Show all tags'"
+            @click="showAllTags = !showAllTags"
+          />
+        </div>
+
+        <div class="overflow-x-auto rounded-md border border-default">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-default">
+                <th class="px-3 py-2 text-left font-medium text-highlighted">
+                  Group
+                </th>
+                <th class="px-3 py-2 text-left font-medium text-highlighted">
+                  Tag
+                </th>
+                <th class="px-3 py-2 text-left font-medium text-highlighted">
+                  Value
+                </th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-default">
+              <tr
+                v-for="(row, index) in visibleTags"
+                :key="`${row.group}-${row.name}-${index}`"
+              >
+                <td class="px-3 py-2">
+                  <UBadge
+                    :color="row.private ? 'warning' : 'neutral'"
+                    variant="subtle"
+                  >
+                    {{ row.group }}
+                  </UBadge>
+                </td>
+                <td class="px-3 py-2 font-mono text-highlighted">
+                  {{ row.name }}
+                </td>
+                <td class="break-all px-3 py-2 font-mono text-muted">
+                  {{ row.value }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <ToolActions>
+        <UButton
+          label="Remove all metadata"
+          icon="i-lucide-eraser"
+          :loading="status === 'processing'"
+          :disabled="!inPlace || meta.tags.length === 0"
+          @click="handleStrip"
+        />
+        <UButton
+          label="Clear"
+          color="neutral"
+          variant="ghost"
+          icon="i-lucide-x"
+          @click="handleClear"
+        />
+      </ToolActions>
+
+      <UAlert
+        v-if="!inPlace"
+        color="warning"
+        variant="subtle"
+        icon="i-lucide-triangle-alert"
+        title="This format needs a re-encode"
+        description="An AVIF file cannot be cleaned in place. Use the Image Converter to make a clean copy."
+      />
+
+      <div
+        v-if="cleanedBlob"
+        class="space-y-4 rounded-md border border-default bg-elevated/40 p-4"
+      >
+        <div class="flex items-center gap-2 text-sm font-medium text-success">
+          <UIcon
+            name="i-lucide-circle-check"
+            class="size-5"
+          />
+          <span>Removed: {{ removedBlocks.join(', ') || 'nothing' }}</span>
+        </div>
+        <p class="text-sm text-muted">
+          The pixel data did not change. Only the metadata blocks were removed.
+        </p>
+        <dl class="grid gap-3 sm:grid-cols-2">
+          <div class="rounded-md border border-default px-3 py-2">
+            <dt class="text-xs text-muted">
+              Before
+            </dt>
+            <dd class="font-mono text-sm text-highlighted">
+              {{ formatBytes(meta.bytes) }}
+            </dd>
+          </div>
+          <div class="rounded-md border border-default px-3 py-2">
+            <dt class="text-xs text-muted">
+              After
+            </dt>
+            <dd class="font-mono text-sm text-success">
+              {{ formatBytes(cleanedBytes ?? 0) }}
+            </dd>
+          </div>
+        </dl>
+        <UButton
+          label="Download the clean image"
+          icon="i-lucide-download"
+          @click="handleDownload"
+        />
+      </div>
+    </template>
 
     <template #docs>
       <ToolDocs title="About image metadata">
-        <p class="text-sm leading-relaxed text-muted">
-          Many cameras store location and device data in image files. A clean re-encode removes that data.
-        </p>
+        <div class="space-y-4 text-muted">
+          <p>
+            A camera writes EXIF data into a photo. That data can hold the GPS position, the camera model,
+            the serial number, and the date. A photo that you share can give your home address.
+          </p>
+          <p>
+            This tool reads the metadata blocks of a JPEG, a PNG, or a WebP file. It shows each tag. Then
+            it removes the EXIF, the XMP, the IPTC, and the text blocks, and keeps the pixel data byte for
+            byte. The image quality does not change, because there is no re-encode.
+          </p>
+          <p>
+            Choose a file. Read the tags. Then select Remove all metadata and download the clean image.
+            The file is not uploaded.
+          </p>
+        </div>
         <RelatedTools
+          class="mt-8"
           :items="[
             { label: 'Image Converter', to: '/hub/image/converter' },
             { label: 'Smart Resizer', to: '/hub/image/resizer' }

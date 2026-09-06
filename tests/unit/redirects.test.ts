@@ -23,6 +23,7 @@ describe('legacy redirects', () => {
     expect(resolveLegacyRedirect('/hub/data/json-minifier')).toBe('/hub/data/json-formatter')
     expect(resolveLegacyRedirect('/crypto/uuid')).toBe('/hub/crypto/uuid')
     expect(resolveLegacyRedirect('/image/converter')).toBe('/hub/image/converter')
+    expect(resolveLegacyRedirect('/hub/image/exif-stripper')).toBe('/hub/image/metadata')
     expect(resolveLegacyRedirect('/dev/cron')).toBe('/hub/dev/cron')
     expect(resolveLegacyRedirect('/data/sql-formatter')).toBe('/hub/data/sql-formatter')
     expect(resolveLegacyRedirect('/hub/dev/sql-formatter')).toBe('/hub/data/sql-formatter')
