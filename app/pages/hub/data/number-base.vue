@@ -195,5 +195,29 @@ function handleCopy(text: string, key: string) {
         </div>
       </div>
     </div>
+
+    <template #docs>
+      <ToolDocs title="About number bases">
+        <div class="space-y-4 text-muted">
+          <p>
+            This tool converts a number between binary, octal, decimal, and hexadecimal. Change any field and the other fields update.
+          </p>
+          <p>
+            The tool uses BigInt, so a value larger than 2^53 stays exact. A 64-bit identifier or a large bit mask does not lose a digit.
+          </p>
+          <p>
+            Binary shows the bits of a flag or a permission. Hexadecimal is shorter, and it maps four bits to one digit, so it suits a color value, a byte dump, or a memory address.
+          </p>
+        </div>
+        <RelatedTools
+          class="mt-8"
+          :items="[
+            { label: 'Chmod Calculator', to: '/hub/dev/chmod' },
+            { label: 'Encoder & Escaper', to: '/hub/dev/encoder' },
+            { label: 'Unicode Inspector', to: '/hub/data/unicode' }
+          ]"
+        />
+      </ToolDocs>
+    </template>
   </ToolPage>
 </template>

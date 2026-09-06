@@ -253,5 +253,29 @@ function handleClear() {
         </div>
       </div>
     </div>
+
+    <template #docs>
+      <ToolDocs title="About User Agent strings">
+        <div class="space-y-4 text-muted">
+          <p>
+            A browser sends a User Agent string with each request. This tool separates it into the browser, the version, the engine, the operating system, and the device type.
+          </p>
+          <p>
+            The string is not reliable. Every browser holds the names of older browsers for compatibility, and a user can change the value. Use it for analytics and for a support ticket. Do not use it to decide a feature; test for the feature itself.
+          </p>
+          <p>
+            Paste a string from a log file or from a bug report to see which client made the request.
+          </p>
+        </div>
+        <RelatedTools
+          class="mt-8"
+          :items="[
+            { label: 'HTTP Inspector', to: '/hub/network/http-inspector' },
+            { label: 'IP Address Info', to: '/hub/network/ip-info' },
+            { label: 'URL Inspector', to: '/hub/network/url-inspector' }
+          ]"
+        />
+      </ToolDocs>
+    </template>
   </ToolPage>
 </template>

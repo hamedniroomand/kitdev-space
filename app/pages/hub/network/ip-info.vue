@@ -272,5 +272,29 @@ fetchInfo()
         </div>
       </div>
     </div>
+
+    <template #docs>
+      <ToolDocs title="About IP address info">
+        <div class="space-y-4 text-muted">
+          <p>
+            This tool shows the details of an IPv4 or IPv6 address: the class, the reverse DNS host name, and whether the address is public, private, loopback, or reserved.
+          </p>
+          <p>
+            A private address, such as one in 10.0.0.0/8 or 192.168.0.0/16, works inside a network only. A router cannot send it over the internet. This is a common cause of a service that works on a laptop and fails in production.
+          </p>
+          <p>
+            The reverse DNS name often names the hosting company or the internet provider of the address.
+          </p>
+        </div>
+        <RelatedTools
+          class="mt-8"
+          :items="[
+            { label: 'CIDR Subnet Calculator', to: '/hub/network/cidr' },
+            { label: 'DNS Lookup', to: '/hub/network/dns-lookup' },
+            { label: 'RDAP / WHOIS Lookup', to: '/hub/network/rdap-lookup' }
+          ]"
+        />
+      </ToolDocs>
+    </template>
   </ToolPage>
 </template>

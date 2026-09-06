@@ -182,5 +182,29 @@ useToolShortcuts({
         />
       </div>
     </div>
+
+    <template #docs>
+      <ToolDocs title="About AES encryption">
+        <div class="space-y-4 text-muted">
+          <p>
+            This tool encrypts and decrypts text with AES-256-GCM. GCM gives secrecy and also integrity, so a change to the encrypted data makes the decryption fail instead of giving wrong text.
+          </p>
+          <p>
+            Your password becomes a key through PBKDF2, which repeats a hash many times. This makes a guess attack slow. A new random salt and a new random nonce are used for each operation, so the same text gives different output each time.
+          </p>
+          <p>
+            The strength comes from the password. A short password gives weak encryption, whatever the algorithm. Use the ID & Secret Generator to make a strong passphrase.
+          </p>
+        </div>
+        <RelatedTools
+          class="mt-8"
+          :items="[
+            { label: 'ID & Secret Generator', to: '/hub/crypto/generator' },
+            { label: 'Hash Generator', to: '/hub/crypto/hash-generator' },
+            { label: 'Password Benchmark', to: '/hub/crypto/password-benchmark' }
+          ]"
+        />
+      </ToolDocs>
+    </template>
   </ToolPage>
 </template>

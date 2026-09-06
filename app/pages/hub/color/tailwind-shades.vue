@@ -203,5 +203,29 @@ useToolShortcuts({
         />
       </div>
     </div>
+
+    <template #docs>
+      <ToolDocs title="About shade scales">
+        <div class="space-y-4 text-muted">
+          <p>
+            This tool builds a full 50 to 950 scale from one color. Tailwind CSS uses these steps, so the result drops into a theme with no change.
+          </p>
+          <p>
+            A scale keeps the character of the color at every step. A hand-picked set of shades often drifts in hue, which makes a interface look inconsistent.
+          </p>
+          <p>
+            Use a light step for a background, a middle step for a border, and a dark step for text. Check the pair with the Contrast Checker before you ship it.
+          </p>
+        </div>
+        <RelatedTools
+          class="mt-8"
+          :items="[
+            { label: 'Contrast Checker', to: '/hub/color/contrast-checker' },
+            { label: 'Palette Generator', to: '/hub/color/palette-generator' },
+            { label: 'Color Converter', to: '/hub/color/converter' }
+          ]"
+        />
+      </ToolDocs>
+    </template>
   </ToolPage>
 </template>

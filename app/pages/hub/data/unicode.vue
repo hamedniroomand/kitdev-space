@@ -241,5 +241,29 @@ function copyText(val: string) {
         </div>
       </div>
     </div>
+
+    <template #docs>
+      <ToolDocs title="About Unicode">
+        <div class="space-y-4 text-muted">
+          <p>
+            This tool shows each code point of a text with its name, its UTF-8 bytes, and its escape forms. Use it when a character does not show correctly, or when a string comparison fails.
+          </p>
+          <p>
+            A zero-width character has no width on the screen but is present in the data. It comes from a copy out of a web page or a document, and it breaks a search, a login, and a key comparison. The tool marks each one.
+          </p>
+          <p>
+            Normalization makes two texts that look the same become the same data. NFC composes an accent into one code point. NFD separates it. Compare the forms before you store a name or a user identifier.
+          </p>
+        </div>
+        <RelatedTools
+          class="mt-8"
+          :items="[
+            { label: 'Text Statistics', to: '/hub/data/text-stats' },
+            { label: 'Encoder & Escaper', to: '/hub/dev/encoder' },
+            { label: 'Text Diff', to: '/hub/data/text-diff' }
+          ]"
+        />
+      </ToolDocs>
+    </template>
   </ToolPage>
 </template>

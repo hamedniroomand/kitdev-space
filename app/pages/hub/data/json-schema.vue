@@ -226,5 +226,29 @@ function handleClear() {
         />
       </div>
     </div>
+
+    <template #docs>
+      <ToolDocs title="About JSON Schema">
+        <div class="space-y-4 text-muted">
+          <p>
+            A JSON Schema states the shape of a JSON document: which fields are necessary, the type of each field, and the permitted values. This tool checks a document against a schema and names the path of each error.
+          </p>
+          <p>
+            Select Generate schema to make a first schema from your data. The tool reads the types of the fields and marks the top-level fields as required. Then correct the result by hand.
+          </p>
+          <p>
+            Use a schema to check an API response, a configuration file, or a form. The error path, such as user.address.zip, tells you where the problem is in a large document.
+          </p>
+        </div>
+        <RelatedTools
+          class="mt-8"
+          :items="[
+            { label: 'JSON Formatter', to: '/hub/data/json-formatter' },
+            { label: 'JSON → TypeScript', to: '/hub/data/json-to-typescript' },
+            { label: 'Fake Data Generator', to: '/hub/data/fake-generator' }
+          ]"
+        />
+      </ToolDocs>
+    </template>
   </ToolPage>
 </template>

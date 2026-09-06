@@ -139,5 +139,29 @@ function applyPreset(pattern: string) {
         </div>
       </div>
     </div>
+
+    <template #docs>
+      <ToolDocs title="About glob patterns">
+        <div class="space-y-4 text-muted">
+          <p>
+            A glob pattern selects files by name. This tool tests a pattern against a list of paths and shows which paths match, so you can correct the pattern before you use it.
+          </p>
+          <p>
+            One star matches inside a single path segment. Two stars match across segments, so src/**/*.ts finds a file at any depth and src/*.ts finds one only at the top. This is the most common mistake.
+          </p>
+          <p>
+            Use it to check a .gitignore rule, a test file pattern, a build include list, or a CI path filter.
+          </p>
+        </div>
+        <RelatedTools
+          class="mt-8"
+          :items="[
+            { label: 'Regex Tester', to: '/hub/dev/regex-tester' },
+            { label: 'Chmod Calculator', to: '/hub/dev/chmod' },
+            { label: 'Tar Explorer', to: '/hub/dev/tar' }
+          ]"
+        />
+      </ToolDocs>
+    </template>
   </ToolPage>
 </template>

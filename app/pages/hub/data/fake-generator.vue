@@ -314,5 +314,29 @@ function handleDownload() {
         </div>
       </div>
     </div>
+
+    <template #docs>
+      <ToolDocs title="About mock data">
+        <div class="space-y-4 text-muted">
+          <p>
+            This tool builds a mock data set from a schema that you define. Add a field, choose its type, and set the row count. The output is JSON, CSV, or SQL insert statements.
+          </p>
+          <p>
+            Use realistic data to test a form, a table, or an import. A name, an email address, and a date that have the correct shape find bugs that the text abc does not find.
+          </p>
+          <p>
+            Every value is generated in your browser. No real person is in the data, so you can share the output and put it in a test suite.
+          </p>
+        </div>
+        <RelatedTools
+          class="mt-8"
+          :items="[
+            { label: 'Lorem Ipsum', to: '/hub/data/lorem' },
+            { label: 'Table Viewer', to: '/hub/data/table-viewer' },
+            { label: 'JSON Schema Validator', to: '/hub/data/json-schema' }
+          ]"
+        />
+      </ToolDocs>
+    </template>
   </ToolPage>
 </template>

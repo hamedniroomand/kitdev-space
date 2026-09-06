@@ -101,5 +101,29 @@ function handleLoadSample() {
         class="w-full p-4 font-mono text-xs bg-default border border-default rounded-xl text-highlighted resize-y focus:outline-none focus:border-primary leading-relaxed"
       />
     </div>
+
+    <template #docs>
+      <ToolDocs title="About text statistics">
+        <div class="space-y-4 text-muted">
+          <p>
+            This tool counts the parts of a text. It gives the character count, the word count, the sentence count, the paragraph count, and the size in UTF-8 bytes.
+          </p>
+          <p>
+            The byte count is not the character count. An emoji or an accented letter uses more than one byte, which matters for a database column limit or an SMS.
+          </p>
+          <p>
+            The reading time uses 200 words for each minute. The speaking time uses 130 words for each minute, which suits a talk or a video script.
+          </p>
+        </div>
+        <RelatedTools
+          class="mt-8"
+          :items="[
+            { label: 'Text Diff', to: '/hub/data/text-diff' },
+            { label: 'Markdown Studio', to: '/hub/data/markdown-studio' },
+            { label: 'Unicode Inspector', to: '/hub/data/unicode' }
+          ]"
+        />
+      </ToolDocs>
+    </template>
   </ToolPage>
 </template>

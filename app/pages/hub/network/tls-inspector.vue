@@ -359,5 +359,29 @@ function handleReset() {
         </div>
       </div>
     </div>
+
+    <template #docs>
+      <ToolDocs title="About TLS certificates">
+        <div class="space-y-4 text-muted">
+          <p>
+            This tool connects to a host and reads its TLS certificate. It shows the subject, the issuer, the validity dates, the alternative names, and the cipher suite.
+          </p>
+          <p>
+            The most common failure is an expired certificate. The second is a missing name: the certificate must list the exact host name in its subject alternative names, so a certificate for example.com does not cover www.example.com.
+          </p>
+          <p>
+            Check the chain as well. A server must send the intermediate certificates. A browser often hides a missing intermediate, and a command line client or a mobile app then fails.
+          </p>
+        </div>
+        <RelatedTools
+          class="mt-8"
+          :items="[
+            { label: 'HTTP Inspector', to: '/hub/network/http-inspector' },
+            { label: 'DNS Lookup', to: '/hub/network/dns-lookup' },
+            { label: 'RDAP / WHOIS Lookup', to: '/hub/network/rdap-lookup' }
+          ]"
+        />
+      </ToolDocs>
+    </template>
   </ToolPage>
 </template>

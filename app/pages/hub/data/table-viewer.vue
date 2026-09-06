@@ -239,5 +239,29 @@ function handleDownloadCsv() {
         </div>
       </div>
     </div>
+
+    <template #docs>
+      <ToolDocs title="About the table viewer">
+        <div class="space-y-4 text-muted">
+          <p>
+            This tool shows a CSV or a JSON data set as a table. You can sort a column, search the rows, and filter the data without a spreadsheet program.
+          </p>
+          <p>
+            Use it to look at an export before you load it. You can see the column names, find an empty field, and check that the row count is correct.
+          </p>
+          <p>
+            The file is read in your browser. The data is not uploaded, so you can open a customer export or a log file safely.
+          </p>
+        </div>
+        <RelatedTools
+          class="mt-8"
+          :items="[
+            { label: 'CSV ↔ JSON', to: '/hub/data/converters/csv-json' },
+            { label: 'SQLite Studio', to: '/hub/data/sqlite-studio' },
+            { label: 'JSON Formatter', to: '/hub/data/json-formatter' }
+          ]"
+        />
+      </ToolDocs>
+    </template>
   </ToolPage>
 </template>

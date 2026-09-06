@@ -134,5 +134,29 @@ function handleCopyJson() {
         />
       </div>
     </div>
+
+    <template #docs>
+      <ToolDocs title="About YAML validation">
+        <div class="space-y-4 text-muted">
+          <p>
+            This tool checks that a YAML document has a valid syntax. It names the line and the column of the first error.
+          </p>
+          <p>
+            Most YAML errors come from the indentation. YAML uses spaces and never a tab. A tab character gives an error that is hard to see, because the two look the same on the screen.
+          </p>
+          <p>
+            Another common error is an unquoted value that YAML reads as a different type. The words yes, no, on, and off become true or false. A version such as 1.10 becomes the number 1.1. Put quotes around a value to keep it as text.
+          </p>
+        </div>
+        <RelatedTools
+          class="mt-8"
+          :items="[
+            { label: 'JSON ↔ YAML', to: '/hub/data/converters/json-yaml' },
+            { label: 'JSON Formatter', to: '/hub/data/json-formatter' },
+            { label: 'JSON Schema Validator', to: '/hub/data/json-schema' }
+          ]"
+        />
+      </ToolDocs>
+    </template>
   </ToolPage>
 </template>

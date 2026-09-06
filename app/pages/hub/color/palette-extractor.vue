@@ -213,5 +213,29 @@ const jsonOutput = computed(() => {
         </div>
       </div>
     </div>
+
+    <template #docs>
+      <ToolDocs title="About palette extraction">
+        <div class="space-y-4 text-muted">
+          <p>
+            This tool reads an image and gives the colors that use the most area. Use it to build a theme from a photo, a logo, or a screenshot.
+          </p>
+          <p>
+            The result is a set of hex values that you can copy into CSS or into a design file. A brand color taken from a logo is exact, which a color picked by eye is not.
+          </p>
+          <p>
+            The image is read in your browser and is not uploaded.
+          </p>
+        </div>
+        <RelatedTools
+          class="mt-8"
+          :items="[
+            { label: 'Palette Generator', to: '/hub/color/palette-generator' },
+            { label: 'Color Converter', to: '/hub/color/converter' },
+            { label: 'Contrast Checker', to: '/hub/color/contrast-checker' }
+          ]"
+        />
+      </ToolDocs>
+    </template>
   </ToolPage>
 </template>

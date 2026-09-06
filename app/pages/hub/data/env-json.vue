@@ -174,5 +174,29 @@ function handleCopy() {
         />
       </div>
     </div>
+
+    <template #docs>
+      <ToolDocs title="About .env and JSON">
+        <div class="space-y-4 text-muted">
+          <p>
+            This tool converts a .env file to JSON, and JSON back to a .env file. A deployment platform often asks for one form when your project holds the other.
+          </p>
+          <p>
+            The parser keeps a quoted value together, and it ignores a comment line. Every JSON value becomes a string, because a .env file holds text only.
+          </p>
+          <p>
+            Paste your file, then change the direction. The tool moves the result into the input when you change the direction, so your work is not lost. Nothing is uploaded.
+          </p>
+        </div>
+        <RelatedTools
+          class="mt-8"
+          :items="[
+            { label: 'JSON Formatter', to: '/hub/data/json-formatter' },
+            { label: 'JSON ↔ YAML', to: '/hub/data/converters/json-yaml' },
+            { label: 'Fake Data Generator', to: '/hub/data/fake-generator' }
+          ]"
+        />
+      </ToolDocs>
+    </template>
   </ToolPage>
 </template>

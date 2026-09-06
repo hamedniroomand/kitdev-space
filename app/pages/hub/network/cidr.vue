@@ -255,5 +255,29 @@ function handlePreset(val: string) {
         </div>
       </div>
     </div>
+
+    <template #docs>
+      <ToolDocs title="About CIDR and subnets">
+        <div class="space-y-4 text-muted">
+          <p>
+            This tool reads a CIDR block such as 10.0.0.0/24 and gives the netmask, the network address, the broadcast address, the first and last usable address, and the host count.
+          </p>
+          <p>
+            The prefix length states how many bits name the network. A smaller number gives a larger block. A /24 holds 256 addresses and 254 usable hosts, because the network address and the broadcast address are reserved.
+          </p>
+          <p>
+            Use it to plan a VPC, to write a firewall rule, or to check that two subnets do not overlap.
+          </p>
+        </div>
+        <RelatedTools
+          class="mt-8"
+          :items="[
+            { label: 'IP Address Info', to: '/hub/network/ip-info' },
+            { label: 'DNS Lookup', to: '/hub/network/dns-lookup' },
+            { label: 'HTTP Inspector', to: '/hub/network/http-inspector' }
+          ]"
+        />
+      </ToolDocs>
+    </template>
   </ToolPage>
 </template>

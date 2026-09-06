@@ -154,5 +154,29 @@ useToolShortcuts({
         />
       </div>
     </div>
+
+    <template #docs>
+      <ToolDocs title="About cURL conversion">
+        <div class="space-y-4 text-muted">
+          <p>
+            This tool reads a cURL command and writes the same request as code: Fetch, Axios, Python Requests, or Go. It keeps the method, the headers, the body, and the query values.
+          </p>
+          <p>
+            A browser gives you a cURL command through Copy as cURL in the network panel. Paste it here to turn a request that you captured into working code.
+          </p>
+          <p>
+            Check the command before you paste it. A captured request often holds a session cookie or an authorization header. Remove the secret, and never commit it.
+          </p>
+        </div>
+        <RelatedTools
+          class="mt-8"
+          :items="[
+            { label: 'HTTP Inspector', to: '/hub/network/http-inspector' },
+            { label: 'URL Inspector', to: '/hub/network/url-inspector' },
+            { label: 'JSON Formatter', to: '/hub/data/json-formatter' }
+          ]"
+        />
+      </ToolDocs>
+    </template>
   </ToolPage>
 </template>

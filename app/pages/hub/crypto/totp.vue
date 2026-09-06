@@ -242,5 +242,29 @@ function handleClear() {
         </div>
       </div>
     </div>
+
+    <template #docs>
+      <ToolDocs title="About TOTP">
+        <div class="space-y-4 text-muted">
+          <p>
+            TOTP makes the six-digit code of a two-factor app. It combines a shared secret with the current time, so the code changes every 30 seconds.
+          </p>
+          <p>
+            Give a Base32 secret or a full otpauth:// URI. The tool shows the current code and the seconds until the next code. Use it to test a login flow or to check that your server and your app agree.
+          </p>
+          <p>
+            The clock of the server and the clock of the device must agree. Most of the failures of TOTP come from a clock that has drifted, and not from a wrong secret. Do not put a real production secret into any web tool.
+          </p>
+        </div>
+        <RelatedTools
+          class="mt-8"
+          :items="[
+            { label: 'HMAC Generator', to: '/hub/crypto/hmac' },
+            { label: 'ID & Secret Generator', to: '/hub/crypto/generator' },
+            { label: 'Encoder & Escaper', to: '/hub/dev/encoder' }
+          ]"
+        />
+      </ToolDocs>
+    </template>
   </ToolPage>
 </template>

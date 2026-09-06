@@ -44,6 +44,8 @@ export const legacyRedirects: Record<string, string> = {
   '/hub/crypto/passphrase': '/hub/crypto/generator',
   '/crypto/uuid': '/hub/crypto/generator',
   '/crypto/passphrase': '/hub/crypto/generator',
+
+  // Encodings moved from Crypto Lab to Dev Lab and merged into one tool.
   '/hub/crypto/base64': '/hub/dev/encoder',
   '/hub/crypto/hex': '/hub/dev/encoder',
   '/hub/dev/html-url-codec': '/hub/dev/encoder',

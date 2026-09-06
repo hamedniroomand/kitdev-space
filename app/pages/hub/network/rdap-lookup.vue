@@ -305,5 +305,29 @@ function handleReset() {
         </template>
       </div>
     </div>
+
+    <template #docs>
+      <ToolDocs title="About RDAP">
+        <div class="space-y-4 text-muted">
+          <p>
+            RDAP is the replacement for WHOIS. It gives the registration data of a domain or an IP address as JSON over HTTPS, so the answer has a fixed structure.
+          </p>
+          <p>
+            The result shows the registrar, the creation date, the expiry date, the name servers, and the status codes. A status such as clientTransferProhibited means that the domain has a transfer lock.
+          </p>
+          <p>
+            Personal contact data is usually hidden by privacy rules. The registrar and the dates are still public, which is enough to see who to contact and when a domain expires.
+          </p>
+        </div>
+        <RelatedTools
+          class="mt-8"
+          :items="[
+            { label: 'DNS Lookup', to: '/hub/network/dns-lookup' },
+            { label: 'TLS Certificate Inspector', to: '/hub/network/tls-inspector' },
+            { label: 'Email Health Inspector', to: '/hub/network/email-health' }
+          ]"
+        />
+      </ToolDocs>
+    </template>
   </ToolPage>
 </template>

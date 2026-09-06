@@ -206,5 +206,29 @@ function handleCopy() {
         />
       </div>
     </div>
+
+    <template #docs>
+      <ToolDocs title="About Markdown tables">
+        <div class="space-y-4 text-muted">
+          <p>
+            This tool builds a Markdown table from cells that you fill in. It writes the pipes and the separator row, and it aligns the columns so the source stays readable.
+          </p>
+          <p>
+            Markdown table syntax is easy to break by hand. One missing pipe, or a separator row with the wrong column count, and the whole table renders as plain text.
+          </p>
+          <p>
+            Set the alignment for each column with the colon marks in the separator row. Use right alignment for a number column, so the digits line up.
+          </p>
+        </div>
+        <RelatedTools
+          class="mt-8"
+          :items="[
+            { label: 'Markdown Studio', to: '/hub/data/markdown-studio' },
+            { label: 'CSV ↔ JSON', to: '/hub/data/converters/csv-json' },
+            { label: 'Table Viewer', to: '/hub/data/table-viewer' }
+          ]"
+        />
+      </ToolDocs>
+    </template>
   </ToolPage>
 </template>

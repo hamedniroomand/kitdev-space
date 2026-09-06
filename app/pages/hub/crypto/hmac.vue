@@ -183,5 +183,29 @@ function handleClear() {
         </div>
       </div>
     </div>
+
+    <template #docs>
+      <ToolDocs title="About HMAC">
+        <div class="space-y-4 text-muted">
+          <p>
+            An HMAC proves that a message comes from a sender who holds the secret key, and that nobody changed the message. It combines the message and the key with a hash.
+          </p>
+          <p>
+            A webhook uses an HMAC. The sender puts the signature in a header. Your server computes the same HMAC over the raw body and compares the two values. Compare them with a constant-time function, never with a plain equals.
+          </p>
+          <p>
+            An HMAC is not encryption. It does not hide the message. Anybody can read the message; only a holder of the key can make a valid signature.
+          </p>
+        </div>
+        <RelatedTools
+          class="mt-8"
+          :items="[
+            { label: 'Hash Generator', to: '/hub/crypto/hash-generator' },
+            { label: 'JWT Decoder', to: '/hub/crypto/jwt' },
+            { label: 'AES Encrypt & Decrypt', to: '/hub/crypto/aes' }
+          ]"
+        />
+      </ToolDocs>
+    </template>
   </ToolPage>
 </template>

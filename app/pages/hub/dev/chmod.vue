@@ -215,5 +215,29 @@ function handleCopy() {
         />
       </div>
     </div>
+
+    <template #docs>
+      <ToolDocs title="About file permissions">
+        <div class="space-y-4 text-muted">
+          <p>
+            This tool converts between the octal form of a Unix permission, such as 755, and the symbolic form, such as rwxr-xr-x. Change either form and the other updates.
+          </p>
+          <p>
+            Each digit covers one group: the owner, the group, and everybody else. The digit is the sum of read (4), write (2), and execute (1). So 7 is read, write, and execute, and 5 is read and execute.
+          </p>
+          <p>
+            Use 644 for a normal file and 755 for a directory or a script. Never use 777, because it lets any user on the machine change the file. An SSH private key needs 600, or the client refuses to use it.
+          </p>
+        </div>
+        <RelatedTools
+          class="mt-8"
+          :items="[
+            { label: 'Number Base Converter', to: '/hub/data/number-base' },
+            { label: 'Glob Tester', to: '/hub/dev/glob-tester' },
+            { label: 'Tar Explorer', to: '/hub/dev/tar' }
+          ]"
+        />
+      </ToolDocs>
+    </template>
   </ToolPage>
 </template>
