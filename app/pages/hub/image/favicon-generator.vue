@@ -259,7 +259,8 @@ function handleReset() {
                 @click="copyHtml(result.htmlSnippet)"
               />
             </div>
-            <ToolEditor
+            <LazyToolEditor
+              hydrate-on-idle
               :model-value="result.htmlSnippet"
               label="HTML Snippet"
               lang="html"
@@ -287,7 +288,8 @@ function handleReset() {
                 @click="copyManifest(result.webmanifest)"
               />
             </div>
-            <ToolEditor
+            <LazyToolEditor
+              hydrate-on-idle
               :model-value="result.webmanifest"
               label="WebManifest"
               lang="json"

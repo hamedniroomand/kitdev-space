@@ -207,8 +207,9 @@ defineShortcuts({
       </UFormField>
     </div>
 
-    <ToolEditor
+    <LazyToolEditor
       v-model="input"
+      hydrate-on-idle
       :label="inputLabel"
       :placeholder="mode === 'json-csv' ? 'Paste JSON array here' : 'Paste CSV here'"
       :lang="inputLang"
@@ -258,8 +259,9 @@ defineShortcuts({
       :message="error"
     />
 
-    <ToolEditor
+    <LazyToolEditor
       v-model="output"
+      hydrate-on-idle
       :label="outputLabel"
       readonly
       :placeholder="`${outputLabel} appears here`"

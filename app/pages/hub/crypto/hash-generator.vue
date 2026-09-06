@@ -157,9 +157,10 @@ defineShortcuts({
       description="A file is hashed in the browser. Choose SHA-1, SHA-256, SHA-384, or SHA-512."
     />
 
-    <ToolEditor
+    <LazyToolEditor
       v-if="source === 'text'"
       v-model="input"
+      hydrate-on-idle
       label="Input"
       placeholder="Paste text here"
     />
@@ -209,8 +210,9 @@ defineShortcuts({
       :message="error"
     />
 
-    <ToolEditor
+    <LazyToolEditor
       v-model="output"
+      hydrate-on-idle
       label="Output"
       readonly
       placeholder="Hash appears here"

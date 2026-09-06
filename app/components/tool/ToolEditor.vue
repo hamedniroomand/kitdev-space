@@ -1,13 +1,12 @@
 <script setup lang="ts">
-import CodeMirror from 'vue-codemirror6'
-import { oneDark } from '@codemirror/theme-one-dark'
-import { EditorView } from '@codemirror/view'
 import type { Extension } from '@codemirror/state'
-import {
-  resolveEditorLanguage,
-  type ToolEditorLang
-} from '#shared/utils/dev/editor-lang'
+import type { ToolEditorLang } from '#shared/utils/dev/editor-lang'
 
+/**
+ * The frame of a code editor: the label, the height, and the expand button.
+ * The CodeMirror code sits in `ToolCodeMirror`, which loads only in the
+ * browser, so this component keeps the editor chunk out of the page preload.
+ */
 const model = defineModel<string>({ default: '' })
 
 const props = withDefaults(defineProps<{
@@ -25,12 +24,7 @@ const props = withDefaults(defineProps<{
   extensions: () => []
 })
 
-const colorMode = useColorMode()
 const [expanded, toggleExpanded] = useToggle(false)
-
-const isDark = computed(() => colorMode.value === 'dark')
-
-const language = computed(() => resolveEditorLanguage(props.lang))
 
 const lineCount = computed(() => (
   expanded.value
@@ -39,41 +33,6 @@ const lineCount = computed(() => (
 ))
 
 const editorHeight = computed(() => `${Math.max(lineCount.value * 1.35, 12)}rem`)
-
-const extensions = computed((): Extension[] => {
-  const list: Extension[] = [
-    // CodeMirror renders a contenteditable element, which the UFormField
-    // label cannot point to. Name it directly to keep it accessible.
-    EditorView.contentAttributes.of({ 'aria-label': props.label }),
-    EditorView.theme({
-      '&': {
-        height: '100%',
-        fontSize: '0.875rem'
-      },
-      '.cm-scroller': {
-        fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
-        lineHeight: '1.5'
-      },
-      '.cm-content': {
-        paddingBlock: '0.75rem'
-      },
-      '.cm-gutters': {
-        backgroundColor: 'transparent',
-        border: 'none'
-      }
-    })
-  ]
-
-  if (isDark.value) {
-    list.push(oneDark)
-  }
-
-  if (props.extensions?.length) {
-    list.push(...props.extensions)
-  }
-
-  return list
-})
 </script>
 
 <template>
@@ -83,17 +42,13 @@ const extensions = computed((): Extension[] => {
         class="tool-editor relative overflow-hidden rounded-md bg-default ring ring-inset ring-accented"
         :style="{ height: editorHeight }"
       >
-        <CodeMirror
+        <LazyToolCodeMirror
           v-model="model"
-          class="h-full w-full"
-          :lang="language"
-          :dark="isDark"
+          :label="label"
+          :lang="lang"
           :readonly="readonly"
           :placeholder="placeholder"
-          :basic="true"
           :wrap="wrap"
-          :tab="true"
-          :tab-size="2"
           :extensions="extensions"
         />
         <UButton

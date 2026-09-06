@@ -119,9 +119,10 @@ defineShortcuts({
       </UFormField>
     </template>
 
-    <ToolEditor
+    <LazyToolEditor
       v-else-if="action === 'sort'"
       v-model="versionsText"
+      hydrate-on-idle
       label="Versions (one per line)"
       :rows="8"
     />
@@ -172,8 +173,9 @@ defineShortcuts({
       :message="error"
     />
 
-    <ToolEditor
+    <LazyToolEditor
       v-if="output"
+      hydrate-on-idle
       :model-value="output"
       label="Result"
       readonly

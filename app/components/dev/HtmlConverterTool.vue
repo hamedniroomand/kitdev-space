@@ -155,8 +155,9 @@ function handleDownload() {
             </label>
           </div>
 
-          <ToolEditor
+          <LazyToolEditor
             v-model="htmlInput"
+            hydrate-on-idle
             label="HTML Source"
             lang="html"
             :rows="22"
@@ -257,7 +258,8 @@ function handleDownload() {
           </div>
 
           <!-- Converted Editor -->
-          <ToolEditor
+          <LazyToolEditor
+            hydrate-on-idle
             :model-value="convertedOutput"
             :label="`Output (${targetFormat.toUpperCase()})`"
             :lang="editorLang"

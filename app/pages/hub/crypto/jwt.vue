@@ -89,8 +89,9 @@ defineShortcuts({
       description="This tool runs in the browser. Do not paste production secrets into shared machines."
     />
 
-    <ToolEditor
+    <LazyToolEditor
       v-model="token"
+      hydrate-on-idle
       label="JWT"
       placeholder="Paste a JWT here"
     />
@@ -179,7 +180,8 @@ defineShortcuts({
               @click="handleCopy(decoded.headerJson, 'header')"
             />
           </div>
-          <ToolEditor
+          <LazyToolEditor
+            hydrate-on-idle
             :model-value="decoded.headerJson"
             label="Header"
             readonly
@@ -197,7 +199,8 @@ defineShortcuts({
               @click="handleCopy(decoded.payloadJson, 'payload')"
             />
           </div>
-          <ToolEditor
+          <LazyToolEditor
+            hydrate-on-idle
             :model-value="decoded.payloadJson"
             label="Payload"
             readonly

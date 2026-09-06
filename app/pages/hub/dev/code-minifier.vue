@@ -225,8 +225,9 @@ defineShortcuts({
       </UFormField>
     </div>
 
-    <ToolEditor
+    <LazyToolEditor
       v-model="input"
+      hydrate-on-idle
       label="Input"
       placeholder="Paste code here"
       :lang="editorLang"
@@ -276,8 +277,9 @@ defineShortcuts({
       :message="error"
     />
 
-    <ToolEditor
+    <LazyToolEditor
       v-model="output"
+      hydrate-on-idle
       label="Output"
       readonly
       placeholder="Result appears here"

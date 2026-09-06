@@ -156,15 +156,17 @@ function handleCopy() {
 
       <!-- Editors Grid -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <ToolEditor
+        <LazyToolEditor
           v-model="input"
+          hydrate-on-idle
           :label="mode === 'env-to-json' ? 'Input (.env format)' : 'Input (JSON format)'"
           :lang="mode === 'env-to-json' ? 'text' : 'json'"
           :rows="16"
           :placeholder="mode === 'env-to-json' ? 'Paste .env lines here...' : 'Paste JSON object here...'"
         />
 
-        <ToolEditor
+        <LazyToolEditor
+          hydrate-on-idle
           :model-value="output"
           :label="mode === 'env-to-json' ? 'Output (JSON format)' : 'Output (.env format)'"
           :lang="mode === 'env-to-json' ? 'json' : 'text'"

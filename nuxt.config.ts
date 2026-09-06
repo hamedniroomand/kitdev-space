@@ -139,7 +139,13 @@ export default defineNuxtConfig({
   },
 
   experimental: {
-    payloadExtraction: 'client'
+    payloadExtraction: 'client',
+    defaults: {
+      nuxtLink: {
+        prefetchOn: { interaction: true }
+      }
+    },
+    viewTransition: true
   },
 
   compatibilityDate: '2026-06-30',
@@ -160,16 +166,19 @@ export default defineNuxtConfig({
   vite: {
     optimizeDeps: {
       include: ['@codemirror/lang-css', '@codemirror/lang-html', '@codemirror/lang-javascript', '@codemirror/lang-json', '@codemirror/lang-markdown', '@codemirror/lang-sql', '@codemirror/lint', '@codemirror/theme-one-dark', '@codemirror/view', 'sql-formatter', 'sql.js', 'vue-codemirror6', '@unhead/schema-org/vue', '@codemirror/commands', '@vue/devtools-core', '@vue/devtools-kit', 'uqr']
-    },
-    build: {
-      rollupOptions: {
-        output: {
-          manualChunks(id) {
-            if (id.includes('codemirror') || id.includes('vue-codemirror6')) {
-              return 'codemirror'
-            }
-          }
-        }
+    }
+    // No manualChunks here. Rollup pulls every static dependency of a manual
+    // chunk into it, so a "codemirror" chunk also swallowed Vue and every page
+    // had to load the editor. `ToolCodeMirror` loads lazily and splits on its own.
+  },
+
+  hooks: {
+    // Do not preload the chunks behind a dynamic import. The editor, the docs,
+    // and the command palette load on demand, and a preload of every lazy
+    // chunk on first paint defeats that.
+    'build:manifest': (manifest) => {
+      for (const entry of Object.values(manifest)) {
+        entry.dynamicImports = []
       }
     }
   },

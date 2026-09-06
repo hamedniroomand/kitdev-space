@@ -53,8 +53,9 @@ function handleClear() {
       description="This tool runs in the browser."
     />
 
-    <ToolEditor
+    <LazyToolEditor
       v-model="input"
+      hydrate-on-idle
       label="Input Text"
       placeholder="Type or paste text here"
     />

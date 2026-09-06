@@ -209,16 +209,18 @@ function handleClear() {
 
       <!-- Dual Editors -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <ToolEditor
+        <LazyToolEditor
           v-model="schemaInput"
+          hydrate-on-idle
           label="JSON Schema"
           lang="json"
           :rows="18"
           placeholder="Paste JSON Schema definition here..."
         />
 
-        <ToolEditor
+        <LazyToolEditor
           v-model="dataInput"
+          hydrate-on-idle
           label="JSON Data"
           lang="json"
           :rows="18"

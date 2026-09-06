@@ -129,8 +129,9 @@ defineShortcuts({
       description="This tool uses resvg and Bun.Image on the server. Files are not stored."
     />
 
-    <ToolEditor
+    <LazyToolEditor
       v-model="svgText"
+      hydrate-on-idle
       label="SVG input"
       placeholder="Paste SVG code here"
       lang="svg"

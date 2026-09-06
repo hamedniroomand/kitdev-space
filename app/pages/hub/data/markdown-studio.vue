@@ -122,8 +122,9 @@ function handleClear() {
     </div>
 
     <div class="grid gap-4 lg:grid-cols-2">
-      <ToolEditor
+      <LazyToolEditor
         v-model="input"
+        hydrate-on-idle
         label="Markdown Input"
         placeholder="Type or paste markdown here"
         :rows="18"

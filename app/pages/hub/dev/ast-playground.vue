@@ -155,8 +155,9 @@ defineShortcuts({
       </UFormField>
     </div>
 
-    <ToolEditor
+    <LazyToolEditor
       v-model="input"
+      hydrate-on-idle
       label="Source"
       placeholder="Paste JavaScript or TypeScript"
       :lang="language"
@@ -247,7 +248,8 @@ defineShortcuts({
           @click="handleCopy(programJson, 'json')"
         />
       </div>
-      <ToolEditor
+      <LazyToolEditor
+        hydrate-on-idle
         :model-value="programJson"
         label="ESTree JSON"
         readonly
@@ -270,7 +272,8 @@ defineShortcuts({
           @click="handleCopy(transformed, 'transform')"
         />
       </div>
-      <ToolEditor
+      <LazyToolEditor
+        hydrate-on-idle
         :model-value="transformed"
         label="OXC transform output"
         readonly

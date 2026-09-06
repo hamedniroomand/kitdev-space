@@ -164,15 +164,17 @@ useToolShortcuts({
 
       <!-- Dual Editors Grid -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <ToolEditor
+        <LazyToolEditor
           v-model="input"
+          hydrate-on-idle
           :label="mode === 'encrypt' ? 'Plaintext Input' : 'Base64 Ciphertext Input'"
           lang="text"
           :rows="14"
           :placeholder="mode === 'encrypt' ? 'Enter text to encrypt...' : 'Paste Base64 ciphertext to decrypt...'"
         />
 
-        <ToolEditor
+        <LazyToolEditor
+          hydrate-on-idle
           :model-value="output"
           :label="mode === 'encrypt' ? 'Encrypted Ciphertext (Base64)' : 'Decrypted Plaintext'"
           lang="text"

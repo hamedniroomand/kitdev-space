@@ -107,8 +107,9 @@ function handleClear() {
       </UFormField>
     </div>
 
-    <ToolEditor
+    <LazyToolEditor
       v-model="input"
+      hydrate-on-idle
       label="Input"
       placeholder="Paste text here"
     />
@@ -157,8 +158,9 @@ function handleClear() {
       :message="error"
     />
 
-    <ToolEditor
+    <LazyToolEditor
       v-model="output"
+      hydrate-on-idle
       label="Output"
       readonly
       placeholder="Result appears here"

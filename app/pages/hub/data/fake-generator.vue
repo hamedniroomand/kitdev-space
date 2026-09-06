@@ -304,7 +304,8 @@ function handleDownload() {
             </div>
           </div>
 
-          <ToolEditor
+          <LazyToolEditor
+            hydrate-on-idle
             :model-value="outputText"
             :label="`Output (${format.toUpperCase()} · ${rowCount} rows)`"
             :lang="editorLang"

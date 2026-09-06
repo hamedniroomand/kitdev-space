@@ -116,15 +116,17 @@ function handleCopyJson() {
 
       <!-- Editors Grid -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <ToolEditor
+        <LazyToolEditor
           v-model="input"
+          hydrate-on-idle
           label="YAML Source"
           lang="text"
           :rows="18"
           placeholder="Paste YAML content here to validate..."
         />
 
-        <ToolEditor
+        <LazyToolEditor
+          hydrate-on-idle
           :model-value="result.formattedJson"
           label="Parsed JSON Structure"
           lang="json"

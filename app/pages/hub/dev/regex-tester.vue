@@ -66,8 +66,9 @@ function handleClear() {
       </UFormField>
     </div>
 
-    <ToolEditor
+    <LazyToolEditor
       v-model="sample"
+      hydrate-on-idle
       label="Sample text"
       placeholder="Paste text to test against the pattern"
       :rows="8"

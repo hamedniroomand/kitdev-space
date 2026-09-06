@@ -294,7 +294,8 @@ function handleReset() {
                 @click="handleCopy"
               />
             </div>
-            <ToolEditor
+            <LazyToolEditor
+              hydrate-on-idle
               :model-value="JSON.stringify(result.raw, null, 2)"
               label="RDAP JSON"
               lang="json"

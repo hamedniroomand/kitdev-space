@@ -128,8 +128,9 @@ defineShortcuts({
       :message="error"
     />
 
-    <ToolEditor
+    <LazyToolEditor
       v-model="output"
+      hydrate-on-idle
       label="Output"
       readonly
       placeholder="Result appears here"

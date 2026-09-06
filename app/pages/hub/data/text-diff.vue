@@ -92,13 +92,15 @@ defineShortcuts({
     />
 
     <div class="grid gap-4 lg:grid-cols-2">
-      <ToolEditor
+      <LazyToolEditor
         v-model="left"
+        hydrate-on-idle
         label="Original"
         placeholder="Paste original text"
       />
-      <ToolEditor
+      <LazyToolEditor
         v-model="right"
+        hydrate-on-idle
         label="Modified"
         placeholder="Paste modified text"
       />

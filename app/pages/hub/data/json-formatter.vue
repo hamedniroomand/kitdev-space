@@ -109,8 +109,9 @@ defineShortcuts({
 
 <template>
   <ToolPage>
-    <ToolEditor
+    <LazyToolEditor
       v-model="input"
+      hydrate-on-idle
       label="Input"
       placeholder="Paste JSON here"
       lang="json"
@@ -167,8 +168,9 @@ defineShortcuts({
       :message="error"
     />
 
-    <ToolEditor
+    <LazyToolEditor
       v-model="output"
+      hydrate-on-idle
       label="Output"
       readonly
       placeholder="Result appears here"

@@ -1,9 +1,3 @@
-import { css } from '@codemirror/lang-css'
-import { html } from '@codemirror/lang-html'
-import { javascript } from '@codemirror/lang-javascript'
-import { json } from '@codemirror/lang-json'
-import { markdown } from '@codemirror/lang-markdown'
-import { sql } from '@codemirror/lang-sql'
 import type { LanguageSupport } from '@codemirror/language'
 
 export type ToolEditorLang
@@ -20,28 +14,32 @@ export type ToolEditorLang
     | 'xml'
     | 'svg'
 
-export function resolveEditorLanguage(lang: ToolEditorLang = 'text'): LanguageSupport | undefined {
+/**
+ * Loads the CodeMirror language pack for one language. Each pack is a dynamic
+ * import, so a page downloads only the pack that its editor needs.
+ */
+export async function resolveEditorLanguage(lang: ToolEditorLang = 'text'): Promise<LanguageSupport | undefined> {
   switch (lang) {
     case 'javascript':
-      return javascript()
+      return (await import('@codemirror/lang-javascript')).javascript()
     case 'typescript':
-      return javascript({ typescript: true })
+      return (await import('@codemirror/lang-javascript')).javascript({ typescript: true })
     case 'jsx':
-      return javascript({ jsx: true })
+      return (await import('@codemirror/lang-javascript')).javascript({ jsx: true })
     case 'tsx':
-      return javascript({ typescript: true, jsx: true })
+      return (await import('@codemirror/lang-javascript')).javascript({ typescript: true, jsx: true })
     case 'json':
-      return json()
+      return (await import('@codemirror/lang-json')).json()
     case 'html':
     case 'xml':
     case 'svg':
-      return html()
+      return (await import('@codemirror/lang-html')).html()
     case 'css':
-      return css()
+      return (await import('@codemirror/lang-css')).css()
     case 'markdown':
-      return markdown()
+      return (await import('@codemirror/lang-markdown')).markdown()
     case 'sql':
-      return sql()
+      return (await import('@codemirror/lang-sql')).sql()
     case 'text':
     default:
       return undefined

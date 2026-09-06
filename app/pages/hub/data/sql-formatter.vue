@@ -178,8 +178,9 @@ defineShortcuts({
       </UFormField>
     </div>
 
-    <ToolEditor
+    <LazyToolEditor
       v-model="input"
+      hydrate-on-idle
       label="Input"
       placeholder="Paste SQL query here"
       lang="sql"
@@ -237,8 +238,9 @@ defineShortcuts({
       :message="error"
     />
 
-    <ToolEditor
+    <LazyToolEditor
       v-model="output"
+      hydrate-on-idle
       label="Output"
       readonly
       placeholder="Formatted query appears here"

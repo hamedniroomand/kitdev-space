@@ -136,15 +136,17 @@ useToolShortcuts({
 
       <!-- Dual Editors -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <ToolEditor
+        <LazyToolEditor
           v-model="input"
+          hydrate-on-idle
           label="cURL Command"
           lang="text"
           :rows="18"
           placeholder="Paste curl command here..."
         />
 
-        <ToolEditor
+        <LazyToolEditor
+          hydrate-on-idle
           :model-value="conversion.code"
           :label="`${languages.find(l => l.value === target)?.label || 'Generated'} Code`"
           :lang="currentEditorLang"

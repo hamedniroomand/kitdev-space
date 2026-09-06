@@ -194,7 +194,8 @@ useToolShortcuts({
           />
         </div>
 
-        <ToolEditor
+        <LazyToolEditor
+          hydrate-on-idle
           :model-value="codeOutput"
           label="Configuration Code"
           lang="css"

@@ -105,9 +105,10 @@ defineShortcuts({
       />
     </UFormField>
 
-    <ToolEditor
+    <LazyToolEditor
       v-if="kind !== 'wifi'"
       v-model="text"
+      hydrate-on-idle
       :label="kind === 'url' ? 'URL' : 'Text'"
       :placeholder="kind === 'url' ? 'https://example.com' : 'Paste text here'"
     />

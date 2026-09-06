@@ -99,8 +99,9 @@ defineShortcuts({
       />
     </UFormField>
 
-    <ToolEditor
+    <LazyToolEditor
       v-model="input"
+      hydrate-on-idle
       label="Input"
       placeholder="Paste TypeScript or JSX"
       :lang="editorLang"
@@ -144,8 +145,9 @@ defineShortcuts({
       :message="error"
     />
 
-    <ToolEditor
+    <LazyToolEditor
       v-model="output"
+      hydrate-on-idle
       label="Output"
       readonly
       placeholder="JavaScript appears here"
