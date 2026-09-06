@@ -52,4 +52,12 @@ describe('tool registry', () => {
     expect(getToolsByCategory('dev').some(t => t.id === 'semver')).toBe(true)
     expect(getToolsByCategory('dev').some(t => t.id === 'cron')).toBe(true)
   })
+
+  it('finds markdown-studio in data category', () => {
+    const tool = getToolById('markdown-studio')
+    expect(tool?.route).toBe('/hub/data/markdown-studio')
+    expect(tool?.category).toBe('data')
+    expect(tool?.clientOnly).toBe(true)
+    expect(tool?.status).toBe('available')
+  })
 })

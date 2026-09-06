@@ -24,7 +24,7 @@ export function isDnsRecordType(value: string): value is DnsRecordType {
   return DNS_RECORD_TYPES.includes(value as DnsRecordType)
 }
 
-function normalizeDomain(input: string): string {
+export function normalizeDomain(input: string): string {
   const domain = input.trim()
 
   if (!domain) {

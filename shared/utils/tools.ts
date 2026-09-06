@@ -102,6 +102,19 @@ export const tools: Tool[] = [
     status: 'available'
   },
   {
+    id: 'markdown-studio',
+    slug: 'markdown-studio',
+    name: 'Markdown Live Studio',
+    description: 'Write markdown with a real-time HTML preview and text metrics.',
+    category: 'data',
+    icon: 'i-lucide-file-text',
+    keywords: ['markdown', 'md', 'gfm', 'html', 'preview', 'editor', 'live', 'word count'],
+    route: '/hub/data/markdown-studio',
+    clientOnly: true,
+    serverRequired: false,
+    status: 'available'
+  },
+  {
     id: 'json-json5',
     slug: 'json-json5',
     name: 'JSON ↔ JSON5',
@@ -112,6 +125,19 @@ export const tools: Tool[] = [
     route: '/hub/data/converters/json-json5',
     clientOnly: false,
     serverRequired: true,
+    status: 'available'
+  },
+  {
+    id: 'csv-json',
+    slug: 'csv-json',
+    name: 'CSV ↔ JSON / SQL',
+    description: 'Convert CSV to JSON or SQL INSERT statements. Convert JSON arrays back to CSV.',
+    category: 'data',
+    icon: 'i-lucide-table',
+    keywords: ['csv', 'json', 'sql', 'insert', 'delimiter', 'tsv', 'convert'],
+    route: '/hub/data/converters/csv-json',
+    clientOnly: true,
+    serverRequired: false,
     status: 'available'
   },
   {
@@ -279,6 +305,19 @@ export const tools: Tool[] = [
     icon: 'i-lucide-globe',
     keywords: ['dns', 'lookup', 'a', 'mx', 'txt'],
     route: '/hub/network/dns-lookup',
+    clientOnly: false,
+    serverRequired: true,
+    status: 'available'
+  },
+  {
+    id: 'email-health',
+    slug: 'email-health',
+    name: 'Email Health Inspector',
+    description: 'Inspect SPF, DKIM selectors, and MX routing for a domain.',
+    category: 'network',
+    icon: 'i-lucide-mail-check',
+    keywords: ['email', 'spf', 'dkim', 'mx', 'dns', 'health'],
+    route: '/hub/network/email-health',
     clientOnly: false,
     serverRequired: true,
     status: 'available'

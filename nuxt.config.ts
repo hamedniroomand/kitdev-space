@@ -44,7 +44,7 @@ export default defineNuxtConfig({
     '@nuxt/eslint',
     '@nuxt/ui',
     '@nuxt/a11y',
-    '@nuxt/hints',
+    // '@nuxt/hints',
     '@nuxt/image',
     '@nuxt/scripts',
     '@nuxtjs/seo',

@@ -181,9 +181,9 @@ defineShortcuts({
         <DataRelatedTools
           class="mt-8"
           :items="[
+            { label: 'Email Health Inspector', to: '/hub/network/email-health' },
             { label: 'HTTP Headers', to: '/hub/network/http-headers' },
-            { label: 'URL Inspector', to: '/hub/network/url-inspector' },
-            { label: 'Redirect Checker', to: '/hub/network/redirect' }
+            { label: 'URL Inspector', to: '/hub/network/url-inspector' }
           ]"
         />
       </DataToolDocs>
