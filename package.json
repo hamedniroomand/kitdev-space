@@ -16,6 +16,7 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "@cfworker/json-schema": "4.1.1",
     "@codemirror/commands": "^6.11.0",
     "@codemirror/lang-css": "^6.3.1",
     "@codemirror/lang-html": "^6.4.12",
@@ -41,8 +42,6 @@
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
     "@vueuse/nuxt": "14.4.0",
-    "ajv": "^8.20.0",
-    "ajv-formats": "^3.0.1",
     "confbox": "^0.3.1",
     "csso": "^5.0.5",
     "fflate": "^0.8.3",
