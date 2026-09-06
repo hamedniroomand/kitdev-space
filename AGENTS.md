@@ -13,3 +13,7 @@ Prefer an existing VueUse solution when it meets the requirement.
 Do not create a custom composable when VueUse already provides the required functionality.
 
 If VueUse does not provide a suitable solution, implement the smallest custom solution that meets the requirement.
+
+### Icon Rules
+
+Never use the `i-lucide-sparkles` icon. Use a specific semantic icon instead (such as `i-lucide-database`, `i-lucide-file-text`, `i-lucide-refresh-cw`, or `i-lucide-folder-open`).

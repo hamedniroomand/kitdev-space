@@ -80,7 +80,7 @@ function onFileSelect(event: Event) {
       <span class="text-xs text-gray-400">or</span>
       <UButton
         label="Load Sample Database"
-        icon="i-lucide-sparkles"
+        icon="i-lucide-folder-open"
         color="primary"
         variant="subtle"
         :loading="loading"

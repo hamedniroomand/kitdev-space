@@ -208,7 +208,7 @@ function handleClear() {
         label="Load Sample"
         color="neutral"
         variant="subtle"
-        icon="i-lucide-sparkles"
+        icon="i-lucide-file-text"
         @click="handleLoadSample"
       />
       <UButton

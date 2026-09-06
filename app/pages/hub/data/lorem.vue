@@ -115,7 +115,7 @@ defineShortcuts({
     <ToolActions>
       <UButton
         label="Generate"
-        icon="i-lucide-sparkles"
+        icon="i-lucide-refresh-cw"
         :loading="status === 'processing'"
         @click="generate"
       />
