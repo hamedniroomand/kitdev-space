@@ -232,6 +232,32 @@ export const tools: Tool[] = [
     status: 'available'
   },
   {
+    id: 'table-viewer',
+    slug: 'table-viewer',
+    name: 'Table Viewer',
+    description: 'View, sort, filter, and search CSV and JSON datasets in an interactive table.',
+    category: 'data',
+    icon: 'i-lucide-table-properties',
+    keywords: ['table', 'csv', 'json', 'viewer', 'grid', 'sort', 'filter'],
+    route: '/hub/data/table-viewer',
+    clientOnly: true,
+    serverRequired: false,
+    status: 'available'
+  },
+  {
+    id: 'fake-data',
+    slug: 'fake-data',
+    name: 'Fake Data Generator',
+    description: 'Generate realistic mock datasets with custom schema fields in JSON, CSV, or SQL formats.',
+    category: 'data',
+    icon: 'i-lucide-database',
+    keywords: ['fake', 'mock', 'data', 'faker', 'generator', 'sql', 'csv', 'json', 'seed'],
+    route: '/hub/data/fake-generator',
+    clientOnly: true,
+    serverRequired: false,
+    status: 'available'
+  },
+  {
     id: 'hash',
     slug: 'hash-generator',
     name: 'Hash Generator',
@@ -448,6 +474,19 @@ export const tools: Tool[] = [
     icon: 'i-lucide-palette',
     keywords: ['tailwind', 'color', 'shades', 'palette', 'css', 'generator', 'scale'],
     route: '/hub/color/tailwind-shades',
+    clientOnly: true,
+    serverRequired: false,
+    status: 'available'
+  },
+  {
+    id: 'image-palette',
+    slug: 'palette-extractor',
+    name: 'Image Palette Extractor',
+    description: 'Extract dominant colors, color swatches, and hex codes from uploaded images.',
+    category: 'color',
+    icon: 'i-lucide-pipette',
+    keywords: ['image', 'color', 'palette', 'extract', 'dominant', 'swatch', 'hex'],
+    route: '/hub/color/palette-extractor',
     clientOnly: true,
     serverRequired: false,
     status: 'available'
