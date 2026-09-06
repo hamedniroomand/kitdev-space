@@ -62,6 +62,11 @@ function handleLoadSample() {
           <span class="text-xs text-muted font-medium block">Reading Time</span>
           <span class="text-2xl font-bold font-mono text-primary mt-1 block">{{ stats.readingTimeMinutes }} min</span>
         </div>
+
+        <div class="p-3.5 rounded-xl border border-default bg-elevated/40 text-center">
+          <span class="text-xs text-muted font-medium block">Speaking Time</span>
+          <span class="text-2xl font-bold font-mono text-primary mt-1 block">{{ stats.speakingTimeMinutes }} min</span>
+        </div>
       </div>
 
       <!-- Actions -->
