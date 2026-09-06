@@ -26,7 +26,7 @@
     "@nuxt/ui": "^4.11.0",
     "@nuxtjs/seo": "5.3.14",
     "@resvg/resvg-js": "^2.6.2",
-    "@takumi-rs/core": "^2.13.5",
+    "@takumi-rs/core": "^2.13.6",
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
     "@vueuse/nuxt": "14.4.0",
@@ -47,7 +47,7 @@
     "happy-dom": "^20.14.0",
     "husky": "^9.1.7",
     "lint-staged": "^17.5.0",
-    "typescript": "^6.0.3",
+    "typescript": "^6",
     "vitest": "^5.0.0",
     "vue-tsc": "^3.3.11"
   },
