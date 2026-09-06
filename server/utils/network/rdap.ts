@@ -1,5 +1,13 @@
 import { isIPv4, isIPv6 } from 'node:net'
-import { assertSafeUrl } from './ssrf'
+
+const MAX_DOMAIN_LENGTH = 253
+const DOMAIN_NAME = /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+$/
+
+function assertDomainName(value: string): void {
+  if (value.length > MAX_DOMAIN_LENGTH || !DOMAIN_NAME.test(value)) {
+    throw new Error('Enter a valid domain name or IP address.')
+  }
+}
 
 export interface RdapRegistrar {
   name?: string
@@ -153,8 +161,12 @@ export async function lookupRdap(rawQuery: string): Promise<RdapResult> {
   const isIp = isIPv4(clean) || isIPv6(clean)
   const type: 'domain' | 'ip' = isIp ? 'ip' : 'domain'
 
-  // Enforce SSRF protection
-  await assertSafeUrl(`https://${clean}`)
+  // The fetch target below is always rdap.org, so an SSRF check on `clean`
+  // would guard a host this function never contacts. Validate the shape of the
+  // query instead, so only a domain name or an IP address reaches the URL.
+  if (!isIp) {
+    assertDomainName(clean)
+  }
 
   const targetUrl = isIp
     ? `https://rdap.org/ip/${encodeURIComponent(clean)}`

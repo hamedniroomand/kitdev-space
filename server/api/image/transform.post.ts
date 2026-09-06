@@ -2,6 +2,7 @@ import type { ImageEncodeFormat } from '#shared/utils/image/types'
 import { ImageError } from '#server/utils/image/errors'
 import { transformImage } from '#server/utils/image/pipeline'
 import { readImageForm } from '#server/utils/image/read-upload'
+import { getClientKey } from '#server/utils/network/client-ip'
 import { enforceRateLimit } from '#server/utils/network/rate-limit'
 
 const formats = new Set<ImageEncodeFormat>(['webp', 'avif', 'jpeg', 'png'])
@@ -12,7 +13,7 @@ function isEncodeFormat(value: string): value is ImageEncodeFormat {
 }
 
 export default defineEventHandler(async (event) => {
-  const ip = getRequestIP(event, { xForwardedFor: true }) ?? 'anonymous'
+  const ip = getClientKey(event)
   enforceRateLimit(ip, 'image:transform')
 
   try {

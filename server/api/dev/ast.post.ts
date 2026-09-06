@@ -7,6 +7,7 @@ import {
   type AstLanguage,
   type ResolveMode
 } from '#server/utils/dev/ast'
+import { getClientKey } from '#server/utils/network/client-ip'
 import { enforceRateLimit } from '#server/utils/network/rate-limit'
 
 interface AstBody {
@@ -19,7 +20,7 @@ interface AstBody {
 }
 
 export default defineEventHandler(async (event) => {
-  const ip = getRequestIP(event, { xForwardedFor: true }) ?? 'anonymous'
+  const ip = getClientKey(event)
   enforceRateLimit(ip, 'dev:ast')
 
   const body = await readBody<AstBody>(event)

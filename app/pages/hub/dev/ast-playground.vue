@@ -1,12 +1,11 @@
 <script setup lang="ts">
-import type { AstTreeNode } from '#shared/utils/dev/ast'
+import type { AstLanguage, AstTreeNode } from '#shared/utils/dev/ast'
 import { sliceSource } from '#shared/utils/dev/ast'
+import { AST_LANGUAGE_ITEMS, AST_SAMPLES } from '~/utils/dev/ast-samples'
 
-type AstLanguage = 'javascript' | 'jsx' | 'typescript' | 'tsx'
-type ResolveMode = 'esm' | 'node'
 type Panel = 'ast' | 'json' | 'transform' | 'resolve'
 
-type ParseResult = {
+interface ParseResult {
   language: AstLanguage
   filename: string
   tree: AstTreeNode
@@ -15,84 +14,24 @@ type ParseResult = {
   errors: { message: string, codeframe?: string | null }[]
 }
 
-type ResolveItem = {
-  specifier: string
-  ok: boolean
-  path: string | null
-  error: string | null
-  packageJsonPath: string | null
-}
-
-const SAMPLES: Record<AstLanguage, string> = {
-  javascript: `import fs from 'node:fs'
-import { join } from 'node:path'
-
-export function readConfig(name) {
-  const file = join('config', name)
-  return fs.readFileSync(file, 'utf8')
-}
-`,
-  jsx: `import { useState } from 'react'
-
-export function Counter() {
-  const [count, setCount] = useState(0)
-  return <button onClick={() => setCount(count + 1)}>{count}</button>
-}
-`,
-  typescript: `import type { Dirent } from 'node:fs'
-import { readdir } from 'node:fs/promises'
-
-export async function listNames(dir: string): Promise<string[]> {
-  const entries: Dirent[] = await readdir(dir, { withFileTypes: true })
-  return entries.map(entry => entry.name)
-}
-`,
-  tsx: `import { parseSync } from 'oxc-parser'
-
-type Props = { title: string }
-
-export function Title({ title }: Props) {
-  const ast = parseSync('demo.tsx', '<h1 />')
-  return <h1 data-nodes={ast.program.body.length}>{title}</h1>
-}
-`
-}
-
-const language = ref<AstLanguage>('tsx')
-const input = ref(SAMPLES.tsx)
-const panel = ref<Panel>('ast')
-const parseResult = ref<ParseResult | null>(null)
-const selected = ref<AstTreeNode | null>(null)
-const transformed = ref('')
-const resolveMode = ref<ResolveMode>('esm')
-const resolveDirectory = ref('')
-const manualSpecifier = ref('')
-const resolveRows = ref<ResolveItem[]>([])
-const { status, error, run, reset } = useTool<string>()
-const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
-
-const languageItems = [
-  { label: 'JavaScript', value: 'javascript' },
-  { label: 'JSX', value: 'jsx' },
-  { label: 'TypeScript', value: 'typescript' },
-  { label: 'TSX', value: 'tsx' }
-]
-
-const panelItems = [
+const PANEL_ITEMS: { label: string, value: Panel }[] = [
   { label: 'AST tree', value: 'ast' },
   { label: 'AST JSON', value: 'json' },
   { label: 'Transform', value: 'transform' },
   { label: 'Resolver', value: 'resolve' }
 ]
 
-const resolveModeItems = [
-  { label: 'ESM (import)', value: 'esm' },
-  { label: 'Node (require)', value: 'node' }
-]
+const language = ref<AstLanguage>('tsx')
+const input = ref(AST_SAMPLES.tsx)
+const panel = ref<Panel>('ast')
+const parseResult = ref<ParseResult | null>(null)
+const selected = ref<AstTreeNode | null>(null)
+const transformed = ref('')
+const resolvePanel = useTemplateRef('resolvePanel')
+const { status, error, run, reset } = useTool<string>()
+const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
 
 useToolSeo('ast-playground')
-
-const editorLang = computed(() => language.value)
 
 const selectedSnippet = computed(() => {
   if (!selected.value) {
@@ -108,98 +47,56 @@ const programJson = computed(() => {
   return JSON.stringify(parseResult.value.program, null, 2)
 })
 
-watch(language, (next) => {
-  input.value = SAMPLES[next]
+function clearResults() {
   parseResult.value = null
   selected.value = null
   transformed.value = ''
-  resolveRows.value = []
+  resolvePanel.value?.clear()
   reset()
+}
+
+watch(language, (next) => {
+  input.value = AST_SAMPLES[next]
+  clearResults()
 })
 
 async function parseAst() {
   selected.value = null
   transformed.value = ''
-  resolveRows.value = []
   await run(async () => {
-    try {
-      const data = await $fetch<{ result: ParseResult }>('/api/dev/ast', {
-        method: 'POST',
-        body: {
-          mode: 'parse',
-          input: input.value,
-          language: language.value
-        }
-      })
-      parseResult.value = data.result
-      panel.value = 'ast'
-      return data.result.filename
-    } catch (cause) {
-      const fetchError = cause as { data?: { message?: string }, statusMessage?: string }
-      throw new Error(
-        fetchError.data?.message || fetchError.statusMessage || 'The parse operation failed.',
-        { cause }
-      )
-    }
-  })
+    const data = await $fetch<{ result: ParseResult }>('/api/dev/ast', {
+      method: 'POST',
+      body: {
+        mode: 'parse',
+        input: input.value,
+        language: language.value
+      }
+    })
+    parseResult.value = data.result
+    panel.value = 'ast'
+    return data.result.filename
+  }, 'The parse operation failed.')
 }
 
 async function runTransform() {
   await run(async () => {
-    try {
-      const data = await $fetch<{ result: { code: string } }>('/api/dev/ast', {
-        method: 'POST',
-        body: {
-          mode: 'transform',
-          input: input.value,
-          language: language.value
-        }
-      })
-      transformed.value = data.result.code
-      panel.value = 'transform'
-      return data.result.code
-    } catch (cause) {
-      const fetchError = cause as { data?: { message?: string }, statusMessage?: string }
-      throw new Error(
-        fetchError.data?.message || fetchError.statusMessage || 'The transform operation failed.',
-        { cause }
-      )
-    }
-  })
+    const data = await $fetch<{ result: { code: string } }>('/api/dev/ast', {
+      method: 'POST',
+      body: {
+        mode: 'transform',
+        input: input.value,
+        language: language.value
+      }
+    })
+    transformed.value = data.result.code
+    panel.value = 'transform'
+    return data.result.code
+  }, 'The transform operation failed.')
 }
 
-async function runResolve(specifiers?: string[]) {
-  const list = specifiers?.length
-    ? specifiers
-    : [
-        ...new Set([
-          ...(parseResult.value?.imports ?? []),
-          ...(manualSpecifier.value.trim() ? [manualSpecifier.value.trim()] : [])
-        ])
-      ]
-
-  await run(async () => {
-    try {
-      const data = await $fetch<{ result: ResolveItem[] }>('/api/dev/ast', {
-        method: 'POST',
-        body: {
-          mode: 'resolve',
-          resolveMode: resolveMode.value,
-          directory: resolveDirectory.value || undefined,
-          specifiers: list
-        }
-      })
-      resolveRows.value = data.result
-      panel.value = 'resolve'
-      return JSON.stringify(data.result)
-    } catch (cause) {
-      const fetchError = cause as { data?: { message?: string }, statusMessage?: string }
-      throw new Error(
-        fetchError.data?.message || fetchError.statusMessage || 'The resolve operation failed.',
-        { cause }
-      )
-    }
-  })
+function showResolver() {
+  panel.value = 'resolve'
+  resolvePanel.value?.resolve()
 }
 
 function handleSelect(node: AstTreeNode) {
@@ -207,23 +104,16 @@ function handleSelect(node: AstTreeNode) {
 }
 
 async function handleCopy(text: string, key: string) {
-  if (!text) {
-    return
-  }
   await copy(text, key)
 }
 
 function handleClear() {
   input.value = ''
-  parseResult.value = null
-  selected.value = null
-  transformed.value = ''
-  resolveRows.value = []
-  reset()
+  clearResults()
 }
 
 function handleSample() {
-  input.value = SAMPLES[language.value]
+  input.value = AST_SAMPLES[language.value]
 }
 
 defineShortcuts({
@@ -257,14 +147,14 @@ defineShortcuts({
       <UFormField label="Language">
         <USelect
           v-model="language"
-          :items="languageItems"
+          :items="AST_LANGUAGE_ITEMS"
           class="w-44"
         />
       </UFormField>
       <UFormField label="Panel">
         <USelect
           v-model="panel"
-          :items="panelItems"
+          :items="PANEL_ITEMS"
           class="w-40"
         />
       </UFormField>
@@ -274,7 +164,7 @@ defineShortcuts({
       v-model="input"
       label="Source"
       placeholder="Paste JavaScript or TypeScript"
-      :lang="editorLang"
+      :lang="language"
     />
 
     <ToolActions>
@@ -298,8 +188,8 @@ defineShortcuts({
         variant="subtle"
         icon="i-lucide-folder-symlink"
         :loading="status === 'processing'"
-        :disabled="!parseResult?.imports.length && !manualSpecifier.trim()"
-        @click="runResolve()"
+        :disabled="!parseResult?.imports.length"
+        @click="showResolver"
       />
       <UButton
         label="Sample"
@@ -331,27 +221,11 @@ defineShortcuts({
       :description="item.codeframe || undefined"
     />
 
-    <div
+    <DevAstSelectedNode
       v-if="selected"
-      class="space-y-2 rounded-md border border-default p-3"
-    >
-      <div class="flex flex-wrap items-center justify-between gap-2">
-        <p class="text-sm font-medium text-highlighted">
-          Selected · {{ selected.type }}
-          <span
-            v-if="selected.label"
-            class="text-muted"
-          >· {{ selected.label }}</span>
-        </p>
-        <p class="font-mono text-xs text-muted">
-          {{ selected.span.start.line }}:{{ selected.span.start.column }}
-          –
-          {{ selected.span.end.line }}:{{ selected.span.end.column }}
-          ({{ selected.start }}–{{ selected.end }})
-        </p>
-      </div>
-      <pre class="overflow-x-auto rounded-md bg-elevated p-3 font-mono text-sm text-highlighted">{{ selectedSnippet || ' ' }}</pre>
-    </div>
+      :node="selected"
+      :snippet="selectedSnippet"
+    />
 
     <div
       v-if="panel === 'ast' && parseResult"
@@ -406,111 +280,15 @@ defineShortcuts({
         label="OXC transform output"
         readonly
         placeholder="Select Transform to see output"
-        :lang="editorLang"
+        :lang="language"
       />
     </div>
 
-    <div
-      v-else-if="panel === 'resolve'"
-      class="space-y-4"
-    >
-      <div class="flex flex-wrap gap-4">
-        <UFormField label="Resolve mode">
-          <USelect
-            v-model="resolveMode"
-            :items="resolveModeItems"
-            class="w-44"
-          />
-        </UFormField>
-        <UFormField
-          label="From directory"
-          class="min-w-56 flex-1"
-          hint="Defaults to the server working directory."
-        >
-          <UInput
-            v-model="resolveDirectory"
-            placeholder="Leave empty for project root"
-            class="w-full"
-            :ui="{ base: 'font-mono' }"
-          />
-        </UFormField>
-        <UFormField
-          label="Extra specifier"
-          class="min-w-40 flex-1"
-        >
-          <UInput
-            v-model="manualSpecifier"
-            placeholder="lodash/get"
-            class="w-full"
-            :ui="{ base: 'font-mono' }"
-          />
-        </UFormField>
-      </div>
-
-      <div
-        v-if="parseResult?.imports.length"
-        class="flex flex-wrap gap-2"
-      >
-        <UBadge
-          v-for="item in parseResult.imports"
-          :key="item"
-          color="neutral"
-          variant="subtle"
-          class="font-mono"
-        >
-          {{ item }}
-        </UBadge>
-      </div>
-
-      <UButton
-        label="Resolve"
-        icon="i-lucide-folder-symlink"
-        :loading="status === 'processing'"
-        @click="runResolve()"
-      />
-
-      <div
-        v-if="resolveRows.length"
-        class="overflow-x-auto rounded-md border border-default"
-      >
-        <table class="w-full text-sm">
-          <thead>
-            <tr class="border-b border-default">
-              <th class="px-3 py-2 text-left font-medium text-highlighted">
-                Specifier
-              </th>
-              <th class="px-3 py-2 text-left font-medium text-highlighted">
-                Result
-              </th>
-              <th class="px-3 py-2 text-left font-medium text-highlighted">
-                Path
-              </th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-default">
-            <tr
-              v-for="row in resolveRows"
-              :key="row.specifier"
-            >
-              <td class="px-3 py-2 font-mono text-highlighted">
-                {{ row.specifier }}
-              </td>
-              <td class="px-3 py-2">
-                <UBadge
-                  :color="row.ok ? 'success' : 'error'"
-                  variant="subtle"
-                >
-                  {{ row.ok ? 'Resolved' : 'Failed' }}
-                </UBadge>
-              </td>
-              <td class="break-all px-3 py-2 font-mono text-muted">
-                {{ row.path || row.error }}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+    <DevAstResolvePanel
+      v-show="panel === 'resolve'"
+      ref="resolvePanel"
+      :imports="parseResult?.imports ?? []"
+    />
 
     <template #docs>
       <DataToolDocs title="About the AST playground">

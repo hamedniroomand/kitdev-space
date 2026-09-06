@@ -1,3 +1,4 @@
+import { isAbsolute, resolve, sep } from 'node:path'
 import { parseSync } from 'oxc-parser'
 import { ResolverFactory } from 'oxc-resolver'
 import { transformSync } from 'oxc-transform'
@@ -126,6 +127,41 @@ export interface ResolveResultItem {
   packageJsonPath: string | null
 }
 
+/**
+ * Keep the resolver base directory inside the application root.
+ *
+ * The resolver reports the absolute path of each match, so a caller-supplied
+ * absolute path turns this tool into a filesystem probe for the server. Only a
+ * relative path below the application root is accepted.
+ */
+function resolveInsideAppRoot(directory?: string): string {
+  const root = process.cwd()
+  const value = directory?.trim()
+
+  if (!value) {
+    return root
+  }
+
+  if (isAbsolute(value)) {
+    throw new Error('Enter a directory that is relative to the project root.')
+  }
+
+  const target = resolve(root, value)
+  if (target !== root && !target.startsWith(root + sep)) {
+    throw new Error('Enter a directory that is relative to the project root.')
+  }
+
+  return target
+}
+
+function toRootRelative(target: string): string {
+  const root = process.cwd()
+  if (target === root) {
+    return '.'
+  }
+  return target.startsWith(root + sep) ? target.slice(root.length + 1) : target
+}
+
 function createResolver(mode: ResolveMode): ResolverFactory {
   const conditionNames = mode === 'esm'
     ? ['import', 'module', 'node', 'default']
@@ -150,7 +186,7 @@ export function resolveSpecifiers(input: {
     throw new Error('Choose esm or node resolve mode.')
   }
 
-  const directory = input.directory?.trim() || process.cwd()
+  const directory = resolveInsideAppRoot(input.directory)
   const resolver = createResolver(mode)
   const unique = [...new Set(input.specifiers.map(item => item.trim()).filter(Boolean))]
 
@@ -175,12 +211,14 @@ export function resolveSpecifiers(input: {
       }
     }
 
+    // Report paths relative to the application root. An absolute path would
+    // disclose the server layout.
     return {
       specifier,
       ok: true,
-      path: result.path,
+      path: toRootRelative(result.path),
       error: null,
-      packageJsonPath: result.packageJsonPath ?? null
+      packageJsonPath: result.packageJsonPath ? toRootRelative(result.packageJsonPath) : null
     }
   })
 }

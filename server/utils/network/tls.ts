@@ -1,5 +1,5 @@
 import tls from 'node:tls'
-import { assertSafeUrl } from './ssrf'
+import { assertSafeUrl, TLS_PORTS } from './ssrf'
 
 export interface TlsCertSubject {
   commonName?: string
@@ -99,8 +99,9 @@ export async function inspectTlsCertificate(
     throw new Error('Enter a valid hostname.')
   }
 
-  // Enforce SSRF validation
-  await assertSafeUrl(`https://${cleanHost}:${port}`)
+  // Enforce SSRF validation. Restrict the port to ports that serve TLS, so
+  // this tool cannot scan arbitrary ports on a third-party host.
+  await assertSafeUrl(`https://${cleanHost}:${port}`, { allowedPorts: TLS_PORTS })
 
   return new Promise((resolve, reject) => {
     const timer = setTimeout(() => {

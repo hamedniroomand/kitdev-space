@@ -25,22 +25,14 @@ useToolSeo('headers')
 
 async function inspect() {
   await run(async () => {
-    try {
-      const data = await $fetch<{ result: HeaderInspectResult }>('/api/network/headers', {
-        method: 'POST',
-        body: {
-          url: url.value
-        }
-      })
-      return data.result
-    } catch (cause) {
-      const fetchError = cause as { data?: { message?: string }, statusMessage?: string }
-      const message = fetchError.data?.message
-        || fetchError.statusMessage
-        || 'The request failed.'
-      throw new Error(message, { cause })
-    }
-  })
+    const data = await $fetch<{ result: HeaderInspectResult }>('/api/network/headers', {
+      method: 'POST',
+      body: {
+        url: url.value
+      }
+    })
+    return data.result
+  }, 'The request failed.')
 }
 
 async function handleCopy() {

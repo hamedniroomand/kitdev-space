@@ -28,24 +28,16 @@ function badgeLabel(issue: HealthIssue) {
 
 async function inspect() {
   await run(async () => {
-    try {
-      const data = await $fetch<{ result: EmailHealthResult }>('/api/network/dns', {
-        method: 'POST',
-        body: {
-          domain: domain.value,
-          mode: 'email-health',
-          dkimSelectors: dkimSelectors.value
-        }
-      })
-      return data.result
-    } catch (cause) {
-      const fetchError = cause as { data?: { message?: string }, statusMessage?: string }
-      const message = fetchError.data?.message
-        || fetchError.statusMessage
-        || 'The lookup failed.'
-      throw new Error(message, { cause })
-    }
-  })
+    const data = await $fetch<{ result: EmailHealthResult }>('/api/network/dns', {
+      method: 'POST',
+      body: {
+        domain: domain.value,
+        mode: 'email-health',
+        dkimSelectors: dkimSelectors.value
+      }
+    })
+    return data.result
+  }, 'The lookup failed.')
 }
 
 async function handleCopy() {

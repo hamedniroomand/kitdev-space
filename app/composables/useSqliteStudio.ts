@@ -2,6 +2,7 @@ import type { QueryResult, SqlValue, TableInfo, WorkerResponse } from '~/types/s
 import { rowsToCsv, rowsToJson } from '~/utils/sqlite/export'
 
 export function useSqliteStudio() {
+  const { downloadBlob, downloadText } = useDownload()
   const isReady = ref(false)
   const isExecuting = ref(false)
   const error = ref<string | null>(null)
@@ -51,12 +52,7 @@ export function useSqliteStudio() {
 
         case 'EXPORT_RESULT': {
           const blob = new Blob([response.bytes.slice().buffer], { type: 'application/x-sqlite3' })
-          const url = URL.createObjectURL(blob)
-          const link = document.createElement('a')
-          link.href = url
-          link.download = databaseName.value || 'database.sqlite'
-          link.click()
-          URL.revokeObjectURL(url)
+          downloadBlob(databaseName.value || 'database.sqlite', blob)
           break
         }
 
@@ -67,22 +63,19 @@ export function useSqliteStudio() {
     }
   }
 
-  function loadDatabaseFile(file: File) {
+  async function loadDatabaseFile(file: File) {
     initWorker()
     databaseName.value = file.name
     isExecuting.value = true
     error.value = null
 
-    const reader = new FileReader()
-    reader.onload = () => {
-      const bytes = new Uint8Array(reader.result as ArrayBuffer)
+    try {
+      const bytes = new Uint8Array(await file.arrayBuffer())
       worker?.postMessage({ type: 'INIT_DB', bytes })
-    }
-    reader.onerror = () => {
+    } catch {
       error.value = 'Failed to read file.'
       isExecuting.value = false
     }
-    reader.readAsArrayBuffer(file)
   }
 
   function createBlankDatabase() {
@@ -135,7 +128,7 @@ export function useSqliteStudio() {
       return
     }
     const csv = rowsToCsv(queryResult.value.columns, queryResult.value.rows)
-    downloadTextFile(csv, `${activeTable.value || 'query'}.csv`, 'text/csv')
+    downloadText(`${activeTable.value || 'query'}.csv`, csv, 'text/csv')
   }
 
   function exportJson() {
@@ -143,17 +136,7 @@ export function useSqliteStudio() {
       return
     }
     const json = rowsToJson(queryResult.value.columns, queryResult.value.rows)
-    downloadTextFile(json, `${activeTable.value || 'query'}.json`, 'application/json')
-  }
-
-  function downloadTextFile(content: string, filename: string, mime: string) {
-    const blob = new Blob([content], { type: mime })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = filename
-    link.click()
-    URL.revokeObjectURL(url)
+    downloadText(`${activeTable.value || 'query'}.json`, json, 'application/json')
   }
 
   function closeDatabase() {

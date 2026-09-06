@@ -2,7 +2,6 @@
 import type { FaviconPackageResult } from '#server/utils/image/favicon'
 
 const file = ref<File | null>(null)
-const previewSrc = ref<string>('')
 const appName = ref('My Application')
 const shortName = ref('App')
 const themeColor = ref('#ffffff')
@@ -10,6 +9,7 @@ const themeColor = ref('#ffffff')
 const { status, error, result, run, reset } = useTool<FaviconPackageResult>()
 const { copy: copyHtml, label: htmlCopyLabel, icon: htmlCopyIcon, color: htmlCopyColor } = useCopyFeedback()
 const { copy: copyManifest, label: manifestCopyLabel, icon: manifestCopyIcon, color: manifestCopyColor } = useCopyFeedback()
+const { downloadBlob } = useDownload()
 
 useToolSeo('favicon-generator')
 
@@ -21,23 +21,7 @@ const sampleSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"
 </svg>`
 
 function loadSample() {
-  const blob = new Blob([sampleSvg], { type: 'image/svg+xml' })
-  const sampleFile = new File([blob], 'sample-logo.svg', { type: 'image/svg+xml' })
-  file.value = sampleFile
-  previewSrc.value = `data:image/svg+xml;base64,${btoa(sampleSvg)}`
-}
-
-function handleFileSelect(event: Event) {
-  const target = event.target as HTMLInputElement
-  const selected = target.files?.[0]
-  if (!selected) return
-
-  file.value = selected
-  const reader = new FileReader()
-  reader.onload = () => {
-    previewSrc.value = reader.result as string
-  }
-  reader.readAsDataURL(selected)
+  file.value = new File([sampleSvg], 'sample-logo.svg', { type: 'image/svg+xml' })
 }
 
 async function generate() {
@@ -50,20 +34,12 @@ async function generate() {
     formData.append('shortName', shortName.value)
     formData.append('themeColor', themeColor.value)
 
-    try {
-      const data = await $fetch<{ result: FaviconPackageResult }>('/api/image/favicon-generator', {
-        method: 'POST',
-        body: formData
-      })
-      return data.result
-    } catch (cause) {
-      const fetchError = cause as { data?: { message?: string }, statusMessage?: string }
-      throw new Error(
-        fetchError.data?.message || fetchError.statusMessage || 'The favicon generation failed.',
-        { cause }
-      )
-    }
-  })
+    const data = await $fetch<{ result: FaviconPackageResult }>('/api/image/favicon-generator', {
+      method: 'POST',
+      body: formData
+    })
+    return data.result
+  }, 'The favicon generation failed.')
 }
 
 function downloadZip() {
@@ -75,18 +51,11 @@ function downloadZip() {
     bytes[i] = binaryString.charCodeAt(i)
   }
 
-  const blob = new Blob([bytes], { type: 'application/zip' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = 'favicon_package.zip'
-  a.click()
-  URL.revokeObjectURL(url)
+  downloadBlob('favicon_package.zip', new Blob([bytes], { type: 'application/zip' }))
 }
 
 function handleReset() {
   file.value = null
-  previewSrc.value = ''
   reset()
 }
 </script>
@@ -99,7 +68,6 @@ function handleReset() {
     <div class="space-y-6">
       <!-- Upload & Options Grid -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Image Upload Panel -->
         <div class="p-4 border border-default rounded-xl bg-elevated/40 space-y-4">
           <div class="flex items-center justify-between">
             <h3 class="text-sm font-semibold text-default flex items-center gap-2">
@@ -118,42 +86,12 @@ function handleReset() {
             />
           </div>
 
-          <!-- Drag and Drop Area -->
-          <label class="flex flex-col items-center justify-center p-6 border-2 border-dashed border-default rounded-xl cursor-pointer hover:bg-elevated/20 transition-colors">
-            <input
-              type="file"
-              accept="image/png,image/jpeg,image/svg+xml,image/webp"
-              class="hidden"
-              @change="handleFileSelect"
-            >
-            <UIcon
-              name="i-lucide-image"
-              class="w-8 h-8 text-muted mb-2"
-            />
-            <span class="text-xs font-medium text-default">Select image file</span>
-            <span class="text-[11px] text-muted">PNG, SVG, JPG, or WebP</span>
-          </label>
-
-          <!-- Selected file preview -->
-          <div
-            v-if="file"
-            class="flex items-center gap-3 p-2.5 rounded-lg border border-default bg-default"
-          >
-            <img
-              v-if="previewSrc"
-              :src="previewSrc"
-              alt="Source preview"
-              class="w-10 h-10 object-contain rounded border border-default bg-elevated/40 p-1"
-            >
-            <div class="flex-1 min-w-0">
-              <div class="text-xs font-medium text-default truncate">
-                {{ file.name }}
-              </div>
-              <div class="text-[11px] text-muted font-mono">
-                {{ (file.size / 1024).toFixed(1) }} KB
-              </div>
-            </div>
-          </div>
+          <ImageDropzone
+            v-model="file"
+            accept="image/png,image/jpeg,image/svg+xml,image/webp"
+            prompt="Drop an image here, or click to choose a file."
+            hint="PNG, SVG, JPG, or WebP."
+          />
         </div>
 
         <!-- App Configuration Panel -->

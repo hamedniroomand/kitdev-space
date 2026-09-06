@@ -31,6 +31,7 @@ const wrapJsxComponent = ref(true)
 const componentName = ref('UserProfileCard')
 
 const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
+const { downloadText } = useDownload()
 
 useToolSeo('html-converter')
 
@@ -80,13 +81,7 @@ function handleDownload() {
   const mime = isJsx ? 'text/javascript' : 'text/html'
   const name = isJsx ? (componentName.value || 'Component') : 'Template'
 
-  const blob = new Blob([convertedOutput.value], { type: `${mime};charset=utf-8;` })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `${name}.${ext}`
-  a.click()
-  URL.revokeObjectURL(url)
+  downloadText(`${name}.${ext}`, convertedOutput.value, mime)
 }
 </script>
 

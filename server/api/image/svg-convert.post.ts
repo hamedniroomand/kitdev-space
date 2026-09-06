@@ -1,6 +1,7 @@
 import { ImageError } from '#server/utils/image/errors'
 import { convertSvgAtScale } from '#server/utils/image/pipeline'
 import { assertImageSize } from '#server/utils/image/read-upload'
+import { getClientKey } from '#server/utils/network/client-ip'
 import { enforceRateLimit } from '#server/utils/network/rate-limit'
 
 const formats = new Set(['png', 'webp'] as const)
@@ -20,7 +21,7 @@ function fieldText(data: Buffer | string | undefined): string | undefined {
 }
 
 export default defineEventHandler(async (event) => {
-  const ip = getRequestIP(event, { xForwardedFor: true }) ?? 'anonymous'
+  const ip = getClientKey(event)
   enforceRateLimit(ip, 'image:svg-convert')
 
   try {

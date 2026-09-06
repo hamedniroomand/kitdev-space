@@ -33,24 +33,16 @@ const outputLang = computed(() => (to.value === 'json' || to.value === 'json5' ?
 
 async function convert() {
   await run(async () => {
-    try {
-      const data = await $fetch<{ result: string }>('/api/data/transform', {
-        method: 'POST',
-        body: {
-          input: input.value,
-          from: from.value,
-          to: to.value
-        }
-      })
-      return data.result
-    } catch (cause) {
-      const fetchError = cause as { data?: { message?: string }, statusMessage?: string }
-      const message = fetchError.data?.message
-        || fetchError.statusMessage
-        || 'The convert operation failed.'
-      throw new Error(message, { cause })
-    }
-  })
+    const data = await $fetch<{ result: string }>('/api/data/transform', {
+      method: 'POST',
+      body: {
+        input: input.value,
+        from: from.value,
+        to: to.value
+      }
+    })
+    return data.result
+  }, 'The convert operation failed.')
 
   if (status.value === 'success' && result.value !== null) {
     output.value = result.value

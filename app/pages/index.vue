@@ -16,7 +16,7 @@ useSeoMeta({
 
 useKitDevOgImage({
   title: 'Tools for people who build.',
-  description: 'Fast, free developer utilities. No account.',
+  description: 'Fast, free developer tools. No account.',
   eyebrow: 'KitDev Space'
 })
 </script>
@@ -78,7 +78,7 @@ useKitDevOgImage({
             icon="i-lucide-layout-grid"
             class="rounded-[8px] font-medium px-6 shadow-xs hover:bg-brand-700 transition-colors"
           >
-            Open All Utilities in Hub
+            Open All Tools in Hub
           </UButton>
           <UButton
             color="neutral"

@@ -5,6 +5,7 @@ import {
   type CodeAction,
   type CodeLanguage
 } from '#server/utils/dev/code-format'
+import { getClientKey } from '#server/utils/network/client-ip'
 import { enforceRateLimit } from '#server/utils/network/rate-limit'
 
 interface CodeFormatBody {
@@ -14,7 +15,7 @@ interface CodeFormatBody {
 }
 
 export default defineEventHandler(async (event) => {
-  const ip = getRequestIP(event, { xForwardedFor: true }) ?? 'anonymous'
+  const ip = getClientKey(event)
   enforceRateLimit(ip, 'dev:code-format')
 
   const body = await readBody<CodeFormatBody>(event)

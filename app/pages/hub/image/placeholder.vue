@@ -13,6 +13,7 @@ const customText = ref('')
 const textColor = ref('#ffffff')
 
 const { copy, label, color, icon } = useCopyFeedback()
+const { downloadBlob, downloadUrl } = useDownload()
 
 const presets = [
   { label: '600 × 400', w: 600, h: 400 },
@@ -41,33 +42,26 @@ const svgOutput = computed(() => {
 
 const dataUri = computed(() => svgToDataUri(svgOutput.value))
 
+const fileName = computed(() => `placeholder-${width.value}x${height.value}`)
+
 function downloadSvg() {
-  const blob = new Blob([svgOutput.value], { type: 'image/svg+xml;charset=utf-8' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `placeholder-${width.value}x${height.value}.svg`
-  a.click()
-  URL.revokeObjectURL(url)
+  downloadBlob(`${fileName.value}.svg`, new Blob([svgOutput.value], { type: 'image/svg+xml;charset=utf-8' }))
 }
 
 function downloadPng() {
-  const img = new Image()
-  img.onload = () => {
+  const image = new Image()
+  image.onload = () => {
     const canvas = document.createElement('canvas')
     canvas.width = width.value
     canvas.height = height.value
-    const ctx = canvas.getContext('2d')
-    if (ctx) {
-      ctx.drawImage(img, 0, 0)
-      const pngUrl = canvas.toDataURL('image/png')
-      const a = document.createElement('a')
-      a.href = pngUrl
-      a.download = `placeholder-${width.value}x${height.value}.png`
-      a.click()
+    const context = canvas.getContext('2d')
+    if (!context) {
+      return
     }
+    context.drawImage(image, 0, 0)
+    downloadUrl(`${fileName.value}.png`, canvas.toDataURL('image/png'))
   }
-  img.src = dataUri.value
+  image.src = dataUri.value
 }
 
 useSeoMeta({

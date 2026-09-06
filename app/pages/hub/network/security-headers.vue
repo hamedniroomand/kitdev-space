@@ -32,25 +32,17 @@ function levelColor(level: FindingLevel) {
 
 async function inspect() {
   await run(async () => {
-    try {
-      const data = await $fetch<{ result: HeaderInspectResult }>('/api/network/headers', {
-        method: 'POST',
-        body: {
-          url: url.value,
-          mode: 'security',
-          origin: origin.value || undefined,
-          method: usePreflight.value ? 'OPTIONS' : undefined
-        }
-      })
-      return data.result
-    } catch (cause) {
-      const fetchError = cause as { data?: { message?: string }, statusMessage?: string }
-      throw new Error(
-        fetchError.data?.message || fetchError.statusMessage || 'The request failed.',
-        { cause }
-      )
-    }
-  })
+    const data = await $fetch<{ result: HeaderInspectResult }>('/api/network/headers', {
+      method: 'POST',
+      body: {
+        url: url.value,
+        mode: 'security',
+        origin: origin.value || undefined,
+        method: usePreflight.value ? 'OPTIONS' : undefined
+      }
+    })
+    return data.result
+  }, 'The request failed.')
 }
 
 async function handleCopy() {

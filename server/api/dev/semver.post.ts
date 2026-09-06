@@ -1,4 +1,5 @@
 import { semverBump, semverSatisfies, semverSort } from '#server/utils/dev/semver'
+import { getClientKey } from '#server/utils/network/client-ip'
 import { enforceRateLimit } from '#server/utils/network/rate-limit'
 
 type SemverAction = 'satisfies' | 'sort' | 'bump'
@@ -16,7 +17,7 @@ const actions = new Set<SemverAction>(['satisfies', 'sort', 'bump'])
 const releases = new Set<SemverRelease>(['major', 'minor', 'patch'])
 
 export default defineEventHandler(async (event) => {
-  const ip = getRequestIP(event, { xForwardedFor: true }) ?? 'anonymous'
+  const ip = getClientKey(event)
   enforceRateLimit(ip, 'dev:semver')
 
   const body = await readBody<SemverBody>(event)

@@ -1,6 +1,8 @@
 import type { DataFormat } from '#shared/utils/data/types'
 import { DataError } from '#shared/utils/data/errors'
 import { transformWithBun } from '#server/utils/data/formats'
+import { getClientKey } from '#server/utils/network/client-ip'
+import { enforceRateLimit } from '#server/utils/network/rate-limit'
 
 const MAX_INPUT_CHARS = 500_000
 
@@ -13,6 +15,8 @@ interface TransformBody {
 }
 
 export default defineEventHandler(async (event) => {
+  enforceRateLimit(getClientKey(event), 'data:transform')
+
   const body = await readBody<TransformBody>(event)
   const input = body.input ?? ''
   const from = body.from

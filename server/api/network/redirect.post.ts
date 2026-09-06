@@ -1,4 +1,5 @@
 import { walkRedirects } from '#server/utils/network/http'
+import { getClientKey } from '#server/utils/network/client-ip'
 import { enforceRateLimit } from '#server/utils/network/rate-limit'
 
 interface RedirectBody {
@@ -6,7 +7,7 @@ interface RedirectBody {
 }
 
 export default defineEventHandler(async (event) => {
-  const ip = getRequestIP(event, { xForwardedFor: true }) ?? 'anonymous'
+  const ip = getClientKey(event)
   enforceRateLimit(ip, 'network:redirect')
 
   const body = await readBody<RedirectBody>(event)

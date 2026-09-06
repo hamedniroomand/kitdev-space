@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { useDropZone } from '@vueuse/core'
-
 defineProps<{
   loading?: boolean
 }>()

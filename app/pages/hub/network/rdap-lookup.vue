@@ -12,22 +12,14 @@ async function lookup() {
   if (!query.value.trim()) return
 
   await run(async () => {
-    try {
-      const data = await $fetch<{ result: RdapResult }>('/api/network/rdap', {
-        method: 'POST',
-        body: {
-          query: query.value.trim()
-        }
-      })
-      return data.result
-    } catch (cause) {
-      const fetchError = cause as { data?: { message?: string }, statusMessage?: string }
-      throw new Error(
-        fetchError.data?.message || fetchError.statusMessage || 'The RDAP lookup failed.',
-        { cause }
-      )
-    }
-  })
+    const data = await $fetch<{ result: RdapResult }>('/api/network/rdap', {
+      method: 'POST',
+      body: {
+        query: query.value.trim()
+      }
+    })
+    return data.result
+  }, 'The RDAP lookup failed.')
 }
 
 function handleCopy() {

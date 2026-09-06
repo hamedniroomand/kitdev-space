@@ -44,24 +44,16 @@ onMounted(() => {
 async function execute() {
   output.value = ''
   await run(async () => {
-    try {
-      const data = await $fetch<{ result: string }>('/api/dev/transpile', {
-        method: 'POST',
-        body: {
-          input: input.value,
-          loader: loader.value
-        }
-      })
-      output.value = data.result
-      return data.result
-    } catch (cause) {
-      const fetchError = cause as { data?: { message?: string }, statusMessage?: string }
-      throw new Error(
-        fetchError.data?.message || fetchError.statusMessage || 'The transpile operation failed.',
-        { cause }
-      )
-    }
-  })
+    const data = await $fetch<{ result: string }>('/api/dev/transpile', {
+      method: 'POST',
+      body: {
+        input: input.value,
+        loader: loader.value
+      }
+    })
+    output.value = data.result
+    return data.result
+  }, 'The transpile operation failed.')
 
   if (status.value === 'success') {
     track('tool_execute', { tool: 'transpiler' })

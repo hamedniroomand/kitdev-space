@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useImage as useImageElement } from '@vueuse/core'
 import {
   formatAsCssBackground,
   formatAsHtmlImg,
@@ -7,56 +8,28 @@ import {
 
 type ToolMode = 'image-to-base64' | 'base64-to-image'
 
+const SAMPLE_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m9 9 6 6"/><path d="m15 9-6 6"/></svg>'
+
 const mode = ref<ToolMode>('image-to-base64')
-const dataUri = ref('')
-const fileName = ref('')
-const fileSize = ref(0)
-const imageWidth = ref(0)
-const imageHeight = ref(0)
-
+const file = ref<File | null>(null)
 const base64Input = ref('')
-const { copy, label, color, icon } = useCopyFeedback()
 
-// Sample 32x32 SVG icon
-const sampleSvg = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiMzYjgyZjYiIHN0cm9rZS13aWR0aD0iMiI+PGNpcmNsZSBjeD0iMTIiIGN5PSIxMiIgcj0iMTAiLz48cGF0aCBkPSJtOSA5IDYgNiIvPjxwYXRoIGQ9Im0xNSA5LTYgNiIvPjwvc3ZnPg=='
+const { copy, label, color, icon } = useCopyFeedback()
+const { base64: dataUri } = useBase64(() => file.value ?? undefined)
+const { downloadUrl } = useDownload()
+const { state: previewImage } = useImageElement(() => ({ src: dataUri.value }))
+
+const fileName = computed(() => file.value?.name ?? '')
+const fileSize = computed(() => file.value?.size ?? 0)
+const imageWidth = computed(() => previewImage.value?.naturalWidth ?? 0)
+const imageHeight = computed(() => previewImage.value?.naturalHeight ?? 0)
 
 function loadSample() {
-  dataUri.value = sampleSvg
-  fileName.value = 'sample.svg'
-  fileSize.value = 264
-  imageWidth.value = 32
-  imageHeight.value = 32
-}
-
-function handleFileSelect(event: Event) {
-  const input = event.target as HTMLInputElement
-  const file = input.files?.[0]
-  if (!file) return
-
-  fileName.value = file.name
-  fileSize.value = file.size
-
-  const reader = new FileReader()
-  reader.onload = () => {
-    const result = reader.result as string
-    dataUri.value = result
-
-    const img = new Image()
-    img.onload = () => {
-      imageWidth.value = img.naturalWidth
-      imageHeight.value = img.naturalHeight
-    }
-    img.src = result
-  }
-  reader.readAsDataURL(file)
+  file.value = new File([SAMPLE_SVG], 'sample.svg', { type: 'image/svg+xml' })
 }
 
 function handleClear() {
-  dataUri.value = ''
-  fileName.value = ''
-  fileSize.value = 0
-  imageWidth.value = 0
-  imageHeight.value = 0
+  file.value = null
   base64Input.value = ''
 }
 
@@ -73,10 +46,7 @@ const decodedDataUri = computed(() => {
 
 function handleDownloadDecoded() {
   if (!decodedDataUri.value) return
-  const a = document.createElement('a')
-  a.href = decodedDataUri.value
-  a.download = 'decoded-image.png'
-  a.click()
+  downloadUrl('decoded-image.png', decodedDataUri.value)
 }
 
 useSeoMeta({
@@ -140,27 +110,12 @@ useSeoMeta({
         v-if="mode === 'image-to-base64'"
         class="space-y-6"
       >
-        <!-- File Picker -->
-        <div class="p-6 border-2 border-dashed border-default hover:border-primary/60 rounded-2xl text-center cursor-pointer bg-elevated/20 transition-colors relative">
-          <input
-            type="file"
-            accept="image/*"
-            class="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-            @change="handleFileSelect"
-          >
-          <div class="flex flex-col items-center justify-center gap-2 pointer-events-none">
-            <UIcon
-              name="i-lucide-upload-cloud"
-              class="w-8 h-8 text-primary"
-            />
-            <div class="text-sm font-semibold text-default">
-              Choose an image or drop file here
-            </div>
-            <div class="text-xs text-muted">
-              PNG, JPEG, WebP, SVG, GIF, AVIF up to 10MB
-            </div>
-          </div>
-        </div>
+        <ImageDropzone
+          v-if="!dataUri"
+          v-model="file"
+          accept="image/png,image/jpeg,image/webp,image/svg+xml,image/gif,image/avif"
+          hint="Max size 10 MB. PNG, JPEG, WebP, SVG, GIF, or AVIF."
+        />
 
         <!-- Preview and Outputs if image is selected -->
         <div

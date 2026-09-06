@@ -11,6 +11,65 @@ marked.setOptions({
   breaks: true
 })
 
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
+/** A relative path, a fragment, or a scheme that cannot run script. */
+const SAFE_SCHEME = /^(?:https?:|mailto:|tel:|#|\/|\.{1,2}\/|[^:]*$)/i
+
+/** Whitespace and control characters, which can hide a scheme from a check. */
+const HIDDEN_CHARS = /[\s\p{Cc}]/gu
+
+/**
+ * Keep only targets that cannot run script. `javascript:` and `data:` in an
+ * `href` or `src` run on click or on load. A browser also reads a tab or a
+ * newline inside `java\tscript:` as nothing, so remove hidden characters
+ * before the scheme check.
+ */
+function safeUrl(href: string): string | null {
+  const value = href.replace(HIDDEN_CHARS, '')
+  return SAFE_SCHEME.test(value) ? value : null
+}
+
+/**
+ * `marked` passes raw HTML in the source straight through, and the preview
+ * renders the result with `v-html`. Escape every HTML block and inline HTML
+ * span so markup in the input shows as text and never runs, and drop link and
+ * image targets that carry an executable scheme.
+ */
+marked.use({
+  renderer: {
+    html({ text }: { text: string }): string {
+      return escapeHtml(text)
+    },
+
+    link({ href, title, tokens }): string {
+      const text = this.parser.parseInline(tokens)
+      const url = safeUrl(href)
+      if (url === null) {
+        return text
+      }
+      const titleAttr = title ? ` title="${escapeHtml(title)}"` : ''
+      return `<a href="${escapeHtml(url)}"${titleAttr} rel="nofollow noopener noreferrer">${text}</a>`
+    },
+
+    image({ href, title, text }): string {
+      const url = safeUrl(href)
+      if (url === null) {
+        return escapeHtml(text)
+      }
+      const titleAttr = title ? ` title="${escapeHtml(title)}"` : ''
+      return `<img src="${escapeHtml(url)}" alt="${escapeHtml(text)}"${titleAttr}>`
+    }
+  }
+})
+
 export function parseMarkdown(input: string): string {
   if (!input || typeof input !== 'string') {
     return ''

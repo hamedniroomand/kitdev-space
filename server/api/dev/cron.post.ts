@@ -1,4 +1,5 @@
 import { describeCron, nextCronRuns } from '#server/utils/dev/cron'
+import { getClientKey } from '#server/utils/network/client-ip'
 import { enforceRateLimit } from '#server/utils/network/rate-limit'
 
 interface CronBody {
@@ -9,7 +10,7 @@ interface CronBody {
 }
 
 export default defineEventHandler(async (event) => {
-  const ip = getRequestIP(event, { xForwardedFor: true }) ?? 'anonymous'
+  const ip = getClientKey(event)
   enforceRateLimit(ip, 'dev:cron')
 
   const body = await readBody<CronBody>(event)

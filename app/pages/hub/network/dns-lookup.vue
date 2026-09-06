@@ -23,23 +23,15 @@ useToolSeo('dns')
 
 async function lookup() {
   await run(async () => {
-    try {
-      const data = await $fetch<{ result: string[] | object[] }>('/api/network/dns', {
-        method: 'POST',
-        body: {
-          domain: domain.value,
-          type: recordType.value
-        }
-      })
-      return data.result
-    } catch (cause) {
-      const fetchError = cause as { data?: { message?: string }, statusMessage?: string }
-      const message = fetchError.data?.message
-        || fetchError.statusMessage
-        || 'The lookup failed.'
-      throw new Error(message, { cause })
-    }
-  })
+    const data = await $fetch<{ result: string[] | object[] }>('/api/network/dns', {
+      method: 'POST',
+      body: {
+        domain: domain.value,
+        type: recordType.value
+      }
+    })
+    return data.result
+  }, 'The lookup failed.')
 
   if (status.value === 'success' && result.value !== null) {
     rows.value = result.value.map(record => formatDnsRecord(record))

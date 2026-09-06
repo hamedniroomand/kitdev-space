@@ -20,20 +20,12 @@ onMounted(() => {
 
 async function inspect() {
   await run(async () => {
-    try {
-      const data = await $fetch<{ result: OgPreviewData }>('/api/network/og-preview', {
-        method: 'POST',
-        body: { url: url.value }
-      })
-      return data.result
-    } catch (cause) {
-      const fetchError = cause as { data?: { message?: string }, statusMessage?: string }
-      throw new Error(
-        fetchError.data?.message || fetchError.statusMessage || 'The OpenGraph preview failed.',
-        { cause }
-      )
-    }
-  })
+    const data = await $fetch<{ result: OgPreviewData }>('/api/network/og-preview', {
+      method: 'POST',
+      body: { url: url.value }
+    })
+    return data.result
+  }, 'The OpenGraph preview failed.')
 
   if (status.value === 'success') {
     track('tool_execute', { tool: 'og-preview' })

@@ -1,4 +1,5 @@
 import { inspectTlsCertificate } from '#server/utils/network/tls'
+import { getClientKey } from '#server/utils/network/client-ip'
 import { enforceRateLimit } from '#server/utils/network/rate-limit'
 
 interface TlsBody {
@@ -7,7 +8,7 @@ interface TlsBody {
 }
 
 export default defineEventHandler(async (event) => {
-  const ip = getRequestIP(event, { xForwardedFor: true }) ?? 'anonymous'
+  const ip = getClientKey(event)
   enforceRateLimit(ip, 'network:tls')
 
   const body = await readBody<TlsBody>(event)

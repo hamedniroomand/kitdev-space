@@ -1,5 +1,6 @@
 import type { PasswordAlgorithm } from '#server/utils/crypto/password'
 import { benchmarkPassword } from '#server/utils/crypto/password'
+import { getClientKey } from '#server/utils/network/client-ip'
 import { enforceRateLimit } from '#server/utils/network/rate-limit'
 
 interface PasswordBody {
@@ -14,7 +15,7 @@ interface PasswordBody {
 const algorithms = new Set<PasswordAlgorithm>(['argon2id', 'bcrypt'])
 
 export default defineEventHandler(async (event) => {
-  const ip = getRequestIP(event, { xForwardedFor: true }) ?? 'anonymous'
+  const ip = getClientKey(event)
   enforceRateLimit(ip, 'crypto:password', 5)
 
   const body = await readBody<PasswordBody>(event)

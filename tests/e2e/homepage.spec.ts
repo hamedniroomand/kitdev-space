@@ -8,7 +8,7 @@ test('homepage shows hero, value propositions, and Hub CTA', async ({ page }) =>
   await expect(page.getByText('No Accounts')).toBeVisible()
   await expect(page.getByText('Sub-10ms Native Speed')).toBeVisible()
 
-  const hubCta = page.getByRole('link', { name: 'Open All Utilities in Hub' })
+  const hubCta = page.getByRole('link', { name: 'Open All Tools in Hub' })
   await expect(hubCta).toBeVisible()
   await expect(hubCta).toHaveAttribute('href', '/hub')
 })

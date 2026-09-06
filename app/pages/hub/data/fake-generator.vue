@@ -42,6 +42,7 @@ const fields = ref<FakeFieldConfig[]>([
 ])
 
 const { copy, label, color, icon } = useCopyFeedback()
+const { downloadText } = useDownload()
 
 function applyPreset(preset: 'users' | 'products' | 'contacts') {
   if (preset === 'users') {
@@ -133,13 +134,7 @@ function handleDownload() {
     sql: 'application/sql'
   }
   const ext = extensions[format.value]
-  const blob = new Blob([outputText.value], { type: mimeTypes[format.value] })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `mock-${tableName.value || 'data'}.${ext}`
-  a.click()
-  URL.revokeObjectURL(url)
+  downloadText(`mock-${tableName.value || 'data'}.${ext}`, outputText.value, mimeTypes[format.value])
 }
 
 useSeoMeta({

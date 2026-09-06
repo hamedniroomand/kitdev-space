@@ -1,9 +1,10 @@
 import { readTarEntry } from '#server/utils/dev/archive'
 import { readImageForm } from '#server/utils/image/read-upload'
+import { getClientKey } from '#server/utils/network/client-ip'
 import { enforceRateLimit } from '#server/utils/network/rate-limit'
 
 export default defineEventHandler(async (event) => {
-  const ip = getRequestIP(event, { xForwardedFor: true }) ?? 'anonymous'
+  const ip = getClientKey(event)
   enforceRateLimit(ip, 'dev:tar-entry')
 
   try {

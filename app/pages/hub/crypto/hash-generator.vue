@@ -27,23 +27,15 @@ onMounted(() => {
 
 async function hash() {
   await run(async () => {
-    try {
-      const data = await $fetch<{ result: string }>('/api/crypto/hash', {
-        method: 'POST',
-        body: {
-          input: input.value,
-          algorithm: algorithm.value
-        }
-      })
-      return data.result
-    } catch (cause) {
-      const fetchError = cause as { data?: { message?: string }, statusMessage?: string }
-      const message = fetchError.data?.message
-        || fetchError.statusMessage
-        || 'The hash operation failed.'
-      throw new Error(message, { cause })
-    }
-  })
+    const data = await $fetch<{ result: string }>('/api/crypto/hash', {
+      method: 'POST',
+      body: {
+        input: input.value,
+        algorithm: algorithm.value
+      }
+    })
+    return data.result
+  }, 'The hash operation failed.')
 
   if (status.value === 'success' && result.value !== null) {
     output.value = result.value

@@ -1,4 +1,5 @@
 import { lookupRdap } from '#server/utils/network/rdap'
+import { getClientKey } from '#server/utils/network/client-ip'
 import { enforceRateLimit } from '#server/utils/network/rate-limit'
 
 interface RdapBody {
@@ -6,7 +7,7 @@ interface RdapBody {
 }
 
 export default defineEventHandler(async (event) => {
-  const ip = getRequestIP(event, { xForwardedFor: true }) ?? 'anonymous'
+  const ip = getClientKey(event)
   enforceRateLimit(ip, 'network:rdap')
 
   const body = await readBody<RdapBody>(event)

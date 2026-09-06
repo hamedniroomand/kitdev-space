@@ -31,38 +31,30 @@ async function execute() {
   verified.value = null
 
   await run(async () => {
-    try {
-      const data = await $fetch<{
-        result: {
-          hash: string
-          durationMs: number
-          verified?: boolean
-          algorithm: PasswordAlgorithm
-        }
-      }>('/api/crypto/password-benchmark', {
-        method: 'POST',
-        body: {
-          password: password.value,
-          algorithm: algorithm.value,
-          memoryCost: algorithm.value === 'argon2id' ? memoryCost.value : undefined,
-          timeCost: algorithm.value === 'argon2id' ? timeCost.value : undefined,
-          cost: algorithm.value === 'bcrypt' ? cost.value : undefined,
-          verify: verify.value
-        }
-      })
+    const data = await $fetch<{
+      result: {
+        hash: string
+        durationMs: number
+        verified?: boolean
+        algorithm: PasswordAlgorithm
+      }
+    }>('/api/crypto/password-benchmark', {
+      method: 'POST',
+      body: {
+        password: password.value,
+        algorithm: algorithm.value,
+        memoryCost: algorithm.value === 'argon2id' ? memoryCost.value : undefined,
+        timeCost: algorithm.value === 'argon2id' ? timeCost.value : undefined,
+        cost: algorithm.value === 'bcrypt' ? cost.value : undefined,
+        verify: verify.value
+      }
+    })
 
-      hash.value = data.result.hash
-      durationMs.value = data.result.durationMs
-      verified.value = data.result.verified ?? null
-      return data.result.hash
-    } catch (cause) {
-      const fetchError = cause as { data?: { message?: string }, statusMessage?: string }
-      throw new Error(
-        fetchError.data?.message || fetchError.statusMessage || 'The benchmark failed.',
-        { cause }
-      )
-    }
-  })
+    hash.value = data.result.hash
+    durationMs.value = data.result.durationMs
+    verified.value = data.result.verified ?? null
+    return data.result.hash
+  }, 'The benchmark failed.')
 
   if (status.value === 'success') {
     track('tool_execute', { tool: 'password-benchmark' })

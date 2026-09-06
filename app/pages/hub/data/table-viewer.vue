@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { jsonToCsv } from '#shared/utils/data/csv'
 import {
   filterAndSortRows,
   parseToTable,
@@ -25,6 +26,7 @@ const sortColumn = ref<string | null>(null)
 const sortAsc = ref(true)
 
 const { copy, label, color, icon } = useCopyFeedback()
+const { downloadText } = useDownload()
 
 const tableData = computed(() => {
   try {
@@ -74,23 +76,10 @@ function handleCopyJson() {
 }
 
 function handleDownloadCsv() {
-  if (tableData.value.columns.length === 0) return
-  const cols = tableData.value.columns
-  const lines = [cols.join(',')]
-  for (const row of displayedRows.value) {
-    const vals = cols.map((c) => {
-      const val = String(row[c] ?? '')
-      return val.includes(',') || val.includes('"') ? `"${val.replace(/"/g, '""')}"` : val
-    })
-    lines.push(vals.join(','))
-  }
-  const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = 'table-export.csv'
-  a.click()
-  URL.revokeObjectURL(url)
+  const columns = tableData.value.columns
+  if (columns.length === 0) return
+  const rows = displayedRows.value.map(row => columns.map(column => row[column] ?? ''))
+  downloadText('table-export.csv', jsonToCsv([columns, ...rows]), 'text/csv')
 }
 
 useSeoMeta({

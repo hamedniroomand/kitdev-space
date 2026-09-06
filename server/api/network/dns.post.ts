@@ -1,5 +1,6 @@
 import { lookupDns, isDnsRecordType } from '#server/utils/network/dns'
 import { inspectEmailHealth } from '#server/utils/network/email-health'
+import { getClientKey } from '#server/utils/network/client-ip'
 import { enforceRateLimit } from '#server/utils/network/rate-limit'
 
 interface DnsBody {
@@ -10,7 +11,7 @@ interface DnsBody {
 }
 
 export default defineEventHandler(async (event) => {
-  const ip = getRequestIP(event, { xForwardedFor: true }) ?? 'anonymous'
+  const ip = getClientKey(event)
   enforceRateLimit(ip, 'network:dns')
 
   const body = await readBody<DnsBody>(event)

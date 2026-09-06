@@ -4,16 +4,16 @@ import {
   type ExtractedColor
 } from '#shared/utils/color/palette-extractor'
 
-const imageUrl = ref('')
-const fileName = ref('')
+const SAMPLE_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200"><rect width="100" height="200" fill="#3b82f6"/><rect x="100" width="100" height="200" fill="#10b981"/><rect x="200" width="100" height="200" fill="#f43f5e"/></svg>'
+
+const file = ref<File | null>(null)
 const colorCount = ref(8)
 const palette = ref<ExtractedColor[]>([])
 const isProcessing = ref(false)
 
 const { copy } = useCopyFeedback()
-
-// Sample colorful SVG image
-const sampleImage = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzNiODJmNiIvPjxyZWN0IHg9IjEwMCIgd2lkdGg9IjEwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiMxMGI5ODEiLz48cmVjdCB4PSIyMDAiIHdpZHRoPSIxMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjZjQzZjVlIi8+PC9zdmc+'
+const { base64: imageUrl } = useBase64(() => file.value ?? undefined)
+const fileName = computed(() => file.value?.name ?? '')
 
 function processImage(src: string) {
   isProcessing.value = true
@@ -50,38 +50,24 @@ function processImage(src: string) {
   img.src = src
 }
 
-function handleFileSelect(event: Event) {
-  const target = event.target as HTMLInputElement
-  const file = target.files?.[0]
-  if (!file) return
-
-  fileName.value = file.name
-  const reader = new FileReader()
-  reader.onload = () => {
-    const result = reader.result as string
-    imageUrl.value = result
-    processImage(result)
+watch([imageUrl, colorCount], ([src]) => {
+  if (!src) {
+    palette.value = []
+    return
   }
-  reader.readAsDataURL(file)
-}
+  processImage(src)
+})
 
 function handleLoadSample() {
-  fileName.value = 'sample-spectrum.svg'
-  imageUrl.value = sampleImage
-  processImage(sampleImage)
+  file.value = new File([SAMPLE_SVG], 'sample-spectrum.svg', { type: 'image/svg+xml' })
 }
 
 function handleCountChange(count: number) {
   colorCount.value = count
-  if (imageUrl.value) {
-    processImage(imageUrl.value)
-  }
 }
 
 function handleClear() {
-  imageUrl.value = ''
-  fileName.value = ''
-  palette.value = []
+  file.value = null
 }
 
 const cssVariablesOutput = computed(() => {
@@ -97,14 +83,14 @@ const jsonOutput = computed(() => {
 
 useSeoMeta({
   title: 'Image Palette Extractor — KitDev Space',
-  description: 'Extract dominant color palettes and hex codes from uploaded images using HTML5 Canvas.'
+  description: 'Extract dominant color palettes and hex codes from an image with HTML5 Canvas.'
 })
 </script>
 
 <template>
   <ToolPage
     title="Image Palette Extractor"
-    description="Extract dominant colors, color percentages, and hex values from any uploaded image."
+    description="Extract dominant colors, color percentages, and hex values from an image."
   >
     <div class="space-y-6">
       <!-- Toolbar -->
@@ -147,30 +133,12 @@ useSeoMeta({
         </div>
       </div>
 
-      <!-- Upload Zone -->
-      <div
+      <ImageDropzone
         v-if="!imageUrl"
-        class="p-8 border-2 border-dashed border-default hover:border-primary/60 rounded-2xl text-center cursor-pointer bg-elevated/20 transition-colors relative"
-      >
-        <input
-          type="file"
-          accept="image/*"
-          class="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-          @change="handleFileSelect"
-        >
-        <div class="flex flex-col items-center justify-center gap-2 pointer-events-none">
-          <UIcon
-            name="i-lucide-upload-cloud"
-            class="w-8 h-8 text-primary"
-          />
-          <div class="text-sm font-semibold text-default">
-            Select an image or drop file here
-          </div>
-          <div class="text-xs text-muted">
-            PNG, JPEG, WebP, SVG, AVIF up to 15MB
-          </div>
-        </div>
-      </div>
+        v-model="file"
+        accept="image/png,image/jpeg,image/webp,image/svg+xml,image/avif"
+        hint="Max size 15 MB. PNG, JPEG, WebP, SVG, or AVIF."
+      />
 
       <!-- Analysis View -->
       <div
@@ -181,7 +149,7 @@ useSeoMeta({
           <!-- Image Card -->
           <div class="p-4 border border-default rounded-xl bg-elevated/40 space-y-3">
             <div class="text-xs font-semibold text-default truncate">
-              {{ fileName || 'Uploaded Image' }}
+              {{ fileName || 'Selected image' }}
             </div>
             <div class="flex items-center justify-center bg-default p-2 rounded-lg border border-default max-h-64 overflow-hidden">
               <img
@@ -189,17 +157,6 @@ useSeoMeta({
                 alt="Preview"
                 class="max-h-60 object-contain rounded"
               >
-            </div>
-            <div class="pt-1">
-              <label class="block text-center cursor-pointer">
-                <span class="text-xs text-primary font-medium hover:underline">Choose a different image</span>
-                <input
-                  type="file"
-                  accept="image/*"
-                  class="hidden"
-                  @change="handleFileSelect"
-                >
-              </label>
             </div>
           </div>
 

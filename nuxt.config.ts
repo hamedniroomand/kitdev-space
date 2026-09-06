@@ -27,6 +27,55 @@ const prerenderRoutes = [
   '/llms.txt'
 ]
 
+/**
+ * Content Security Policy.
+ *
+ * Every page is prerendered to static HTML on the CDN, so a per-request nonce
+ * is not possible and inline scripts need `'unsafe-inline'`. The policy still
+ * blocks plugins, framing, base-tag rewrites, and unexpected network egress.
+ * `'wasm-unsafe-eval'` lets sql.js compile its WebAssembly module.
+ */
+const contentSecurityPolicy = [
+  'default-src \'self\'',
+  'base-uri \'self\'',
+  'object-src \'none\'',
+  'frame-ancestors \'none\'',
+  'form-action \'self\'',
+  'img-src \'self\' data: blob: https:',
+  'font-src \'self\' data: https://fonts.gstatic.com',
+  'style-src \'self\' \'unsafe-inline\'',
+  'script-src \'self\' \'unsafe-inline\' \'wasm-unsafe-eval\' https://www.googletagmanager.com https://va.vercel-scripts.com',
+  'connect-src \'self\' https://www.google-analytics.com https://region1.google-analytics.com https://www.googletagmanager.com https://va.vercel-scripts.com',
+  'worker-src \'self\' blob:',
+  'manifest-src \'self\'',
+  'upgrade-insecure-requests'
+].join('; ')
+
+const securityHeaders = {
+  'Content-Security-Policy': contentSecurityPolicy,
+  'Strict-Transport-Security': 'max-age=63072000; includeSubDomains; preload',
+  'X-Content-Type-Options': 'nosniff',
+  'X-Frame-Options': 'DENY',
+  'Referrer-Policy': 'strict-origin-when-cross-origin',
+  'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), payment=(), usb=()',
+  'Cross-Origin-Opener-Policy': 'same-origin',
+  'Cross-Origin-Resource-Policy': 'same-origin'
+}
+
+/**
+ * API responses carry tool output, which includes bytes fetched from a remote
+ * host. They must never render as a document or get sniffed into one.
+ */
+const apiSecurityHeaders = {
+  'Content-Security-Policy': 'default-src \'none\'; sandbox',
+  'Strict-Transport-Security': 'max-age=63072000; includeSubDomains; preload',
+  'X-Content-Type-Options': 'nosniff',
+  'X-Frame-Options': 'DENY',
+  'Referrer-Policy': 'no-referrer',
+  'Cross-Origin-Resource-Policy': 'same-origin',
+  'Cache-Control': 'no-store'
+}
+
 const llmsSections = Object.entries(categoryLabels).map(([category, label]) => ({
   title: label,
   description: `Tools for ${category} operations.`,
@@ -80,8 +129,8 @@ export default defineNuxtConfig({
   },
 
   routeRules: {
-    '/**': { prerender: true },
-    '/api/**': { prerender: false, robots: false },
+    '/**': { prerender: true, headers: securityHeaders },
+    '/api/**': { prerender: false, robots: false, headers: apiSecurityHeaders },
     ...legacyRouteRules,
     '/data/**': { redirect: { to: '/hub/data/**', statusCode: 301 } },
     '/network/**': { redirect: { to: '/hub/network/**', statusCode: 301 } },
@@ -98,6 +147,16 @@ export default defineNuxtConfig({
     prerender: {
       crawlLinks: true,
       routes: prerenderRoutes
+    },
+    // Every API route needs Bun globals (`Bun.*` and `HTMLRewriter`). Nitro
+    // reads `"Bun" in globalThis` at build time to pick the Vercel function
+    // runtime, and `nuxt build` runs under Node, so the default result is
+    // `nodejs22.x`. On that runtime every API route fails with
+    // "Bun is not defined". Keep this pin. CI checks it after the build.
+    vercel: {
+      functions: {
+        runtime: 'bun1.x'
+      }
     }
   },
 

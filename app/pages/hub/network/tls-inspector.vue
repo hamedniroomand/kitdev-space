@@ -22,23 +22,15 @@ function statusBadgeColor(st: 'valid' | 'expiring_soon' | 'expired') {
 
 async function inspect() {
   await run(async () => {
-    try {
-      const data = await $fetch<{ result: TlsInspectionResult }>('/api/network/tls', {
-        method: 'POST',
-        body: {
-          host: host.value,
-          port: port.value
-        }
-      })
-      return data.result
-    } catch (cause) {
-      const fetchError = cause as { data?: { message?: string }, statusMessage?: string }
-      throw new Error(
-        fetchError.data?.message || fetchError.statusMessage || 'The TLS connection failed.',
-        { cause }
-      )
-    }
-  })
+    const data = await $fetch<{ result: TlsInspectionResult }>('/api/network/tls', {
+      method: 'POST',
+      body: {
+        host: host.value,
+        port: port.value
+      }
+    })
+    return data.result
+  }, 'The TLS connection failed.')
 }
 
 function handleCopy() {

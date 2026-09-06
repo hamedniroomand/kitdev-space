@@ -1,5 +1,6 @@
 import { fetchHtmlDocument } from '#server/utils/network/fetch-html'
 import { extractOgFromHtml } from '#server/utils/network/og'
+import { getClientKey } from '#server/utils/network/client-ip'
 import { enforceRateLimit } from '#server/utils/network/rate-limit'
 
 interface OgPreviewBody {
@@ -7,7 +8,7 @@ interface OgPreviewBody {
 }
 
 export default defineEventHandler(async (event) => {
-  const ip = getRequestIP(event, { xForwardedFor: true }) ?? 'anonymous'
+  const ip = getClientKey(event)
   enforceRateLimit(ip, 'network:og')
 
   const body = await readBody<OgPreviewBody>(event)

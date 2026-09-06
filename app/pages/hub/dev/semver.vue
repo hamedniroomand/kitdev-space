@@ -33,45 +33,37 @@ onMounted(() => {
 async function execute() {
   output.value = ''
   await run(async () => {
-    try {
-      const body: Record<string, unknown> = { action: action.value }
-      if (action.value === 'satisfies') {
-        body.version = version.value
-        body.range = range.value
-      } else if (action.value === 'sort') {
-        body.versions = versionsText.value
-      } else {
-        body.version = version.value
-        body.release = release.value
-      }
-
-      const data = await $fetch<{
-        result: { ok?: boolean, versions?: string[], version?: string }
-      }>('/api/dev/semver', {
-        method: 'POST',
-        body
-      })
-
-      let text = ''
-      if (typeof data.result.ok === 'boolean') {
-        text = data.result.ok
-          ? 'true — version satisfies range'
-          : 'false — version does not satisfy range'
-      } else if (data.result.versions) {
-        text = data.result.versions.join('\n')
-      } else {
-        text = data.result.version ?? ''
-      }
-      output.value = text
-      return text
-    } catch (cause) {
-      const fetchError = cause as { data?: { message?: string }, statusMessage?: string }
-      throw new Error(
-        fetchError.data?.message || fetchError.statusMessage || 'The semver operation failed.',
-        { cause }
-      )
+    const body: Record<string, unknown> = { action: action.value }
+    if (action.value === 'satisfies') {
+      body.version = version.value
+      body.range = range.value
+    } else if (action.value === 'sort') {
+      body.versions = versionsText.value
+    } else {
+      body.version = version.value
+      body.release = release.value
     }
-  })
+
+    const data = await $fetch<{
+      result: { ok?: boolean, versions?: string[], version?: string }
+    }>('/api/dev/semver', {
+      method: 'POST',
+      body
+    })
+
+    let text = ''
+    if (typeof data.result.ok === 'boolean') {
+      text = data.result.ok
+        ? 'true — version satisfies range'
+        : 'false — version does not satisfy range'
+    } else if (data.result.versions) {
+      text = data.result.versions.join('\n')
+    } else {
+      text = data.result.version ?? ''
+    }
+    output.value = text
+    return text
+  }, 'The semver operation failed.')
 
   if (status.value === 'success') {
     track('tool_execute', { tool: 'semver' })

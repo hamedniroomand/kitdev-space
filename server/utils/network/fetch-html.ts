@@ -9,6 +9,52 @@ function isTimeout(cause: unknown): boolean {
   return cause instanceof DOMException && cause.name === 'TimeoutError'
 }
 
+/**
+ * Read the body and stop at `MAX_HTML_BYTES`.
+ *
+ * A remote host controls both `content-length` and the real body length, so the
+ * declared size is only a first filter. Reading through the stream with a
+ * running total keeps a large or chunked response from filling memory.
+ */
+async function readCappedBody(response: Response): Promise<Uint8Array> {
+  const reader = response.body?.getReader()
+  if (!reader) {
+    return new Uint8Array(0)
+  }
+
+  const chunks: Uint8Array[] = []
+  let total = 0
+
+  try {
+    for (;;) {
+      const { done, value } = await reader.read()
+      if (done) {
+        break
+      }
+      if (!value) {
+        continue
+      }
+
+      total += value.byteLength
+      if (total > MAX_HTML_BYTES) {
+        throw new Error('The HTML response is too large.')
+      }
+      chunks.push(value)
+    }
+  } finally {
+    void reader.cancel().catch(() => {})
+  }
+
+  const body = new Uint8Array(total)
+  let offset = 0
+  for (const chunk of chunks) {
+    body.set(chunk, offset)
+    offset += chunk.byteLength
+  }
+
+  return body
+}
+
 export async function fetchHtmlDocument(input: string): Promise<{ html: string, finalUrl: string }> {
   let current = await assertSafeUrl(input)
 
@@ -30,14 +76,18 @@ export async function fetchHtmlDocument(input: string): Promise<{ html: string, 
         continue
       }
 
-      const buffer = await response.arrayBuffer()
-      if (buffer.byteLength > MAX_HTML_BYTES) {
+      if (!response.ok) {
+        void response.body?.cancel()
+        throw new Error(`The request failed with status ${response.status}.`)
+      }
+
+      const declared = Number(response.headers.get('content-length'))
+      if (Number.isFinite(declared) && declared > MAX_HTML_BYTES) {
+        void response.body?.cancel()
         throw new Error('The HTML response is too large.')
       }
 
-      if (!response.ok) {
-        throw new Error(`The request failed with status ${response.status}.`)
-      }
+      const buffer = await readCappedBody(response)
 
       const contentType = (response.headers.get('content-type') || '').toLowerCase()
       if (

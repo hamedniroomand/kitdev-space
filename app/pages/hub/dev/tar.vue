@@ -30,24 +30,16 @@ async function inspect() {
     }
     const form = new FormData()
     form.append('file', file.value)
-    try {
-      const data = await $fetch<{
-        result: { entries: TarEntry[], bytes: number }
-      }>('/api/dev/tar/list', {
-        method: 'POST',
-        body: form
-      })
-      entries.value = data.result.entries
-      archiveBytes.value = data.result.bytes
-      return `${data.result.entries.length} entries`
-    } catch (cause) {
-      const fetchError = cause as { data?: { message?: string }, statusMessage?: string }
-      throw new Error(
-        fetchError.data?.message || fetchError.statusMessage || 'The archive list failed.',
-        { cause }
-      )
-    }
-  })
+    const data = await $fetch<{
+      result: { entries: TarEntry[], bytes: number }
+    }>('/api/dev/tar/list', {
+      method: 'POST',
+      body: form
+    })
+    entries.value = data.result.entries
+    archiveBytes.value = data.result.bytes
+    return `${data.result.entries.length} entries`
+  }, 'The archive list failed.')
 
   if (status.value === 'success') {
     track('tool_execute', { tool: 'tar-explorer' })

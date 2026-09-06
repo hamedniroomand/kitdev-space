@@ -37,28 +37,20 @@ async function execute() {
   description.value = ''
   nextRuns.value = []
   await run(async () => {
-    try {
-      const data = await $fetch<{
-        result: { description: string, nextRuns: string[] }
-      }>('/api/dev/cron', {
-        method: 'POST',
-        body: {
-          expression: expression.value,
-          timeZone: timeZone.value,
-          count: 5
-        }
-      })
-      description.value = data.result.description
-      nextRuns.value = data.result.nextRuns
-      return data.result.description
-    } catch (cause) {
-      const fetchError = cause as { data?: { message?: string }, statusMessage?: string }
-      throw new Error(
-        fetchError.data?.message || fetchError.statusMessage || 'The cron operation failed.',
-        { cause }
-      )
-    }
-  })
+    const data = await $fetch<{
+      result: { description: string, nextRuns: string[] }
+    }>('/api/dev/cron', {
+      method: 'POST',
+      body: {
+        expression: expression.value,
+        timeZone: timeZone.value,
+        count: 5
+      }
+    })
+    description.value = data.result.description
+    nextRuns.value = data.result.nextRuns
+    return data.result.description
+  }, 'The cron operation failed.')
 
   if (status.value === 'success') {
     track('tool_execute', { tool: 'cron' })

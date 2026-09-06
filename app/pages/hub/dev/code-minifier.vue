@@ -129,26 +129,18 @@ watch(language, (next) => {
 
 async function execute() {
   await run(async () => {
-    try {
-      const data = await $fetch<{ result: string, engine: string }>('/api/dev/code-format', {
-        method: 'POST',
-        body: {
-          input: input.value,
-          language: language.value,
-          action: action.value
-        }
-      })
-      output.value = data.result
-      engine.value = data.engine
-      return data.result
-    } catch (cause) {
-      const fetchError = cause as { data?: { message?: string }, statusMessage?: string }
-      throw new Error(
-        fetchError.data?.message || fetchError.statusMessage || 'The format operation failed.',
-        { cause }
-      )
-    }
-  })
+    const data = await $fetch<{ result: string, engine: string }>('/api/dev/code-format', {
+      method: 'POST',
+      body: {
+        input: input.value,
+        language: language.value,
+        action: action.value
+      }
+    })
+    output.value = data.result
+    engine.value = data.engine
+    return data.result
+  }, 'The format operation failed.')
 
   if (status.value === 'success' && output.value) {
     const before = getTextStats(input.value)

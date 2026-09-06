@@ -19,9 +19,19 @@ jobs:
       - run: bun lint
       - run: bun typecheck
       - run: bun run test
-      - run: bun run build
+      - name: Build for Vercel
+        run: bun run build
         env:
-          NITRO_PRESET: bun
+          NITRO_PRESET: vercel
+      - name: Check the Vercel function runtime
+        run: |
+          config=.vercel/output/functions/__fallback.func/.vc-config.json
+          runtime=$(bun -e "console.log(require('./$config').runtime)")
+          echo "runtime: $runtime"
+          if [ "$runtime" != "bun1.x" ]; then
+            echo "The Vercel function runtime must be bun1.x. Every API route needs Bun globals." >&2
+            exit 1
+          fi
       - name: Playwright version
         id: playwright
         run: echo "version=$(bun -e 'console.log(require("@playwright/test/package.json").version)')" >> "$GITHUB_OUTPUT"
