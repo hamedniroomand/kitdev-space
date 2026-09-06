@@ -1,11 +1,5 @@
 import { marked } from 'marked'
 
-export interface MarkdownStats {
-  characters: number
-  words: number
-  readingTime: string
-}
-
 marked.setOptions({
   gfm: true,
   breaks: true
@@ -79,23 +73,6 @@ export function parseMarkdown(input: string): string {
     return marked.parse(input, { async: false }) as string
   } catch {
     return ''
-  }
-}
-
-export function getMarkdownStats(text: string): MarkdownStats {
-  const characters = text.length
-  const trimmed = text.trim()
-  const words = trimmed ? trimmed.split(/\s+/).length : 0
-
-  const minutes = Math.ceil(words / 200)
-  const readingTime = words === 0 || minutes <= 1
-    ? '< 1 min read'
-    : `${minutes} min read`
-
-  return {
-    characters,
-    words,
-    readingTime
   }
 }
 

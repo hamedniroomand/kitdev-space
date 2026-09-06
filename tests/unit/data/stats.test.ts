@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { getTextStats } from '#shared/utils/data/stats'
+import { formatReadingTime, getTextStats } from '#shared/utils/data/stats'
 
 describe('getTextStats', () => {
   it('counts characters, words, lines, and utf-8 bytes', () => {
@@ -17,5 +17,29 @@ describe('getTextStats', () => {
     expect(stats.characters).toBe(0)
     expect(stats.words).toBe(0)
     expect(stats.lines).toBe(0)
+  })
+})
+
+describe('formatReadingTime', () => {
+  it('writes a short label for one minute or less', () => {
+    expect(formatReadingTime(0)).toBe('< 1 min read')
+    expect(formatReadingTime(1)).toBe('< 1 min read')
+  })
+
+  it('writes the minute count for a longer text', () => {
+    expect(formatReadingTime(3)).toBe('3 min read')
+  })
+
+  it('accepts another suffix', () => {
+    expect(formatReadingTime(4, 'speaking')).toBe('4 min speaking')
+  })
+})
+
+describe('getTextStats reading and speaking time', () => {
+  it('reports a slower speaking time than reading time', () => {
+    const stats = getTextStats(Array.from({ length: 450 }, () => 'word').join(' '))
+    expect(stats.words).toBe(450)
+    expect(stats.readingTimeMinutes).toBe(3)
+    expect(stats.speakingTimeMinutes).toBe(4)
   })
 })

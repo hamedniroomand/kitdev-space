@@ -52,3 +52,8 @@ export function getTextStats(text: string): TextStatistics {
     speakingTimeMinutes
   }
 }
+
+/** Writes a reading or speaking time as a short label. */
+export function formatReadingTime(minutes: number, suffix = 'read'): string {
+  return minutes <= 1 ? `< 1 min ${suffix}` : `${minutes} min ${suffix}`
+}

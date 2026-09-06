@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import {
   generateHtmlDocument,
-  getMarkdownStats,
   parseMarkdown
 } from '#shared/utils/data/markdown'
+import { formatReadingTime, getTextStats } from '#shared/utils/data/stats'
 
 const sampleMarkdown = `# Markdown Live Studio
 
@@ -44,7 +44,7 @@ const { downloadText } = useDownload()
 useToolSeo('markdown-studio')
 
 const compiledHtml = computed(() => parseMarkdown(input.value))
-const stats = computed(() => getMarkdownStats(input.value))
+const stats = computed(() => getTextStats(input.value))
 
 async function handleCopyHtml() {
   if (!compiledHtml.value) {
@@ -116,7 +116,7 @@ function handleClear() {
           Estimated Read Time
         </p>
         <p class="mt-1 text-2xl font-semibold">
-          {{ stats.readingTime }}
+          {{ formatReadingTime(stats.readingTimeMinutes) }}
         </p>
       </div>
     </div>
@@ -224,7 +224,7 @@ function handleClear() {
           :items="[
             { label: 'Text Diff', to: '/hub/data/text-diff' },
             { label: 'Lorem Ipsum & Mock Data', to: '/hub/data/lorem' },
-            { label: 'HTML & URL Codec', to: '/hub/dev/html-url-codec' }
+            { label: 'Encoder & Escaper', to: '/hub/dev/encoder' }
           ]"
         />
       </ToolDocs>

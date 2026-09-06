@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
   generateHtmlDocument,
-  getMarkdownStats,
   parseMarkdown
 } from '#shared/utils/data/markdown'
 
@@ -31,30 +30,6 @@ describe('parseMarkdown', () => {
 
   it('handles empty input gracefully', () => {
     expect(parseMarkdown('')).toBe('')
-  })
-})
-
-describe('getMarkdownStats', () => {
-  it('calculates characters, words, and reading time for empty text', () => {
-    const stats = getMarkdownStats('')
-    expect(stats.characters).toBe(0)
-    expect(stats.words).toBe(0)
-    expect(stats.readingTime).toBe('< 1 min read')
-  })
-
-  it('calculates word count and reading time correctly', () => {
-    const sample = 'One two three four five'
-    const stats = getMarkdownStats(sample)
-    expect(stats.characters).toBe(23)
-    expect(stats.words).toBe(5)
-    expect(stats.readingTime).toBe('< 1 min read')
-  })
-
-  it('scales reading time for larger texts', () => {
-    const words = Array.from({ length: 450 }, () => 'word').join(' ')
-    const stats = getMarkdownStats(words)
-    expect(stats.words).toBe(450)
-    expect(stats.readingTime).toBe('3 min read')
   })
 })
 
