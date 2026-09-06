@@ -2,6 +2,9 @@ Write in ASD-STE100.
 
 Follow `docs/writing-rules.md` for all human-readable technical English.
 
+Follow `docs/tool-architecture.md` for every tool in the hub. It states where the work runs, how
+the registry drives the page copy, and how analytics is wired.
+
 ### VueUse First
 
 Use VueUse before writing custom Vue composables or utility logic.
