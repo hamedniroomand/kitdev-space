@@ -317,9 +317,9 @@ defineShortcuts({
         <DataRelatedTools
           class="mt-8"
           :items="[
+            { label: 'AST Playground and Resolver', to: '/hub/dev/ast-playground' },
             { label: 'TS / JSX Transpiler', to: '/hub/dev/transpiler' },
-            { label: 'JSON Formatter', to: '/hub/data/json-formatter' },
-            { label: 'HTML and URL Codec', to: '/hub/dev/html-url-codec' }
+            { label: 'JSON Formatter', to: '/hub/data/json-formatter' }
           ]"
         />
       </DataToolDocs>

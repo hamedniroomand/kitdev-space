@@ -518,6 +518,19 @@ export const tools: Tool[] = [
     status: 'available'
   },
   {
+    id: 'ast-playground',
+    slug: 'ast-playground',
+    name: 'AST Playground and Resolver',
+    description: 'Inspect ESTree ASTs and resolve module paths with OXC.',
+    category: 'dev',
+    icon: 'i-lucide-git-fork',
+    keywords: ['ast', 'oxc', 'parser', 'resolver', 'estree', 'typescript', 'javascript', 'jsx'],
+    route: '/hub/dev/ast-playground',
+    clientOnly: false,
+    serverRequired: true,
+    status: 'available'
+  },
+  {
     id: 'case-converter',
     slug: 'case-converter',
     name: 'Case and Slug Converter',
