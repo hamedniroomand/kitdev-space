@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatBytes } from '../../shared/utils/format'
+import { formatBytes } from '#shared/utils/format'
 
 describe('formatBytes', () => {
   it('formats bytes, kilobytes, and megabytes', () => {

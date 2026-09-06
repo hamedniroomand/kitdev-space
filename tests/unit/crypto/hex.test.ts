@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { decodeHex, encodeHex } from '../../../shared/utils/crypto/hex'
+import { decodeHex, encodeHex } from '#shared/utils/crypto/hex'
 
 describe('hex', () => {
   it('round-trips text', () => {

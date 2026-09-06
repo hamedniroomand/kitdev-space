@@ -1,7 +1,7 @@
 import { minify as minifyCssWithCsso } from 'csso'
 import { minifySync } from 'oxc-minify'
 import prettier from 'prettier'
-import { formatJson, minifyJson } from '../../../shared/utils/data/json'
+import { formatJson, minifyJson } from '#shared/utils/data/json'
 
 export type CodeLanguage = 'javascript' | 'typescript' | 'html' | 'css' | 'json'
 export type CodeAction = 'minify' | 'beautify'

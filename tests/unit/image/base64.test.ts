@@ -3,7 +3,7 @@ import {
   formatAsCssBackground,
   formatAsHtmlImg,
   parseDataUri
-} from '../../../shared/utils/image/base64'
+} from '#shared/utils/image/base64'
 
 describe('parseDataUri', () => {
   it('parses valid data uri with mime type', () => {

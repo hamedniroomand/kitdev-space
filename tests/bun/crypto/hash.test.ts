@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { hashText } from '../../../server/utils/crypto/hash'
+import { hashText } from '#server/utils/crypto/hash'
 
 describe('hashText', () => {
   it('hashes sha256', () => {

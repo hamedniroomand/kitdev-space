@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { processCode } from '../../../server/utils/dev/code-format'
+import { processCode } from '#server/utils/dev/code-format'
 
 describe('processCode', () => {
   it('minifies javascript with oxc', async () => {

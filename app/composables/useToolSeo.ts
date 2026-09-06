@@ -1,5 +1,5 @@
-import { categoryLabels, getToolById } from '~~/shared/utils/tools'
-import { buildToolBreadcrumbs } from '~~/shared/utils/breadcrumbs'
+import { categoryLabels, getToolById } from '#shared/utils/tools'
+import { buildToolBreadcrumbs } from '#shared/utils/breadcrumbs'
 
 export function useToolSeo(toolId: string) {
   const tool = getToolById(toolId)

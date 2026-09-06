@@ -1,4 +1,4 @@
-import { MAX_IMAGE_BYTES } from '../image/limits'
+import { MAX_IMAGE_BYTES } from '#server/utils/image/limits'
 
 // Reuse the same 25 MB product cap as Image Lab.
 export const MAX_ARCHIVE_BYTES = MAX_IMAGE_BYTES

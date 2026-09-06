@@ -1,17 +1,22 @@
 import { test, expect } from '@playwright/test'
+import { gotoHydrated } from './utils'
 
 test.describe('SQLite Studio', () => {
   test('loads sample database and runs query', async ({ page }) => {
-    await page.goto('/hub/data/sqlite-studio')
+    await gotoHydrated(page, '/hub/data/sqlite-studio')
 
     // Click load sample database
     await page.getByRole('button', { name: 'Load Sample Database' }).click()
 
     // Verify sidebar displays tables
-    await expect(page.getByText('products')).toBeVisible()
-    await expect(page.getByText('customers')).toBeVisible()
+    const tableList = page.locator('aside').filter({
+      has: page.getByPlaceholder('Filter tables...')
+    })
+    await expect(tableList.getByText('products')).toBeVisible()
+    await expect(tableList.getByText('customers')).toBeVisible()
 
-    // Verify results table renders sample rows
+    // The studio opens the first table, so select products to see its rows
+    await tableList.getByText('products').click()
     await expect(page.getByText('Mechanical Keyboard')).toBeVisible()
 
     // Test running a query

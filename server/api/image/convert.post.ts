@@ -1,8 +1,8 @@
-import type { ImageEncodeFormat } from '../../../shared/utils/image/types'
-import { ImageError } from '../../utils/image/errors'
-import { convertImage } from '../../utils/image/pipeline'
-import { readImageForm } from '../../utils/image/read-upload'
-import { enforceRateLimit } from '../../utils/network/rate-limit'
+import type { ImageEncodeFormat } from '#shared/utils/image/types'
+import { ImageError } from '#server/utils/image/errors'
+import { convertImage } from '#server/utils/image/pipeline'
+import { readImageForm } from '#server/utils/image/read-upload'
+import { enforceRateLimit } from '#server/utils/network/rate-limit'
 
 const formats = new Set<ImageEncodeFormat>(['webp', 'avif', 'jpeg', 'png'])
 

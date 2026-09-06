@@ -6,7 +6,7 @@ import {
   detectDelimiter,
   jsonToCsv,
   parseCsv
-} from '../../../shared/utils/data/csv'
+} from '#shared/utils/data/csv'
 
 describe('detectDelimiter', () => {
   it('detects commas', () => {

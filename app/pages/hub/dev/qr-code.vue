@@ -3,7 +3,7 @@ import {
   buildQrPayload,
   generateQrSvg,
   type QrPayloadKind
-} from '~~/shared/utils/dev/qrcode'
+} from '#shared/utils/dev/qrcode'
 
 definePageMeta({
   ssr: false

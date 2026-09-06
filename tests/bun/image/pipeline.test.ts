@@ -7,7 +7,7 @@ import {
   getImageMetadata,
   resizeImage,
   transformImage
-} from '../../../server/utils/image/pipeline'
+} from '#server/utils/image/pipeline'
 
 const fixture = new Uint8Array(
   readFileSync(join(import.meta.dir, 'fixtures/tiny.png'))

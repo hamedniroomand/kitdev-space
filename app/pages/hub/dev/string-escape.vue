@@ -1,11 +1,9 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
 import {
   type EscapeMode,
   escapeString,
   unescapeString
-} from '~~/shared/utils/dev/string-escape'
-import { useCopyFeedback } from '../../../composables/useCopyFeedback'
+} from '#shared/utils/dev/string-escape'
 
 const input = ref('Hello "World"\nNew line with \'quotes\' and <tags>')
 const mode = ref<EscapeMode>('json')

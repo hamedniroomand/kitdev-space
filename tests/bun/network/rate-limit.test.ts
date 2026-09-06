@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { enforceRateLimit } from '../../../server/utils/network/rate-limit'
+import { enforceRateLimit } from '#server/utils/network/rate-limit'
 
 describe('enforceRateLimit', () => {
   it('allows requests under the limit', () => {

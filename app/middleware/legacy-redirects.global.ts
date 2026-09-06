@@ -1,4 +1,4 @@
-import { resolveLegacyRedirect } from '~~/shared/utils/redirects'
+import { resolveLegacyRedirect } from '#shared/utils/redirects'
 
 export default defineNuxtRouteMiddleware((to) => {
   const target = resolveLegacyRedirect(to.path)

@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { inspectUnicode } from '~~/shared/utils/data/unicode'
-import { useCopyFeedback } from '../../../composables/useCopyFeedback'
+import { inspectUnicode } from '#shared/utils/data/unicode'
 
 const input = ref('Hello 👋 World! \u200B\u00E9')
 const { copy } = useCopyFeedback()

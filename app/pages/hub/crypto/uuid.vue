@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { createId, type IdType } from '~~/shared/utils/crypto/uuid'
+import { createId, type IdType } from '#shared/utils/crypto/uuid'
 
 const idType = ref<IdType>('uuidv4')
 const count = ref(1)

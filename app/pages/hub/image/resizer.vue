@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { ImageEncodeFormat, ImageFilter, ImageFit, ImagePresetId } from '~~/shared/utils/image/types'
-import { imageExtensionFor } from '~~/shared/utils/image/format'
-import { readImageResponse } from '~~/shared/utils/image/response'
+import type { ImageEncodeFormat, ImageFilter, ImageFit, ImagePresetId } from '#shared/utils/image/types'
+import { imageExtensionFor } from '#shared/utils/image/format'
+import { readImageResponse } from '#shared/utils/image/response'
 
 const file = ref<File | null>(null)
 const preset = ref<ImagePresetId | 'custom'>('open-graph')

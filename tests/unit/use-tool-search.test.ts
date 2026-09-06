@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { searchTools } from '../../shared/utils/tools'
+import { searchTools } from '#shared/utils/tools'
 
 describe('searchTools', () => {
   it('returns all tools for an empty query', () => {

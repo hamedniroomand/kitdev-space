@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { describeCron, nextCronRuns } from '../../../server/utils/dev/cron'
+import { describeCron, nextCronRuns } from '#server/utils/dev/cron'
 
 describe('cron helpers', () => {
   it('describes weekday morning job', () => {

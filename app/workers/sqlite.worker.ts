@@ -1,7 +1,7 @@
 import initSqlJs, { type Database } from 'sql.js'
-import type { ColumnInfo, TableInfo, WorkerMessage, WorkerResponse } from '../types/sqlite'
-import { buildUpdateQuery } from '../types/sqlite'
-import { getSampleSqlScript } from '../utils/sqlite/sample-data'
+import type { ColumnInfo, TableInfo, WorkerMessage, WorkerResponse } from '~/types/sqlite'
+import { buildUpdateQuery } from '~/types/sqlite'
+import { getSampleSqlScript } from '~/utils/sqlite/sample-data'
 
 let db: Database | null = null
 let SQL: Awaited<ReturnType<typeof initSqlJs>> | null = null

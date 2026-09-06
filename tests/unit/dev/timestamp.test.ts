@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatRelativeTime, parseTimestamp } from '../../../shared/utils/dev/timestamp'
+import { formatRelativeTime, parseTimestamp } from '#shared/utils/dev/timestamp'
 
 describe('timestamp utilities', () => {
   it('parses timestamps in seconds', () => {

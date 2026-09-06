@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import type { TlsInspectionResult } from '~~/server/utils/network/tls'
-import { useCopyFeedback } from '../../../composables/useCopyFeedback'
+import type { TlsInspectionResult } from '#server/utils/network/tls'
 
 const host = ref('google.com')
 const port = ref(443)

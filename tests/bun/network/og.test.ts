@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { extractOgFromHtml } from '../../../server/utils/network/og'
+import { extractOgFromHtml } from '#server/utils/network/og'
 
 const html = `<!doctype html><html><head>
 <title>Fallback Title</title>

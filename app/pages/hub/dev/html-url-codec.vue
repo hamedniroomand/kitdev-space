@@ -4,7 +4,7 @@ import {
   htmlEntityEncode,
   urlDecode,
   urlEncode
-} from '~~/shared/utils/dev/html-url'
+} from '#shared/utils/dev/html-url'
 
 const input = ref('https://example.com/search?q=hello world&category=dev')
 const output = ref('')

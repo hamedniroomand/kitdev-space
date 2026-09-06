@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { EmailHealthResult, HealthIssue, HealthLevel } from '~~/shared/utils/network/email-health'
-import { DEFAULT_DKIM_SELECTORS } from '~~/shared/utils/network/email-health'
+import type { EmailHealthResult, HealthIssue, HealthLevel } from '#shared/utils/network/email-health'
+import { DEFAULT_DKIM_SELECTORS } from '#shared/utils/network/email-health'
 
 const domain = ref('')
 const dkimSelectors = ref(DEFAULT_DKIM_SELECTORS.join(', '))

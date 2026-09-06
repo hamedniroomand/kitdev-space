@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { formatDnsRecord } from '~~/shared/utils/network/dns'
+import { formatDnsRecord } from '#shared/utils/network/dns'
 
 type DnsRecordType = 'A' | 'AAAA' | 'CNAME' | 'MX' | 'NS' | 'TXT' | 'CAA'
 

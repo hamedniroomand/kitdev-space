@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import type { ComputedRef } from 'vue'
-import type { BreadcrumbCrumb } from '~~/shared/utils/breadcrumbs'
+import type { BreadcrumbCrumb } from '#shared/utils/breadcrumbs'
 
 defineProps<{
   title: string

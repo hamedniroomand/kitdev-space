@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseRdapData, parseRdapEntity } from '../../../server/utils/network/rdap'
+import { parseRdapData, parseRdapEntity } from '#server/utils/network/rdap'
 
 describe('rdap parser', () => {
   it('parses entity vcard fields', () => {

@@ -8,7 +8,7 @@ import {
   type AstLanguage,
   type AstTreeNode,
   type ResolveMode
-} from '../../../shared/utils/dev/ast'
+} from '#shared/utils/dev/ast'
 
 const MAX_INPUT_CHARS = 200_000
 

@@ -1,7 +1,7 @@
-import type { DataFormat } from '../../../shared/utils/data/types'
-import { DataError } from '../../../shared/utils/data/errors'
-import { parseJson } from '../../../shared/utils/data/json'
-import { jsonToTypeScript } from '../../../shared/utils/data/typescript'
+import type { DataFormat } from '#shared/utils/data/types'
+import { DataError } from '#shared/utils/data/errors'
+import { parseJson } from '#shared/utils/data/json'
+import { jsonToTypeScript } from '#shared/utils/data/typescript'
 
 export type BunDataFormat = Exclude<DataFormat, 'typescript'>
 

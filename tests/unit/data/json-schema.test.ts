@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { generateSchemaFromJson, validateJsonSchema } from '../../../shared/utils/data/json-schema'
+import { generateSchemaFromJson, validateJsonSchema } from '#shared/utils/data/json-schema'
 
 describe('validateJsonSchema', () => {
   const sampleSchema = JSON.stringify({

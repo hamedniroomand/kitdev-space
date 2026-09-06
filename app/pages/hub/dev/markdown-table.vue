@@ -1,10 +1,8 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
 import {
   type ColumnAlign,
   formatMarkdownTable
-} from '~~/shared/utils/dev/markdown-table'
-import { useCopyFeedback } from '../../../composables/useCopyFeedback'
+} from '#shared/utils/dev/markdown-table'
 
 const headers = ref<string[]>(['Feature', 'Status', 'Notes'])
 const alignments = ref<ColumnAlign[]>(['left', 'center', 'left'])

@@ -1,4 +1,6 @@
-import type { Tool, ToolCategory } from '../../app/types/tools'
+// Relative, not aliased: nuxt.config.ts imports this module, and its import
+// graph is resolved before Nuxt aliases exist.
+import type { Tool, ToolCategory } from '../types/tools'
 
 export const categoryLabels: Record<ToolCategory, string> = {
   data: 'Data Lab',

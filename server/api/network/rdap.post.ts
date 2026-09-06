@@ -1,5 +1,5 @@
-import { lookupRdap } from '../../utils/network/rdap'
-import { enforceRateLimit } from '../../utils/network/rate-limit'
+import { lookupRdap } from '#server/utils/network/rdap'
+import { enforceRateLimit } from '#server/utils/network/rate-limit'
 
 interface RdapBody {
   query?: string

@@ -3,8 +3,8 @@ import {
   buildCategoryBreadcrumbs,
   buildToolBreadcrumbs,
   hubCategoryPath
-} from '../../shared/utils/breadcrumbs'
-import { getToolById } from '../../shared/utils/tools'
+} from '#shared/utils/breadcrumbs'
+import { getToolById } from '#shared/utils/tools'
 
 describe('breadcrumbs', () => {
   it('builds hub category paths', () => {

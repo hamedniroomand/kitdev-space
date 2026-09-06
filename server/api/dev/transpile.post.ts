@@ -1,6 +1,6 @@
-import type { TranspileLoader } from '../../utils/dev/transpile'
-import { transpileSource } from '../../utils/dev/transpile'
-import { enforceRateLimit } from '../../utils/network/rate-limit'
+import type { TranspileLoader } from '#server/utils/dev/transpile'
+import { transpileSource } from '#server/utils/dev/transpile'
+import { enforceRateLimit } from '#server/utils/network/rate-limit'
 
 interface TranspileBody {
   input?: string

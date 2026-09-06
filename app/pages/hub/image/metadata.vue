@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ImageEncodeFormat } from '~~/shared/utils/image/types'
+import type { ImageEncodeFormat } from '#shared/utils/image/types'
 
 const file = ref<File | null>(null)
 const meta = ref<{ width: number, height: number, format: string, bytes: number } | null>(null)

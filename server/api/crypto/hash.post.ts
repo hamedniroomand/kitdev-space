@@ -1,5 +1,5 @@
-import { isHashAlgorithm, type HashAlgorithm } from '../../../shared/utils/crypto/types'
-import { hashText } from '../../utils/crypto/hash'
+import { isHashAlgorithm, type HashAlgorithm } from '#shared/utils/crypto/types'
+import { hashText } from '#server/utils/crypto/hash'
 
 const MAX_INPUT_CHARS = 500_000
 

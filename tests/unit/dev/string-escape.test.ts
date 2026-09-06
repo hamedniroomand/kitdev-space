@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { escapeString, unescapeString } from '../../../shared/utils/dev/string-escape'
+import { escapeString, unescapeString } from '#shared/utils/dev/string-escape'
 
 describe('string escape utility', () => {
   it('escapes and unescapes JSON strings', () => {

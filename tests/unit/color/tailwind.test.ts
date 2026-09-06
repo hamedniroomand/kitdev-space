@@ -4,7 +4,7 @@ import {
   formatAsTailwindV3,
   formatAsTailwindV4,
   generateTailwindPalette
-} from '../../../shared/utils/color/tailwind'
+} from '#shared/utils/color/tailwind'
 
 describe('generateTailwindPalette', () => {
   it('generates 11 shades from hex color', () => {

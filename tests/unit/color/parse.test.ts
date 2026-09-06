@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseColor, toHslString, toRgbString } from '../../../shared/utils/color/parse'
+import { parseColor, toHslString, toRgbString } from '#shared/utils/color/parse'
 
 describe('parseColor', () => {
   it('parses hex colors', () => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildUpdateQuery, isValidIdentifier } from '../../app/types/sqlite'
+import { buildUpdateQuery, isValidIdentifier } from '~/types/sqlite'
 
 describe('SQLite Utilities', () => {
   it('validates SQL identifiers safely', () => {

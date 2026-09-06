@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { rowsToCsv, rowsToJson } from '../../app/utils/sqlite/export'
+import { rowsToCsv, rowsToJson } from '~/utils/sqlite/export'
 
 describe('SQLite Data Exporters', () => {
   const columns = ['id', 'name', 'price']

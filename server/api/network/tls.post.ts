@@ -1,5 +1,5 @@
-import { inspectTlsCertificate } from '../../utils/network/tls'
-import { enforceRateLimit } from '../../utils/network/rate-limit'
+import { inspectTlsCertificate } from '#server/utils/network/tls'
+import { enforceRateLimit } from '#server/utils/network/rate-limit'
 
 interface TlsBody {
   host?: string

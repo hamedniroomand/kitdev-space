@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { inspectUrl } from '../../../shared/utils/network/url'
+import { inspectUrl } from '#shared/utils/network/url'
 
 describe('inspectUrl', () => {
   it('parses URL parts', () => {

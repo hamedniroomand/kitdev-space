@@ -5,7 +5,7 @@ import {
   buildEmailHealthResult,
   normalizeDkimSelectors,
   parseSpf
-} from '../../../shared/utils/network/email-health'
+} from '#shared/utils/network/email-health'
 
 describe('parseSpf', () => {
   it('reports a missing SPF record', () => {

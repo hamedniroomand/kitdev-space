@@ -1,10 +1,8 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
 import {
   extractPaletteFromPixels,
   type ExtractedColor
-} from '~~/shared/utils/color/palette-extractor'
-import { useCopyFeedback } from '../../../composables/useCopyFeedback'
+} from '#shared/utils/color/palette-extractor'
 
 const imageUrl = ref('')
 const fileName = ref('')

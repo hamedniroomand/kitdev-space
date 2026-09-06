@@ -1,10 +1,8 @@
 <script setup lang="ts">
-import { ref } from 'vue'
 import {
   convertFromBase,
   type NumberBase
-} from '~~/shared/utils/data/number-base'
-import { useCopyFeedback } from '../../../composables/useCopyFeedback'
+} from '#shared/utils/data/number-base'
 
 const decimalVal = ref('255')
 const hexVal = ref('FF')

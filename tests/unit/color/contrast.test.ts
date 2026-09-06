@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { contrastRatio, wcagLevel } from '../../../shared/utils/color/contrast'
+import { contrastRatio, wcagLevel } from '#shared/utils/color/contrast'
 
 describe('contrast', () => {
   it('scores black on white near 21', () => {

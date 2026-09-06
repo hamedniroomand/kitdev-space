@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { IMAGE_PRESETS } from '../../../server/utils/image/presets'
+import { IMAGE_PRESETS } from '#server/utils/image/presets'
 
 describe('IMAGE_PRESETS', () => {
   it('includes open-graph 1200x630', () => {

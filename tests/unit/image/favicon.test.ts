@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildHtmlSnippet, buildIco, buildWebmanifest } from '../../../server/utils/image/favicon'
+import { buildHtmlSnippet, buildIco, buildWebmanifest } from '#server/utils/image/favicon'
 
 describe('favicon utility', () => {
   it('builds a valid webmanifest string', () => {

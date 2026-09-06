@@ -1,11 +1,9 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
 import {
   filterAndSortRows,
   parseToTable,
   type TableRow
-} from '~~/shared/utils/data/table-viewer'
-import { useCopyFeedback } from '../../../composables/useCopyFeedback'
+} from '#shared/utils/data/table-viewer'
 
 const sampleCsv = `id,name,role,department,salary
 1,Alice Smith,Staff Engineer,Platform,165000

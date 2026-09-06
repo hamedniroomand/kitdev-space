@@ -6,7 +6,7 @@ import {
   languageToFilename,
   offsetToPosition,
   sliceSource
-} from '../../../shared/utils/dev/ast'
+} from '#shared/utils/dev/ast'
 
 describe('offsetToPosition', () => {
   it('maps offsets to line and column', () => {

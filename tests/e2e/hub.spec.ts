@@ -1,20 +1,21 @@
 import { expect, test } from '@playwright/test'
+import { gotoHydrated } from './utils'
 
 test('hub shows Tools Hub landing at /hub', async ({ page }) => {
   await page.goto('/hub')
   await expect(page).toHaveURL(/\/hub\/?$/)
   await expect(page.getByRole('heading', { name: 'Tools Hub' })).toBeVisible()
-  await expect(page.getByRole('link', { name: /Data Lab/ })).toBeVisible()
+  await expect(page.getByRole('main').getByRole('link', { name: /Data Lab/ })).toBeVisible()
 })
 
 test('hub category page lists tools', async ({ page }) => {
   await page.goto('/hub/data')
   await expect(page.getByRole('heading', { name: 'Data Lab' })).toBeVisible()
-  await expect(page.getByRole('link', { name: /JSON Formatter/ })).toBeVisible()
+  await expect(page.getByRole('main').getByRole('link', { name: /JSON Formatter/ })).toBeVisible()
 })
 
 test('hub persistent sidebar allows searching and switching tools', async ({ page }) => {
-  await page.goto('/hub/data/json-formatter')
+  await gotoHydrated(page, '/hub/data/json-formatter')
 
   // Sidebar elements
   await expect(page.getByPlaceholder('Search tools...').first()).toBeVisible()
@@ -26,12 +27,12 @@ test('hub persistent sidebar allows searching and switching tools', async ({ pag
 
   // Filter tools by name
   await page.getByPlaceholder('Search tools...').first().fill('UUID')
-  await expect(page.getByRole('link', { name: /UUID Generator/ }).first()).toBeVisible()
+  await expect(page.getByRole('link', { name: /UUID & ID Generator/ }).first()).toBeVisible()
 
   // Switch tool via sidebar
-  await page.getByRole('link', { name: /UUID Generator/ }).first().click()
+  await page.getByRole('link', { name: /UUID & ID Generator/ }).first().click()
   await expect(page).toHaveURL(/\/hub\/crypto\/uuid/)
-  await expect(page.getByRole('heading', { name: 'UUID Generator' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'ID Generator' })).toBeVisible()
 
   // Return to landing page
   await page.getByRole('link', { name: 'Landing Page' }).first().click()
@@ -88,7 +89,7 @@ test('scrolling content area does not scroll the fixed sidebar', async ({ page }
 })
 
 test('clicking on a page from the sidebar scrolls content area to top', async ({ page }) => {
-  await page.goto('/hub/data/json-formatter')
+  await gotoHydrated(page, '/hub/data/json-formatter')
 
   const main = page.locator('main')
   // Scroll down
@@ -100,7 +101,7 @@ test('clicking on a page from the sidebar scrolls content area to top', async ({
   expect(scrolledTop).toBeGreaterThan(0)
 
   // Click on another tool from the sidebar
-  await page.getByRole('link', { name: /UUID Generator/ }).first().click()
+  await page.getByRole('link', { name: /UUID & ID Generator/ }).first().click()
   await expect(page).toHaveURL(/\/hub\/crypto\/uuid/)
 
   // Content area must be scrolled back to top

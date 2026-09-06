@@ -1,6 +1,6 @@
-import type { DataFormat } from '../../../shared/utils/data/types'
-import { DataError } from '../../../shared/utils/data/errors'
-import { transformWithBun } from '../../utils/data/formats'
+import type { DataFormat } from '#shared/utils/data/types'
+import { DataError } from '#shared/utils/data/errors'
+import { transformWithBun } from '#server/utils/data/formats'
 
 const MAX_INPUT_CHARS = 500_000
 

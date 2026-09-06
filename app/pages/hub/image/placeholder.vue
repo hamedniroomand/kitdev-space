@@ -1,10 +1,8 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
 import {
   generatePlaceholderSvg,
   svgToDataUri
-} from '~~/shared/utils/image/placeholder'
-import { useCopyFeedback } from '../../../composables/useCopyFeedback'
+} from '#shared/utils/image/placeholder'
 
 const width = ref(600)
 const height = ref(400)

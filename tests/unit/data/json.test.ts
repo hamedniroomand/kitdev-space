@@ -4,8 +4,8 @@ import {
   minifyJson,
   parseJson,
   validateJson
-} from '../../../shared/utils/data/json'
-import { DataError } from '../../../shared/utils/data/errors'
+} from '#shared/utils/data/json'
+import { DataError } from '#shared/utils/data/errors'
 
 describe('json core', () => {
   it('formats json with 2-space indent', () => {

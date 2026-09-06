@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { generatePlaceholderSvg, svgToDataUri } from '../../../shared/utils/image/placeholder'
+import { generatePlaceholderSvg, svgToDataUri } from '#shared/utils/image/placeholder'
 
 describe('generatePlaceholderSvg', () => {
   it('generates solid color SVG with default dimensions and text', () => {

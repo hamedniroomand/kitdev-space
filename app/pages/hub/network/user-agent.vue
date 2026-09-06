@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
-import { parseUserAgent } from '~~/shared/utils/network/user-agent'
-import { useCopyFeedback } from '../../../composables/useCopyFeedback'
+import { parseUserAgent } from '#shared/utils/network/user-agent'
 
 const input = ref('')
 const { copy } = useCopyFeedback()

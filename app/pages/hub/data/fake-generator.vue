@@ -1,14 +1,12 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
 import {
   type FakeFieldConfig,
   type FieldType,
   formatAsCsv,
   formatAsSqlInserts,
   generateFakeRows
-} from '~~/shared/utils/data/fake-generator'
-import { useCopyFeedback } from '../../../composables/useCopyFeedback'
-import type { ToolEditorLang } from '~~/shared/utils/dev/editor-lang'
+} from '#shared/utils/data/fake-generator'
+import type { ToolEditorLang } from '#shared/utils/dev/editor-lang'
 
 type OutputFormat = 'json' | 'csv' | 'sql'
 

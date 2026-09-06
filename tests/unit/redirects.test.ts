@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { legacyRedirects, resolveLegacyRedirect } from '../../shared/utils/redirects'
+import { legacyRedirects, resolveLegacyRedirect } from '#shared/utils/redirects'
 
 describe('legacy redirects', () => {
   it('contains category roots and renamed tool slugs', () => {

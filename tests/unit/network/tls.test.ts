@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { checkHostMatch, parseSans, parseSubject } from '../../../server/utils/network/tls'
+import { checkHostMatch, parseSans, parseSubject } from '#server/utils/network/tls'
 
 describe('tls utilities', () => {
   it('parses subject information', () => {

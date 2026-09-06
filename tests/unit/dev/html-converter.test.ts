@@ -4,7 +4,7 @@ import {
   convertHtmlToVue,
   parseCssToJsxStyle,
   selfCloseVoidTags
-} from '../../../shared/utils/dev/html-converter'
+} from '#shared/utils/dev/html-converter'
 
 describe('html-converter', () => {
   it('converts class and for attributes to JSX equivalents', () => {

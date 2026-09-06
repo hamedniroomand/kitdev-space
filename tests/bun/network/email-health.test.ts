@@ -1,6 +1,6 @@
 import { describe, expect, it, spyOn } from 'bun:test'
-import { inspectEmailHealth } from '../../../server/utils/network/email-health'
-import * as dns from '../../../server/utils/network/dns'
+import { inspectEmailHealth } from '#server/utils/network/email-health'
+import * as dns from '#server/utils/network/dns'
 
 describe('inspectEmailHealth', () => {
   it('looks up SPF, MX, and DKIM selector records', async () => {

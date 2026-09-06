@@ -1,6 +1,6 @@
-import { readTarEntry } from '../../../utils/dev/archive'
-import { readImageForm } from '../../../utils/image/read-upload'
-import { enforceRateLimit } from '../../../utils/network/rate-limit'
+import { readTarEntry } from '#server/utils/dev/archive'
+import { readImageForm } from '#server/utils/image/read-upload'
+import { enforceRateLimit } from '#server/utils/network/rate-limit'
 
 export default defineEventHandler(async (event) => {
   const ip = getRequestIP(event, { xForwardedFor: true }) ?? 'anonymous'

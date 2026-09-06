@@ -5,7 +5,7 @@ import {
   assertSafeEntryPath,
   listTarEntries,
   readTarEntry
-} from '../../../server/utils/dev/archive'
+} from '#server/utils/dev/archive'
 
 const fixture = new Uint8Array(
   readFileSync(join(import.meta.dir, 'fixtures/sample.tar'))

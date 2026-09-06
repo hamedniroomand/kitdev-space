@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { DiffResult } from '~~/shared/utils/data/diff'
-import { diffTexts, formatUnifiedDiff } from '~~/shared/utils/data/diff'
+import type { DiffResult } from '#shared/utils/data/diff'
+import { diffTexts, formatUnifiedDiff } from '#shared/utils/data/diff'
 
 const WORKER_CHARS = 80_000
 

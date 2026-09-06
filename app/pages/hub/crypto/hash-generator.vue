@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { HashAlgorithm } from '~~/shared/utils/crypto/types'
+import type { HashAlgorithm } from '#shared/utils/crypto/types'
 
 const input = ref('hello')
 const algorithm = ref<HashAlgorithm>('sha256')

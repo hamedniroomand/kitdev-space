@@ -4,7 +4,7 @@ import {
   verifyJwtHs256,
   type JwtDecodeResult,
   type JwtVerifyStatus
-} from '~~/shared/utils/crypto/jwt'
+} from '#shared/utils/crypto/jwt'
 
 const token = ref('')
 const secret = ref('')

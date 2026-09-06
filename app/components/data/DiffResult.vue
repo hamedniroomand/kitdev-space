@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { DiffLine } from '~~/shared/utils/data/diff'
+import type { DiffLine } from '#shared/utils/data/diff'
 
 const props = defineProps<{
   lines: DiffLine[]

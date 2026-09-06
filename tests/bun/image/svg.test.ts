@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'bun:test'
-import { MAX_PIXELS } from '../../../server/utils/image/limits'
+import { MAX_PIXELS } from '#server/utils/image/limits'
 import {
   assertNoExternalSvgResources,
   isSvgBytes,
   rasterizeSvg
-} from '../../../server/utils/image/svg'
+} from '#server/utils/image/svg'
 
 const enc = new TextEncoder()
 

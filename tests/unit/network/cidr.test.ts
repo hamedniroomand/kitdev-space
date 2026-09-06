@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseCidr } from '../../../shared/utils/network/cidr'
+import { parseCidr } from '#shared/utils/network/cidr'
 
 describe('parseCidr', () => {
   it('calculates standard /24 subnet correctly', () => {

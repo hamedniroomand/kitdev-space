@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { ToolCategory } from '~/types/tools'
-import { buildCategoryBreadcrumbs } from '~~/shared/utils/breadcrumbs'
+import type { ToolCategory } from '#shared/types/tools'
+import { buildCategoryBreadcrumbs } from '#shared/utils/breadcrumbs'
 
 const props = defineProps<{
   category: ToolCategory

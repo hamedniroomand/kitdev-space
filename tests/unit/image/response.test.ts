@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { readImageResponse } from '../../../shared/utils/image/response'
-import { imageExtensionFor } from '../../../shared/utils/image/format'
+import { readImageResponse } from '#shared/utils/image/response'
+import { imageExtensionFor } from '#shared/utils/image/format'
 
 describe('imageExtensionFor', () => {
   it('maps jpeg to jpg', () => {

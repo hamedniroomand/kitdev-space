@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatSql, validateSql } from '../../../shared/utils/data/sql'
+import { formatSql, validateSql } from '#shared/utils/data/sql'
 
 describe('formatSql', () => {
   it('formats simple SELECT query with default options', () => {

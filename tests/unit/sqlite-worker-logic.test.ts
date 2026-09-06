@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { getSampleSqlScript } from '../../app/utils/sqlite/sample-data'
+import { getSampleSqlScript } from '~/utils/sqlite/sample-data'
 
 describe('Sample Data Script', () => {
   it('returns valid DDL and DML statements', () => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { useToolPreferences } from '../../app/composables/useToolPreferences'
+import { useToolPreferences } from '~/composables/useToolPreferences'
 
 describe('useToolPreferences', () => {
   it('toggles pinned tools correctly', () => {

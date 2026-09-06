@@ -1,12 +1,10 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
 import {
   generateHmac,
   generateRandomSecret,
   type HmacAlgorithm,
   type HmacEncoding
-} from '~~/shared/utils/crypto/hmac'
-import { useCopyFeedback } from '../../../composables/useCopyFeedback'
+} from '#shared/utils/crypto/hmac'
 
 const message = ref('The quick brown fox jumps over the lazy dog')
 const secret = ref('secret-key-12345')

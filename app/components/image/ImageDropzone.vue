@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { formatBytes } from '~~/shared/utils/format'
+import { formatBytes } from '#shared/utils/format'
 
 const props = defineProps<{
   modelValue: File | null

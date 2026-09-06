@@ -3,7 +3,7 @@ import {
   createDicewarePassphrase,
   estimateDicewareEntropyBits,
   type DicewareCapitalize
-} from '~~/shared/utils/crypto/diceware'
+} from '#shared/utils/crypto/diceware'
 
 const wordCount = ref(6)
 const separator = ref('-')

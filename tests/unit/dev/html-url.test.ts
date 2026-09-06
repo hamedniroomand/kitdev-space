@@ -4,7 +4,7 @@ import {
   htmlEntityEncode,
   urlDecode,
   urlEncode
-} from '../../../shared/utils/dev/html-url'
+} from '#shared/utils/dev/html-url'
 
 describe('html-url codec utilities', () => {
   it('encodes and decodes URL strings', () => {

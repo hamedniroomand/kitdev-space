@@ -3,7 +3,7 @@ import {
   generateLoremParagraphs,
   generateLoremWords,
   generateMockUsers
-} from '../../../shared/utils/data/lorem'
+} from '#shared/utils/data/lorem'
 
 describe('lorem and mock data', () => {
   it('generates the requested word count', () => {

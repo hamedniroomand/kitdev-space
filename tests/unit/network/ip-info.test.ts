@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { analyzeIp } from '../../../shared/utils/network/ip-info'
+import { analyzeIp } from '#shared/utils/network/ip-info'
 
 describe('analyzeIp', () => {
   it('analyzes standard public IPv4 address', () => {

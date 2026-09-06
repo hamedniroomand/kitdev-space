@@ -2,7 +2,7 @@ import type {
   ImageEncodeFormat,
   ImageFilter,
   ImageFit
-} from '../../../shared/utils/image/types'
+} from '#shared/utils/image/types'
 import { ImageError } from './errors'
 import { MAX_PIXELS } from './limits'
 import { isSvgBytes, rasterizeSvg } from './svg'

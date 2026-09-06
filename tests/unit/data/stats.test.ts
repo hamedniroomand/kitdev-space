@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { getTextStats } from '../../../shared/utils/data/stats'
+import { getTextStats } from '#shared/utils/data/stats'
 
 describe('getTextStats', () => {
   it('counts characters, words, lines, and utf-8 bytes', () => {

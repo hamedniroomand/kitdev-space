@@ -4,8 +4,8 @@ import {
   processCode,
   type CodeAction,
   type CodeLanguage
-} from '../../utils/dev/code-format'
-import { enforceRateLimit } from '../../utils/network/rate-limit'
+} from '#server/utils/dev/code-format'
+import { enforceRateLimit } from '#server/utils/network/rate-limit'
 
 interface CodeFormatBody {
   input?: string

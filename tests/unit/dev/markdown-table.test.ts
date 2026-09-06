@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatMarkdownTable } from '../../../shared/utils/dev/markdown-table'
+import { formatMarkdownTable } from '#shared/utils/dev/markdown-table'
 
 describe('formatMarkdownTable', () => {
   it('formats a 2x2 markdown table with alignment', () => {

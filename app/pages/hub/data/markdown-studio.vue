@@ -3,7 +3,7 @@ import {
   generateHtmlDocument,
   getMarkdownStats,
   parseMarkdown
-} from '~~/shared/utils/data/markdown'
+} from '#shared/utils/data/markdown'
 
 const sampleMarkdown = `# Markdown Live Studio
 

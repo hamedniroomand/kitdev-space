@@ -1,6 +1,6 @@
-import { fetchHeaders } from '../../utils/network/http'
-import { enforceRateLimit } from '../../utils/network/rate-limit'
-import { analyzeSecurityHeaders } from '../../../shared/utils/network/security-headers'
+import { fetchHeaders } from '#server/utils/network/http'
+import { enforceRateLimit } from '#server/utils/network/rate-limit'
+import { analyzeSecurityHeaders } from '#shared/utils/network/security-headers'
 
 interface HeadersBody {
   url?: string

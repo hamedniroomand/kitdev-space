@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { extractPaletteFromPixels } from '../../../shared/utils/color/palette-extractor'
+import { extractPaletteFromPixels } from '#shared/utils/color/palette-extractor'
 
 describe('extractPaletteFromPixels', () => {
   it('extracts distinct dominant colors', () => {

@@ -1,14 +1,11 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
 import {
   formatAsCssVars,
   formatAsTailwindV3,
   formatAsTailwindV4,
   generateTailwindPalette,
   type TailwindShade
-} from '~~/shared/utils/color/tailwind'
-import { useCopyFeedback } from '../../../composables/useCopyFeedback'
-import { useToolShortcuts } from '../../../composables/useToolShortcuts'
+} from '#shared/utils/color/tailwind'
 
 const inputColor = ref('#3b82f6')
 const colorName = ref('brand')

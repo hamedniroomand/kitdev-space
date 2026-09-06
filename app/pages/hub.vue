@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { ToolCategory } from '~/types/tools'
-import { categoryLabels, getToolsByCategory } from '~~/shared/utils/tools'
+import type { ToolCategory } from '#shared/types/tools'
+import { categoryLabels, getToolsByCategory } from '#shared/utils/tools'
 
 definePageMeta({
   layout: false

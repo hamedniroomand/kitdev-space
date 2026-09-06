@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { imageExtensionFor } from '~~/shared/utils/image/format'
-import { readImageResponse } from '~~/shared/utils/image/response'
+import { imageExtensionFor } from '#shared/utils/image/format'
+import { readImageResponse } from '#shared/utils/image/response'
 
 type SvgFormat = 'png' | 'webp'
 type SvgScale = 1 | 2 | 4

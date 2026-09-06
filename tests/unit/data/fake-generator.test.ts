@@ -3,7 +3,7 @@ import {
   formatAsCsv,
   formatAsSqlInserts,
   generateFakeRows
-} from '../../../shared/utils/data/fake-generator'
+} from '#shared/utils/data/fake-generator'
 
 describe('generateFakeRows', () => {
   it('generates specified number of rows with seed reproducibility', () => {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { contrastRatio, wcagLevel } from '~~/shared/utils/color/contrast'
+import { contrastRatio, wcagLevel } from '#shared/utils/color/contrast'
 
 const foreground = ref('#ffffff')
 const background = ref('#7c3aed')

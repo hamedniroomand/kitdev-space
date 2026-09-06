@@ -1,9 +1,9 @@
-import type { ImageEncodeFormat, ImageFilter, ImageFit, ImagePresetId } from '../../../shared/utils/image/types'
-import { ImageError } from '../../utils/image/errors'
-import { IMAGE_PRESETS } from '../../utils/image/presets'
-import { resizeImage } from '../../utils/image/pipeline'
-import { readImageForm } from '../../utils/image/read-upload'
-import { enforceRateLimit } from '../../utils/network/rate-limit'
+import type { ImageEncodeFormat, ImageFilter, ImageFit, ImagePresetId } from '#shared/utils/image/types'
+import { ImageError } from '#server/utils/image/errors'
+import { IMAGE_PRESETS } from '#server/utils/image/presets'
+import { resizeImage } from '#server/utils/image/pipeline'
+import { readImageForm } from '#server/utils/image/read-upload'
+import { enforceRateLimit } from '#server/utils/network/rate-limit'
 
 const formats = new Set<ImageEncodeFormat>(['webp', 'avif', 'jpeg', 'png'])
 const fits = new Set<ImageFit>(['inside', 'fill'])

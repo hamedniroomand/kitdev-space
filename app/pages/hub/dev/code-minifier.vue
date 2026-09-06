@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { getTextStats } from '~~/shared/utils/data/stats'
+import { getTextStats } from '#shared/utils/data/stats'
 
 type CodeLanguage = 'javascript' | 'typescript' | 'html' | 'css' | 'json'
 type CodeAction = 'minify' | 'beautify'

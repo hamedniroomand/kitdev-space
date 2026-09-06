@@ -1,6 +1,6 @@
-import { fetchHtmlDocument } from '../../utils/network/fetch-html'
-import { extractOgFromHtml } from '../../utils/network/og'
-import { enforceRateLimit } from '../../utils/network/rate-limit'
+import { fetchHtmlDocument } from '#server/utils/network/fetch-html'
+import { extractOgFromHtml } from '#server/utils/network/og'
+import { enforceRateLimit } from '#server/utils/network/rate-limit'
 
 interface OgPreviewBody {
   url?: string

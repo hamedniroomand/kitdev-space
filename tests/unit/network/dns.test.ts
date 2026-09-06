@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatDnsRecord } from '../../../shared/utils/network/dns'
+import { formatDnsRecord } from '#shared/utils/network/dns'
 
 describe('formatDnsRecord', () => {
   it('returns string records as is', () => {

@@ -1,5 +1,5 @@
-import { walkRedirects } from '../../utils/network/http'
-import { enforceRateLimit } from '../../utils/network/rate-limit'
+import { walkRedirects } from '#server/utils/network/http'
+import { enforceRateLimit } from '#server/utils/network/rate-limit'
 
 interface RedirectBody {
   url?: string

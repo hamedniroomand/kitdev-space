@@ -1,5 +1,5 @@
 import { describe, expect, it, spyOn } from 'bun:test'
-import { lookupDns } from '../../../server/utils/network/dns'
+import { lookupDns } from '#server/utils/network/dns'
 
 type BunDnsResolvers = typeof Bun.dns & {
   resolve: (hostname: string, rrtype?: string) => Promise<unknown>

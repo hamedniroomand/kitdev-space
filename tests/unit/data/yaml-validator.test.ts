@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { validateYaml } from '../../../shared/utils/data/yaml-validator'
+import { validateYaml } from '#shared/utils/data/yaml-validator'
 
 describe('validateYaml', () => {
   it('validates valid yaml correctly', () => {

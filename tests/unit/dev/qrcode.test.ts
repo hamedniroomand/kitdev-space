@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildWifiPayload, buildQrPayload, generateQrSvg } from '../../../shared/utils/dev/qrcode'
+import { buildWifiPayload, buildQrPayload, generateQrSvg } from '#shared/utils/dev/qrcode'
 
 describe('qrcode', () => {
   it('builds wifi payloads', () => {

@@ -1,6 +1,5 @@
-import { ref, shallowRef } from 'vue'
-import type { QueryResult, SqlValue, TableInfo, WorkerResponse } from '../types/sqlite'
-import { rowsToCsv, rowsToJson } from '../utils/sqlite/export'
+import type { QueryResult, SqlValue, TableInfo, WorkerResponse } from '~/types/sqlite'
+import { rowsToCsv, rowsToJson } from '~/utils/sqlite/export'
 
 export function useSqliteStudio() {
   const isReady = ref(false)

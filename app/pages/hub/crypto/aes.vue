@@ -1,8 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { decryptAesGcm, encryptAesGcm } from '~~/shared/utils/crypto/aes'
-import { useCopyFeedback } from '../../../composables/useCopyFeedback'
-import { useToolShortcuts } from '../../../composables/useToolShortcuts'
+import { decryptAesGcm, encryptAesGcm } from '#shared/utils/crypto/aes'
 
 type AesMode = 'encrypt' | 'decrypt'
 

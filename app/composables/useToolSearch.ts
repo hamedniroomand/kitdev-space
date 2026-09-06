@@ -1,4 +1,4 @@
-import { searchTools } from '~~/shared/utils/tools'
+import { searchTools } from '#shared/utils/tools'
 
 export function useToolSearch() {
   const query = ref('')

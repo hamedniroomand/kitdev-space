@@ -6,7 +6,7 @@ import {
   getToolsByCategory,
   searchTools,
   tools
-} from '../../shared/utils/tools'
+} from '#shared/utils/tools'
 
 describe('tool registry', () => {
   it('lists tools for each Phase 1 category', () => {

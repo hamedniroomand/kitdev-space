@@ -1,4 +1,4 @@
-import { isHashAlgorithm, type HashAlgorithm } from '../../../shared/utils/crypto/types'
+import { isHashAlgorithm, type HashAlgorithm } from '#shared/utils/crypto/types'
 
 export type { HashAlgorithm }
 

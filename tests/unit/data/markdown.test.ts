@@ -3,7 +3,7 @@ import {
   generateHtmlDocument,
   getMarkdownStats,
   parseMarkdown
-} from '../../../shared/utils/data/markdown'
+} from '#shared/utils/data/markdown'
 
 describe('parseMarkdown', () => {
   it('converts standard markdown headings and bold text', () => {

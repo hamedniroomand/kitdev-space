@@ -1,11 +1,9 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
 import {
   formatAsCssBackground,
   formatAsHtmlImg,
   parseDataUri
-} from '~~/shared/utils/image/base64'
-import { useCopyFeedback } from '../../../composables/useCopyFeedback'
+} from '#shared/utils/image/base64'
 
 type ToolMode = 'image-to-base64' | 'base64-to-image'
 

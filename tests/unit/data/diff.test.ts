@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { diffTexts, formatUnifiedDiff } from '../../../shared/utils/data/diff'
+import { diffTexts, formatUnifiedDiff } from '#shared/utils/data/diff'
 
 describe('diffTexts', () => {
   it('returns empty result for empty equal texts', () => {

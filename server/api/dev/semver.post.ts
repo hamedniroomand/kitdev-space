@@ -1,5 +1,5 @@
-import { semverBump, semverSatisfies, semverSort } from '../../utils/dev/semver'
-import { enforceRateLimit } from '../../utils/network/rate-limit'
+import { semverBump, semverSatisfies, semverSort } from '#server/utils/dev/semver'
+import { enforceRateLimit } from '#server/utils/network/rate-limit'
 
 type SemverAction = 'satisfies' | 'sort' | 'bump'
 type SemverRelease = 'major' | 'minor' | 'patch'

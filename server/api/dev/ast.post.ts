@@ -6,8 +6,8 @@ import {
   transformSourceAst,
   type AstLanguage,
   type ResolveMode
-} from '../../utils/dev/ast'
-import { enforceRateLimit } from '../../utils/network/rate-limit'
+} from '#server/utils/dev/ast'
+import { enforceRateLimit } from '#server/utils/network/rate-limit'
 
 interface AstBody {
   mode?: string

@@ -6,7 +6,7 @@ import type { Extension } from '@codemirror/state'
 import {
   resolveEditorLanguage,
   type ToolEditorLang
-} from '~~/shared/utils/dev/editor-lang'
+} from '#shared/utils/dev/editor-lang'
 
 const model = defineModel<string>({ default: '' })
 
@@ -42,6 +42,9 @@ const editorHeight = computed(() => `${Math.max(lineCount.value * 1.35, 12)}rem`
 
 const extensions = computed((): Extension[] => {
   const list: Extension[] = [
+    // CodeMirror renders a contenteditable element, which the UFormField
+    // label cannot point to. Name it directly to keep it accessible.
+    EditorView.contentAttributes.of({ 'aria-label': props.label }),
     EditorView.theme({
       '&': {
         height: '100%',

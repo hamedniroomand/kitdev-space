@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { envToJson, jsonToEnv } from '../../../shared/utils/data/env-parser'
+import { envToJson, jsonToEnv } from '#shared/utils/data/env-parser'
 
 describe('env-parser', () => {
   it('parses .env with comments, export prefixes, and quotes into JSON', () => {

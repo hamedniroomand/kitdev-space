@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { createPalette } from '~~/shared/utils/color/palette'
+import { createPalette } from '#shared/utils/color/palette'
 
 const base = ref('#7c3aed')
 const count = ref(5)

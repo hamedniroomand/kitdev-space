@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseUserAgent } from '../../../shared/utils/network/user-agent'
+import { parseUserAgent } from '#shared/utils/network/user-agent'
 
 describe('parseUserAgent', () => {
   it('parses modern Chrome on macOS', () => {

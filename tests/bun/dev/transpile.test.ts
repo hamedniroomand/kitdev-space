@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { transpileSource } from '../../../server/utils/dev/transpile'
+import { transpileSource } from '#server/utils/dev/transpile'
 
 describe('transpileSource', () => {
   it('strips types', () => {

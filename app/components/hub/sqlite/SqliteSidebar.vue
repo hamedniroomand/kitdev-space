@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import type { TableInfo } from '../../../types/sqlite'
+import type { TableInfo } from '~/types/sqlite'
 
 const props = defineProps<{
   tables: TableInfo[]

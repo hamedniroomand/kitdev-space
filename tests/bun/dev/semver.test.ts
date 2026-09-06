@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { semverBump, semverSatisfies, semverSort } from '../../../server/utils/dev/semver'
+import { semverBump, semverSatisfies, semverSort } from '#server/utils/dev/semver'
 
 describe('semver helpers', () => {
   it('checks satisfies', () => {

@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import type { RdapResult } from '~~/server/utils/network/rdap'
-import { useCopyFeedback } from '../../../composables/useCopyFeedback'
+import type { RdapResult } from '#server/utils/network/rdap'
 
 const query = ref('github.com')
 

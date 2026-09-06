@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { decodeBase64, encodeBase64 } from '~~/shared/utils/crypto/base64'
+import { decodeBase64, encodeBase64 } from '#shared/utils/crypto/base64'
 
 const input = ref('KitDev Space')
 const output = ref('')

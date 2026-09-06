@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ToolCategory } from '~/types/tools'
+import type { ToolCategory } from '#shared/types/tools'
 
 const { tools, categoryLabels, getToolsByCategory } = useTools()
 const openSearch = inject<() => void>('openSearch', () => {})

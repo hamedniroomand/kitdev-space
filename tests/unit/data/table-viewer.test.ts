@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { filterAndSortRows, parseToTable } from '../../../shared/utils/data/table-viewer'
+import { filterAndSortRows, parseToTable } from '#shared/utils/data/table-viewer'
 
 describe('parseToTable', () => {
   it('parses CSV input into columns and rows', () => {

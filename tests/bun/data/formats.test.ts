@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { parseWithBun, serializeWithBun, transformWithBun } from '../../../server/utils/data/formats'
+import { parseWithBun, serializeWithBun, transformWithBun } from '#server/utils/data/formats'
 
 describe('bun format engine', () => {
   it('converts json to yaml and back', () => {

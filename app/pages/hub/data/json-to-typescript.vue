@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { parseJson } from '~~/shared/utils/data/json'
-import { jsonToTypeScript } from '~~/shared/utils/data/typescript'
-import { getTextStats } from '~~/shared/utils/data/stats'
+import { parseJson } from '#shared/utils/data/json'
+import { jsonToTypeScript } from '#shared/utils/data/typescript'
+import { getTextStats } from '#shared/utils/data/stats'
 
 const input = ref('{\n  "id": 10,\n  "name": "Hamed",\n  "active": true\n}')
 const output = ref('')

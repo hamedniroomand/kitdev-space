@@ -5,7 +5,7 @@ import {
   createGradientStop,
   formatGradientCss,
   formatGradientDeclaration
-} from '../../../shared/utils/color/gradient'
+} from '#shared/utils/color/gradient'
 
 describe('formatGradientCss', () => {
   it('builds a linear gradient with sorted stops', () => {

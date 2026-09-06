@@ -3,9 +3,9 @@ import {
   CSV_DELIMITERS,
   convertCsvJsonSql,
   type CsvDelimiter
-} from '~~/shared/utils/data/csv'
-import { DataError } from '~~/shared/utils/data/errors'
-import { getTextStats } from '~~/shared/utils/data/stats'
+} from '#shared/utils/data/csv'
+import { DataError } from '#shared/utils/data/errors'
+import { getTextStats } from '#shared/utils/data/stats'
 
 type Mode = 'csv-json' | 'json-csv' | 'csv-sql'
 

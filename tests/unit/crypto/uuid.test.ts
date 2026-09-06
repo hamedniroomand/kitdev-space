@@ -6,7 +6,7 @@ import {
   createUuid,
   createUuidV4,
   createUuidV7
-} from '../../../shared/utils/crypto/uuid'
+} from '#shared/utils/crypto/uuid'
 
 describe('uuid and id generators', () => {
   it('returns uuid v4 shape', () => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { analyzeSecurityHeaders } from '../../../shared/utils/network/security-headers'
+import { analyzeSecurityHeaders } from '#shared/utils/network/security-headers'
 
 describe('analyzeSecurityHeaders', () => {
   it('scores a strong header set highly', () => {

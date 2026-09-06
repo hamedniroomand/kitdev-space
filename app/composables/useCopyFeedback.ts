@@ -1,5 +1,3 @@
-import type { MaybeRefOrGetter } from 'vue'
-
 export type ActionFeedbackTone = 'idle' | 'success' | 'error'
 
 export type FeedbackColor = 'error' | 'primary' | 'secondary' | 'success' | 'info' | 'warning' | 'neutral'

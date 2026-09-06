@@ -3,7 +3,7 @@ import {
   octalToPermissions,
   permissionsToOctal,
   permissionsToSymbolic
-} from '../../../shared/utils/dev/chmod'
+} from '#shared/utils/dev/chmod'
 
 describe('chmod utilities', () => {
   it('converts octal 755 to permissions and symbolic string', () => {

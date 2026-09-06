@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { ImageEncodeFormat } from '~~/shared/utils/image/types'
-import { imageExtensionFor } from '~~/shared/utils/image/format'
-import { readImageResponse } from '~~/shared/utils/image/response'
+import type { ImageEncodeFormat } from '#shared/utils/image/types'
+import { imageExtensionFor } from '#shared/utils/image/format'
+import { readImageResponse } from '#shared/utils/image/response'
 
 const file = ref<File | null>(null)
 const format = ref<ImageEncodeFormat>('webp')

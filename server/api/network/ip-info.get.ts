@@ -1,5 +1,5 @@
 import dns from 'node:dns/promises'
-import { analyzeIp } from '../../../shared/utils/network/ip-info'
+import { analyzeIp } from '#shared/utils/network/ip-info'
 
 export default defineEventHandler(async (event) => {
   const query = getQuery(event)

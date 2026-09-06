@@ -1,11 +1,4 @@
 <script setup lang="ts">
-import { useSqliteStudio } from '../../../composables/useSqliteStudio'
-import SqliteWelcome from '../../../components/hub/sqlite/SqliteWelcome.vue'
-import SqliteSidebar from '../../../components/hub/sqlite/SqliteSidebar.vue'
-import SqliteToolbar from '../../../components/hub/sqlite/SqliteToolbar.vue'
-import SqliteEditor from '../../../components/hub/sqlite/SqliteEditor.vue'
-import SqliteGrid from '../../../components/hub/sqlite/SqliteGrid.vue'
-
 const {
   isReady,
   isExecuting,

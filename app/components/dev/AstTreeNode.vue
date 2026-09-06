@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { AstTreeNode } from '~~/shared/utils/dev/ast'
+import type { AstTreeNode } from '#shared/utils/dev/ast'
 
 const props = defineProps<{
   node: AstTreeNode

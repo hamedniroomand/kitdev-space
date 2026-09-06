@@ -4,7 +4,7 @@ import {
   getToolById,
   getToolsByCategory,
   tools
-} from '~~/shared/utils/tools'
+} from '#shared/utils/tools'
 
 export function useTools() {
   return {

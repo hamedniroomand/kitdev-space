@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { resolveEditorLanguage } from '../../../shared/utils/dev/editor-lang'
+import { resolveEditorLanguage } from '#shared/utils/dev/editor-lang'
 
 describe('resolveEditorLanguage', () => {
   it('returns language support for known languages', () => {

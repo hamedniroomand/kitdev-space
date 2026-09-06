@@ -1,5 +1,5 @@
 import { describe, expect, it, spyOn } from 'bun:test'
-import { assertSafeUrl } from '../../../server/utils/network/ssrf'
+import { assertSafeUrl } from '#server/utils/network/ssrf'
 
 describe('assertSafeUrl', () => {
   it('rejects localhost', async () => {

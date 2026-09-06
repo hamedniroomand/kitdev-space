@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { inspectUnicode } from '../../../shared/utils/data/unicode'
+import { inspectUnicode } from '#shared/utils/data/unicode'
 
 describe('inspectUnicode', () => {
   it('inspects simple ASCII string', () => {

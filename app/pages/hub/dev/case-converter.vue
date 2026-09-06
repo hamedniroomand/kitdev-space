@@ -6,7 +6,7 @@ import {
   toPascalCase,
   toSlug,
   toSnakeCase
-} from '~~/shared/utils/dev/case'
+} from '#shared/utils/dev/case'
 
 const input = ref('hello world developer')
 const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()

@@ -1,7 +1,8 @@
 import { expect, test } from '@playwright/test'
+import { gotoHydrated } from './utils'
 
 test('formats JSON on the JSON Formatter page', async ({ page }) => {
-  await page.goto('/hub/data/json-formatter')
+  await gotoHydrated(page, '/hub/data/json-formatter')
 
   const input = page.getByRole('textbox', { name: 'Input' })
   await expect(input).toBeVisible()
@@ -9,5 +10,5 @@ test('formats JSON on the JSON Formatter page', async ({ page }) => {
   await page.getByRole('button', { name: 'Format' }).click()
 
   await expect(page.getByText('Valid JSON')).toBeVisible({ timeout: 10_000 })
-  await expect(page.getByRole('textbox', { name: 'Output' })).toHaveValue(/"name": "KitDev"/)
+  await expect(page.getByRole('textbox', { name: 'Output' })).toContainText('"name": "KitDev"')
 })

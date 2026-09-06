@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { AstTreeNode } from '~~/shared/utils/dev/ast'
-import { sliceSource } from '~~/shared/utils/dev/ast'
+import type { AstTreeNode } from '#shared/utils/dev/ast'
+import { sliceSource } from '#shared/utils/dev/ast'
 
 type AstLanguage = 'javascript' | 'jsx' | 'typescript' | 'tsx'
 type ResolveMode = 'esm' | 'node'

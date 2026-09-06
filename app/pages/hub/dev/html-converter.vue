@@ -1,11 +1,9 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
 import {
   convertHtmlToJsx,
   convertHtmlToVue
-} from '~~/shared/utils/dev/html-converter'
-import { useCopyFeedback } from '../../../composables/useCopyFeedback'
-import type { ToolEditorLang } from '~~/shared/utils/dev/editor-lang'
+} from '#shared/utils/dev/html-converter'
+import type { ToolEditorLang } from '#shared/utils/dev/editor-lang'
 
 type TargetFormat = 'jsx' | 'vue-template' | 'vue-sfc'
 

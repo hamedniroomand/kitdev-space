@@ -2,7 +2,7 @@
 import {
   convertAllCssUnits,
   type CssUnit
-} from '~~/shared/utils/dev/css-units'
+} from '#shared/utils/dev/css-units'
 
 const inputValue = ref(16)
 const sourceUnit = ref<CssUnit>('px')

@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { onKeyStroke } from '@vueuse/core'
-import { ref, watch } from 'vue'
 
 const props = defineProps<{
   modelValue: string

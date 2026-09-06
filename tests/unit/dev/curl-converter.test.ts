@@ -6,7 +6,7 @@ import {
   toFetch,
   toGoHttp,
   toPythonRequests
-} from '../../../shared/utils/dev/curl-converter'
+} from '#shared/utils/dev/curl-converter'
 
 describe('parseCurl', () => {
   it('parses basic GET command', () => {

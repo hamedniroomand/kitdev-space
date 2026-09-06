@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { generateHmac, generateRandomSecret } from '../../../shared/utils/crypto/hmac'
+import { generateHmac, generateRandomSecret } from '#shared/utils/crypto/hmac'
 
 describe('generateHmac', () => {
   it('generates SHA-256 HMAC in hex correctly', async () => {

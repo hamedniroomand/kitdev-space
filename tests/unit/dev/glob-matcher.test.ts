@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { testGlobMatch } from '../../../shared/utils/dev/glob-matcher'
+import { testGlobMatch } from '#shared/utils/dev/glob-matcher'
 
 describe('glob matcher', () => {
   it('matches simple wildcards', () => {

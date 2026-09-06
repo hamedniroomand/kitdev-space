@@ -3,7 +3,7 @@ import {
   generateLoremParagraphs,
   generateLoremWords,
   generateMockUsers
-} from '~~/shared/utils/data/lorem'
+} from '#shared/utils/data/lorem'
 
 type LoremMode = 'paragraphs' | 'words' | 'users'
 

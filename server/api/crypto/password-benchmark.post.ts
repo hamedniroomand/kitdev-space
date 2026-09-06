@@ -1,6 +1,6 @@
-import type { PasswordAlgorithm } from '../../utils/crypto/password'
-import { benchmarkPassword } from '../../utils/crypto/password'
-import { enforceRateLimit } from '../../utils/network/rate-limit'
+import type { PasswordAlgorithm } from '#server/utils/crypto/password'
+import { benchmarkPassword } from '#server/utils/crypto/password'
+import { enforceRateLimit } from '#server/utils/network/rate-limit'
 
 interface PasswordBody {
   password?: string

@@ -6,8 +6,8 @@ import {
   type SqlDialect,
   type SqlIndent,
   type SqlKeywordCase
-} from '~~/shared/utils/data/sql'
-import { getTextStats } from '~~/shared/utils/data/stats'
+} from '#shared/utils/data/sql'
+import { getTextStats } from '#shared/utils/data/stats'
 
 const SAMPLE_QUERY
   = `select u.id, u.name, u.email, count(o.id) as total_orders, sum(o.total_amount) as total_spent from users u left join orders o on u.id = o.user_id where u.status = 'active' and u.created_at >= '2025-01-01' group by u.id, u.name, u.email having count(o.id) > 0 order by total_spent desc limit 10;`

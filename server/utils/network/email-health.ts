@@ -2,7 +2,7 @@ import {
   buildEmailHealthResult,
   normalizeDkimSelectors,
   type EmailHealthResult
-} from '../../../shared/utils/network/email-health'
+} from '#shared/utils/network/email-health'
 import { lookupDns, normalizeDomain } from './dns'
 
 type MxRecord = { priority: number, exchange: string }

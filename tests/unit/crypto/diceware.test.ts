@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest'
 import {
   createDicewarePassphrase,
   estimateDicewareEntropyBits
-} from '../../../shared/utils/crypto/diceware'
-import { DICEWARE_WORDS } from '../../../shared/utils/crypto/diceware-wordlist'
+} from '#shared/utils/crypto/diceware'
+import { DICEWARE_WORDS } from '#shared/utils/crypto/diceware-wordlist'
 
 describe('diceware', () => {
   it('embeds the EFF large word list', () => {

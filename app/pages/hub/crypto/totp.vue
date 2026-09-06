@@ -1,13 +1,11 @@
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue'
 import { useIntervalFn } from '@vueuse/core'
 import {
   generateTotp,
   generateTotpSecret,
   parseTotpUri,
   type TotpOptions
-} from '~~/shared/utils/crypto/totp'
-import { useCopyFeedback } from '../../../composables/useCopyFeedback'
+} from '#shared/utils/crypto/totp'
 
 const secretInput = ref('JBSWY3DPEHPK3PXP')
 const digits = ref(6)

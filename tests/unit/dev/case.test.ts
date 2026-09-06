@@ -7,7 +7,7 @@ import {
   toPascalCase,
   toSlug,
   toSnakeCase
-} from '../../../shared/utils/dev/case'
+} from '#shared/utils/dev/case'
 
 describe('case utilities', () => {
   it('splits words correctly from various formats', () => {

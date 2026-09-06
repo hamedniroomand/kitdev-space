@@ -4,7 +4,7 @@ import {
   convertCssUnit,
   fromPx,
   toPx
-} from '../../../shared/utils/dev/css-units'
+} from '#shared/utils/dev/css-units'
 
 describe('css units converter', () => {
   it('converts rem to px and back with default 16px root font size', () => {

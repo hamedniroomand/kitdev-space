@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { testRegex, type RegexTestResult } from '~~/shared/utils/dev/regex'
+import { testRegex, type RegexTestResult } from '#shared/utils/dev/regex'
 
 const pattern = ref('\\b(?<word>[A-Z][a-z]+)\\b')
 const sample = ref('Hello world. KitDev Space helps builders ship tools.')

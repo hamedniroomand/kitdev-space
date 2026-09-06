@@ -1,12 +1,10 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
 import {
   type ChmodPermissions,
   octalToPermissions,
   permissionsToOctal,
   permissionsToSymbolic
-} from '~~/shared/utils/dev/chmod'
-import { useCopyFeedback } from '../../../composables/useCopyFeedback'
+} from '#shared/utils/dev/chmod'
 
 const permissions = ref<ChmodPermissions>(octalToPermissions('755'))
 const octalInput = ref('755')

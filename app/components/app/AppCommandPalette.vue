@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { CommandPaletteGroup, CommandPaletteItem } from '@nuxt/ui'
-import type { ToolCategory } from '~/types/tools'
-import { categoryLabels, tools } from '~~/shared/utils/tools'
+import type { ToolCategory } from '#shared/types/tools'
+import { categoryLabels, tools } from '#shared/utils/tools'
 
 const open = defineModel<boolean>('open', { default: false })
 

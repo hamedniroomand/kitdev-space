@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { createPalette } from '../../../shared/utils/color/palette'
+import { createPalette } from '#shared/utils/color/palette'
 
 describe('createPalette', () => {
   it('returns the requested number of hex colors', () => {

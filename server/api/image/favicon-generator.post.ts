@@ -1,7 +1,7 @@
-import { ImageError } from '../../utils/image/errors'
-import { generateFaviconPackage } from '../../utils/image/favicon'
-import { readImageForm } from '../../utils/image/read-upload'
-import { enforceRateLimit } from '../../utils/network/rate-limit'
+import { ImageError } from '#server/utils/image/errors'
+import { generateFaviconPackage } from '#server/utils/image/favicon'
+import { readImageForm } from '#server/utils/image/read-upload'
+import { enforceRateLimit } from '#server/utils/network/rate-limit'
 
 export default defineEventHandler(async (event) => {
   const ip = getRequestIP(event, { xForwardedFor: true }) ?? 'anonymous'

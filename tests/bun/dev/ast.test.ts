@@ -3,7 +3,7 @@ import {
   parseSourceAst,
   resolveSpecifiers,
   transformSourceAst
-} from '../../../server/utils/dev/ast'
+} from '#server/utils/dev/ast'
 
 describe('parseSourceAst', () => {
   it('parses typescript into an ESTree tree', () => {

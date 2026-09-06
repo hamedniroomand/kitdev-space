@@ -1,4 +1,4 @@
-import type { ImagePresetId } from '../../../shared/utils/image/types'
+import type { ImagePresetId } from '#shared/utils/image/types'
 
 export const IMAGE_PRESETS: Record<ImagePresetId, { width: number, height: number, label: string }> = {
   'twitter-banner': { width: 1500, height: 500, label: 'Twitter Banner' },

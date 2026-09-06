@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { createRandomString } from '../../../shared/utils/crypto/random-string'
+import { createRandomString } from '#shared/utils/crypto/random-string'
 
 describe('random string', () => {
   it('respects length and charset', () => {

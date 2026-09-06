@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { SecurityHeaderReport, FindingLevel } from '~~/shared/utils/network/security-headers'
+import type { SecurityHeaderReport, FindingLevel } from '#shared/utils/network/security-headers'
 
 type HeaderInspectResult = {
   status: number

@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import type { FaviconPackageResult } from '~~/server/utils/image/favicon'
-import { useCopyFeedback } from '../../../composables/useCopyFeedback'
+import type { FaviconPackageResult } from '#server/utils/image/favicon'
 
 const file = ref<File | null>(null)
 const previewSrc = ref<string>('')

@@ -5,7 +5,7 @@ import {
   generateTotp,
   generateTotpSecret,
   parseTotpUri
-} from '../../../shared/utils/crypto/totp'
+} from '#shared/utils/crypto/totp'
 
 describe('base32 encode and decode', () => {
   it('encodes and decodes bytes correctly', () => {

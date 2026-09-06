@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { parseCidr } from '~~/shared/utils/network/cidr'
-import { useCopyFeedback } from '../../../composables/useCopyFeedback'
+import { parseCidr } from '#shared/utils/network/cidr'
 
 const input = ref('192.168.1.0/24')
 const { copy } = useCopyFeedback()

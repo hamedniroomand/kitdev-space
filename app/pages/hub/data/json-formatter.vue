@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { formatJson, minifyJson, validateJson } from '~~/shared/utils/data/json'
-import { getTextStats } from '~~/shared/utils/data/stats'
+import { formatJson, minifyJson, validateJson } from '#shared/utils/data/json'
+import { getTextStats } from '#shared/utils/data/stats'
 
 const input = ref('{\n  "name": "KitDev",\n  "ready": true\n}')
 const output = ref('')

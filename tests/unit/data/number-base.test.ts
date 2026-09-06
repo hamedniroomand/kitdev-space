@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { convertFromBase } from '../../../shared/utils/data/number-base'
+import { convertFromBase } from '#shared/utils/data/number-base'
 
 describe('Number Base Converter', () => {
   it('converts decimal 255 across all bases', () => {

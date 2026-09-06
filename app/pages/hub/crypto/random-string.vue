@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { createRandomString, type RandomCharset } from '~~/shared/utils/crypto/random-string'
+import { createRandomString, type RandomCharset } from '#shared/utils/crypto/random-string'
 
 const length = ref(32)
 const charset = ref<RandomCharset>('alnum')

@@ -1,7 +1,6 @@
-import { computed } from 'vue'
 import { useStorage } from '@vueuse/core'
-import { getToolById } from '~~/shared/utils/tools'
-import type { Tool } from '../types/tools'
+import { getToolById } from '#shared/utils/tools'
+import type { Tool } from '#shared/types/tools'
 
 export function useToolPreferences() {
   const pinnedIds = useStorage<string[]>('kitdev:pinned-tools', [])

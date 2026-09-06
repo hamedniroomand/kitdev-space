@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { parseColor, toHslString, toRgbString } from '~~/shared/utils/color/parse'
+import { parseColor, toHslString, toRgbString } from '#shared/utils/color/parse'
 
 const input = ref('#7c3aed')
 const hex = ref('')

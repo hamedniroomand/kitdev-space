@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, mock, spyOn } from 'bun:test'
-import { fetchHeaders, walkRedirects } from '../../../server/utils/network/http'
+import { fetchHeaders, walkRedirects } from '#server/utils/network/http'
 
 function mockResponse(init: {
   status?: number

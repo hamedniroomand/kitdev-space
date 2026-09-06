@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { DataFormat } from '~~/shared/utils/data/types'
-import { getTextStats } from '~~/shared/utils/data/stats'
+import type { DataFormat } from '#shared/utils/data/types'
+import { getTextStats } from '#shared/utils/data/stats'
 
 const props = defineProps<{
   toolId: string

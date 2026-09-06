@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { decodeJwt, verifyJwtHs256 } from '../../../shared/utils/crypto/jwt'
+import { decodeJwt, verifyJwtHs256 } from '#shared/utils/crypto/jwt'
 
 function encodeBase64Url(bytes: Uint8Array): string {
   let binary = ''

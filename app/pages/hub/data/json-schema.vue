@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
 import {
   generateSchemaFromJson,
   validateJsonSchema
-} from '~~/shared/utils/data/json-schema'
+} from '#shared/utils/data/json-schema'
 
 const sampleSchema = JSON.stringify(
   {

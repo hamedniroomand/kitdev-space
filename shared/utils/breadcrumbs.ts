@@ -1,4 +1,4 @@
-import type { Tool, ToolCategory } from '../../app/types/tools'
+import type { Tool, ToolCategory } from '../types/tools'
 import { categoryLabels } from './tools'
 
 export interface BreadcrumbCrumb {

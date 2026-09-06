@@ -3,7 +3,7 @@ import {
   explainRegex,
   normalizeRegexFlags,
   testRegex
-} from '../../../shared/utils/dev/regex'
+} from '#shared/utils/dev/regex'
 
 describe('normalizeRegexFlags', () => {
   it('keeps unique supported flags', () => {

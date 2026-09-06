@@ -1,5 +1,5 @@
-import { describeCron, nextCronRuns } from '../../utils/dev/cron'
-import { enforceRateLimit } from '../../utils/network/rate-limit'
+import { describeCron, nextCronRuns } from '#server/utils/dev/cron'
+import { enforceRateLimit } from '#server/utils/network/rate-limit'
 
 interface CronBody {
   expression?: string

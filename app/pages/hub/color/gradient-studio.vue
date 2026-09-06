@@ -6,7 +6,7 @@ import {
   formatGradientDeclaration,
   type GradientStop,
   type GradientType
-} from '~~/shared/utils/color/gradient'
+} from '#shared/utils/color/gradient'
 
 const type = ref<GradientType>('linear')
 const angle = ref(135)

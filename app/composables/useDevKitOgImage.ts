@@ -1,5 +1,3 @@
-import type { MaybeRefOrGetter } from 'vue'
-
 export interface KitDevOgImageProps {
   title: MaybeRefOrGetter<string>
   description: MaybeRefOrGetter<string>
