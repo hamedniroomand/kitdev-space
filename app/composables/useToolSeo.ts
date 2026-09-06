@@ -15,7 +15,15 @@ export function useToolSeo(toolId: string) {
   // `RelatedTools` reads this to suggest other tools in the same category.
   provide('currentTool', computed(() => tool))
 
+  // The shared composables read this to name the tool of an analytics event.
+  const currentToolId = useCurrentToolId()
+  currentToolId.value = tool.id
+
+  const { track } = useToolAnalytics()
+
   onMounted(() => {
+    track('tool_open', { tool: tool.id })
+
     try {
       const { recordRecent } = useToolPreferences()
       recordRecent(tool.id)

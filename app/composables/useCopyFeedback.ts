@@ -81,6 +81,7 @@ export function useCopyFeedback(durationMs = DEFAULT_DURATION_MS) {
   })
   const activeKey = ref<string | null>(null)
   const failed = ref(false)
+  const { track } = useToolAnalytics()
   const { start, stop } = useTimeoutFn(() => {
     activeKey.value = null
     failed.value = false
@@ -97,6 +98,7 @@ export function useCopyFeedback(durationMs = DEFAULT_DURATION_MS) {
     failed.value = !copied.value
     stop()
     start()
+    track(copied.value ? 'tool_copy' : 'tool_error')
     return copied.value
   }
 

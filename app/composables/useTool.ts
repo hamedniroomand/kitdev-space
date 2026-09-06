@@ -25,6 +25,7 @@ export function useTool<TResult = string>() {
   const status = ref<ToolRunStatus>('idle')
   const error = ref<string | null>(null)
   const result = ref<TResult | null>(null)
+  const { track } = useToolAnalytics()
 
   async function run(task: () => Promise<TResult> | TResult, fallbackMessage = DEFAULT_ERROR_MESSAGE) {
     status.value = 'processing'
@@ -33,9 +34,11 @@ export function useTool<TResult = string>() {
     try {
       result.value = await task()
       status.value = 'success'
+      track('tool_execute')
     } catch (cause) {
       error.value = toErrorMessage(cause, fallbackMessage)
       status.value = 'error'
+      track('tool_error')
     }
   }
 

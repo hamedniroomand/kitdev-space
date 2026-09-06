@@ -7,7 +7,7 @@ export type ToolAnalyticsEvent
     | 'tool_search'
 
 export interface ToolAnalyticsPayload {
-  tool: string
+  tool?: string
 }
 
 /**
@@ -21,9 +21,18 @@ export function useToolAnalytics() {
   const gaId = String(config.public.googleAnalyticsId || '')
   const analytics = gaId ? useScriptGoogleAnalytics() : null
 
-  function track(event: ToolAnalyticsEvent, payload: ToolAnalyticsPayload) {
+  const currentToolId = useCurrentToolId()
+
+  function track(event: ToolAnalyticsEvent, payload: ToolAnalyticsPayload = {}) {
+    const tool = payload.tool ?? currentToolId.value
+
+    // An event with no tool cannot be read, so do not send it.
+    if (!tool) {
+      return
+    }
+
     if (import.meta.dev) {
-      console.debug('[analytics]', event, payload)
+      console.debug('[analytics]', event, tool)
     }
 
     if (!analytics) {
@@ -31,7 +40,7 @@ export function useToolAnalytics() {
     }
 
     analytics.proxy.gtag('event', event, {
-      tool_id: payload.tool
+      tool_id: tool
     })
   }
 

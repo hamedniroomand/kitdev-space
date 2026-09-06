@@ -1,9 +1,12 @@
 export function useDownload() {
+  const { track } = useToolAnalytics()
+
   function downloadUrl(filename: string, url: string) {
     const anchor = document.createElement('a')
     anchor.href = url
     anchor.download = filename
     anchor.click()
+    track('tool_download')
   }
 
   function downloadBlob(filename: string, blob: Blob) {
