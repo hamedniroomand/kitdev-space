@@ -49,8 +49,9 @@ export default defineNuxtConfig({
     '@nuxt/scripts',
     '@nuxtjs/seo',
     '@vueuse/nuxt',
+    'nuxt-llms',
     '@vercel/speed-insights',
-    'nuxt-llms'
+    '@vercel/analytics'
   ],
 
   devtools: {
