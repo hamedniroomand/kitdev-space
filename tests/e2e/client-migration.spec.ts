@@ -1,77 +1,99 @@
 import { expect, test } from '@playwright/test'
-import { gotoHydrated } from './utils'
+import { fillCodeMirror, gotoHydrated } from './utils'
 
 /**
  * These tests prove that the migrated work stays in the browser.
  *
  * A unit test cannot prove it. Vitest runs in the node environment, so an
- * import of `csso` there says nothing about the client bundle. Only a real
- * page load shows that the lazy chunk arrives and that no request reaches the
- * server route.
+ * import of `confbox` or `csso` there says nothing about the client bundle.
+ * Only a real page load shows that the lazy chunk arrives and that no request
+ * reaches the server route. The per-tool specs check the output; these check
+ * that the network stays quiet.
  */
 
-test('minifies CSS in the browser, with no server call', async ({ page }) => {
-  const serverCalls: string[] = []
+/** Records every request to a server route, so a test can assert none happened. */
+function watchRoute(page: import('@playwright/test').Page, route: string): string[] {
+  const calls: string[] = []
   page.on('request', (request) => {
-    if (request.url().includes('/api/dev/code-format')) {
-      serverCalls.push(request.url())
+    if (request.url().includes(route)) {
+      calls.push(request.url())
     }
   })
+  return calls
+}
 
+test('converts JSON to YAML in the browser, with no server call', async ({ page }) => {
+  const calls = watchRoute(page, '/api/data/transform')
+  await gotoHydrated(page, '/hub/data/converters/json-yaml')
+
+  await fillCodeMirror(page, 'Input', '{"name":"KitDev","ready":true}')
+  await page.getByRole('button', { name: 'Convert' }).click()
+
+  await expect(page.getByRole('textbox', { name: 'Output' })).toContainText('name: KitDev')
+  expect(calls).toEqual([])
+})
+
+test('converts JSON to TOML in the browser, with no server call', async ({ page }) => {
+  const calls = watchRoute(page, '/api/data/transform')
+  await gotoHydrated(page, '/hub/data/converters/json-toml')
+
+  await fillCodeMirror(page, 'Input', '{"name":"KitDev","meta":{"version":1}}')
+  await page.getByRole('button', { name: 'Convert' }).click()
+
+  const output = page.getByRole('textbox', { name: 'Output' })
+  await expect(output).toContainText('name = "KitDev"')
+  await expect(output).toContainText('[meta]')
+  expect(calls).toEqual([])
+})
+
+test('still sends XML to the server, because Bun parses it there', async ({ page }) => {
+  const calls = watchRoute(page, '/api/data/transform')
+  await gotoHydrated(page, '/hub/data/converters/json-xml')
+
+  await fillCodeMirror(page, 'Input', '{"name":"KitDev"}')
+  await page.getByRole('button', { name: 'Convert' }).click()
+
+  await expect(page.getByRole('textbox', { name: 'Output' })).toContainText('KitDev')
+  expect(calls.length).toBeGreaterThan(0)
+})
+
+test('minifies CSS in the browser, with no server call', async ({ page }) => {
+  const calls = watchRoute(page, '/api/dev/code-format')
   await gotoHydrated(page, '/hub/dev/code-minifier')
 
   await page.getByRole('combobox').first().click()
   await page.getByRole('option', { name: 'CSS', exact: true }).click()
-  await page.getByRole('textbox', { name: 'Input' }).fill('body { color: red; }')
+  await fillCodeMirror(page, 'Input', 'body { color: red; }')
   await page.getByRole('button', { name: 'Minify' }).click()
 
-  await expect(page.getByRole('textbox', { name: 'Output' })).toContainText('body{color:red}', { timeout: 10_000 })
-  expect(serverCalls).toEqual([])
-})
-
-test('converts JSON to YAML in the browser, with no server call', async ({ page }) => {
-  const serverCalls: string[] = []
-  page.on('request', (request) => {
-    if (request.url().includes('/api/data/transform')) {
-      serverCalls.push(request.url())
-    }
-  })
-
-  await gotoHydrated(page, '/hub/data/converters/json-yaml')
-
-  await page.getByRole('textbox', { name: 'Input' }).fill('{"name":"KitDev","ready":true}')
-  await page.getByRole('button', { name: 'Convert' }).click()
-
-  await expect(page.getByRole('textbox', { name: 'Output' })).toContainText('name: KitDev', { timeout: 10_000 })
-  expect(serverCalls).toEqual([])
+  await expect(page.getByRole('textbox', { name: 'Output' })).toContainText('body{color:red}')
+  expect(calls).toEqual([])
 })
 
 test('bumps a semver version in the browser, with no server call', async ({ page }) => {
-  const serverCalls: string[] = []
-  page.on('request', (request) => {
-    if (request.url().includes('/api/dev/semver')) {
-      serverCalls.push(request.url())
-    }
-  })
-
+  const calls = watchRoute(page, '/api/dev/semver')
   await gotoHydrated(page, '/hub/dev/semver')
 
   await page.getByRole('combobox').first().click()
   await page.getByRole('option', { name: 'Bump version', exact: true }).click()
   await page.getByRole('button', { name: 'Run' }).click()
 
-  await expect(page.getByRole('textbox', { name: 'Result' })).toContainText('1.2.4', { timeout: 10_000 })
-  expect(serverCalls).toEqual([])
+  await expect(page.getByRole('textbox', { name: 'Result' })).toContainText('1.2.4')
+  expect(calls).toEqual([])
 })
 
+/**
+ * `useImage` calls `new Image()`, so it must not run during the server render.
+ * The page uses `immediate: false` and relies on the watcher inside `useImage`.
+ * A wrong fix here shows no error — it shows no preview.
+ */
 test('shows image dimensions from the client-only preview', async ({ page }) => {
   const pageErrors: string[] = []
   page.on('pageerror', error => pageErrors.push(error.message))
 
   await gotoHydrated(page, '/hub/image/base64')
-
   await page.getByRole('button', { name: 'Load Sample' }).click()
 
-  await expect(page.getByText('32 × 32 px')).toBeVisible({ timeout: 10_000 })
+  await expect(page.getByText('32 × 32 px')).toBeVisible()
   expect(pageErrors).toEqual([])
 })

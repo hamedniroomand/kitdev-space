@@ -43,6 +43,7 @@
     "@vueuse/nuxt": "14.4.0",
     "ajv": "^8.20.0",
     "ajv-formats": "^3.0.1",
+    "confbox": "^0.3.1",
     "csso": "^5.0.5",
     "fflate": "^0.8.3",
     "marked": "^18.0.11",

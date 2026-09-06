@@ -3,17 +3,20 @@ import { canConvertInBrowser, convertInBrowser } from '#shared/utils/data/conver
 import { DataError } from '#shared/utils/data/errors'
 
 describe('canConvertInBrowser', () => {
-  it('accepts the json and yaml pairs', () => {
-    expect(canConvertInBrowser('json', 'yaml')).toBe(true)
-    expect(canConvertInBrowser('yaml', 'json')).toBe(true)
-    expect(canConvertInBrowser('json', 'json')).toBe(true)
-    expect(canConvertInBrowser('yaml', 'typescript')).toBe(true)
+  it('accepts json, yaml, toml, and json5 in both directions', () => {
+    for (const from of ['json', 'yaml', 'toml', 'json5'] as const) {
+      for (const to of ['json', 'yaml', 'toml', 'json5', 'typescript'] as const) {
+        expect(canConvertInBrowser(from, to), `${from} to ${to}`).toBe(true)
+      }
+    }
   })
 
-  it('rejects the formats that need the server', () => {
-    expect(canConvertInBrowser('json', 'toml')).toBe(false)
+  it('rejects xml, which needs Bun on the server', () => {
+    expect(canConvertInBrowser('json', 'xml')).toBe(false)
     expect(canConvertInBrowser('xml', 'json')).toBe(false)
-    expect(canConvertInBrowser('json5', 'json')).toBe(false)
+  })
+
+  it('rejects typescript as an input', () => {
     expect(canConvertInBrowser('typescript', 'json')).toBe(false)
   })
 })
@@ -39,9 +42,35 @@ describe('convertInBrowser', () => {
     expect(JSON.parse(json)).toEqual({ name: 'KitDev', ready: true })
   })
 
+  it('converts json to toml and back', () => {
+    const toml = convertInBrowser('{"name":"KitDev","meta":{"version":1}}', 'json', 'toml')
+    expect(toml).toContain('name = "KitDev"')
+    expect(toml).toContain('[meta]')
+    expect(JSON.parse(convertInBrowser(toml, 'toml', 'json')))
+      .toEqual({ name: 'KitDev', meta: { version: 1 } })
+  })
+
+  it('converts json to json5 and back', () => {
+    const json5 = convertInBrowser('{"name":"KitDev"}', 'json', 'json5')
+    expect(json5).toContain('name')
+    expect(JSON.parse(convertInBrowser(json5, 'json5', 'json'))).toEqual({ name: 'KitDev' })
+  })
+
+  it('reads the json5 forms that strict json rejects', () => {
+    const json = convertInBrowser('{ /* note */ name: \'KitDev\', ready: true, }', 'json5', 'json')
+    expect(JSON.parse(json)).toEqual({ name: 'KitDev', ready: true })
+  })
+
   it('converts yaml to typescript', () => {
-    expect(convertInBrowser('name: KitDev\n', 'yaml', 'typescript'))
-      .toContain('interface Root')
+    expect(convertInBrowser('name: KitDev\n', 'yaml', 'typescript')).toContain('interface Root')
+  })
+
+  it('ends every text format with one newline', () => {
+    for (const to of ['yaml', 'toml', 'json5'] as const) {
+      const out = convertInBrowser('{"name":"KitDev"}', 'json', to)
+      expect(out.endsWith('\n'), to).toBe(true)
+      expect(out.endsWith('\n\n'), to).toBe(false)
+    }
   })
 
   it('rejects empty input', () => {
@@ -52,7 +81,15 @@ describe('convertInBrowser', () => {
     expect(() => convertInBrowser('a: [1, 2\n', 'yaml', 'json')).toThrow(/Invalid YAML/)
   })
 
-  it('refuses a format that needs the server', () => {
-    expect(() => convertInBrowser('{"a":1}', 'json', 'toml')).toThrow(/server/)
+  it('reports invalid toml', () => {
+    expect(() => convertInBrowser('name = = 1', 'toml', 'json')).toThrow(/Invalid TOML/)
+  })
+
+  it('refuses an array root for toml', () => {
+    expect(() => convertInBrowser('[1,2]', 'json', 'toml')).toThrow(/object root/)
+  })
+
+  it('refuses xml, which needs the server', () => {
+    expect(() => convertInBrowser('{"a":1}', 'json', 'xml')).toThrow(/server/)
   })
 })

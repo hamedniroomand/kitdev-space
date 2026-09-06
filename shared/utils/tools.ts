@@ -62,8 +62,8 @@ export const tools: Tool[] = [
     icon: 'i-lucide-arrow-left-right',
     keywords: ['json', 'toml', 'convert'],
     route: '/hub/data/converters/json-toml',
-    clientOnly: false,
-    serverRequired: true,
+    clientOnly: true,
+    serverRequired: false,
     status: 'available',
     seoTitle: 'JSON to TOML Converter'
   },

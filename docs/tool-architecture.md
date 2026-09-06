@@ -25,12 +25,18 @@ A server route is not correct when a platform API covers the work:
 | JPEG, PNG, and WebP encode    | `OffscreenCanvas.convertToBlob`    |
 | Gzip and deflate              | `fflate`, an installed dependency  |
 | Read image metadata           | `DataView` over the file bytes     |
-| YAML parse and write          | `yaml`, an installed dependency    |
+| YAML, TOML, and JSON5         | `confbox`, an installed dependency |
+| YAML with error positions     | `yaml`, an installed dependency    |
 | CSS minify                    | `csso`, an installed dependency    |
 | JSON format and minify        | `shared/utils/data/json.ts`        |
 
 Web Crypto has no MD5, no CRC32, and no xxHash. A tool that offers those keeps a server path for
 them.
+
+`confbox` reads and writes YAML, TOML, JSONC, and JSON5. It has no dependency of its own and it
+tree-shakes, so the formats together cost about the bundle bytes of a YAML-only library. Use it for
+a converter. Use `yaml` only when a tool must show the line and the column of each error, because
+`confbox` stops at the first one. XML has no browser equal, so `/api/data/transform` keeps it.
 
 A tool with a browser path and a server path keeps one source. Put the browser code in
 `shared/utils/`, export a `can*InBrowser()` guard next to it, and let the server route import the
@@ -88,6 +94,8 @@ An event carries the tool id only. Never send the input or the output of a user.
 
 A tool page uses `ToolPage`. It gives the frame, the heading, and the related tools.
 
+- Render an editor as `<LazyToolEditor hydrate-on-idle>`. The CodeMirror chunk then loads after
+  the main thread is free, and the prerendered HTML stays visible in the meantime.
 - Show an error with `ToolError`. Do not use `alert()`.
 - Use the theme colors. Do not use raw `red-*`, `gray-*`, or other palette classes.
 - Fill the `docs` slot. A page with no prose gives a search engine nothing to rank.

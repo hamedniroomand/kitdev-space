@@ -27,6 +27,8 @@ const { downloadText } = useDownload()
 
 useToolSeo(props.toolId)
 
+const runsInBrowser = computed(() => canConvertInBrowser(from.value, to.value))
+
 const inputLang = computed(() => (from.value === 'json' || from.value === 'json5' ? 'json' : 'text'))
 const outputLang = computed(() => (to.value === 'json' || to.value === 'json5' ? 'json' : 'text'))
 
@@ -90,9 +92,11 @@ defineShortcuts({
     <UAlert
       color="info"
       variant="subtle"
-      icon="i-lucide-server"
-      title="Processed with Bun"
-      description="This tool runs on the server. The browser cannot use Bun format APIs."
+      :icon="runsInBrowser ? 'i-lucide-shield-check' : 'i-lucide-server'"
+      title="Where the work runs"
+      :description="runsInBrowser
+        ? 'This conversion runs in your browser. Your data stays on the page.'
+        : 'This conversion runs on the server, because XML needs a Bun parser.'"
       class="mb-2"
     />
 
@@ -102,8 +106,9 @@ defineShortcuts({
       :formats="formats"
     />
 
-    <ToolEditor
+    <LazyToolEditor
       v-model="input"
+      hydrate-on-idle
       label="Input"
       placeholder="Paste data here"
       :lang="inputLang"
@@ -146,8 +151,9 @@ defineShortcuts({
       :message="error"
     />
 
-    <ToolEditor
+    <LazyToolEditor
       v-model="output"
+      hydrate-on-idle
       label="Output"
       readonly
       placeholder="Result appears here"
@@ -170,7 +176,8 @@ defineShortcuts({
             {{ paragraph }}
           </p>
           <p>
-            The server uses Bun native parsers. No extra format packages are required.
+            JSON, YAML, TOML, and JSON5 convert in your browser. XML goes to the server,
+            because it needs a Bun parser.
           </p>
         </div>
         <RelatedTools
