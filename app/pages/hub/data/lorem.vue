@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import {
   generateLoremParagraphs,
-  generateLoremWords,
-  generateMockUsers
+  generateLoremWords
 } from '#shared/utils/data/lorem'
 
-type LoremMode = 'paragraphs' | 'words' | 'users'
+type LoremMode = 'paragraphs' | 'words'
 
 const mode = ref<LoremMode>('paragraphs')
 const count = ref(3)
@@ -16,21 +15,16 @@ const { downloadText } = useDownload()
 
 const modeItems = [
   { label: 'Paragraphs', value: 'paragraphs' },
-  { label: 'Words', value: 'words' },
-  { label: 'User profiles (JSON)', value: 'users' }
+  { label: 'Words', value: 'words' }
 ]
 
 useToolSeo('lorem')
 
 async function generate() {
   await run(() => {
-    if (mode.value === 'paragraphs') {
-      return generateLoremParagraphs(count.value)
-    }
-    if (mode.value === 'words') {
-      return generateLoremWords(count.value)
-    }
-    return JSON.stringify(generateMockUsers(count.value), null, 2)
+    return mode.value === 'paragraphs'
+      ? generateLoremParagraphs(count.value)
+      : generateLoremWords(count.value)
   })
   if (status.value === 'success' && result.value !== null) {
     output.value = result.value
@@ -48,9 +42,7 @@ function handleDownload() {
   if (!output.value) {
     return
   }
-  const filename = mode.value === 'users' ? 'users.json' : 'lorem.txt'
-  const mime = mode.value === 'users' ? 'application/json' : 'text/plain'
-  downloadText(filename, output.value, mime)
+  downloadText('lorem.txt', output.value, 'text/plain')
 }
 
 function handleClear() {
@@ -59,13 +51,7 @@ function handleClear() {
 }
 
 watch(mode, (next) => {
-  if (next === 'paragraphs') {
-    count.value = 3
-  } else if (next === 'words') {
-    count.value = 50
-  } else {
-    count.value = 5
-  }
+  count.value = next === 'paragraphs' ? 3 : 50
 })
 
 defineShortcuts({
@@ -94,12 +80,12 @@ defineShortcuts({
           class="w-56"
         />
       </UFormField>
-      <UFormField :label="mode === 'users' ? 'Profiles' : mode === 'words' ? 'Words' : 'Paragraphs'">
+      <UFormField :label="mode === 'words' ? 'Words' : 'Paragraphs'">
         <UInput
           v-model.number="count"
           type="number"
           :min="1"
-          :max="mode === 'users' ? 100 : mode === 'words' ? 5000 : 50"
+          :max="mode === 'words' ? 5000 : 50"
           class="w-28"
         />
       </UFormField>
@@ -162,8 +148,8 @@ defineShortcuts({
         <RelatedTools
           class="mt-8"
           :items="[
-            { label: 'JSON Formatter', to: '/hub/data/json-formatter' },
-            { label: 'JSON → TypeScript', to: '/hub/data/json-to-typescript' }
+            { label: 'Fake Data Generator', to: '/hub/data/fake-generator' },
+            { label: 'Text Statistics', to: '/hub/data/text-stats' }
           ]"
         />
       </ToolDocs>
