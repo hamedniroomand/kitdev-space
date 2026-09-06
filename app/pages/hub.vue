@@ -123,7 +123,7 @@ watch(() => route.path, () => {
             @click="openSearch"
           />
         </UTooltip>
-        <UColorModeButton />
+        <AppColorModeMenu />
       </div>
     </header>
 

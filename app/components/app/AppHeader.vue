@@ -24,7 +24,7 @@ const openSearch = inject<() => void>('openSearch', () => {})
           @click="openSearch"
         />
       </UTooltip>
-      <UColorModeButton />
+      <AppColorModeMenu />
     </template>
   </UHeader>
 </template>

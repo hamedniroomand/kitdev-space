@@ -117,7 +117,9 @@ export default defineNuxtConfig({
   },
 
   colorMode: {
-    preference: 'dark'
+    // Follow the system setting. Dark is the fallback when the browser gives none.
+    preference: 'system',
+    fallback: 'dark'
   },
 
   runtimeConfig: {
