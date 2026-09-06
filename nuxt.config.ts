@@ -97,8 +97,7 @@ export default defineNuxtConfig({
     '@nuxtjs/seo',
     '@vueuse/nuxt',
     'nuxt-llms',
-    '@vercel/speed-insights',
-    '@vercel/analytics',
+    ...(nitroPreset() === 'vercel' ? ['@vercel/speed-insights', '@vercel/analytics'] : []),
   ],
 
   components: [{ path: '~/components', pathPrefix: false }],
