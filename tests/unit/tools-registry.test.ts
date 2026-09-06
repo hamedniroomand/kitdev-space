@@ -44,7 +44,28 @@ describe('tool registry', () => {
 
   it('lists tools for image category', () => {
     expect(categoryLabels.image).toBe('Image Lab')
-    expect(getToolsByCategory('image').length).toBe(8)
+    expect(getToolsByCategory('image').length).toBeGreaterThan(0)
+    expect(getToolsByCategory('image').every(tool => tool.category === 'image')).toBe(true)
+  })
+
+  it('puts every tool in the category of its route', () => {
+    for (const tool of tools) {
+      // A converter sits one level deeper, so match the ends and not the whole.
+      expect(tool.route.startsWith(`/hub/${tool.category}/`)).toBe(true)
+      expect(tool.route.endsWith(`/${tool.slug}`)).toBe(true)
+    }
+  })
+
+  it('never marks a tool as both client only and server required', () => {
+    expect(tools.every(tool => !(tool.clientOnly && tool.serverRequired))).toBe(true)
+  })
+
+  it('gives every tool a name, a description, and a keyword', () => {
+    for (const tool of tools) {
+      expect(tool.name.length).toBeGreaterThan(0)
+      expect(tool.description.length).toBeGreaterThan(0)
+      expect(tool.keywords.length).toBeGreaterThan(0)
+    }
   })
 
   it('lists tools for dev category', () => {

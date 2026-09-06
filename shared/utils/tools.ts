@@ -248,7 +248,7 @@ export const tools: Tool[] = [
   },
   {
     id: 'fake-data',
-    slug: 'fake-data',
+    slug: 'fake-generator',
     name: 'Fake Data Generator',
     description: 'Generate realistic mock datasets with custom schema fields in JSON, CSV, or SQL formats.',
     category: 'data',
@@ -966,7 +966,7 @@ export const tools: Tool[] = [
   },
   {
     id: 'curl-to-code',
-    slug: 'curl-to-code',
+    slug: 'curl-converter',
     name: 'cURL to Code Converter',
     description: 'Convert cURL commands to Fetch, Axios, Python Requests, and Go.',
     category: 'dev',
