@@ -63,3 +63,15 @@ test('bumps a semver version in the browser, with no server call', async ({ page
   await expect(page.getByRole('textbox', { name: 'Result' })).toContainText('1.2.4', { timeout: 10_000 })
   expect(serverCalls).toEqual([])
 })
+
+test('shows image dimensions from the client-only preview', async ({ page }) => {
+  const pageErrors: string[] = []
+  page.on('pageerror', error => pageErrors.push(error.message))
+
+  await gotoHydrated(page, '/hub/image/base64')
+
+  await page.getByRole('button', { name: 'Load Sample' }).click()
+
+  await expect(page.getByText('32 × 32 px')).toBeVisible({ timeout: 10_000 })
+  expect(pageErrors).toEqual([])
+})

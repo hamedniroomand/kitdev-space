@@ -19,7 +19,13 @@ const base64Input = ref('')
 const { copy, label, color, icon } = useCopyFeedback()
 const { base64: dataUri } = useBase64(() => file.value ?? undefined)
 const { downloadUrl } = useDownload()
-const { state: previewImage } = useImageElement(() => ({ src: dataUri.value }))
+// `useImage` calls `new Image()`, which the server does not have. `immediate: false`
+// keeps it out of the server render. Its own watcher runs it when `dataUri` changes,
+// so the preview still loads, and no request goes out while there is no file.
+const { state: previewImage } = useImageElement(
+  () => ({ src: dataUri.value }),
+  { immediate: false }
+)
 
 const fileName = computed(() => file.value?.name ?? '')
 const fileSize = computed(() => file.value?.size ?? 0)
