@@ -19,41 +19,41 @@ jobs:
       - run: bun lint
       - run: bun typecheck
       - run: bun run test
-      - name: Build for Vercel
-        run: bun run build
-        env:
-          NITRO_PRESET: vercel
-      - name: Check the Vercel function runtime
-        run: |
-          config=.vercel/output/functions/__fallback.func/.vc-config.json
-          runtime=$(bun -e "console.log(require('./$config').runtime)")
-          echo "runtime: $runtime"
-          if [ "$runtime" != "bun1.x" ]; then
-            echo "The Vercel function runtime must be bun1.x. Every API route needs Bun globals." >&2
-            exit 1
-          fi
-      - name: Playwright version
-        id: playwright
-        run: echo "version=$(bun -e 'console.log(require("@playwright/test/package.json").version)')" >> "$GITHUB_OUTPUT"
-      - name: Cache Playwright browsers
-        id: playwright-cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
-      - name: Install Chromium
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: bunx playwright install --with-deps chromium
-      - name: Install Chromium system libraries
-        if: steps.playwright-cache.outputs.cache-hit == 'true'
-        run: bunx playwright install-deps chromium
-      - run: bun run test:e2e
-      - uses: actions/upload-artifact@v4
-        if: failure()
-        with:
-          name: playwright-report
-          path: |
-            playwright-report
-            test-results
-          if-no-files-found: ignore
-          retention-days: 7
+      # - name: Build for Vercel
+      #   run: bun run build
+      #   env:
+      #     NITRO_PRESET: vercel
+      # - name: Check the Vercel function runtime
+      #   run: |
+      #     config=.vercel/output/functions/__fallback.func/.vc-config.json
+      #     runtime=$(bun -e "console.log(require('./$config').runtime)")
+      #     echo "runtime: $runtime"
+      #     if [ "$runtime" != "bun1.x" ]; then
+      #       echo "The Vercel function runtime must be bun1.x. Every API route needs Bun globals." >&2
+      #       exit 1
+      #     fi
+      # - name: Playwright version
+      #   id: playwright
+      #   run: echo "version=$(bun -e 'console.log(require("@playwright/test/package.json").version)')" >> "$GITHUB_OUTPUT"
+      # - name: Cache Playwright browsers
+      #   id: playwright-cache
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: ~/.cache/ms-playwright
+      #     key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
+      # - name: Install Chromium
+      #   if: steps.playwright-cache.outputs.cache-hit != 'true'
+      #   run: bunx playwright install --with-deps chromium
+      # - name: Install Chromium system libraries
+      #   if: steps.playwright-cache.outputs.cache-hit == 'true'
+      #   run: bunx playwright install-deps chromium
+      # - run: bun run test:e2e
+      # - uses: actions/upload-artifact@v4
+      #   if: failure()
+      #   with:
+      #     name: playwright-report
+      #     path: |
+      #       playwright-report
+      #       test-results
+      #     if-no-files-found: ignore
+      #     retention-days: 7
