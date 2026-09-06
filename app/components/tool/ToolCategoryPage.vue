@@ -15,7 +15,7 @@ useSeoMeta({
   description: () => `${label.value} tools in KitDev Space.`,
   ogTitle: () => label.value,
   ogDescription: () => `${label.value} tools in KitDev Space.`,
-  twitterCard: 'summary_large_image'
+  ogType: 'website'
 })
 
 useKitDevOgImage({
@@ -26,18 +26,18 @@ useKitDevOgImage({
 </script>
 
 <template>
-  <UContainer class="py-16 sm:py-24">
-    <p class="font-mono text-xs font-semibold tracking-widest text-primary uppercase">
+  <UContainer class="py-16 sm:py-20 max-w-4xl">
+    <p class="font-mono text-xs font-semibold tracking-widest text-primary uppercase leading-[1.2]">
       Category
     </p>
-    <h1 class="mt-3 text-3xl font-medium tracking-tight text-highlighted">
+    <h1 class="mt-3 text-3xl sm:text-4xl font-medium tracking-tight text-highlighted">
       {{ label }}
     </h1>
-    <p class="mt-2 text-base leading-relaxed text-muted">
+    <p class="mt-2 text-base leading-[1.6] text-muted">
       Choose a tool to start.
     </p>
 
-    <ul class="mt-10 divide-y divide-default overflow-hidden rounded-md border border-default bg-elevated/60">
+    <ul class="mt-10 divide-y divide-default overflow-hidden rounded-[16px] border border-default bg-elevated shadow-xs">
       <li
         v-for="tool in categoryTools"
         :key="tool.id"

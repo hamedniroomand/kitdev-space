@@ -12,7 +12,7 @@ export function useToolSeo(toolId: string) {
     description: tool.description,
     ogTitle: tool.name,
     ogDescription: tool.description,
-    twitterCard: 'summary_large_image'
+    ogType: 'website'
   })
 
   useKitDevOgImage({

@@ -11,7 +11,7 @@ useSeoMeta({
   description: 'Developer tools for people who build things.',
   ogTitle: 'KitDev Space',
   ogDescription: 'Developer tools for people who build things.',
-  twitterCard: 'summary_large_image'
+  ogType: 'website'
 })
 
 useKitDevOgImage({
@@ -23,16 +23,16 @@ useKitDevOgImage({
 
 <template>
   <div>
-    <UContainer class="py-16 sm:py-24">
+    <UContainer class="py-16 sm:py-20">
       <!-- Hero Section -->
       <div class="mx-auto max-w-3xl text-center">
-        <p class="font-mono text-xs font-semibold tracking-widest text-primary uppercase">
+        <p class="font-mono text-xs font-semibold tracking-widest text-primary uppercase leading-[1.2]">
           KitDev Space
         </p>
-        <h1 class="mt-4 text-4xl font-medium tracking-tight text-highlighted sm:text-5xl lg:text-6xl lg:leading-[1.04]">
+        <h1 class="mt-4 text-4xl font-medium tracking-tight text-highlighted sm:text-5xl lg:text-[64px] lg:leading-[1.04]">
           Tools for people who build.
         </h1>
-        <p class="mt-4 text-base leading-relaxed text-muted sm:text-lg">
+        <p class="mt-4 text-base leading-[1.6] text-muted sm:text-lg">
           Fast, free developer tools in a unified workspace.
         </p>
 
@@ -43,6 +43,7 @@ useKitDevOgImage({
             variant="subtle"
             size="md"
             icon="i-lucide-shield-check"
+            class="rounded-full border border-default bg-elevated/80 text-muted"
           >
             Zero Tracking
           </UBadge>
@@ -52,6 +53,7 @@ useKitDevOgImage({
             variant="subtle"
             size="md"
             icon="i-lucide-user-x"
+            class="rounded-full border border-default bg-elevated/80 text-muted"
           >
             No Accounts
           </UBadge>
@@ -61,6 +63,7 @@ useKitDevOgImage({
             variant="subtle"
             size="md"
             icon="i-lucide-zap"
+            class="rounded-full border border-default bg-elevated/80 text-muted"
           >
             Sub-10ms Native Speed
           </UBadge>
@@ -73,7 +76,7 @@ useKitDevOgImage({
             size="xl"
             color="primary"
             icon="i-lucide-layout-grid"
-            class="font-medium px-6 shadow-sm"
+            class="rounded-[8px] font-medium px-6 shadow-xs hover:bg-brand-700 transition-colors"
           >
             Open All Utilities in Hub
           </UButton>
@@ -81,7 +84,7 @@ useKitDevOgImage({
             color="neutral"
             variant="outline"
             size="xl"
-            class="font-normal"
+            class="rounded-[8px] font-normal border-default bg-elevated hover:bg-accented text-highlighted"
             @click="openSearch"
           >
             <span class="text-muted">Search tools...</span>
@@ -100,7 +103,7 @@ useKitDevOgImage({
             <h2 class="text-xl font-medium text-highlighted">
               Tool Categories
             </h2>
-            <p class="text-sm text-muted">
+            <p class="text-sm text-muted leading-[1.6]">
               Select any tool to open the workspace.
             </p>
           </div>
@@ -110,16 +113,17 @@ useKitDevOgImage({
             variant="ghost"
             icon="i-lucide-arrow-right"
             trailing
+            class="rounded-[8px]"
           >
             Open Hub
           </UButton>
         </div>
 
-        <div class="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+        <div class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           <section
             v-for="category in categories"
             :key="category"
-            class="flex flex-col justify-between rounded-md border border-default bg-elevated/40 p-6 transition-colors hover:border-primary/50"
+            class="flex flex-col justify-between rounded-[16px] border border-default bg-elevated p-6 shadow-xs transition-all hover:border-primary/50 hover:shadow-sm"
           >
             <div>
               <div class="flex items-center justify-between gap-3">
