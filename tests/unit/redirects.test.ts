@@ -29,7 +29,7 @@ describe('legacy redirects', () => {
     expect(resolveLegacyRedirect('/hub/dev/html-url-codec')).toBe('/hub/dev/encoder')
     expect(resolveLegacyRedirect('/hub/dev/string-escape')).toBe('/hub/dev/encoder')
     expect(resolveLegacyRedirect('/image/converter')).toBe('/hub/image/converter')
-    expect(resolveLegacyRedirect('/hub/image/exif-stripper')).toBe('/hub/image/metadata')
+    expect(resolveLegacyRedirect('/hub/image/exif-stripper')).toBe('/hub/image/exif-remover')
     expect(resolveLegacyRedirect('/hub/image/transform')).toBe('/hub/image/studio')
     expect(resolveLegacyRedirect('/hub/network/http-headers')).toBe('/hub/network/http-inspector')
     expect(resolveLegacyRedirect('/hub/network/security-headers')).toBe('/hub/network/http-inspector')

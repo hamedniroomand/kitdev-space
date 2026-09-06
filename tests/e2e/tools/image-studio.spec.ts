@@ -23,7 +23,8 @@ test('serves the resizer and the converter as variant pages', async ({ page }) =
   await expect(page.getByRole('heading', { name: 'Image Cropper', level: 1 })).toBeVisible()
 })
 
-test('redirects the exif stripper to the metadata inspector', async ({ page }) => {
+test('redirects the exif stripper to the exif remover', async ({ page }) => {
   await page.goto('/hub/image/exif-stripper')
-  await expect(page).toHaveURL(/\/hub\/image\/metadata$/)
+  await expect(page).toHaveURL(/\/hub\/image\/exif-remover$/)
+  await expect(page.getByRole('heading', { name: 'Remove EXIF Data from a Photo', level: 1 })).toBeVisible()
 })

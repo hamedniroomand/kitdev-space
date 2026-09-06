@@ -627,12 +627,12 @@ export const tools: Tool[] = [
     id: 'image-metadata',
     slug: 'metadata',
     name: 'EXIF & Metadata Inspector',
-    description: 'Read EXIF, GPS, and text metadata in an image, then remove it with no re-encode.',
+    description: 'Read EXIF, GPS, and text metadata in an image, then remove it in the browser or on the server.',
     category: 'image',
     icon: 'i-lucide-file-search',
     keywords: ['image', 'exif', 'metadata', 'privacy', 'gps', 'strip', 'clean', 'stripper', 'iptc', 'xmp'],
     route: '/hub/image/metadata',
-    clientOnly: true,
+    clientOnly: false,
     serverRequired: false,
     status: 'available',
     seoTitle: 'EXIF Viewer and Remover'
@@ -1025,6 +1025,21 @@ export const tools: Tool[] = [
     serverRequired: true,
     status: 'available',
     variantOf: 'image-studio'
+  },
+  {
+    id: 'exif-remover',
+    slug: 'exif-remover',
+    name: 'EXIF Remover',
+    description: 'Remove EXIF, GPS, and other metadata from a photo. Byte for byte in the browser, or by a re-encode on the server.',
+    category: 'image',
+    icon: 'i-lucide-shield-off',
+    keywords: ['exif', 'remove', 'strip', 'metadata', 'gps', 'location', 'privacy', 'photo', 'clean'],
+    route: '/hub/image/exif-remover',
+    clientOnly: false,
+    serverRequired: false,
+    status: 'available',
+    seoTitle: 'Remove EXIF Data from a Photo',
+    variantOf: 'image-metadata'
   },
   {
     id: 'html-to-jsx',

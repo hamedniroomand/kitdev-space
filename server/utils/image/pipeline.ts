@@ -57,10 +57,10 @@ export function mapImageCause(cause: unknown, fallback: string): ImageError {
   return new ImageError(fallback, { cause })
 }
 
-function applyFormat(img: Bun.Image, format: ImageEncodeFormat, quality = 80) {
+function applyFormat(img: Bun.Image, format: ImageEncodeFormat, quality = 80, lossless = false) {
   switch (format) {
     case 'webp':
-      return img.webp({ quality })
+      return img.webp({ quality, lossless })
     case 'avif':
       return img.avif({ quality })
     case 'jpeg':
@@ -158,6 +158,8 @@ export interface ImageProcessOptions {
   grayscale?: boolean
   format?: ImageEncodeFormat
   quality?: number
+  /** WebP only. Keeps every pixel, at the cost of a larger file. */
+  lossless?: boolean
 }
 
 /**
@@ -213,7 +215,7 @@ export async function processImage(
       img = img.modulate({ saturation: 0 })
     }
 
-    return await finish(applyFormat(img, format, quality), format)
+    return await finish(applyFormat(img, format, quality, opts.lossless), format)
   } catch (cause) {
     throw mapImageCause(
       cause,
