@@ -132,37 +132,26 @@ watch(() => route.path, () => {
       <!-- Desktop Sidebar -->
       <aside class="hidden w-72 shrink-0 border-r border-default bg-elevated/20 lg:flex lg:flex-col h-full overflow-hidden">
         <div class="shrink-0 p-3 border-b border-default">
-          <UInput
-            v-model="searchQuery"
+          <UButton
+            color="neutral"
+            variant="outline"
             icon="i-lucide-search"
-            placeholder="Search tools..."
-            class="w-full"
+            aria-label="Search tools"
+            class="w-full rounded-control font-normal border-default bg-elevated hover:bg-accented text-highlighted"
+            @click="openSearch"
           >
-            <template #trailing>
-              <UButton
-                v-if="searchQuery"
-                color="neutral"
-                variant="link"
-                size="xs"
-                icon="i-lucide-x"
-                aria-label="Clear search"
-                @click="searchQuery = ''"
+            <span class="text-muted">Search tools...</span>
+            <span class="flex items-center gap-0.5 ml-auto">
+              <UKbd
+                value="meta"
+                size="sm"
               />
-              <span
-                v-else
-                class="flex items-center gap-0.5 text-muted"
-              >
-                <UKbd
-                  value="meta"
-                  size="sm"
-                />
-                <UKbd
-                  value="K"
-                  size="sm"
-                />
-              </span>
-            </template>
-          </UInput>
+              <UKbd
+                value="K"
+                size="sm"
+              />
+            </span>
+          </UButton>
         </div>
 
         <nav class="flex-1 overflow-y-auto p-3 space-y-6">

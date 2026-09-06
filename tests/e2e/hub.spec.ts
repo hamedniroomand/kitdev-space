@@ -18,21 +18,22 @@ test('hub persistent sidebar allows searching and switching tools', async ({ pag
   await gotoHydrated(page, '/hub/data/json-formatter')
 
   // Sidebar elements
-  await expect(page.getByPlaceholder('Search tools...').first()).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Search tools' }).first()).toBeVisible()
   await expect(page.getByText('Data Lab').first()).toBeVisible()
   await expect(page.getByText('Network Lab').first()).toBeVisible()
 
   // Execution badges
   await expect(page.getByText('🔒 Client').first()).toBeVisible()
 
-  // Filter tools by name
-  await page.getByPlaceholder('Search tools...').first().fill('UUID')
-  await expect(page.getByRole('link', { name: /ID & Secret Generator/ }).first()).toBeVisible()
+  // The sidebar search button opens the command palette
+  await page.getByRole('button', { name: 'Search tools' }).first().click()
+  await expect(page.getByPlaceholder('Search tools...')).toBeVisible()
 
-  // Switch tool via sidebar
-  await page.getByRole('link', { name: /ID & Secret Generator/ }).first().click()
+  // Filter tools by name, then switch tool from the palette
+  await page.getByPlaceholder('Search tools...').fill('ID & Secret')
+  await page.getByRole('option', { name: /ID & Secret Generator/ }).first().click()
   await expect(page).toHaveURL(/\/hub\/crypto\/generator/)
-  await expect(page.getByRole('heading', { name: 'ID & Secret Generator', level: 1 })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Random ID and Secret Generator', level: 1 })).toBeVisible()
 
   // Return to landing page
   await page.getByRole('link', { name: 'Landing Page' }).first().click()
