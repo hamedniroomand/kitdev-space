@@ -1,6 +1,15 @@
 import { isIPv4, isIPv6 } from 'node:net'
 
 const MAX_DOMAIN_LENGTH = 253
+
+/** IANA publishes the RDAP server of every TLD in this file. It changes rarely. */
+const DNS_BOOTSTRAP_URL = 'https://data.iana.org/rdap/dns.json'
+const BOOTSTRAP_TTL_MS = 24 * 60 * 60 * 1000
+const BOOTSTRAP_TIMEOUT_MS = 3000
+/** rdap.org redirects to the right server, but it is a shared volunteer service. Use it as the fallback. */
+const FALLBACK_BASE = 'https://rdap.org/'
+const REQUEST_TIMEOUT_MS = 4500
+const REQUEST_ATTEMPTS = 2
 const DOMAIN_NAME = /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+$/
 
 function assertDomainName(value: string): void {
@@ -152,6 +161,81 @@ export function parseRdapData(data: Record<string, unknown>, query: string, type
   }
 }
 
+/** One entry of an IANA bootstrap file: a list of TLDs and a list of base URLs. */
+export type RdapBootstrapService = [string[], string[]]
+
+/**
+ * Finds the RDAP base URL for a domain in a bootstrap table. The match is on
+ * the longest suffix, so a two-label entry wins over its parent TLD. HTTPS
+ * bases come first. Returns null when the table has no entry for the domain.
+ */
+export function resolveRdapBase(domain: string, services: RdapBootstrapService[]): string | null {
+  const labels = domain.toLowerCase().split('.')
+  for (let start = 0; start < labels.length; start++) {
+    const suffix = labels.slice(start).join('.')
+    for (const [tlds, urls] of services) {
+      if (!tlds.some(tld => tld.toLowerCase() === suffix)) {
+        continue
+      }
+      const base = urls.find(url => url.startsWith('https://')) ?? urls[0]
+      if (base) {
+        return base.endsWith('/') ? base : `${base}/`
+      }
+    }
+  }
+  return null
+}
+
+let bootstrapCache: { services: RdapBootstrapService[], fetchedAt: number } | null = null
+
+/** Loads the DNS bootstrap table once a day. Returns null when IANA does not answer in time. */
+async function loadDnsBootstrap(): Promise<RdapBootstrapService[] | null> {
+  if (bootstrapCache && Date.now() - bootstrapCache.fetchedAt < BOOTSTRAP_TTL_MS) {
+    return bootstrapCache.services
+  }
+  try {
+    const res = await fetch(DNS_BOOTSTRAP_URL, {
+      headers: { Accept: 'application/json' },
+      signal: AbortSignal.timeout(BOOTSTRAP_TIMEOUT_MS)
+    })
+    if (!res.ok) {
+      return bootstrapCache?.services ?? null
+    }
+    const data = await res.json() as { services?: RdapBootstrapService[] }
+    if (!Array.isArray(data.services)) {
+      return bootstrapCache?.services ?? null
+    }
+    bootstrapCache = { services: data.services, fetchedAt: Date.now() }
+    return data.services
+  } catch {
+    // A stale table is better than no table.
+    return bootstrapCache?.services ?? null
+  }
+}
+
+function isTimeout(cause: unknown): boolean {
+  return cause instanceof Error && (cause.name === 'AbortError' || cause.name === 'TimeoutError')
+}
+
+/** Fetches one RDAP URL. A timeout gets one more attempt, because registries stall now and then. */
+async function fetchRdap(url: string): Promise<Response> {
+  let lastCause: unknown
+  for (let attempt = 0; attempt < REQUEST_ATTEMPTS; attempt++) {
+    try {
+      return await fetch(url, {
+        headers: { Accept: 'application/rdap+json, application/json' },
+        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS)
+      })
+    } catch (cause) {
+      lastCause = cause
+      if (!isTimeout(cause)) {
+        throw cause
+      }
+    }
+  }
+  throw lastCause
+}
+
 export async function lookupRdap(rawQuery: string): Promise<RdapResult> {
   const clean = rawQuery.trim().toLowerCase().replace(/^https?:\/\//i, '').replace(/\/.*$/, '').split(':')[0]!
   if (!clean) {
@@ -161,29 +245,21 @@ export async function lookupRdap(rawQuery: string): Promise<RdapResult> {
   const isIp = isIPv4(clean) || isIPv6(clean)
   const type: 'domain' | 'ip' = isIp ? 'ip' : 'domain'
 
-  // The fetch target below is always rdap.org, so an SSRF check on `clean`
-  // would guard a host this function never contacts. Validate the shape of the
-  // query instead, so only a domain name or an IP address reaches the URL.
+  // Every fetch target is an RDAP server from the IANA table or rdap.org, so an
+  // SSRF check on `clean` would guard a host this function never contacts.
+  // Validate the shape of the query instead, so only a domain name or an IP
+  // address reaches the URL.
   if (!isIp) {
     assertDomainName(clean)
   }
 
-  const targetUrl = isIp
-    ? `https://rdap.org/ip/${encodeURIComponent(clean)}`
-    : `https://rdap.org/domain/${encodeURIComponent(clean)}`
-
-  const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), 7000)
+  // A domain goes to the authoritative server in one hop. An IP keeps the
+  // rdap.org redirector, because the IP bootstrap needs a CIDR match.
+  const base = isIp ? null : resolveRdapBase(clean, (await loadDnsBootstrap()) ?? [])
+  const targetUrl = `${base ?? FALLBACK_BASE}${type}/${encodeURIComponent(clean)}`
 
   try {
-    const res = await fetch(targetUrl, {
-      headers: {
-        Accept: 'application/rdap+json, application/json'
-      },
-      signal: controller.signal
-    })
-
-    clearTimeout(timer)
+    const res = await fetchRdap(targetUrl)
 
     if (res.status === 404) {
       return {
@@ -203,9 +279,9 @@ export async function lookupRdap(rawQuery: string): Promise<RdapResult> {
     const data = await res.json() as Record<string, unknown>
     return parseRdapData(data, clean, type)
   } catch (cause) {
-    clearTimeout(timer)
-    if (cause instanceof Error && cause.name === 'AbortError') {
-      throw new Error(`RDAP request for ${clean} timed out.`, { cause })
+    if (isTimeout(cause)) {
+      const server = new URL(targetUrl).host
+      throw new Error(`RDAP request for ${clean} timed out.\n\nThe server ${server} did not answer twice. Try again in a moment.`, { cause })
     }
     throw cause
   }

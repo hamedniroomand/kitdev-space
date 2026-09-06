@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { parseRdapData, parseRdapEntity } from '#server/utils/network/rdap'
+import type { RdapBootstrapService } from '#server/utils/network/rdap'
+import { parseRdapData, parseRdapEntity, resolveRdapBase } from '#server/utils/network/rdap'
 
 describe('rdap parser', () => {
   it('parses entity vcard fields', () => {
@@ -60,5 +61,29 @@ describe('rdap parser', () => {
     expect(result.dnssec).toBe(true)
     expect(result.registrar?.name).toBe('RESERVED-Internet Assigned Numbers Authority')
     expect(result.status).toContain('clientDeleteProhibited')
+  })
+
+  const bootstrap: RdapBootstrapService[] = [
+    [['dev', 'app', 'page'], ['https://pubapi.registry.google/rdap/']],
+    [['com', 'net'], ['http://rdap.verisign.com/com/v1/', 'https://rdap.verisign.com/com/v1/']],
+    [['co.uk'], ['https://rdap.nominet.uk/uk/']]
+  ]
+
+  it('resolves the authoritative server of a domain from the bootstrap table', () => {
+    expect(resolveRdapBase('niroomand.dev', bootstrap)).toBe('https://pubapi.registry.google/rdap/')
+    expect(resolveRdapBase('KitDev.Space.APP', bootstrap)).toBe('https://pubapi.registry.google/rdap/')
+  })
+
+  it('prefers https and adds the trailing slash', () => {
+    expect(resolveRdapBase('example.com', [[['com'], ['http://a.example/', 'https://b.example']]])).toBe('https://b.example/')
+  })
+
+  it('matches the longest suffix first', () => {
+    expect(resolveRdapBase('example.co.uk', bootstrap)).toBe('https://rdap.nominet.uk/uk/')
+  })
+
+  it('returns null for a TLD that is not in the table', () => {
+    expect(resolveRdapBase('example.space', bootstrap)).toBeNull()
+    expect(resolveRdapBase('localhost', bootstrap)).toBeNull()
   })
 })
