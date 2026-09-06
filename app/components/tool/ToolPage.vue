@@ -23,7 +23,7 @@ defineProps<{
       />
     </slot>
 
-    <div class="space-y-6 rounded-[16px] border border-default bg-elevated p-6 shadow-xs">
+    <div class="space-y-6 rounded-card border border-default bg-elevated p-6 shadow-xs">
       <slot />
     </div>
 

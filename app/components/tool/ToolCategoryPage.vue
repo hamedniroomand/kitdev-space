@@ -51,7 +51,7 @@ useSchemaOrg([
       Choose a tool to start.
     </p>
 
-    <ul class="mt-10 divide-y divide-default overflow-hidden rounded-[16px] border border-default bg-elevated shadow-xs">
+    <ul class="mt-10 divide-y divide-default overflow-hidden rounded-card border border-default bg-elevated shadow-xs">
       <li
         v-for="tool in categoryTools"
         :key="tool.id"

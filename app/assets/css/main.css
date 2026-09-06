@@ -5,23 +5,20 @@
   --font-sans: 'Inter', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
-  /* PaperFlow brand palette — primary #E65C00 / accent #FFB380 */
-  --color-brand-50: #fff9f5;
-  --color-brand-100: #feeee3;
-  --color-brand-200: #fed5bf;
-  --color-brand-300: #ffb380;
-  --color-brand-400: #f9883e;
-  --color-brand-500: #f06a14;
-  --color-brand-600: #e65c00;
-  --color-brand-700: #b84300;
-  --color-brand-800: #933604;
-  --color-brand-900: #772d08;
-  --color-brand-950: #421502;
+  /* Unified Architecture Forge brand scale — primary #818CF8 (brand-400) */
+  --color-brand-50: #eef2ff;
+  --color-brand-100: #e0e7ff;
+  --color-brand-200: #c7d2fe;
+  --color-brand-300: #a5b4fc;
+  --color-brand-400: #818cf8;
+  --color-brand-500: #6366f1;
+  --color-brand-600: #4f46e5;
+  --color-brand-700: #4338ca;
+  --color-brand-800: #3730a3;
+  --color-brand-900: #312e81;
+  --color-brand-950: #1e1b4b;
 
-  --color-paper-bg: #fdfbf7;
-  --color-paper-surface: #f7f4eb;
-  --color-paper-accent: #ffb380;
-  --color-paper-border: #e5e7eb;
+  --color-forge-accent: #06b6d4;
 
   --radius-card: 16px;
   --radius-control: 8px;
@@ -30,48 +27,134 @@
 
 :root {
   --ui-radius: 0.5rem;
-  --ui-primary: #b84300;
+  --ui-primary: #4f46e5;
 
-  /* PaperFlow surface & background */
-  --ui-bg: #fdfbf7;
-  --ui-bg-muted: #f7f4eb;
-  --ui-bg-elevated: #f7f4eb;
-  --ui-bg-accented: #efece1;
-  --ui-bg-inverted: #111827;
+  /* Ambient field strength. The wash reads heavier on a white ground. */
+  --forge-glow-primary: 13%;
+  --forge-glow-accent: 8%;
 
-  /* PaperFlow text */
-  --ui-text-dimmed: #9ca3af;
-  --ui-text-muted: #4b5563;
-  --ui-text-toned: #374151;
-  --ui-text: #1f2937;
-  --ui-text-highlighted: #111827;
-  --ui-text-inverted: #fdfbf7;
+  /* Forge surface & background — light */
+  --ui-bg: #ffffff;
+  --ui-bg-muted: #fafafa;
+  --ui-bg-elevated: #fafafa;
+  --ui-bg-accented: #f4f4f5;
+  --ui-bg-inverted: #18181b;
 
-  /* PaperFlow borders */
-  --ui-border: #e5e7eb;
-  --ui-border-muted: #ece9df;
-  --ui-border-accented: #d1d5db;
-  --ui-border-inverted: #111827;
+  /* Forge text — light */
+  --ui-text-dimmed: #a1a1aa;
+  --ui-text-muted: #52525b;
+  --ui-text-toned: #3f3f46;
+  --ui-text: #27272a;
+  --ui-text-highlighted: #09090b;
+  --ui-text-inverted: #ffffff;
+
+  /* Forge borders — light */
+  --ui-border: #e4e4e7;
+  --ui-border-muted: #f4f4f5;
+  --ui-border-accented: #d4d4d8;
+  --ui-border-inverted: #18181b;
 }
 
 .dark {
-  --ui-primary: #f9883e;
+  --ui-primary: #818cf8;
 
-  --ui-bg: #141312;
-  --ui-bg-muted: #1c1b18;
-  --ui-bg-elevated: #22201d;
-  --ui-bg-accented: #2c2925;
-  --ui-bg-inverted: #fdfbf7;
+  --forge-glow-primary: 22%;
+  --forge-glow-accent: 12%;
 
-  --ui-text-dimmed: #78716c;
-  --ui-text-muted: #a8a29e;
-  --ui-text-toned: #d6d3d1;
-  --ui-text: #e7e5e4;
-  --ui-text-highlighted: #fdfbf7;
-  --ui-text-inverted: #111827;
+  --ui-bg: #0a0a0e;
+  --ui-bg-muted: #121216;
+  --ui-bg-elevated: #18181b;
+  --ui-bg-accented: #27272a;
+  --ui-bg-inverted: #fafafa;
 
-  --ui-border: #2c2925;
-  --ui-border-muted: #24221f;
-  --ui-border-accented: #44403c;
-  --ui-border-inverted: #fdfbf7;
+  --ui-text-dimmed: #71717a;
+  --ui-text-muted: #a1a1aa;
+  --ui-text-toned: #d4d4d8;
+  --ui-text: #e4e4e7;
+  --ui-text-highlighted: #ffffff;
+  --ui-text-inverted: #0a0a0e;
+
+  --ui-border: #27272a;
+  --ui-border-muted: #1f1f23;
+  --ui-border-accented: #3f3f46;
+  --ui-border-inverted: #fafafa;
+}
+
+/**
+ * Motion layer.
+ *
+ * Restrained cues only: an ambient field behind the first viewport, a
+ * staggered entrance, and a hover lift on cards. Every animation is off
+ * when the user asks for less motion, and each element rests in its final
+ * state so nothing stays hidden.
+ */
+@layer utilities {
+  /* Two soft radial washes — primary and accent — behind the hero. */
+  .forge-ambient {
+    position: absolute;
+    inset-inline: 0;
+    top: 0;
+    height: 44rem;
+    pointer-events: none;
+    background:
+      radial-gradient(60% 50% at 50% 0%, color-mix(in oklab, var(--ui-primary) var(--forge-glow-primary), transparent), transparent 70%),
+      radial-gradient(40% 40% at 80% 10%, color-mix(in oklab, var(--color-forge-accent) var(--forge-glow-accent), transparent), transparent 70%);
+    mask-image: linear-gradient(to bottom, #000 0%, #000 45%, transparent 100%);
+  }
+
+  /* Masked reveal for the first viewport. Set --forge-delay to stagger a
+     group. Never put this on the display heading: it is the LCP element, and
+     an element animating up from zero opacity does not count as painted. */
+  .forge-enter {
+    animation: forge-enter 340ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: var(--forge-delay, 0ms);
+  }
+
+  /* Scroll-triggered reveal for content below the fold. Driven by the view
+     timeline, so it fires when the element arrives rather than on load. */
+  @supports (animation-timeline: view()) {
+    .forge-reveal {
+      animation: forge-enter 1ms linear both;
+      animation-timeline: view();
+      animation-range: entry 10% entry 60%;
+    }
+  }
+
+  .forge-lift {
+    transition:
+      transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 220ms ease,
+      box-shadow 220ms ease;
+  }
+
+  .forge-lift:hover {
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes forge-enter {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .forge-enter,
+  .forge-reveal {
+    animation: none;
+  }
+
+  .forge-lift {
+    transition: none;
+  }
+
+  .forge-lift:hover {
+    transform: none;
+  }
 }

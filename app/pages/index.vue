@@ -22,22 +22,33 @@ useKitDevOgImage({
 </script>
 
 <template>
-  <div>
+  <div class="relative isolate overflow-hidden">
+    <div
+      class="forge-ambient -z-10"
+      aria-hidden="true"
+    />
+
     <UContainer class="py-16 sm:py-20">
       <!-- Hero Section -->
       <div class="mx-auto max-w-3xl text-center">
-        <p class="font-mono text-xs font-semibold tracking-widest text-primary uppercase leading-[1.2]">
+        <p class="forge-enter font-mono text-xs font-semibold tracking-widest text-primary uppercase leading-[1.2]">
           KitDev Space
         </p>
         <h1 class="mt-4 text-4xl font-medium tracking-tight text-highlighted sm:text-5xl lg:text-[64px] lg:leading-[1.04]">
           Tools for people who build.
         </h1>
-        <p class="mt-4 text-base leading-[1.6] text-muted sm:text-lg">
+        <p
+          class="forge-enter mt-4 text-base leading-[1.6] text-muted sm:text-lg"
+          style="--forge-delay: 60ms"
+        >
           Fast, free developer tools in a unified workspace.
         </p>
 
         <!-- Value Propositions -->
-        <div class="mt-6 flex flex-wrap items-center justify-center gap-2">
+        <div
+          class="forge-enter mt-6 flex flex-wrap items-center justify-center gap-2"
+          style="--forge-delay: 120ms"
+        >
           <UBadge
             color="neutral"
             variant="subtle"
@@ -70,13 +81,16 @@ useKitDevOgImage({
         </div>
 
         <!-- Primary Call to Action -->
-        <div class="mt-10 flex flex-wrap items-center justify-center gap-4">
+        <div
+          class="forge-enter mt-10 flex flex-wrap items-center justify-center gap-4"
+          style="--forge-delay: 180ms"
+        >
           <UButton
             to="/hub"
             size="xl"
             color="primary"
             icon="i-lucide-layout-grid"
-            class="rounded-[8px] font-medium px-6 shadow-xs hover:bg-brand-700 transition-colors"
+            class="rounded-control font-medium px-6 shadow-xs"
           >
             Open All Tools in Hub
           </UButton>
@@ -84,7 +98,7 @@ useKitDevOgImage({
             color="neutral"
             variant="outline"
             size="xl"
-            class="rounded-[8px] font-normal border-default bg-elevated hover:bg-accented text-highlighted"
+            class="rounded-control font-normal border-default bg-elevated hover:bg-accented text-highlighted"
             @click="openSearch"
           >
             <span class="text-muted">Search tools...</span>
@@ -113,7 +127,7 @@ useKitDevOgImage({
             variant="ghost"
             icon="i-lucide-arrow-right"
             trailing
-            class="rounded-[8px]"
+            class="rounded-control"
           >
             Open Hub
           </UButton>
@@ -123,7 +137,7 @@ useKitDevOgImage({
           <section
             v-for="category in categories"
             :key="category"
-            class="flex flex-col justify-between rounded-[16px] border border-default bg-elevated p-6 shadow-xs transition-all hover:border-primary/50 hover:shadow-sm"
+            class="forge-reveal forge-lift flex flex-col justify-between rounded-card border border-default bg-elevated p-6 shadow-xs hover:border-primary/50 hover:shadow-sm"
           >
             <div>
               <div class="flex items-center justify-between gap-3">

@@ -195,7 +195,7 @@ watch(() => route.path, () => {
               >
                 <NuxtLink
                   :to="tool.route"
-                  class="group flex items-center justify-between gap-2 rounded-[8px] px-2.5 py-1.5 text-sm transition-colors"
+                  class="group flex items-center justify-between gap-2 rounded-control px-2.5 py-1.5 text-sm transition-colors"
                   :class="route.path === tool.route
                     ? 'bg-primary/10 text-primary font-medium'
                     : 'text-default/80 hover:bg-elevated hover:text-highlighted'"
@@ -299,7 +299,7 @@ watch(() => route.path, () => {
                   >
                     <NuxtLink
                       :to="tool.route"
-                      class="flex items-center justify-between gap-2 rounded-[8px] px-2.5 py-2 text-sm"
+                      class="flex items-center justify-between gap-2 rounded-control px-2.5 py-2 text-sm"
                       :class="route.path === tool.route
                         ? 'bg-primary/10 text-primary font-medium'
                         : 'text-default/80 hover:bg-elevated hover:text-highlighted'"

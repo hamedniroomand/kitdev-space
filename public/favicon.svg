@@ -1,45 +1,45 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
   <defs>
-    <!-- Background Gradient: PaperFlow Warm Dark Surface to Charcoal -->
+    <!-- Background Gradient: Forge Surface to Near-Black -->
     <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#1c1b18"/>
-      <stop offset="55%" stop-color="#2c1b12"/>
-      <stop offset="100%" stop-color="#141312"/>
+      <stop offset="0%" stop-color="#18181b"/>
+      <stop offset="55%" stop-color="#1e1b4b"/>
+      <stop offset="100%" stop-color="#0a0a0e"/>
     </linearGradient>
 
     <!-- Outer Rim Accent -->
     <linearGradient id="border" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#f9883e" stop-opacity="0.85"/>
-      <stop offset="50%" stop-color="#e65c00" stop-opacity="0.35"/>
-      <stop offset="100%" stop-color="#ffb380" stop-opacity="0.65"/>
+      <stop offset="0%" stop-color="#818cf8" stop-opacity="0.85"/>
+      <stop offset="50%" stop-color="#6366f1" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#06b6d4" stop-opacity="0.65"/>
     </linearGradient>
 
-    <!-- Warm Core Radial Glow -->
+    <!-- Cool Core Radial Glow -->
     <radialGradient id="coreGlow" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#f06a14" stop-opacity="0.75"/>
-      <stop offset="35%" stop-color="#e65c00" stop-opacity="0.45"/>
-      <stop offset="65%" stop-color="#ffb380" stop-opacity="0.15"/>
-      <stop offset="100%" stop-color="#141312" stop-opacity="0"/>
+      <stop offset="0%" stop-color="#6366f1" stop-opacity="0.75"/>
+      <stop offset="35%" stop-color="#818cf8" stop-opacity="0.45"/>
+      <stop offset="65%" stop-color="#06b6d4" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#0a0a0e" stop-opacity="0"/>
     </radialGradient>
 
-    <!-- Left Code Bracket Gradient (Amber -> Brand Primary) -->
+    <!-- Left Code Bracket Gradient (Light Indigo -> Brand Primary) -->
     <linearGradient id="leftBrk" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#ffb380"/>
-      <stop offset="100%" stop-color="#e65c00"/>
+      <stop offset="0%" stop-color="#a5b4fc"/>
+      <stop offset="100%" stop-color="#818cf8"/>
     </linearGradient>
 
-    <!-- Right Code Bracket Gradient (Brand Primary -> Orange Accent) -->
+    <!-- Right Code Bracket Gradient (Brand Primary -> Cyan Accent) -->
     <linearGradient id="rightBrk" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#e65c00"/>
-      <stop offset="100%" stop-color="#f9883e"/>
+      <stop offset="0%" stop-color="#818cf8"/>
+      <stop offset="100%" stop-color="#06b6d4"/>
     </linearGradient>
 
     <!-- Primary 4-Point Star Gradient -->
     <linearGradient id="starGrad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#ffffff"/>
-      <stop offset="25%" stop-color="#fff9f5"/>
-      <stop offset="60%" stop-color="#ffb380"/>
-      <stop offset="100%" stop-color="#e65c00"/>
+      <stop offset="25%" stop-color="#eef2ff"/>
+      <stop offset="60%" stop-color="#a5b4fc"/>
+      <stop offset="100%" stop-color="#818cf8"/>
     </linearGradient>
 
     <!-- Star Glow Filter -->
@@ -68,7 +68,7 @@
 
   <!-- Secondary 45-degree Star Spark -->
   <path d="M 256 198 C 256 236 236 256 198 256 C 236 256 256 276 256 314 C 256 276 276 256 314 256 C 276 256 256 236 256 198 Z"
-        fill="#ffb380" opacity="0.70" transform="rotate(45 256 256)"/>
+        fill="#a5b4fc" opacity="0.70" transform="rotate(45 256 256)"/>
 
   <!-- Primary 4-Point Cosmic Star ✦ -->
   <path d="M 256 130

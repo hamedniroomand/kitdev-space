@@ -159,7 +159,7 @@ const categories = [
         v-for="category in categories"
         :key="category"
         :to="`/hub/${category}`"
-        class="rounded-[16px] border border-default bg-elevated p-5 shadow-xs transition-all hover:border-primary/50 hover:shadow-sm"
+        class="forge-reveal forge-lift rounded-card border border-default bg-elevated p-5 shadow-xs hover:border-primary/50 hover:shadow-sm"
       >
         <p class="font-mono text-xs font-semibold tracking-widest text-muted uppercase">
           {{ categoryLabels[category] }}
