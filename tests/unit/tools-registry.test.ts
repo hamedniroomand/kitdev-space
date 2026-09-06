@@ -62,6 +62,19 @@ describe('tool registry', () => {
     expect(getToolById('base64')?.route).toBe('/hub/dev/base64')
   })
 
+  it('gives a search title to every name with a symbol', () => {
+    const symbol = /[→↔/&]/
+    for (const tool of tools) {
+      if (symbol.test(tool.name)) {
+        expect(tool.seoTitle, tool.id).toBeDefined()
+      }
+      if (tool.seoTitle) {
+        expect(symbol.test(tool.seoTitle), tool.id).toBe(false)
+        expect(tool.seoTitle.length, tool.id).toBeLessThanOrEqual(45)
+      }
+    }
+  })
+
   it('provides category labels', () => {
     expect(categoryLabels.data).toBe('Data Lab')
   })

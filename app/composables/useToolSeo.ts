@@ -10,6 +10,7 @@ export function useToolSeo(toolId: string) {
     }
   }
 
+  const title = tool.seoTitle ?? tool.name
   const breadcrumbs = computed(() => buildToolBreadcrumbs(tool))
   provide('toolBreadcrumbs', breadcrumbs)
   // `RelatedTools` reads this to suggest other tools in the same category.
@@ -33,15 +34,15 @@ export function useToolSeo(toolId: string) {
   })
 
   useSeoMeta({
-    title: tool.name,
+    title,
     description: tool.description,
-    ogTitle: tool.name,
+    ogTitle: title,
     ogDescription: tool.description,
     ogType: 'website'
   })
 
   useKitDevOgImage({
-    title: tool.name,
+    title,
     description: tool.description,
     eyebrow: categoryLabels[tool.category]
   })
@@ -56,7 +57,7 @@ export function useToolSeo(toolId: string) {
       ]
     }),
     defineSoftwareApp({
-      name: tool.name,
+      name: title,
       description: tool.description,
       url: tool.route,
       applicationCategory: 'DeveloperApplication',

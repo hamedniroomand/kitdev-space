@@ -21,7 +21,7 @@ const breadcrumbs = inject<ComputedRef<BreadcrumbCrumb[]> | undefined>(
 
 const tool = inject<ComputedRef<Tool> | undefined>('currentTool', undefined)
 
-const heading = computed(() => props.title ?? tool?.value?.name ?? '')
+const heading = computed(() => props.title ?? tool?.value?.seoTitle ?? tool?.value?.name ?? '')
 const summary = computed(() => props.description ?? tool?.value?.description ?? '')
 </script>
 

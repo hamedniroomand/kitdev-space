@@ -36,7 +36,8 @@ export const tools: Tool[] = [
     route: '/hub/data/json-to-typescript',
     clientOnly: true,
     serverRequired: false,
-    status: 'available'
+    status: 'available',
+    seoTitle: 'JSON to TypeScript Converter'
   },
   {
     id: 'json-yaml',
@@ -49,7 +50,8 @@ export const tools: Tool[] = [
     route: '/hub/data/converters/json-yaml',
     clientOnly: false,
     serverRequired: true,
-    status: 'available'
+    status: 'available',
+    seoTitle: 'JSON to YAML Converter'
   },
   {
     id: 'json-toml',
@@ -62,7 +64,8 @@ export const tools: Tool[] = [
     route: '/hub/data/converters/json-toml',
     clientOnly: false,
     serverRequired: true,
-    status: 'available'
+    status: 'available',
+    seoTitle: 'JSON to TOML Converter'
   },
   {
     id: 'json-xml',
@@ -75,20 +78,22 @@ export const tools: Tool[] = [
     route: '/hub/data/converters/json-xml',
     clientOnly: false,
     serverRequired: true,
-    status: 'available'
+    status: 'available',
+    seoTitle: 'JSON to XML Converter'
   },
   {
     id: 'text-diff',
     slug: 'text-diff',
     name: 'Text Diff',
-    description: 'Compare two texts and show line changes.',
+    description: 'Compare two texts and show the added, removed, and changed lines.',
     category: 'data',
     icon: 'i-lucide-git-compare',
     keywords: ['diff', 'compare', 'text', 'patch', 'unified'],
     route: '/hub/data/text-diff',
     clientOnly: true,
     serverRequired: false,
-    status: 'available'
+    status: 'available',
+    seoTitle: 'Text Diff Checker'
   },
   {
     id: 'lorem',
@@ -101,7 +106,8 @@ export const tools: Tool[] = [
     route: '/hub/data/lorem',
     clientOnly: true,
     serverRequired: false,
-    status: 'available'
+    status: 'available',
+    seoTitle: 'Lorem Ipsum Generator'
   },
   {
     id: 'markdown-studio',
@@ -114,7 +120,8 @@ export const tools: Tool[] = [
     route: '/hub/data/markdown-studio',
     clientOnly: true,
     serverRequired: false,
-    status: 'available'
+    status: 'available',
+    seoTitle: 'Markdown Editor with Live Preview'
   },
   {
     id: 'sql-formatter',
@@ -140,7 +147,8 @@ export const tools: Tool[] = [
     route: '/hub/data/converters/csv-json',
     clientOnly: true,
     serverRequired: false,
-    status: 'available'
+    status: 'available',
+    seoTitle: 'CSV to JSON Converter'
   },
   {
     id: 'text-stats',
@@ -153,7 +161,8 @@ export const tools: Tool[] = [
     route: '/hub/data/text-stats',
     clientOnly: true,
     serverRequired: false,
-    status: 'available'
+    status: 'available',
+    seoTitle: 'Word Counter and Text Statistics'
   },
   {
     id: 'number-base',
@@ -231,7 +240,8 @@ export const tools: Tool[] = [
     route: '/hub/data/table-viewer',
     clientOnly: true,
     serverRequired: false,
-    status: 'available'
+    status: 'available',
+    seoTitle: 'CSV and JSON Table Viewer'
   },
   {
     id: 'fake-data',
@@ -273,7 +283,8 @@ export const tools: Tool[] = [
     route: '/hub/dev/encoder',
     clientOnly: true,
     serverRequired: false,
-    status: 'available'
+    status: 'available',
+    seoTitle: 'Text Encoder and Escaper'
   },
   {
     id: 'generator',
@@ -289,7 +300,8 @@ export const tools: Tool[] = [
     route: '/hub/crypto/generator',
     clientOnly: true,
     serverRequired: false,
-    status: 'available'
+    status: 'available',
+    seoTitle: 'Random ID and Secret Generator'
   },
   {
     id: 'password-benchmark',
@@ -302,7 +314,8 @@ export const tools: Tool[] = [
     route: '/hub/crypto/password-benchmark',
     clientOnly: false,
     serverRequired: true,
-    status: 'available'
+    status: 'available',
+    seoTitle: 'Argon2 and bcrypt Password Hash Benchmark'
   },
   {
     id: 'jwt',
@@ -315,7 +328,8 @@ export const tools: Tool[] = [
     route: '/hub/crypto/jwt',
     clientOnly: true,
     serverRequired: false,
-    status: 'available'
+    status: 'available',
+    seoTitle: 'JWT Decoder and Debugger'
   },
   {
     id: 'hmac',
@@ -354,7 +368,8 @@ export const tools: Tool[] = [
     route: '/hub/crypto/aes',
     clientOnly: true,
     serverRequired: false,
-    status: 'available'
+    status: 'available',
+    seoTitle: 'AES-256 Encrypt and Decrypt'
   },
   {
     id: 'color-converter',
@@ -373,33 +388,35 @@ export const tools: Tool[] = [
     id: 'contrast',
     slug: 'contrast-checker',
     name: 'Contrast Checker',
-    description: 'Check contrast for accessibility.',
+    description: 'Check the contrast ratio of two colors against the WCAG AA and AAA levels.',
     category: 'color',
     icon: 'i-lucide-contrast',
     keywords: ['contrast', 'a11y', 'wcag', 'accessibility'],
     route: '/hub/color/contrast-checker',
     clientOnly: true,
     serverRequired: false,
-    status: 'available'
+    status: 'available',
+    seoTitle: 'WCAG Color Contrast Checker'
   },
   {
     id: 'palette',
     slug: 'palette-generator',
     name: 'Palette Generator',
-    description: 'Generate color palettes.',
+    description: 'Generate lighter and darker color stops from one base color, then copy each HEX value.',
     category: 'color',
     icon: 'i-lucide-swatch-book',
     keywords: ['palette', 'colors', 'scheme'],
     route: '/hub/color/palette-generator',
     clientOnly: true,
     serverRequired: false,
-    status: 'available'
+    status: 'available',
+    seoTitle: 'Color Palette Generator'
   },
   {
     id: 'color-inspector',
     slug: 'inspector',
     name: 'Color Inspector',
-    description: 'Inspect color values and details.',
+    description: 'Inspect a color and read its HEX, RGB, HSL, and OKLCH channel values.',
     category: 'color',
     icon: 'i-lucide-pipette',
     keywords: ['color', 'inspect', 'picker'],
@@ -419,7 +436,8 @@ export const tools: Tool[] = [
     route: '/hub/color/gradient-studio',
     clientOnly: true,
     serverRequired: false,
-    status: 'available'
+    status: 'available',
+    seoTitle: 'CSS Gradient Generator'
   },
   {
     id: 'tailwind-shades',
@@ -432,7 +450,8 @@ export const tools: Tool[] = [
     route: '/hub/color/tailwind-shades',
     clientOnly: true,
     serverRequired: false,
-    status: 'available'
+    status: 'available',
+    seoTitle: 'Tailwind Color Shade Generator'
   },
   {
     id: 'image-palette',
@@ -451,14 +470,15 @@ export const tools: Tool[] = [
     id: 'dns',
     slug: 'dns-lookup',
     name: 'DNS Lookup',
-    description: 'Look up DNS records for a domain.',
+    description: 'Look up A, AAAA, CNAME, MX, NS, TXT, and CAA records for a domain.',
     category: 'network',
     icon: 'i-lucide-globe',
     keywords: ['dns', 'lookup', 'a', 'mx', 'txt'],
     route: '/hub/network/dns-lookup',
     clientOnly: false,
     serverRequired: true,
-    status: 'available'
+    status: 'available',
+    seoTitle: 'DNS Record Lookup'
   },
   {
     id: 'email-health',
@@ -471,7 +491,8 @@ export const tools: Tool[] = [
     route: '/hub/network/email-health',
     clientOnly: false,
     serverRequired: true,
-    status: 'available'
+    status: 'available',
+    seoTitle: 'SPF, DKIM, and DMARC Checker'
   },
   {
     id: 'http-inspector',
@@ -487,20 +508,22 @@ export const tools: Tool[] = [
     route: '/hub/network/http-inspector',
     clientOnly: false,
     serverRequired: true,
-    status: 'available'
+    status: 'available',
+    seoTitle: 'HTTP Headers and Redirect Checker'
   },
   {
     id: 'url-inspector',
     slug: 'url-inspector',
     name: 'URL Inspector',
-    description: 'Inspect and parse URL parts.',
+    description: 'Parse a URL into its protocol, host, path, hash, and query parameters.',
     category: 'network',
     icon: 'i-lucide-link',
     keywords: ['url', 'uri', 'parse', 'inspect'],
     route: '/hub/network/url-inspector',
     clientOnly: true,
     serverRequired: false,
-    status: 'available'
+    status: 'available',
+    seoTitle: 'URL Parser and Inspector'
   },
   {
     id: 'og-preview',
@@ -513,7 +536,8 @@ export const tools: Tool[] = [
     route: '/hub/network/og-preview',
     clientOnly: false,
     serverRequired: true,
-    status: 'available'
+    status: 'available',
+    seoTitle: 'Open Graph and Social Preview'
   },
   {
     id: 'cidr',
@@ -552,7 +576,8 @@ export const tools: Tool[] = [
     route: '/hub/network/ip-info',
     clientOnly: false,
     serverRequired: true,
-    status: 'available'
+    status: 'available',
+    seoTitle: 'IP Address Lookup'
   },
   {
     id: 'tls-inspector',
@@ -565,7 +590,8 @@ export const tools: Tool[] = [
     route: '/hub/network/tls-inspector',
     clientOnly: false,
     serverRequired: true,
-    status: 'available'
+    status: 'available',
+    seoTitle: 'SSL Certificate Checker'
   },
   {
     id: 'rdap-lookup',
@@ -578,7 +604,8 @@ export const tools: Tool[] = [
     route: '/hub/network/rdap-lookup',
     clientOnly: false,
     serverRequired: true,
-    status: 'available'
+    status: 'available',
+    seoTitle: 'WHOIS and RDAP Domain Lookup'
   },
   {
     id: 'image-studio',
@@ -607,7 +634,8 @@ export const tools: Tool[] = [
     route: '/hub/image/metadata',
     clientOnly: true,
     serverRequired: false,
-    status: 'available'
+    status: 'available',
+    seoTitle: 'EXIF Viewer and Remover'
   },
   {
     id: 'svg-converter',
@@ -620,7 +648,8 @@ export const tools: Tool[] = [
     route: '/hub/image/svg-converter',
     clientOnly: false,
     serverRequired: true,
-    status: 'available'
+    status: 'available',
+    seoTitle: 'SVG to PNG Converter'
   },
   {
     id: 'image-base64',
@@ -633,7 +662,8 @@ export const tools: Tool[] = [
     route: '/hub/image/base64',
     clientOnly: true,
     serverRequired: false,
-    status: 'available'
+    status: 'available',
+    seoTitle: 'Image to Base64 Converter'
   },
   {
     id: 'placeholder',
@@ -659,13 +689,14 @@ export const tools: Tool[] = [
     route: '/hub/image/favicon-generator',
     clientOnly: false,
     serverRequired: true,
-    status: 'available'
+    status: 'available',
+    seoTitle: 'Favicon Generator'
   },
   {
     id: 'semver',
     slug: 'semver',
     name: 'Semver Calculator',
-    description: 'Test ranges, sort versions, and bump releases.',
+    description: 'Test semver ranges, sort versions, and bump a release number.',
     category: 'dev',
     icon: 'i-lucide-git-branch',
     keywords: ['semver', 'version', 'npm', 'range', 'bump'],
@@ -678,14 +709,15 @@ export const tools: Tool[] = [
     id: 'cron',
     slug: 'cron',
     name: 'Cron Visualizer',
-    description: 'Validate cron expressions and preview next runs.',
+    description: 'Validate a cron expression, read it in plain words, and preview the next runs.',
     category: 'dev',
     icon: 'i-lucide-calendar-clock',
     keywords: ['cron', 'schedule', 'crontab', 'timezone'],
     route: '/hub/dev/cron',
     clientOnly: false,
     serverRequired: true,
-    status: 'available'
+    status: 'available',
+    seoTitle: 'Cron Expression Visualizer'
   },
   {
     id: 'tar-explorer',
@@ -698,7 +730,8 @@ export const tools: Tool[] = [
     route: '/hub/dev/tar',
     clientOnly: true,
     serverRequired: false,
-    status: 'available'
+    status: 'available',
+    seoTitle: 'Tar Archive Viewer and Extractor'
   },
   {
     id: 'transpiler',
@@ -711,7 +744,8 @@ export const tools: Tool[] = [
     route: '/hub/dev/transpiler',
     clientOnly: false,
     serverRequired: true,
-    status: 'available'
+    status: 'available',
+    seoTitle: 'TypeScript to JavaScript Transpiler'
   },
   {
     id: 'code-minifier',
@@ -776,7 +810,8 @@ export const tools: Tool[] = [
     route: '/hub/dev/timestamp',
     clientOnly: true,
     serverRequired: false,
-    status: 'available'
+    status: 'available',
+    seoTitle: 'Unix Timestamp Converter'
   },
   {
     id: 'css-units',
@@ -802,7 +837,8 @@ export const tools: Tool[] = [
     route: '/hub/dev/qr-code',
     clientOnly: true,
     serverRequired: false,
-    status: 'available'
+    status: 'available',
+    seoTitle: 'QR Code Generator'
   },
   {
     id: 'sqlite-studio',
@@ -815,7 +851,8 @@ export const tools: Tool[] = [
     route: '/hub/data/sqlite-studio',
     clientOnly: true,
     serverRequired: false,
-    status: 'available'
+    status: 'available',
+    seoTitle: 'SQLite Database Viewer and Editor'
   },
   {
     id: 'chmod',
@@ -882,7 +919,8 @@ export const tools: Tool[] = [
     route: '/hub/dev/html-converter',
     clientOnly: true,
     serverRequired: false,
-    status: 'available'
+    status: 'available',
+    seoTitle: 'HTML to React and Vue Converter'
   },
 
   // Variant entries. A variant renders the component of its parent with a
@@ -928,6 +966,7 @@ export const tools: Tool[] = [
     clientOnly: true,
     serverRequired: false,
     status: 'available',
+    seoTitle: 'Base64 Encoder and Decoder',
     variantOf: 'encoder'
   },
   {
@@ -942,6 +981,7 @@ export const tools: Tool[] = [
     clientOnly: true,
     serverRequired: false,
     status: 'available',
+    seoTitle: 'URL Encoder and Decoder',
     variantOf: 'encoder'
   },
   {
