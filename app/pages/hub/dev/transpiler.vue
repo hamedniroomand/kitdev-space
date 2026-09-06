@@ -24,6 +24,20 @@ const loaderItems = [
 
 useToolSeo('transpiler')
 
+const editorLang = computed(() => {
+  switch (loader.value) {
+    case 'ts':
+      return 'typescript' as const
+    case 'tsx':
+      return 'tsx' as const
+    case 'jsx':
+      return 'jsx' as const
+    case 'js':
+    default:
+      return 'javascript' as const
+  }
+})
+
 onMounted(() => {
   track('tool_open', { tool: 'transpiler' })
 })
@@ -117,6 +131,7 @@ defineShortcuts({
       v-model="input"
       label="Input"
       placeholder="Paste TypeScript or JSX"
+      :lang="editorLang"
     />
 
     <ToolActions>
@@ -162,6 +177,7 @@ defineShortcuts({
       label="Output"
       readonly
       placeholder="JavaScript appears here"
+      lang="javascript"
     />
 
     <template #docs>

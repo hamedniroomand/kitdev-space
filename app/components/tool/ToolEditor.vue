@@ -1,4 +1,13 @@
 <script setup lang="ts">
+import CodeMirror from 'vue-codemirror6'
+import { oneDark } from '@codemirror/theme-one-dark'
+import { EditorView } from '@codemirror/view'
+import type { Extension } from '@codemirror/state'
+import {
+  resolveEditorLanguage,
+  type ToolEditorLang
+} from '~~/shared/utils/dev/editor-lang'
+
 const model = defineModel<string>({ default: '' })
 
 const props = withDefaults(defineProps<{
@@ -6,32 +15,77 @@ const props = withDefaults(defineProps<{
   readonly?: boolean
   placeholder?: string
   rows?: number
+  lang?: ToolEditorLang
+  wrap?: boolean
 }>(), {
-  rows: 12
+  rows: 12,
+  lang: 'text',
+  wrap: true
 })
 
+const colorMode = useColorMode()
 const [expanded, toggleExpanded] = useToggle(false)
 
-const rowCount = computed(() => (
+const isDark = computed(() => colorMode.value === 'dark')
+
+const language = computed(() => resolveEditorLanguage(props.lang))
+
+const lineCount = computed(() => (
   expanded.value
     ? Math.max(props.rows * 2, 24)
     : props.rows
 ))
+
+const editorHeight = computed(() => `${Math.max(lineCount.value * 1.35, 12)}rem`)
+
+const extensions = computed((): Extension[] => {
+  const list: Extension[] = [
+    EditorView.theme({
+      '&': {
+        height: '100%',
+        fontSize: '0.875rem'
+      },
+      '.cm-scroller': {
+        fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+        lineHeight: '1.5'
+      },
+      '.cm-content': {
+        paddingBlock: '0.75rem'
+      },
+      '.cm-gutters': {
+        backgroundColor: 'transparent',
+        border: 'none'
+      }
+    })
+  ]
+
+  if (isDark.value) {
+    list.push(oneDark)
+  }
+
+  return list
+})
 </script>
 
 <template>
   <ClientOnly>
     <UFormField :label="label">
-      <div class="relative">
-        <UTextarea
+      <div
+        class="tool-editor relative overflow-hidden rounded-md bg-default ring ring-inset ring-accented"
+        :style="{ height: editorHeight }"
+      >
+        <CodeMirror
           v-model="model"
+          class="h-full w-full"
+          :lang="language"
+          :dark="isDark"
           :readonly="readonly"
           :placeholder="placeholder"
-          :rows="rowCount"
-          class="w-full font-mono text-sm"
-          :ui="{
-            base: 'font-mono overflow-auto pe-10 resize-none'
-          }"
+          :basic="true"
+          :wrap="wrap"
+          :tab="true"
+          :tab-size="2"
+          :extensions="extensions"
         />
         <UButton
           class="absolute inset-e-1.5 top-1.5 z-10"
@@ -55,3 +109,19 @@ const rowCount = computed(() => (
     </template>
   </ClientOnly>
 </template>
+
+<style scoped>
+.tool-editor :deep(.cm-editor) {
+  height: 100%;
+  outline: none;
+  background: transparent;
+}
+
+.tool-editor :deep(.cm-editor.cm-focused) {
+  outline: none;
+}
+
+.tool-editor :deep(.cm-scroller) {
+  overflow: auto;
+}
+</style>

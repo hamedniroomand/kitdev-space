@@ -150,6 +150,7 @@ defineShortcuts({
       v-model="svgText"
       label="SVG input"
       placeholder="Paste SVG code here"
+      lang="svg"
     />
 
     <ImageDropzone

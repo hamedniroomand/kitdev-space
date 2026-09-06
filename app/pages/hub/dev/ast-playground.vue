@@ -93,6 +93,8 @@ const resolveModeItems = [
 
 useToolSeo('ast-playground')
 
+const editorLang = computed(() => language.value)
+
 const selectedSnippet = computed(() => {
   if (!selected.value) {
     return ''
@@ -274,6 +276,7 @@ defineShortcuts({
       v-model="input"
       label="Source"
       placeholder="Paste JavaScript or TypeScript"
+      :lang="editorLang"
     />
 
     <ToolActions>
@@ -381,6 +384,7 @@ defineShortcuts({
         :model-value="programJson"
         label="ESTree JSON"
         readonly
+        lang="json"
       />
     </div>
 
@@ -404,6 +408,7 @@ defineShortcuts({
         label="OXC transform output"
         readonly
         placeholder="Select Transform to see output"
+        :lang="editorLang"
       />
     </div>
 

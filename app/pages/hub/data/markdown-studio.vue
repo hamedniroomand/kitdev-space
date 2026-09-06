@@ -153,6 +153,7 @@ function handleClear() {
         label="Markdown Input"
         placeholder="Type or paste markdown here"
         :rows="18"
+        lang="markdown"
       />
 
       <div class="flex flex-col">

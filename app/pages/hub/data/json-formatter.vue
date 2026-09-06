@@ -114,6 +114,7 @@ defineShortcuts({
       v-model="input"
       label="Input"
       placeholder="Paste JSON here"
+      lang="json"
     />
 
     <ToolActions>
@@ -172,6 +173,7 @@ defineShortcuts({
       label="Output"
       readonly
       placeholder="Result appears here"
+      lang="json"
     />
 
     <ToolStatus

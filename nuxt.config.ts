@@ -99,6 +99,20 @@ export default defineNuxtConfig({
     }
   },
 
+  vite: {
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes('codemirror') || id.includes('vue-codemirror6')) {
+              return 'codemirror'
+            }
+          }
+        }
+      }
+    }
+  },
+
   eslint: {
     config: {
       stylistic: {

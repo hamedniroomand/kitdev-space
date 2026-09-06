@@ -19,6 +19,8 @@ const targetItems = [
 
 useToolSeo('svg-component')
 
+const outputLang = computed(() => (target.value === 'vue' ? 'html' : 'jsx'))
+
 async function convert() {
   await run(() => svgToComponent(input.value, target.value))
   if (status.value === 'success' && result.value !== null) {
@@ -79,6 +81,7 @@ defineShortcuts({
       v-model="input"
       label="SVG input"
       placeholder="Paste SVG code here"
+      lang="svg"
     />
 
     <UFormField label="Target">
@@ -131,6 +134,7 @@ defineShortcuts({
       label="Output"
       readonly
       placeholder="Result appears here"
+      :lang="outputLang"
     />
 
     <template #docs>

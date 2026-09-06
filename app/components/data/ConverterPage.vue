@@ -29,6 +29,9 @@ const { downloadText } = useDownload()
 
 useToolSeo(props.toolId)
 
+const inputLang = computed(() => (from.value === 'json' || from.value === 'json5' ? 'json' : 'text'))
+const outputLang = computed(() => (to.value === 'json' || to.value === 'json5' ? 'json' : 'text'))
+
 async function convert() {
   await run(async () => {
     try {
@@ -117,6 +120,7 @@ defineShortcuts({
       v-model="input"
       label="Input"
       placeholder="Paste data here"
+      :lang="inputLang"
     />
 
     <ToolActions>
@@ -161,6 +165,7 @@ defineShortcuts({
       label="Output"
       readonly
       placeholder="Result appears here"
+      :lang="outputLang"
     />
 
     <ToolStatus

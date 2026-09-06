@@ -193,6 +193,7 @@ defineShortcuts({
             :model-value="decoded.headerJson"
             label="Header"
             readonly
+            lang="json"
           />
         </div>
         <div class="space-y-2">
@@ -211,6 +212,7 @@ defineShortcuts({
             :model-value="decoded.payloadJson"
             label="Payload"
             readonly
+            lang="json"
           />
         </div>
       </div>

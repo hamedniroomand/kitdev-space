@@ -74,6 +74,8 @@ const actionItems = [
 
 useToolSeo('code-minifier')
 
+const editorLang = computed(() => language.value)
+
 const engineLabel = computed(() => {
   switch (engine.value) {
     case 'oxc-minify':
@@ -236,6 +238,7 @@ defineShortcuts({
       v-model="input"
       label="Input"
       placeholder="Paste code here"
+      :lang="editorLang"
     />
 
     <ToolActions>
@@ -287,6 +290,7 @@ defineShortcuts({
       label="Output"
       readonly
       placeholder="Result appears here"
+      :lang="editorLang"
     />
 
     <ToolStatus

@@ -85,6 +85,17 @@ const delimiterLabel = computed(() => {
   return 'comma'
 })
 
+const inputLang = computed(() => (mode.value === 'json-csv' ? 'json' : 'text'))
+const outputLang = computed(() => {
+  if (mode.value === 'csv-json') {
+    return 'json'
+  }
+  if (mode.value === 'csv-sql') {
+    return 'sql'
+  }
+  return 'text'
+})
+
 async function convert() {
   await run(() => {
     try {
@@ -211,6 +222,7 @@ defineShortcuts({
       v-model="input"
       :label="inputLabel"
       :placeholder="mode === 'json-csv' ? 'Paste JSON array here' : 'Paste CSV here'"
+      :lang="inputLang"
     />
 
     <ToolActions>
@@ -262,6 +274,7 @@ defineShortcuts({
       :label="outputLabel"
       readonly
       :placeholder="`${outputLabel} appears here`"
+      :lang="outputLang"
     />
 
     <ToolStatus
