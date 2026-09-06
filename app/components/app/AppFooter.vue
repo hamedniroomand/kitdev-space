@@ -2,7 +2,16 @@
   <UFooter class="border-t border-default">
     <template #left>
       <p class="font-mono text-xs tracking-wide text-muted">
-        Built with Nuxt + Bun
+        Built by
+        <NuxtLink
+          to="https://niroomand.dev/"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="text-highlighted transition-colors hover:text-primary"
+        >
+          Hamed Niroomand
+        </NuxtLink>
+        with Nuxt + Bun
       </p>
     </template>
 
