@@ -1,12 +1,12 @@
-import { categoryLabels, getToolById } from '#shared/utils/tools'
 import { buildToolBreadcrumbs } from '#shared/utils/breadcrumbs'
+import { categoryLabels, getToolById } from '#shared/utils/tools'
 
 export function useToolSeo(toolId: string) {
   const tool = getToolById(toolId)
 
   if (!tool) {
     return {
-      breadcrumbs: computed(() => [])
+      breadcrumbs: computed(() => []),
     }
   }
 
@@ -28,7 +28,8 @@ export function useToolSeo(toolId: string) {
     try {
       const { recordRecent } = useToolPreferences()
       recordRecent(tool.id)
-    } catch {
+    }
+    catch {
       // Ignore storage errors
     }
   })
@@ -38,13 +39,13 @@ export function useToolSeo(toolId: string) {
     description: tool.description,
     ogTitle: title,
     ogDescription: tool.description,
-    ogType: 'website'
+    ogType: 'website',
   })
 
   useKitDevOgImage({
     title,
     description: tool.description,
-    eyebrow: categoryLabels[tool.category]
+    eyebrow: categoryLabels[tool.category],
   })
 
   useSchemaOrg([
@@ -53,8 +54,8 @@ export function useToolSeo(toolId: string) {
         { name: 'Home', item: '/' },
         { name: 'Hub', item: '/hub' },
         { name: categoryLabels[tool.category], item: `/hub/${tool.category}` },
-        { name: tool.name, item: tool.route }
-      ]
+        { name: tool.name, item: tool.route },
+      ],
     }),
     defineSoftwareApp({
       name: title,
@@ -64,12 +65,12 @@ export function useToolSeo(toolId: string) {
       operatingSystem: 'Any',
       offers: {
         price: 0,
-        priceCurrency: 'USD'
-      }
-    })
+        priceCurrency: 'USD',
+      },
+    }),
   ])
 
   return {
-    breadcrumbs
+    breadcrumbs,
   }
 }

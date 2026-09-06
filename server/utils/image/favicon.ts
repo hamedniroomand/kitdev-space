@@ -1,3 +1,4 @@
+import { Buffer } from 'node:buffer'
 import { strToU8, zipSync } from 'fflate'
 import { processImage } from './pipeline'
 
@@ -74,17 +75,17 @@ export function buildWebmanifest(options: FaviconOptions): string {
       {
         src: '/android-chrome-192x192.png',
         sizes: '192x192',
-        type: 'image/png'
+        type: 'image/png',
       },
       {
         src: '/android-chrome-512x512.png',
         sizes: '512x512',
-        type: 'image/png'
-      }
+        type: 'image/png',
+      },
     ],
     theme_color: options.themeColor?.trim() || '#ffffff',
     background_color: options.backgroundColor?.trim() || '#ffffff',
-    display: 'standalone'
+    display: 'standalone',
   }
   return JSON.stringify(manifest, null, 2)
 }
@@ -99,13 +100,13 @@ export function buildHtmlSnippet(options: FaviconOptions): string {
     '<link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png">',
     '<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">',
     '<link rel="manifest" href="/site.webmanifest">',
-    `<meta name="theme-color" content="${theme}">`
+    `<meta name="theme-color" content="${theme}">`,
   ].join('\n')
 }
 
 export async function generateFaviconPackage(
   input: Uint8Array,
-  options: FaviconOptions = {}
+  options: FaviconOptions = {},
 ): Promise<FaviconPackageResult> {
   const sizes = [
     { name: 'favicon-16x16.png', size: 16 },
@@ -113,7 +114,7 @@ export async function generateFaviconPackage(
     { name: 'favicon-48x48.png', size: 48 },
     { name: 'apple-touch-icon.png', size: 180 },
     { name: 'android-chrome-192x192.png', size: 192 },
-    { name: 'android-chrome-512x512.png', size: 512 }
+    { name: 'android-chrome-512x512.png', size: 512 },
   ]
 
   const zipFiles: Record<string, Uint8Array> = {}
@@ -128,10 +129,10 @@ export async function generateFaviconPackage(
         width: size,
         height: size,
         fit: 'inside',
-        format: 'png'
+        format: 'png',
       })
       return { name, size, bytes: res.bytes }
-    })
+    }),
   )
 
   for (const { name, size, bytes } of rendered) {
@@ -142,7 +143,7 @@ export async function generateFaviconPackage(
     previews.push({
       name,
       size,
-      dataUrl: `data:image/png;base64,${base64}`
+      dataUrl: `data:image/png;base64,${base64}`,
     })
   }
 
@@ -168,6 +169,6 @@ export async function generateFaviconPackage(
     zipBase64,
     previews,
     htmlSnippet,
-    webmanifest
+    webmanifest,
   }
 }

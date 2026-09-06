@@ -61,10 +61,12 @@ export function parseTotpUri(uri: string): {
   algorithm?: 'SHA-1' | 'SHA-256' | 'SHA-512'
 } | null {
   try {
-    if (!uri.startsWith('otpauth://totp/')) return null
+    if (!uri.startsWith('otpauth://totp/'))
+      return null
     const url = new URL(uri)
     const secret = url.searchParams.get('secret')
-    if (!secret) return null
+    if (!secret)
+      return null
 
     const issuer = url.searchParams.get('issuer') || undefined
     const rawLabel = url.pathname.replace(/^\/+/, '')
@@ -73,8 +75,10 @@ export function parseTotpUri(uri: string): {
     const digits = Number.parseInt(url.searchParams.get('digits') || '6', 10)
     const algoParam = url.searchParams.get('algorithm')?.toUpperCase()
     let algorithm: 'SHA-1' | 'SHA-256' | 'SHA-512' = 'SHA-1'
-    if (algoParam === 'SHA256' || algoParam === 'SHA-256') algorithm = 'SHA-256'
-    else if (algoParam === 'SHA512' || algoParam === 'SHA-512') algorithm = 'SHA-512'
+    if (algoParam === 'SHA256' || algoParam === 'SHA-256')
+      algorithm = 'SHA-256'
+    else if (algoParam === 'SHA512' || algoParam === 'SHA-512')
+      algorithm = 'SHA-512'
 
     return {
       secret,
@@ -82,16 +86,17 @@ export function parseTotpUri(uri: string): {
       label,
       period: Number.isNaN(period) ? 30 : period,
       digits: Number.isNaN(digits) ? 6 : digits,
-      algorithm
+      algorithm,
     }
-  } catch {
+  }
+  catch {
     return null
   }
 }
 
 export async function generateTotp(
   secretInput: string,
-  options: TotpOptions = {}
+  options: TotpOptions = {},
 ): Promise<TotpResult> {
   const period = options.period ?? 30
   const digits = options.digits ?? 6
@@ -113,7 +118,7 @@ export async function generateTotp(
   const counterBytes = new Uint8Array(8)
   let tmp = counter
   for (let i = 7; i >= 0; i--) {
-    counterBytes[i] = tmp & 0xff
+    counterBytes[i] = tmp & 0xFF
     tmp = Math.floor(tmp / 256)
   }
 
@@ -127,29 +132,29 @@ export async function generateTotp(
     keyBytes as unknown as BufferSource,
     { name: 'HMAC', hash: { name: algorithm } },
     false,
-    ['sign']
+    ['sign'],
   )
 
   const hmacBuffer = await cryptoObj.subtle.sign(
     'HMAC',
     cryptoKey,
-    counterBytes as unknown as BufferSource
+    counterBytes as unknown as BufferSource,
   )
   const hmac = new Uint8Array(hmacBuffer)
 
-  const offset = hmac[hmac.length - 1]! & 0x0f
-  const codeInt = ((hmac[offset]! & 0x7f) << 24)
-    | ((hmac[offset + 1]! & 0xff) << 16)
-    | ((hmac[offset + 2]! & 0xff) << 8)
-    | (hmac[offset + 3]! & 0xff)
+  const offset = hmac[hmac.length - 1]! & 0x0F
+  const codeInt = ((hmac[offset]! & 0x7F) << 24)
+    | ((hmac[offset + 1]! & 0xFF) << 16)
+    | ((hmac[offset + 2]! & 0xFF) << 8)
+    | (hmac[offset + 3]! & 0xFF)
 
-  const mod = Math.pow(10, digits)
+  const mod = 10 ** digits
   const code = (codeInt % mod).toString().padStart(digits, '0')
 
   return {
     code,
     remainingSeconds,
-    progress
+    progress,
   }
 }
 

@@ -30,7 +30,7 @@
           :items="[
             { label: 'Image Studio', to: '/hub/image/studio' },
             { label: 'Image Resizer', to: '/hub/image/resizer' },
-            { label: 'Image Converter', to: '/hub/image/converter' }
+            { label: 'Image Converter', to: '/hub/image/converter' },
           ]"
         />
       </ToolDocs>

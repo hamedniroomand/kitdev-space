@@ -30,7 +30,7 @@ function intToIp(num: number): string {
     (num >>> 24) & 255,
     (num >>> 16) & 255,
     (num >>> 8) & 255,
-    num & 255
+    num & 255,
   ].join('.')
 }
 
@@ -39,7 +39,7 @@ function toBinaryString(num: number): string {
     ((num >>> 24) & 255).toString(2).padStart(8, '0'),
     ((num >>> 16) & 255).toString(2).padStart(8, '0'),
     ((num >>> 8) & 255).toString(2).padStart(8, '0'),
-    (num & 255).toString(2).padStart(8, '0')
+    (num & 255).toString(2).padStart(8, '0'),
   ].join('.')
 }
 
@@ -61,7 +61,7 @@ export function parseCidr(cidrInput: string): CidrCalculation {
   const networkInt = (ipInt & maskInt) >>> 0
   const broadcastInt = (networkInt | wildcardInt) >>> 0
 
-  const totalHosts = prefix === 32 ? 1 : Math.pow(2, 32 - prefix)
+  const totalHosts = prefix === 32 ? 1 : 2 ** (32 - prefix)
   let usableHosts: number
   let firstUsableInt: number
   let lastUsableInt: number
@@ -70,12 +70,14 @@ export function parseCidr(cidrInput: string): CidrCalculation {
     usableHosts = 1
     firstUsableInt = networkInt
     lastUsableInt = networkInt
-  } else if (prefix === 31) {
+  }
+  else if (prefix === 31) {
     // RFC 3021: 31-bit prefixes for point-to-point links
     usableHosts = 2
     firstUsableInt = networkInt
     lastUsableInt = broadcastInt
-  } else {
+  }
+  else {
     usableHosts = totalHosts - 2
     firstUsableInt = (networkInt + 1) >>> 0
     lastUsableInt = (broadcastInt - 1) >>> 0
@@ -83,10 +85,14 @@ export function parseCidr(cidrInput: string): CidrCalculation {
 
   const firstOctet = (ipInt >>> 24) & 255
   let ipClass: 'A' | 'B' | 'C' | 'D' | 'E'
-  if (firstOctet >= 240) ipClass = 'E'
-  else if (firstOctet >= 224) ipClass = 'D'
-  else if (firstOctet >= 192) ipClass = 'C'
-  else if (firstOctet >= 128) ipClass = 'B'
+  if (firstOctet >= 240)
+    ipClass = 'E'
+  else if (firstOctet >= 224)
+    ipClass = 'D'
+  else if (firstOctet >= 192)
+    ipClass = 'C'
+  else if (firstOctet >= 128)
+    ipClass = 'B'
   else ipClass = 'A'
 
   const secondOctet = (ipInt >>> 16) & 255
@@ -113,6 +119,6 @@ export function parseCidr(cidrInput: string): CidrCalculation {
     isLoopback,
     isLinkLocal,
     ipBinary: toBinaryString(ipInt),
-    maskBinary: toBinaryString(maskInt)
+    maskBinary: toBinaryString(maskInt),
   }
 }

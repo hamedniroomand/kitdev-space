@@ -23,7 +23,8 @@ export function decodeBase64(text: string): string {
   try {
     const binary = atob(text.trim())
     return new TextDecoder().decode(binaryToBytes(binary))
-  } catch (cause) {
+  }
+  catch (cause) {
     throw new Error('Invalid Base64.\n\nCheck the input and try again.', { cause })
   }
 }

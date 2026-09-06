@@ -1,11 +1,7 @@
 <script setup lang="ts">
+import type { TotpOptions } from '#shared/utils/crypto/totp'
 import { useIntervalFn } from '@vueuse/core'
-import {
-  generateTotp,
-  generateTotpSecret,
-  parseTotpUri,
-  type TotpOptions
-} from '#shared/utils/crypto/totp'
+import { generateTotp, generateTotpSecret, parseTotpUri } from '#shared/utils/crypto/totp'
 
 useToolSeo('totp')
 
@@ -36,19 +32,23 @@ async function updateTotp() {
     if (uriMatch) {
       parsedUriDetails.value = {
         issuer: uriMatch.issuer,
-        label: uriMatch.label
+        label: uriMatch.label,
       }
-      if (uriMatch.digits) digits.value = uriMatch.digits
-      if (uriMatch.period) period.value = uriMatch.period
-      if (uriMatch.algorithm) algorithm.value = uriMatch.algorithm
-    } else {
+      if (uriMatch.digits)
+        digits.value = uriMatch.digits
+      if (uriMatch.period)
+        period.value = uriMatch.period
+      if (uriMatch.algorithm)
+        algorithm.value = uriMatch.algorithm
+    }
+    else {
       parsedUriDetails.value = null
     }
 
     const options: TotpOptions = {
       digits: digits.value,
       period: period.value,
-      algorithm: algorithm.value
+      algorithm: algorithm.value,
     }
 
     const res = await generateTotp(trimmed, options)
@@ -56,7 +56,8 @@ async function updateTotp() {
     remainingSeconds.value = res.remainingSeconds
     progress.value = res.progress
     errorMessage.value = null
-  } catch (err) {
+  }
+  catch (err) {
     errorMessage.value = err instanceof Error ? err.message : 'Invalid Base32 secret.'
     code.value = ''
   }
@@ -261,7 +262,7 @@ function handleClear() {
           :items="[
             { label: 'HMAC Generator', to: '/hub/crypto/hmac' },
             { label: 'ID & Secret Generator', to: '/hub/crypto/generator' },
-            { label: 'Encoder & Escaper', to: '/hub/dev/encoder' }
+            { label: 'Encoder & Escaper', to: '/hub/dev/encoder' },
           ]"
         />
       </ToolDocs>

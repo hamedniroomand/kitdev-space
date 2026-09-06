@@ -18,7 +18,7 @@ const PANEL_ITEMS: { label: string, value: Panel }[] = [
   { label: 'AST tree', value: 'ast' },
   { label: 'AST JSON', value: 'json' },
   { label: 'Transform', value: 'transform' },
-  { label: 'Resolver', value: 'resolve' }
+  { label: 'Resolver', value: 'resolve' },
 ]
 
 const language = ref<AstLanguage>('tsx')
@@ -71,8 +71,8 @@ async function parseAst() {
       body: {
         mode: 'parse',
         input: input.value,
-        language: language.value
-      }
+        language: language.value,
+      },
     })
     parseResult.value = data.result
     panel.value = 'ast'
@@ -87,8 +87,8 @@ async function runTransform() {
       body: {
         mode: 'transform',
         input: input.value,
-        language: language.value
-      }
+        language: language.value,
+      },
     })
     transformed.value = data.result.code
     panel.value = 'transform'
@@ -123,8 +123,8 @@ defineShortcuts({
     usingInput: true,
     handler: () => {
       parseAst()
-    }
-  }
+    },
+  },
 })
 </script>
 
@@ -309,7 +309,7 @@ defineShortcuts({
           :items="[
             { label: 'TS / JSX Transpiler', to: '/hub/dev/transpiler' },
             { label: 'Code Minifier and Beautifier', to: '/hub/dev/code-minifier' },
-            { label: 'JSON Formatter', to: '/hub/data/json-formatter' }
+            { label: 'JSON Formatter', to: '/hub/data/json-formatter' },
           ]"
         />
       </ToolDocs>

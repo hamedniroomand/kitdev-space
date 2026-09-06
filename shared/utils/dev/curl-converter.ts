@@ -46,7 +46,8 @@ export function tokenizeCurl(cmd: string): string[] {
         tokens.push(current)
         current = ''
       }
-    } else {
+    }
+    else {
       current += char
     }
   }
@@ -76,7 +77,8 @@ export function parseCurl(curlCommand: string): ParsedCurl {
 
     if (token === '-X' || token === '--request') {
       method = (tokens[++i] || '').toUpperCase()
-    } else if (token === '-H' || token === '--header') {
+    }
+    else if (token === '-H' || token === '--header') {
       const headerLine = tokens[++i] || ''
       const colonIndex = headerLine.indexOf(':')
       if (colonIndex !== -1) {
@@ -84,7 +86,8 @@ export function parseCurl(curlCommand: string): ParsedCurl {
         const value = headerLine.slice(colonIndex + 1).trim()
         headers[key] = value
       }
-    } else if (
+    }
+    else if (
       token === '-d'
       || token === '--data'
       || token === '--data-raw'
@@ -93,20 +96,24 @@ export function parseCurl(curlCommand: string): ParsedCurl {
     ) {
       const val = tokens[++i] || ''
       data = data ? `${data}&${val}` : val
-    } else if (token === '-u' || token === '--user') {
+    }
+    else if (token === '-u' || token === '--user') {
       const userpass = tokens[++i] || ''
       const colonIdx = userpass.indexOf(':')
       if (colonIdx !== -1) {
         auth = {
           username: userpass.slice(0, colonIdx),
-          password: userpass.slice(colonIdx + 1)
+          password: userpass.slice(colonIdx + 1),
         }
-      } else {
+      }
+      else {
         auth = { username: userpass }
       }
-    } else if (token === '--url') {
+    }
+    else if (token === '--url') {
       url = tokens[++i] || ''
-    } else if (!token.startsWith('-') && !url) {
+    }
+    else if (!token.startsWith('-') && !url) {
       url = token
     }
   }
@@ -121,20 +128,18 @@ export function parseCurl(curlCommand: string): ParsedCurl {
     method,
     headers,
     data,
-    auth
+    auth,
   }
 }
 
 export function toFetch(parsed: ParsedCurl): string {
   const options: Record<string, unknown> = {
-    method: parsed.method
+    method: parsed.method,
   }
 
   const headers = { ...parsed.headers }
   if (parsed.auth) {
-    const encoded = typeof btoa !== 'undefined'
-      ? btoa(`${parsed.auth.username}:${parsed.auth.password || ''}`)
-      : Buffer.from(`${parsed.auth.username}:${parsed.auth.password || ''}`).toString('base64')
+    const encoded = btoa(`${parsed.auth.username}:${parsed.auth.password || ''}`)
     headers.Authorization = `Basic ${encoded}`
   }
 
@@ -148,7 +153,8 @@ export function toFetch(parsed: ParsedCurl): string {
       // Check if data is valid JSON
       const json = JSON.parse(parsed.data)
       bodyStr = `\n  body: JSON.stringify(${JSON.stringify(json, null, 4).replace(/\n/g, '\n  ')})`
-    } catch {
+    }
+    catch {
       bodyStr = `\n  body: ${JSON.stringify(parsed.data)}`
     }
   }
@@ -168,9 +174,7 @@ export function toFetch(parsed: ParsedCurl): string {
 export function toAxios(parsed: ParsedCurl): string {
   const headers = { ...parsed.headers }
   if (parsed.auth) {
-    const encoded = typeof btoa !== 'undefined'
-      ? btoa(`${parsed.auth.username}:${parsed.auth.password || ''}`)
-      : Buffer.from(`${parsed.auth.username}:${parsed.auth.password || ''}`).toString('base64')
+    const encoded = btoa(`${parsed.auth.username}:${parsed.auth.password || ''}`)
     headers.Authorization = `Basic ${encoded}`
   }
 
@@ -184,7 +188,8 @@ export function toAxios(parsed: ParsedCurl): string {
     try {
       const json = JSON.parse(parsed.data)
       configParts.push(`data: ${JSON.stringify(json, null, 2).replace(/\n/g, '\n  ')}`)
-    } catch {
+    }
+    catch {
       configParts.push(`data: ${JSON.stringify(parsed.data)}`)
     }
   }
@@ -216,7 +221,8 @@ export function toPythonRequests(parsed: ParsedCurl): string {
       const json = JSON.parse(parsed.data)
       lines.push(`json_data = ${JSON.stringify(json, null, 4)}\n`)
       dataArg = ', json=json_data'
-    } catch {
+    }
+    catch {
       lines.push(`data = ${JSON.stringify(parsed.data)}\n`)
       dataArg = ', data=data'
     }

@@ -44,7 +44,7 @@ export function greet(user: User): string {
   "ready": true,
   "tools": ["json", "css", "html"]
 }
-`
+`,
 }
 
 const language = ref<CodeLanguage>('javascript')
@@ -63,12 +63,12 @@ const languageItems = [
   { label: 'TypeScript', value: 'typescript' },
   { label: 'HTML', value: 'html' },
   { label: 'CSS', value: 'css' },
-  { label: 'JSON', value: 'json' }
+  { label: 'JSON', value: 'json' },
 ]
 
 const actionItems = [
   { label: 'Minify', value: 'minify' },
-  { label: 'Beautify', value: 'beautify' }
+  { label: 'Beautify', value: 'beautify' },
 ]
 
 useToolSeo('code-minifier')
@@ -98,7 +98,7 @@ const downloadName = computed(() => {
     typescript: 'ts',
     html: 'html',
     css: 'css',
-    json: 'json'
+    json: 'json',
   }[language.value]
   return action.value === 'minify' ? `minified.${ext}` : `formatted.${ext}`
 })
@@ -142,8 +142,8 @@ async function execute() {
       body: {
         input: input.value,
         language: language.value,
-        action: action.value
-      }
+        action: action.value,
+      },
     })
     output.value = data.result
     engine.value = data.engine
@@ -193,8 +193,8 @@ defineShortcuts({
     usingInput: true,
     handler: () => {
       execute()
-    }
-  }
+    },
+  },
 })
 </script>
 
@@ -316,7 +316,7 @@ defineShortcuts({
           :items="[
             { label: 'AST Playground and Resolver', to: '/hub/dev/ast-playground' },
             { label: 'TS / JSX Transpiler', to: '/hub/dev/transpiler' },
-            { label: 'JSON Formatter', to: '/hub/data/json-formatter' }
+            { label: 'JSON Formatter', to: '/hub/data/json-formatter' },
           ]"
         />
       </ToolDocs>

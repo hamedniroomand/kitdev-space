@@ -20,7 +20,7 @@ export interface DiffResult {
  * Helpers stay nested so this function can run in a web worker.
  */
 export function diffTexts(left: string, right: string): DiffResult {
-  type Part = { type: DiffOp, text: string }
+  interface Part { type: DiffOp, text: string }
 
   function splitLines(text: string): string[] {
     if (text.length === 0) {
@@ -33,7 +33,7 @@ export function diffTexts(left: string, right: string): DiffResult {
     a: string[],
     b: string[],
     trace: Int32Array[],
-    offset: number
+    offset: number,
   ): Part[] {
     const parts: Part[] = []
     let x = a.length
@@ -46,7 +46,8 @@ export function diffTexts(left: string, right: string): DiffResult {
       let prevK: number
       if (k === -d || (k !== d && v[offset + k - 1]! < v[offset + k + 1]!)) {
         prevK = k + 1
-      } else {
+      }
+      else {
         prevK = k - 1
       }
 
@@ -65,7 +66,8 @@ export function diffTexts(left: string, right: string): DiffResult {
 
       if (x === prevX) {
         parts.push({ type: 'insert', text: b[prevY]! })
-      } else {
+      }
+      else {
         parts.push({ type: 'delete', text: a[prevX]! })
       }
 
@@ -106,7 +108,8 @@ export function diffTexts(left: string, right: string): DiffResult {
 
         if (k === -d || (k !== d && v[offset + k - 1]! < v[offset + k + 1]!)) {
           x = v[offset + k + 1]!
-        } else {
+        }
+        else {
           x = v[offset + k - 1]! + 1
         }
 
@@ -126,7 +129,7 @@ export function diffTexts(left: string, right: string): DiffResult {
 
     return [
       ...a.map(text => ({ type: 'delete' as const, text })),
-      ...b.map(text => ({ type: 'insert' as const, text }))
+      ...b.map(text => ({ type: 'insert' as const, text })),
     ]
   }
 
@@ -160,7 +163,7 @@ export function diffTexts(left: string, right: string): DiffResult {
         type: 'equal',
         text: a[i]!,
         oldLine: oldLine++,
-        newLine: newLine++
+        newLine: newLine++,
       })
       unchanged++
     }
@@ -171,23 +174,25 @@ export function diffTexts(left: string, right: string): DiffResult {
           type: 'equal',
           text: part.text,
           oldLine: oldLine++,
-          newLine: newLine++
+          newLine: newLine++,
         })
         unchanged++
-      } else if (part.type === 'delete') {
+      }
+      else if (part.type === 'delete') {
         lines.push({
           type: 'delete',
           text: part.text,
           oldLine: oldLine++,
-          newLine: null
+          newLine: null,
         })
         removed++
-      } else {
+      }
+      else {
         lines.push({
           type: 'insert',
           text: part.text,
           oldLine: null,
-          newLine: newLine++
+          newLine: newLine++,
         })
         added++
       }
@@ -198,7 +203,7 @@ export function diffTexts(left: string, right: string): DiffResult {
         type: 'equal',
         text: a[i]!,
         oldLine: oldLine++,
-        newLine: newLine++
+        newLine: newLine++,
       })
       unchanged++
     }
@@ -217,11 +222,11 @@ export function diffTexts(left: string, right: string): DiffResult {
         type: 'equal' as const,
         text,
         oldLine: index + 1,
-        newLine: index + 1
+        newLine: index + 1,
       })),
       added: 0,
       removed: 0,
-      unchanged: parts.length
+      unchanged: parts.length,
     }
   }
 
@@ -231,7 +236,7 @@ export function diffTexts(left: string, right: string): DiffResult {
 export function formatUnifiedDiff(
   result: DiffResult,
   oldName = 'a',
-  newName = 'b'
+  newName = 'b',
 ): string {
   if (result.added === 0 && result.removed === 0) {
     return ''
@@ -261,7 +266,8 @@ export function formatUnifiedDiff(
           changeEnd -= trailingEqual - CONTEXT
           break
         }
-      } else {
+      }
+      else {
         trailingEqual = 0
       }
       changeEnd++
@@ -288,13 +294,15 @@ export function formatUnifiedDiff(
         oldCount++
         newCount++
         body.push(` ${line.text}`)
-      } else if (line.type === 'delete') {
+      }
+      else if (line.type === 'delete') {
         if (oldStart === 0 && line.oldLine !== null) {
           oldStart = line.oldLine
         }
         oldCount++
         body.push(`-${line.text}`)
-      } else {
+      }
+      else {
         if (newStart === 0 && line.newLine !== null) {
           newStart = line.newLine
         }

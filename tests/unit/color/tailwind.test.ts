@@ -3,7 +3,7 @@ import {
   formatAsCssVars,
   formatAsTailwindV3,
   formatAsTailwindV4,
-  generateTailwindPalette
+  generateTailwindPalette,
 } from '#shared/utils/color/tailwind'
 
 describe('generateTailwindPalette', () => {
@@ -11,7 +11,17 @@ describe('generateTailwindPalette', () => {
     const shades = generateTailwindPalette('#3b82f6')
     expect(shades).toHaveLength(11)
     expect(shades.map(s => s.shade)).toEqual([
-      '50', '100', '200', '300', '400', '500', '600', '700', '800', '900', '950'
+      '50',
+      '100',
+      '200',
+      '300',
+      '400',
+      '500',
+      '600',
+      '700',
+      '800',
+      '900',
+      '950',
     ])
     // 500 should be the input color
     expect(shades.find(s => s.shade === '500')?.hex).toBe('#3b82f6')

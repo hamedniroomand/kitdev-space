@@ -7,7 +7,7 @@ import type { Ref } from 'vue'
  */
 export function useSampleInput<TKey extends string>(
   input: Ref<string>,
-  samples: Record<TKey, string>
+  samples: Record<TKey, string>,
 ) {
   const values = Object.values(samples) as string[]
 

@@ -1,11 +1,10 @@
 <script setup lang="ts">
+import type { GradientStop, GradientType } from '#shared/utils/color/gradient'
 import {
   checkGradientTextContrast,
   createGradientStop,
   formatGradientCss,
   formatGradientDeclaration,
-  type GradientStop,
-  type GradientType
 } from '#shared/utils/color/gradient'
 
 const type = ref<GradientType>('linear')
@@ -13,7 +12,7 @@ const angle = ref(135)
 const textColor = ref('#ffffff')
 const stops = ref<GradientStop[]>([
   createGradientStop('#7c3aed', 0, 'stop-a'),
-  createGradientStop('#06b6d4', 100, 'stop-b')
+  createGradientStop('#06b6d4', 100, 'stop-b'),
 ])
 
 const toast = useToast()
@@ -21,7 +20,7 @@ const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeed
 
 const typeItems = [
   { label: 'Linear', value: 'linear' },
-  { label: 'Radial', value: 'radial' }
+  { label: 'Radial', value: 'radial' },
 ]
 
 useToolSeo('gradient-studio')
@@ -31,9 +30,10 @@ const cssValue = computed(() => {
     return formatGradientCss({
       type: type.value,
       angle: angle.value,
-      stops: stops.value
+      stops: stops.value,
     })
-  } catch {
+  }
+  catch {
     return ''
   }
 })
@@ -45,14 +45,15 @@ const cssDeclaration = computed(() => {
   return formatGradientDeclaration({
     type: type.value,
     angle: angle.value,
-    stops: stops.value
+    stops: stops.value,
   })
 })
 
 const contrast = computed(() => {
   try {
     return checkGradientTextContrast(textColor.value, stops.value)
-  } catch {
+  }
+  catch {
     return null
   }
 })
@@ -98,7 +99,7 @@ function handleReset() {
   textColor.value = '#ffffff'
   stops.value = [
     createGradientStop('#7c3aed', 0, 'stop-a'),
-    createGradientStop('#06b6d4', 100, 'stop-b')
+    createGradientStop('#06b6d4', 100, 'stop-b'),
   ]
 }
 
@@ -107,8 +108,8 @@ defineShortcuts({
     usingInput: true,
     handler: () => {
       copyCss()
-    }
-  }
+    },
+  },
 })
 </script>
 
@@ -316,7 +317,7 @@ defineShortcuts({
           :items="[
             { label: 'Contrast Checker', to: '/hub/color/contrast-checker' },
             { label: 'Palette Generator', to: '/hub/color/palette-generator' },
-            { label: 'Color Converter', to: '/hub/color/converter' }
+            { label: 'Color Converter', to: '/hub/color/converter' },
           ]"
         />
       </ToolDocs>

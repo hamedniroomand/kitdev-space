@@ -4,7 +4,7 @@ import {
   base32Encode,
   generateTotp,
   generateTotpSecret,
-  parseTotpUri
+  parseTotpUri,
 } from '#shared/utils/crypto/totp'
 
 describe('base32 encode and decode', () => {
@@ -27,7 +27,7 @@ describe('parseTotpUri', () => {
       label: 'KitDev:admin@example.com',
       period: 30,
       digits: 6,
-      algorithm: 'SHA-1'
+      algorithm: 'SHA-1',
     })
   })
 

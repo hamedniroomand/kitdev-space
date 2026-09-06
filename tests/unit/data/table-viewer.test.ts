@@ -16,7 +16,7 @@ Bob,25,Designer`
   it('parses JSON array of objects', () => {
     const json = JSON.stringify([
       { id: 1, title: 'First Task', done: false },
-      { id: 2, title: 'Second Task', done: true }
+      { id: 2, title: 'Second Task', done: true },
     ])
     const res = parseToTable(json)
     expect(res.columns).toEqual(['id', 'title', 'done'])
@@ -29,7 +29,7 @@ describe('filterAndSortRows', () => {
   const rows = [
     { name: 'Charlie', age: 35 },
     { name: 'Alice', age: 25 },
-    { name: 'Bob', age: 30 }
+    { name: 'Bob', age: 30 },
   ]
 
   it('filters rows by text query', () => {

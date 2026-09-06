@@ -41,13 +41,13 @@ async function handleFormat() {
 const historyItems = computed<DropdownMenuItem[]>(() => (props.history ?? []).map(sql => ({
   label: sql.replace(/\s+/g, ' ').slice(0, 70),
   icon: 'i-lucide-history',
-  onSelect: () => load(sql)
+  onSelect: () => load(sql),
 })))
 
 const snippetItems = computed<DropdownMenuItem[]>(() => (props.snippets ?? []).map(snippet => ({
   label: snippet.label,
   icon: 'i-lucide-code',
-  onSelect: () => load(snippet.sql)
+  onSelect: () => load(snippet.sql),
 })))
 
 onKeyStroke('Enter', (event) => {

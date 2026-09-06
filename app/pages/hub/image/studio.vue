@@ -24,7 +24,7 @@
           :items="[
             { label: 'EXIF & Metadata Inspector', to: '/hub/image/metadata' },
             { label: 'SVG to PNG / WebP', to: '/hub/image/svg-converter' },
-            { label: 'Favicon Set Generator', to: '/hub/image/favicon-generator' }
+            { label: 'Favicon Set Generator', to: '/hub/image/favicon-generator' },
           ]"
         />
       </ToolDocs>

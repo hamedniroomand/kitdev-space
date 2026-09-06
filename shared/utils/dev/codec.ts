@@ -37,7 +37,7 @@ export const CODEC_OPTIONS: CodecOption[] = [
   { label: 'JSON string', value: 'json', hint: 'Escapes for a JSON string value.' },
   { label: 'JavaScript string', value: 'javascript', hint: 'Escapes quotes, newlines, and tabs.' },
   { label: 'SQL string', value: 'sql', hint: 'Doubles a single quote.' },
-  { label: 'Shell argument', value: 'shell', hint: 'Quotes text for a shell command.' }
+  { label: 'Shell argument', value: 'shell', hint: 'Quotes text for a shell command.' },
 ]
 
 function toBase64Url(value: string): string {

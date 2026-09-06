@@ -1,5 +1,5 @@
-import { parseColor } from './parse'
 import type { Rgb } from './types'
+import { parseColor } from './parse'
 
 function channel(value: number): number {
   const next = value / 255
@@ -22,12 +22,12 @@ export function wcagLevel(ratio: number, largeText = false): { aa: boolean, aaa:
   if (largeText) {
     return {
       aa: ratio >= 3,
-      aaa: ratio >= 4.5
+      aaa: ratio >= 4.5,
     }
   }
 
   return {
     aa: ratio >= 4.5,
-    aaa: ratio >= 7
+    aaa: ratio >= 7,
   }
 }

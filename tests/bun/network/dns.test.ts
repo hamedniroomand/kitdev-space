@@ -32,28 +32,30 @@ describe('lookupDns', () => {
 
   it('looks up A records', async () => {
     const resolve = spyOn(bunDns, 'resolve').mockResolvedValue([
-      { address: '93.184.216.34', ttl: 60 }
+      { address: '93.184.216.34', ttl: 60 },
     ])
 
     try {
       const result = await lookupDns('example.com', 'A')
       expect(result).toEqual(['93.184.216.34'])
       expect(resolve).toHaveBeenCalledWith('example.com', 'A')
-    } finally {
+    }
+    finally {
       resolve.mockRestore()
     }
   })
 
   it('looks up AAAA records', async () => {
     const resolve = spyOn(bunDns, 'resolve').mockResolvedValue([
-      { address: '2606:2800:220:1:248:1893:25c8:1946', ttl: 60 }
+      { address: '2606:2800:220:1:248:1893:25c8:1946', ttl: 60 },
     ])
 
     try {
       const result = await lookupDns('EXAMPLE.COM.', 'AAAA')
       expect(result).toEqual(['2606:2800:220:1:248:1893:25c8:1946'])
       expect(resolve).toHaveBeenCalledWith('example.com', 'AAAA')
-    } finally {
+    }
+    finally {
       resolve.mockRestore()
     }
   })
@@ -64,20 +66,22 @@ describe('lookupDns', () => {
     try {
       const result = await lookupDns('www.github.com', 'CNAME')
       expect(result).toEqual(['github.com'])
-    } finally {
+    }
+    finally {
       resolveCname.mockRestore()
     }
   })
 
   it('looks up MX records', async () => {
     const resolveMx = spyOn(bunDns, 'resolveMx').mockResolvedValue([
-      { priority: 10, exchange: 'mail.example.com' }
+      { priority: 10, exchange: 'mail.example.com' },
     ])
 
     try {
       const result = await lookupDns('example.com', 'MX')
       expect(result).toEqual([{ priority: 10, exchange: 'mail.example.com' }])
-    } finally {
+    }
+    finally {
       resolveMx.mockRestore()
     }
   })
@@ -88,46 +92,50 @@ describe('lookupDns', () => {
     try {
       const result = await lookupDns('example.com', 'NS')
       expect(result).toEqual(['a.iana-servers.net'])
-    } finally {
+    }
+    finally {
       resolveNs.mockRestore()
     }
   })
 
   it('joins TXT record parts', async () => {
     const resolveTxt = spyOn(bunDns, 'resolveTxt').mockResolvedValue([
-      ['v=spf1 ', '-all']
+      ['v=spf1 ', '-all'],
     ])
 
     try {
       const result = await lookupDns('example.com', 'TXT')
       expect(result).toEqual(['v=spf1 -all'])
-    } finally {
+    }
+    finally {
       resolveTxt.mockRestore()
     }
   })
 
   it('looks up CAA records', async () => {
     const resolveCaa = spyOn(bunDns, 'resolveCaa').mockResolvedValue([
-      { critical: 0, issue: 'letsencrypt.org' }
+      { critical: 0, issue: 'letsencrypt.org' },
     ])
 
     try {
       const result = await lookupDns('example.com', 'CAA')
       expect(result).toEqual([{ critical: 0, issue: 'letsencrypt.org' }])
-    } finally {
+    }
+    finally {
       resolveCaa.mockRestore()
     }
   })
 
   it('returns an empty list when no records exist', async () => {
     const error = Object.assign(new Error('queryCaa ENOTFOUND example.com'), {
-      code: 'DNS_ENOTFOUND'
+      code: 'DNS_ENOTFOUND',
     })
     const resolveCaa = spyOn(bunDns, 'resolveCaa').mockRejectedValue(error)
 
     try {
       await expect(lookupDns('example.com', 'CAA')).resolves.toEqual([])
-    } finally {
+    }
+    finally {
       resolveCaa.mockRestore()
     }
   })

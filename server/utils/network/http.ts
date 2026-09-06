@@ -61,13 +61,13 @@ function isRedirectStatus(status: number): boolean {
 async function fetchOnce(
   url: URL,
   method: 'HEAD' | 'GET' | 'OPTIONS',
-  requestHeaders?: Record<string, string>
+  requestHeaders?: Record<string, string>,
 ): Promise<Response> {
   return Bun.fetch(url, {
     method,
     redirect: 'manual',
     headers: requestHeaders,
-    signal: AbortSignal.timeout(TIMEOUT_MS)
+    signal: AbortSignal.timeout(TIMEOUT_MS),
   })
 }
 
@@ -76,20 +76,20 @@ function toResult(response: Response, fallbackUrl: URL): HeaderInspectResult {
     status: response.status,
     statusText: response.statusText,
     headers: headersToRecord(response.headers),
-    url: response.url || fallbackUrl.href
+    url: response.url || fallbackUrl.href,
   }
 }
 
 export async function fetchHeaders(
   input: string,
-  options: { origin?: string, method?: 'HEAD' | 'GET' | 'OPTIONS' } = {}
+  options: { origin?: string, method?: 'HEAD' | 'GET' | 'OPTIONS' } = {},
 ): Promise<HeaderInspectResult> {
   const url = await assertSafeUrl(input)
   const requestHeaders = options.origin
     ? {
         'Origin': options.origin,
         'Access-Control-Request-Method': 'GET',
-        'Access-Control-Request-Headers': 'content-type'
+        'Access-Control-Request-Headers': 'content-type',
       }
     : undefined
 
@@ -109,7 +109,8 @@ export async function fetchHeaders(
 
     discardBody(response)
     return toResult(response, url)
-  } catch (cause) {
+  }
+  catch (cause) {
     if (isTimeout(cause)) {
       throw new Error('The request timed out.', { cause })
     }
@@ -131,7 +132,7 @@ export async function walkRedirects(input: string): Promise<RedirectHop[]> {
       const location = header || undefined
       const hop: RedirectHop = {
         url: current.href,
-        status: response.status
+        status: response.status,
       }
 
       if (location !== undefined) {
@@ -150,7 +151,8 @@ export async function walkRedirects(input: string): Promise<RedirectHop[]> {
 
       try {
         current = await assertSafeUrl(new URL(location, current).href)
-      } catch (cause) {
+      }
+      catch (cause) {
         // Keep hops. Do not fetch the blocked Location.
         if (isDeniedUrl(cause)) {
           return hops
@@ -158,7 +160,8 @@ export async function walkRedirects(input: string): Promise<RedirectHop[]> {
         throw cause
       }
     }
-  } catch (cause) {
+  }
+  catch (cause) {
     // Keep hops already recorded when a later hop times out or fails.
     if (hops.length > 0) {
       return hops

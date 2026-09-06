@@ -16,7 +16,7 @@ const recordTypeItems = [
   { label: 'MX', value: 'MX' },
   { label: 'NS', value: 'NS' },
   { label: 'TXT', value: 'TXT' },
-  { label: 'CAA', value: 'CAA' }
+  { label: 'CAA', value: 'CAA' },
 ]
 
 useToolSeo('dns')
@@ -27,8 +27,8 @@ async function lookup() {
       method: 'POST',
       body: {
         domain: domain.value,
-        type: recordType.value
-      }
+        type: recordType.value,
+      },
     })
     return data.result
   }, 'The lookup failed.')
@@ -56,8 +56,8 @@ defineShortcuts({
     usingInput: true,
     handler: () => {
       lookup()
-    }
-  }
+    },
+  },
 })
 </script>
 
@@ -166,7 +166,7 @@ defineShortcuts({
           :items="[
             { label: 'Email Health Inspector', to: '/hub/network/email-health' },
             { label: 'HTTP Inspector', to: '/hub/network/http-inspector' },
-            { label: 'URL Inspector', to: '/hub/network/url-inspector' }
+            { label: 'URL Inspector', to: '/hub/network/url-inspector' },
           ]"
         />
       </ToolDocs>

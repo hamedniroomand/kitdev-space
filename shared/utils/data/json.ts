@@ -8,10 +8,12 @@ import { toStrictJson } from './json5'
 export function parseJson(input: string): unknown {
   try {
     return JSON.parse(input)
-  } catch (cause) {
+  }
+  catch (cause) {
     try {
       return JSON.parse(toStrictJson(input))
-    } catch {
+    }
+    catch {
       // Report the error of the strict parse, because it names the true position.
       throw formatJsonError(cause, input)
     }
@@ -30,10 +32,11 @@ export function validateJson(input: string): { ok: true } | { ok: false, error: 
   try {
     parseJson(input)
     return { ok: true }
-  } catch (cause) {
+  }
+  catch (cause) {
     return {
       ok: false,
-      error: cause instanceof DataError ? cause : formatJsonError(cause, input)
+      error: cause instanceof DataError ? cause : formatJsonError(cause, input),
     }
   }
 }

@@ -14,7 +14,7 @@ const labels: Record<OgCardVariant, string> = {
   x: 'X preview',
   linkedin: 'LinkedIn preview',
   discord: 'Discord preview',
-  search: 'Search snippet'
+  search: 'Search snippet',
 }
 </script>
 

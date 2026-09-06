@@ -12,7 +12,7 @@ import { DataError } from './errors'
  * `<item key="…">`, so any JSON object round-trips.
  */
 
-const XML_NAME = /^[A-Za-z_][\w.-]*$/
+const XML_NAME = /^[A-Z_][\w.-]*$/i
 
 export function isXmlElementName(name: string): boolean {
   return !name.startsWith('@') && !name.startsWith('#') && XML_NAME.test(name)
@@ -57,12 +57,15 @@ function elementToValue(element: Element): unknown {
       const existing = out[child.nodeName]
       if (existing === undefined) {
         out[child.nodeName] = value
-      } else if (Array.isArray(existing)) {
+      }
+      else if (Array.isArray(existing)) {
         existing.push(value)
-      } else {
+      }
+      else {
         out[child.nodeName] = [existing, value]
       }
-    } else if (node.nodeType === 3 || node.nodeType === 4) {
+    }
+    else if (node.nodeType === 3 || node.nodeType === 4) {
       // Text and CDATA. Comments and processing instructions are dropped.
       text += node.nodeValue ?? ''
     }
@@ -138,9 +141,11 @@ function writeElement(name: string, value: unknown, indent: string, attributes: 
     const attribute = attributeName(key)
     if (attribute) {
       ownAttributes[attribute] = scalarText(child)
-    } else if (key === '#text') {
+    }
+    else if (key === '#text') {
       text = scalarText(child)
-    } else {
+    }
+    else {
       children.push([key, child])
     }
   }
@@ -160,7 +165,8 @@ function writeElement(name: string, value: unknown, indent: string, attributes: 
   for (const [key, child] of children) {
     if (isXmlElementName(key)) {
       lines.push(...writeElement(key, child, `${indent}  `))
-    } else {
+    }
+    else {
       lines.push(...writeElement('item', child, `${indent}  `, { key }))
     }
   }

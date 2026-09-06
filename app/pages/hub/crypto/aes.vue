@@ -28,13 +28,16 @@ async function handleRun() {
   try {
     if (mode.value === 'encrypt') {
       output.value = await encryptAesGcm(input.value, password.value)
-    } else {
+    }
+    else {
       output.value = await decryptAesGcm(input.value, password.value)
     }
-  } catch (err) {
+  }
+  catch (err) {
     errorMsg.value = err instanceof Error ? err.message : 'Operation failed.'
     output.value = ''
-  } finally {
+  }
+  finally {
     loading.value = false
   }
 }
@@ -64,7 +67,7 @@ function handleClear() {
 useToolShortcuts({
   onRun: handleRun,
   onCopy: handleCopy,
-  onClear: handleClear
+  onClear: handleClear,
 })
 </script>
 
@@ -203,7 +206,7 @@ useToolShortcuts({
           :items="[
             { label: 'ID & Secret Generator', to: '/hub/crypto/generator' },
             { label: 'Hash Generator', to: '/hub/crypto/hash-generator' },
-            { label: 'Password Benchmark', to: '/hub/crypto/password-benchmark' }
+            { label: 'Password Benchmark', to: '/hub/crypto/password-benchmark' },
           ]"
         />
       </ToolDocs>

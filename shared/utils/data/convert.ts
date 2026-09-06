@@ -7,7 +7,7 @@ import {
   parseYamlText,
   stringifyJson5Text,
   stringifyTomlText,
-  stringifyYamlText
+  stringifyYamlText,
 } from './text-formats'
 import { jsonToTypeScript } from './typescript'
 import { parseXml, stringifyXml } from './xml'

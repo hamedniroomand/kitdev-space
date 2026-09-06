@@ -13,7 +13,7 @@ describe('searchTools', () => {
       tool.category === 'crypto'
       || tool.keywords.includes('crypto')
       || tool.name.toLowerCase().includes('crypto')
-      || tool.description.toLowerCase().includes('crypto')
+      || tool.description.toLowerCase().includes('crypto'),
     )).toBe(true)
   })
 })

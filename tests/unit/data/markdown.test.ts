@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   generateHtmlDocument,
-  parseMarkdown
+  parseMarkdown,
 } from '#shared/utils/data/markdown'
 
 describe('parseMarkdown', () => {

@@ -12,8 +12,8 @@ const testPaths = ref<string>(
     'src/utils/math.ts',
     'tests/unit/app.test.ts',
     'package.json',
-    'docs/README.md'
-  ].join('\n')
+    'docs/README.md',
+  ].join('\n'),
 )
 
 const pathList = computed(() => {
@@ -27,7 +27,7 @@ const evaluatedResults = computed(() => {
   const pattern = globPattern.value.trim()
   return pathList.value.map(path => ({
     path,
-    matches: testGlobMatch(pattern, path)
+    matches: testGlobMatch(pattern, path),
   }))
 })
 
@@ -158,7 +158,7 @@ function applyPreset(pattern: string) {
           :items="[
             { label: 'Regex Tester', to: '/hub/dev/regex-tester' },
             { label: 'Chmod Calculator', to: '/hub/dev/chmod' },
-            { label: 'Tar Explorer', to: '/hub/dev/tar' }
+            { label: 'Tar Explorer', to: '/hub/dev/tar' },
           ]"
         />
       </ToolDocs>

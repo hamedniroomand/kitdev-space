@@ -1,11 +1,12 @@
+import type { AstLanguage, ResolveMode } from '#server/utils/dev/ast'
 import {
+
   isAstLanguage,
   isResolveMode,
   parseSourceAst,
+
   resolveSpecifiers,
   transformSourceAst,
-  type AstLanguage,
-  type ResolveMode
 } from '#server/utils/dev/ast'
 import { getClientKey } from '#server/utils/network/client-ip'
 import { enforceRateLimit } from '#server/utils/network/rate-limit'
@@ -32,7 +33,7 @@ export default defineEventHandler(async (event) => {
       if (!isAstLanguage(language)) {
         throw createError({
           statusCode: 400,
-          message: 'Choose a valid language: javascript, jsx, typescript, or tsx.'
+          message: 'Choose a valid language: javascript, jsx, typescript, or tsx.',
         })
       }
       const result = parseSourceAst(body.input ?? '', language as AstLanguage)
@@ -44,7 +45,7 @@ export default defineEventHandler(async (event) => {
       if (!isAstLanguage(language)) {
         throw createError({
           statusCode: 400,
-          message: 'Choose a valid language: javascript, jsx, typescript, or tsx.'
+          message: 'Choose a valid language: javascript, jsx, typescript, or tsx.',
         })
       }
       const result = transformSourceAst(body.input ?? '', language as AstLanguage)
@@ -56,29 +57,30 @@ export default defineEventHandler(async (event) => {
       if (!isResolveMode(resolveMode)) {
         throw createError({
           statusCode: 400,
-          message: 'Choose esm or node resolve mode.'
+          message: 'Choose esm or node resolve mode.',
         })
       }
       const result = resolveSpecifiers({
         directory: body.directory,
         mode: resolveMode,
-        specifiers: body.specifiers ?? []
+        specifiers: body.specifiers ?? [],
       })
       return { result }
     }
 
     throw createError({
       statusCode: 400,
-      message: 'Choose a valid mode: parse, transform, or resolve.'
+      message: 'Choose a valid mode: parse, transform, or resolve.',
     })
-  } catch (cause) {
+  }
+  catch (cause) {
     if (cause && typeof cause === 'object' && 'statusCode' in cause) {
       throw cause
     }
     const message = cause instanceof Error ? cause.message : 'The AST operation failed.'
     throw createError({
       statusCode: 400,
-      message
+      message,
     })
   }
 })

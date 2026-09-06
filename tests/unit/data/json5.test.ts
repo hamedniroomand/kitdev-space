@@ -74,7 +74,7 @@ describe('toStrictJson', () => {
       host: 'localhost',
       port: 3000,
       allowed: ['a.dev', 'b.dev'],
-      debug: false
+      debug: false,
     })
   })
 

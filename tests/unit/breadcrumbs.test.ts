@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   buildCategoryBreadcrumbs,
   buildToolBreadcrumbs,
-  hubCategoryPath
+  hubCategoryPath,
 } from '#shared/utils/breadcrumbs'
 import { getToolById } from '#shared/utils/tools'
 
@@ -16,7 +16,7 @@ describe('breadcrumbs', () => {
     expect(buildCategoryBreadcrumbs('data')).toEqual([
       { label: 'Home', to: '/' },
       { label: 'Hub', to: '/hub' },
-      { label: 'Data Lab' }
+      { label: 'Data Lab' },
     ])
   })
 
@@ -27,7 +27,7 @@ describe('breadcrumbs', () => {
       { label: 'Home', to: '/' },
       { label: 'Hub', to: '/hub' },
       { label: 'Data Lab', to: '/hub/data' },
-      { label: 'JSON Formatter' }
+      { label: 'JSON Formatter' },
     ])
   })
 })

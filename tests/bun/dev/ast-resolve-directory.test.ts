@@ -5,28 +5,28 @@ describe('resolveSpecifiers directory confinement', () => {
   it('rejects an absolute path', () => {
     expect(() => resolveSpecifiers({
       directory: '/etc',
-      specifiers: ['./passwd']
+      specifiers: ['./passwd'],
     })).toThrow('relative to the project root')
   })
 
   it('rejects a path that climbs above the root', () => {
     expect(() => resolveSpecifiers({
       directory: '../../..',
-      specifiers: ['vue']
+      specifiers: ['vue'],
     })).toThrow('relative to the project root')
   })
 
   it('rejects a nested path that climbs above the root', () => {
     expect(() => resolveSpecifiers({
       directory: 'app/../../../etc',
-      specifiers: ['vue']
+      specifiers: ['vue'],
     })).toThrow('relative to the project root')
   })
 
   it('accepts a directory below the root', () => {
     const result = resolveSpecifiers({
       directory: 'app',
-      specifiers: ['vue']
+      specifiers: ['vue'],
     })
 
     expect(result).toHaveLength(1)

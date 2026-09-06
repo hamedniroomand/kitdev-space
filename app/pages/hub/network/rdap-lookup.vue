@@ -9,21 +9,23 @@ const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeed
 useToolSeo('rdap-lookup')
 
 async function lookup() {
-  if (!query.value.trim()) return
+  if (!query.value.trim())
+    return
 
   await run(async () => {
     const data = await $fetch<{ result: RdapResult }>('/api/network/rdap', {
       method: 'POST',
       body: {
-        query: query.value.trim()
-      }
+        query: query.value.trim(),
+      },
     })
     return data.result
   }, 'The RDAP lookup failed.')
 }
 
 function handleCopy() {
-  if (!result.value?.raw) return
+  if (!result.value?.raw)
+    return
   copy(JSON.stringify(result.value.raw, null, 2))
 }
 
@@ -325,7 +327,7 @@ function handleReset() {
           :items="[
             { label: 'DNS Lookup', to: '/hub/network/dns-lookup' },
             { label: 'TLS Certificate Inspector', to: '/hub/network/tls-inspector' },
-            { label: 'Email Health Inspector', to: '/hub/network/email-health' }
+            { label: 'Email Health Inspector', to: '/hub/network/email-health' },
           ]"
         />
       </ToolDocs>

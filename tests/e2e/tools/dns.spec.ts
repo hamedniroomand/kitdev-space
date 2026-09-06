@@ -10,6 +10,6 @@ test('looks up DNS A records for example.com', async ({ page }) => {
   await page.getByRole('button', { name: 'Lookup' }).click()
 
   await expect(page.getByText(/93\.184\.216\.34|A record|No records/i).first()).toBeVisible({
-    timeout: 15_000
+    timeout: 15_000,
   })
 })

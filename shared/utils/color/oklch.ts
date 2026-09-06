@@ -39,7 +39,7 @@ export function rgbToOklch({ r, g, b }: Rgb): Oklch {
   return {
     l: Number((lightness * 100).toFixed(3)),
     c: Number(chroma.toFixed(4)),
-    h: Number(hue.toFixed(2))
+    h: Number(hue.toFixed(2)),
   }
 }
 
@@ -56,7 +56,7 @@ export function oklchToRgb({ l, c, h }: Oklch): Rgb {
   return {
     r: toSrgb(4.0767416621 * long - 3.3077115913 * medium + 0.2309699292 * short),
     g: toSrgb(-1.2684380046 * long + 2.6097574011 * medium - 0.3413193965 * short),
-    b: toSrgb(-0.0041960863 * long - 0.7034186147 * medium + 1.7076147010 * short)
+    b: toSrgb(-0.0041960863 * long - 0.7034186147 * medium + 1.7076147010 * short),
   }
 }
 
@@ -74,7 +74,7 @@ export function isOutOfSrgbGamut({ l, c, h }: Oklch): boolean {
   const channels = [
     4.0767416621 * long - 3.3077115913 * medium + 0.2309699292 * short,
     -1.2684380046 * long + 2.6097574011 * medium - 0.3413193965 * short,
-    -0.0041960863 * long - 0.7034186147 * medium + 1.7076147010 * short
+    -0.0041960863 * long - 0.7034186147 * medium + 1.7076147010 * short,
   ]
 
   return channels.some(value => value < -0.0001 || value > 1.0001)

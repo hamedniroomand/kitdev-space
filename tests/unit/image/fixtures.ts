@@ -59,12 +59,12 @@ export function buildTiffBlock(): number[] {
     entry(0x0110, 2, modelText.length, u32be(modelAt)),
     entry(0x0112, 3, 1, u16be(6)),
     entry(0x8769, 4, 1, u32be(exifAt)),
-    entry(0x8825, 4, 1, u32be(gpsAt))
+    entry(0x8825, 4, 1, u32be(gpsAt)),
   ]
 
   const exif: TiffEntry[] = [
     entry(0x829A, 5, 1, u32be(exposureAt)),
-    entry(0x8827, 3, 1, u16be(400))
+    entry(0x8827, 3, 1, u16be(400)),
   ]
 
   const gps: TiffEntry[] = [
@@ -72,7 +72,7 @@ export function buildTiffBlock(): number[] {
     entry(0x0002, 5, 3, u32be(latAt)),
     entry(0x0003, 2, 2, chars('E\0')),
     entry(0x0004, 5, 3, u32be(lonAt)),
-    entry(0x0005, 1, 1, [0])
+    entry(0x0005, 1, 1, [0]),
   ]
 
   function writeIfd(entries: TiffEntry[]) {
@@ -93,9 +93,13 @@ export function buildTiffBlock(): number[] {
     ...modelText,
     ...rational(1, 125),
     // 48° 51' 30.24"
-    ...rational(48, 1), ...rational(51, 1), ...rational(3024, 100),
+    ...rational(48, 1),
+    ...rational(51, 1),
+    ...rational(3024, 100),
     // 2° 17' 40.2"
-    ...rational(2, 1), ...rational(17, 1), ...rational(402, 10)
+    ...rational(2, 1),
+    ...rational(17, 1),
+    ...rational(402, 10),
   ]
 
   return [...header, ...writeIfd(ifd0), ...writeIfd(exif), ...writeIfd(gps), ...pool]
@@ -109,16 +113,44 @@ export function buildJpeg(): Uint8Array {
   const scan = [0xFF, 0xDA, ...u16be(8), 1, 1, 0, 0, 63, 0, 0x11, 0x22, 0x33, 0xFF, 0xD9]
 
   return new Uint8Array([
-    0xFF, 0xD8,
+    0xFF,
+    0xD8,
     // APP0 JFIF
-    0xFF, 0xE0, ...u16be(16), ...chars('JFIF\0'), 1, 1, 0, 0, 1, 0, 1, 0, 0,
+    0xFF,
+    0xE0,
+    ...u16be(16),
+    ...chars('JFIF\0'),
+    1,
+    1,
+    0,
+    0,
+    1,
+    0,
+    1,
+    0,
+    0,
     // APP1 EXIF
-    0xFF, 0xE1, ...u16be(exifPayload.length + 2), ...exifPayload,
+    0xFF,
+    0xE1,
+    ...u16be(exifPayload.length + 2),
+    ...exifPayload,
     // Comment
-    0xFF, 0xFE, ...u16be(comment.length + 2), ...comment,
+    0xFF,
+    0xFE,
+    ...u16be(comment.length + 2),
+    ...comment,
     // SOF0 with a 40 x 30 frame
-    0xFF, 0xC0, ...u16be(11), 8, ...u16be(30), ...u16be(40), 1, 1, 0x11, 0,
-    ...scan
+    0xFF,
+    0xC0,
+    ...u16be(11),
+    8,
+    ...u16be(30),
+    ...u16be(40),
+    1,
+    1,
+    0x11,
+    0,
+    ...scan,
   ])
 }
 
@@ -150,12 +182,19 @@ function pngChunk(name: string, payload: number[]): number[] {
 /** A PNG with an IHDR, an eXIf chunk, a tEXt chunk, an IDAT, and an IEND. */
 export function buildPng(): Uint8Array {
   return new Uint8Array([
-    0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A,
+    0x89,
+    0x50,
+    0x4E,
+    0x47,
+    0x0D,
+    0x0A,
+    0x1A,
+    0x0A,
     ...pngChunk('IHDR', [...u32be(40), ...u32be(30), 8, 2, 0, 0, 0]),
     ...pngChunk('eXIf', buildTiffBlock()),
     ...pngChunk('tEXt', [...chars('Author'), 0, ...chars('Jane')]),
     ...pngChunk('IDAT', [0x78, 0x9C, 0x63, 0x00, 0x00, 0x00, 0x01, 0x00, 0x01]),
-    ...pngChunk('IEND', [])
+    ...pngChunk('IEND', []),
   ])
 }
 
@@ -174,10 +213,13 @@ export function buildWebp(): Uint8Array {
     ...riffChunk('VP8X', [0x0C, 0, 0, 0, 39, 0, 0, 29, 0, 0]),
     ...riffChunk('VP8 ', [0x11, 0x22, 0x33, 0x44]),
     ...riffChunk('EXIF', buildTiffBlock()),
-    ...riffChunk('XMP ', chars('<x:xmpmeta/>'))
+    ...riffChunk('XMP ', chars('<x:xmpmeta/>')),
   ]
 
   return new Uint8Array([...chars('RIFF'), ...[
-    body.length & 0xFF, body.length >> 8 & 0xFF, body.length >> 16 & 0xFF, body.length >>> 24 & 0xFF
+    body.length & 0xFF,
+    body.length >> 8 & 0xFF,
+    body.length >> 16 & 0xFF,
+    body.length >>> 24 & 0xFF,
   ], ...body])
 }

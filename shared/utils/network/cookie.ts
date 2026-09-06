@@ -67,7 +67,7 @@ export function parseSetCookie(line: string, now = Date.now()): SetCookie {
     session: true,
     lifetimeSeconds: null,
     size: new TextEncoder().encode(`${name}=${value}`).byteLength,
-    findings
+    findings,
   }
 
   for (const part of rest) {
@@ -84,7 +84,8 @@ export function parseSetCookie(line: string, now = Date.now()): SetCookie {
         cookie.expires = Number.isNaN(time) ? null : new Date(time).toISOString()
         if (Number.isNaN(time)) {
           findings.push({ level: 'warning', message: `Expires "${attributeValue ?? ''}" is not a valid date. Browsers ignore it, and the cookie becomes a session cookie.` })
-        } else {
+        }
+        else {
           cookie.session = false
           cookie.lifetimeSeconds = Math.round((time - now) / 1000)
         }
@@ -96,7 +97,8 @@ export function parseSetCookie(line: string, now = Date.now()): SetCookie {
           cookie.maxAge = seconds
           cookie.session = false
           cookie.lifetimeSeconds = seconds
-        } else {
+        }
+        else {
           findings.push({ level: 'warning', message: `Max-Age "${attributeValue ?? ''}" is not an integer. Browsers ignore it.` })
         }
         break
@@ -205,7 +207,8 @@ export function inspectCookies(input: string, now = Date.now()): CookieReport {
 
     if (kind === 'cookie') {
       report.requestCookies.push(...parseCookieHeader(body))
-    } else {
+    }
+    else {
       report.setCookies.push(parseSetCookie(body, now))
     }
   }

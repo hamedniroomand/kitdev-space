@@ -32,7 +32,8 @@ export function decodeBase64Url(value: string): Uint8Array {
       bytes[i] = binary.charCodeAt(i)
     }
     return bytes
-  } catch (cause) {
+  }
+  catch (cause) {
     throw new Error('Invalid Base64URL in the JWT.\n\nCheck the token and try again.', { cause })
   }
 }
@@ -45,7 +46,8 @@ function decodeJsonPart(part: string): Record<string, unknown> {
       throw new Error('JWT part must be a JSON object.')
     }
     return value as Record<string, unknown>
-  } catch (cause) {
+  }
+  catch (cause) {
     throw new Error('Invalid JSON in the JWT.\n\nCheck the token and try again.', { cause })
   }
 }
@@ -79,7 +81,7 @@ export function decodeJwt(token: string, nowSec = Math.floor(Date.now() / 1000))
     payloadJson: JSON.stringify(payload, null, 2),
     expired: exp == null ? null : nowSec >= exp,
     notBeforeValid: nbf == null ? null : nowSec >= nbf,
-    algorithm
+    algorithm,
   }
 }
 
@@ -100,7 +102,7 @@ async function hmacSha256(secret: string, data: string): Promise<Uint8Array> {
     new TextEncoder().encode(secret),
     { name: 'HMAC', hash: 'SHA-256' },
     false,
-    ['sign']
+    ['sign'],
   )
   const signature = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(data))
   return new Uint8Array(signature)

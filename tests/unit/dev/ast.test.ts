@@ -5,7 +5,7 @@ import {
   createSpan,
   languageToFilename,
   offsetToPosition,
-  sliceSource
+  sliceSource,
 } from '#shared/utils/dev/ast'
 
 describe('offsetToPosition', () => {
@@ -31,10 +31,10 @@ describe('buildAstTree', () => {
             type: 'Identifier',
             name: 'hello',
             start: 0,
-            end: 5
-          }
-        }
-      ]
+            end: 5,
+          },
+        },
+      ],
     }
 
     const tree = buildAstTree(program, 'hello world')
@@ -44,7 +44,7 @@ describe('buildAstTree', () => {
       type: 'Identifier',
       label: 'hello',
       start: 0,
-      end: 5
+      end: 5,
     })
     expect(sliceSource('hello world', 0, 5)).toBe('hello')
   })
@@ -57,17 +57,17 @@ describe('collectImportSpecifiers', () => {
       body: [
         {
           type: 'ImportDeclaration',
-          source: { type: 'Literal', value: 'oxc-parser' }
+          source: { type: 'Literal', value: 'oxc-parser' },
         },
         {
           type: 'ExpressionStatement',
           expression: {
             type: 'CallExpression',
             callee: { type: 'Identifier', name: 'require' },
-            arguments: [{ type: 'Literal', value: 'node:fs' }]
-          }
-        }
-      ]
+            arguments: [{ type: 'Literal', value: 'node:fs' }],
+          },
+        },
+      ],
     }
 
     expect(collectImportSpecifiers(program)).toEqual(['oxc-parser', 'node:fs'])

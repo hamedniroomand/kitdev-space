@@ -9,13 +9,13 @@ export default defineConfig({
       '~': path.resolve(import.meta.dirname, 'app'),
       '@': path.resolve(import.meta.dirname, 'app'),
       '#shared': path.resolve(import.meta.dirname, 'shared'),
-      '#server': path.resolve(import.meta.dirname, 'server')
-    }
+      '#server': path.resolve(import.meta.dirname, 'server'),
+    },
   },
   test: {
     include: ['tests/unit/**/*.test.ts'],
     environment: 'node',
     passWithNoTests: true,
-    setupFiles: ['./tests/unit/setup.ts']
-  }
+    setupFiles: ['./tests/unit/setup.ts'],
+  },
 })

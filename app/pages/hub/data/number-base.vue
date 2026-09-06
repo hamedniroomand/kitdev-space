@@ -1,8 +1,6 @@
 <script setup lang="ts">
-import {
-  convertFromBase,
-  type NumberBase
-} from '#shared/utils/data/number-base'
+import type { NumberBase } from '#shared/utils/data/number-base'
+import { convertFromBase } from '#shared/utils/data/number-base'
 
 useToolSeo('number-base')
 
@@ -31,7 +29,8 @@ function updateFrom(val: string, base: NumberBase) {
     hexVal.value = res.hex
     binaryVal.value = res.binary
     octalVal.value = res.octal
-  } catch (err) {
+  }
+  catch (err) {
     error.value = err instanceof Error ? err.message : 'Invalid number.'
   }
 }
@@ -214,7 +213,7 @@ function handleCopy(text: string, key: string) {
           :items="[
             { label: 'Chmod Calculator', to: '/hub/dev/chmod' },
             { label: 'Encoder & Escaper', to: '/hub/dev/encoder' },
-            { label: 'Unicode Inspector', to: '/hub/data/unicode' }
+            { label: 'Unicode Inspector', to: '/hub/data/unicode' },
           ]"
         />
       </ToolDocs>

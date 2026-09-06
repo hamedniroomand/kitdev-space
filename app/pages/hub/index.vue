@@ -4,22 +4,22 @@ useSeoMeta({
   description: 'Browse KitDev Space tools by category.',
   ogTitle: 'Tools Hub',
   ogDescription: 'Browse KitDev Space tools by category.',
-  ogType: 'website'
+  ogType: 'website',
 })
 
 useKitDevOgImage({
   title: 'Tools Hub',
   description: 'Browse developer tools by category.',
-  eyebrow: 'KitDev Space'
+  eyebrow: 'KitDev Space',
 })
 
 useSchemaOrg([
   defineBreadcrumb({
     itemListElement: [
       { name: 'Home', item: '/' },
-      { name: 'Hub', item: '/hub' }
-    ]
-  })
+      { name: 'Hub', item: '/hub' },
+    ],
+  }),
 ])
 
 const { categoryLabels, getToolsByCategory } = useTools()
@@ -31,7 +31,7 @@ const categories = [
   'crypto',
   'color',
   'image',
-  'dev'
+  'dev',
 ] as const
 </script>
 
@@ -40,7 +40,7 @@ const categories = [
     <ToolBreadcrumbs
       :items="[
         { label: 'Home', to: '/' },
-        { label: 'Hub' }
+        { label: 'Hub' },
       ]"
     />
 

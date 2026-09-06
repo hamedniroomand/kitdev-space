@@ -10,7 +10,7 @@ const MAX_SUGGESTIONS = 4
 
 const currentTool = inject<ComputedRef<Tool | undefined> | undefined>(
   'currentTool',
-  undefined
+  undefined,
 )
 
 const { getToolsByCategory } = useTools()

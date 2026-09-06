@@ -1,30 +1,25 @@
+// `btoa` and `atob` exist in every browser, in Node 16 and later, and in Bun.
 function bytesToBase64(bytes: Uint8Array): string {
-  if (typeof btoa !== 'undefined') {
-    let binary = ''
-    for (let i = 0; i < bytes.byteLength; i++) {
-      binary += String.fromCharCode(bytes[i]!)
-    }
-    return btoa(binary)
+  let binary = ''
+  for (let i = 0; i < bytes.byteLength; i++) {
+    binary += String.fromCharCode(bytes[i]!)
   }
-  return Buffer.from(bytes).toString('base64')
+  return btoa(binary)
 }
 
 function base64ToBytes(base64: string): Uint8Array {
-  if (typeof atob !== 'undefined') {
-    const binary = atob(base64)
-    const bytes = new Uint8Array(binary.length)
-    for (let i = 0; i < binary.length; i++) {
-      bytes[i] = binary.charCodeAt(i)
-    }
-    return bytes
+  const binary = atob(base64)
+  const bytes = new Uint8Array(binary.length)
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i)
   }
-  return new Uint8Array(Buffer.from(base64, 'base64'))
+  return bytes
 }
 
 async function deriveAesKey(
   password: string,
   salt: Uint8Array,
-  iterations: number
+  iterations: number,
 ): Promise<CryptoKey> {
   const encoder = new TextEncoder()
   const passwordBytes = encoder.encode(password)
@@ -39,7 +34,7 @@ async function deriveAesKey(
     passwordBytes as unknown as BufferSource,
     'PBKDF2',
     false,
-    ['deriveKey']
+    ['deriveKey'],
   )
 
   return cryptoObj.subtle.deriveKey(
@@ -47,19 +42,19 @@ async function deriveAesKey(
       name: 'PBKDF2',
       salt: salt as unknown as BufferSource,
       iterations,
-      hash: 'SHA-256'
+      hash: 'SHA-256',
     },
     passwordKey,
     { name: 'AES-GCM', length: 256 },
     false,
-    ['encrypt', 'decrypt']
+    ['encrypt', 'decrypt'],
   )
 }
 
 export async function encryptAesGcm(
   plaintext: string,
   password: string,
-  iterations = 100000
+  iterations = 100000,
 ): Promise<string> {
   if (!password) {
     throw new Error('Enter a password to encrypt the text.')
@@ -84,7 +79,7 @@ export async function encryptAesGcm(
   const ciphertextBuffer = await cryptoObj.subtle.encrypt(
     { name: 'AES-GCM', iv: iv as unknown as BufferSource },
     key,
-    plaintextBytes as unknown as BufferSource
+    plaintextBytes as unknown as BufferSource,
   )
   const ciphertextBytes = new Uint8Array(ciphertextBuffer)
 
@@ -100,7 +95,7 @@ export async function encryptAesGcm(
 export async function decryptAesGcm(
   ciphertextBase64: string,
   password: string,
-  iterations = 100000
+  iterations = 100000,
 ): Promise<string> {
   if (!password) {
     throw new Error('Enter a password to decrypt the text.')
@@ -114,7 +109,8 @@ export async function decryptAesGcm(
   let packed: Uint8Array
   try {
     packed = base64ToBytes(trimmed)
-  } catch {
+  }
+  catch {
     throw new Error('Invalid Base64 ciphertext format.')
   }
 
@@ -137,12 +133,13 @@ export async function decryptAesGcm(
     const decryptedBuffer = await cryptoObj.subtle.decrypt(
       { name: 'AES-GCM', iv: iv as unknown as BufferSource },
       key,
-      ciphertext as unknown as BufferSource
+      ciphertext as unknown as BufferSource,
     )
 
     const decoder = new TextDecoder()
     return decoder.decode(decryptedBuffer)
-  } catch {
+  }
+  catch {
     throw new Error('Decryption failed. Incorrect password or corrupted ciphertext.')
   }
 }

@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { legacyRedirects } from './shared/utils/redirects'
 import { categoryLabels, tools } from './shared/utils/tools'
 
@@ -23,7 +24,7 @@ const prerenderRoutes = [
   ...Object.keys(legacyRedirects),
   '/sitemap.xml',
   '/robots.txt',
-  '/llms.txt'
+  '/llms.txt',
 ]
 
 /**
@@ -47,7 +48,7 @@ const contentSecurityPolicy = [
   'connect-src \'self\' https://www.google-analytics.com https://region1.google-analytics.com https://www.googletagmanager.com https://va.vercel-scripts.com',
   'worker-src \'self\' blob:',
   'manifest-src \'self\'',
-  'upgrade-insecure-requests'
+  'upgrade-insecure-requests',
 ].join('; ')
 
 const securityHeaders = {
@@ -58,7 +59,7 @@ const securityHeaders = {
   'Referrer-Policy': 'strict-origin-when-cross-origin',
   'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), payment=(), usb=()',
   'Cross-Origin-Opener-Policy': 'same-origin',
-  'Cross-Origin-Resource-Policy': 'same-origin'
+  'Cross-Origin-Resource-Policy': 'same-origin',
 }
 
 /**
@@ -72,7 +73,7 @@ const apiSecurityHeaders = {
   'X-Frame-Options': 'DENY',
   'Referrer-Policy': 'no-referrer',
   'Cross-Origin-Resource-Policy': 'same-origin',
-  'Cache-Control': 'no-store'
+  'Cache-Control': 'no-store',
 }
 
 const llmsSections = Object.entries(categoryLabels).map(([category, label]) => ({
@@ -83,8 +84,8 @@ const llmsSections = Object.entries(categoryLabels).map(([category, label]) => (
     .map(tool => ({
       title: tool.name,
       description: tool.description,
-      href: tool.route
-    }))
+      href: tool.route,
+    })),
 }))
 
 export default defineNuxtConfig({
@@ -97,13 +98,13 @@ export default defineNuxtConfig({
     '@vueuse/nuxt',
     'nuxt-llms',
     '@vercel/speed-insights',
-    '@vercel/analytics'
+    '@vercel/analytics',
   ],
 
   components: [{ path: '~/components', pathPrefix: false }],
 
   devtools: {
-    enabled: process.env.NUXT_DEVTOOLS !== 'false'
+    enabled: process.env.NUXT_DEVTOOLS !== 'false',
   },
 
   css: ['~/assets/css/main.css'],
@@ -112,19 +113,19 @@ export default defineNuxtConfig({
     url: 'https://kitdev.space',
     name: 'KitDev Space',
     description: 'Developer tools for people who build things.',
-    defaultLocale: 'en'
+    defaultLocale: 'en',
   },
 
   colorMode: {
     // Follow the system setting. Dark is the fallback when the browser gives none.
     preference: 'system',
-    fallback: 'dark'
+    fallback: 'dark',
   },
 
   runtimeConfig: {
     public: {
-      googleAnalyticsId
-    }
+      googleAnalyticsId,
+    },
   },
 
   routeRules: {
@@ -136,7 +137,7 @@ export default defineNuxtConfig({
     '/crypto/**': { redirect: { to: '/hub/crypto/**', statusCode: 301 } },
     '/color/**': { redirect: { to: '/hub/color/**', statusCode: 301 } },
     '/image/**': { redirect: { to: '/hub/image/**', statusCode: 301 } },
-    '/dev/**': { redirect: { to: '/hub/dev/**', statusCode: 301 } }
+    '/dev/**': { redirect: { to: '/hub/dev/**', statusCode: 301 } },
   },
 
   experimental: {
@@ -145,10 +146,10 @@ export default defineNuxtConfig({
       nuxtLink: {
         // Both flags are needed: Nuxt merges this object with its default
         // `{ visibility: true }`, so `interaction` alone keeps visibility on.
-        prefetchOn: { visibility: false, interaction: true }
-      }
+        prefetchOn: { visibility: false, interaction: true },
+      },
     },
-    viewTransition: true
+    viewTransition: true,
   },
 
   compatibilityDate: '2026-06-30',
@@ -157,19 +158,19 @@ export default defineNuxtConfig({
     preset: nitroPreset(),
     prerender: {
       crawlLinks: true,
-      routes: prerenderRoutes
+      routes: prerenderRoutes,
     },
     vercel: {
       functions: {
-        runtime: 'bun1.x'
-      }
-    }
+        runtime: 'bun1.x',
+      },
+    },
   },
 
   vite: {
     optimizeDeps: {
-      include: ['@codemirror/lang-css', '@codemirror/lang-html', '@codemirror/lang-javascript', '@codemirror/lang-json', '@codemirror/lang-markdown', '@codemirror/lang-sql', '@codemirror/lint', '@codemirror/theme-one-dark', '@codemirror/view', 'sql-formatter', 'sql.js', 'vue-codemirror6', '@unhead/schema-org/vue', '@codemirror/commands', '@vue/devtools-core', '@vue/devtools-kit', 'uqr']
-    }
+      include: ['@codemirror/lang-css', '@codemirror/lang-html', '@codemirror/lang-javascript', '@codemirror/lang-json', '@codemirror/lang-markdown', '@codemirror/lang-sql', '@codemirror/lint', '@codemirror/theme-one-dark', '@codemirror/view', 'sql-formatter', 'sql.js', 'vue-codemirror6', '@unhead/schema-org/vue', '@codemirror/commands', '@vue/devtools-core', '@vue/devtools-kit', 'uqr'],
+    },
     // No manualChunks here. Rollup pulls every static dependency of a manual
     // chunk into it, so a "codemirror" chunk also swallowed Vue and every page
     // had to load the editor. `ToolCodeMirror` loads lazily and splits on its own.
@@ -183,7 +184,7 @@ export default defineNuxtConfig({
       for (const entry of Object.values(manifest)) {
         entry.dynamicImports = []
       }
-    }
+    },
   },
 
   fonts: {
@@ -191,7 +192,7 @@ export default defineNuxtConfig({
       weights: [400, 500, 600],
       styles: ['normal'],
       subsets: ['latin'],
-      preload: true
+      preload: true,
     },
     families: [
       {
@@ -200,7 +201,7 @@ export default defineNuxtConfig({
         weights: [400, 500, 600],
         styles: ['normal'],
         subsets: ['latin'],
-        preload: true
+        preload: true,
       },
       {
         name: 'JetBrains Mono',
@@ -208,9 +209,9 @@ export default defineNuxtConfig({
         weights: [400, 500, 600],
         styles: ['normal'],
         subsets: ['latin'],
-        preload: false
-      }
-    ]
+        preload: false,
+      },
+    ],
   },
 
   llms: {
@@ -219,9 +220,9 @@ export default defineNuxtConfig({
     description: 'Developer tools for people who build things.',
     notes: [
       'KitDev Space provides tools for developers.',
-      'Tools run in the browser or on the server without data persistence.'
+      'Tools run in the browser or on the server without data persistence.',
     ],
-    sections: llmsSections
+    sections: llmsSections,
   },
 
   ogImage: {
@@ -229,8 +230,8 @@ export default defineNuxtConfig({
     defaults: {
       width: 1200,
       height: 630,
-      emojis: false
-    }
+      emojis: false,
+    },
   },
 
   schemaOrg: {
@@ -239,8 +240,8 @@ export default defineNuxtConfig({
       name: 'KitDev Space',
       url: 'https://kitdev.space',
       logo: '/apple-touch-icon.png',
-      description: 'Developer tools for people who build things.'
-    }
+      description: 'Developer tools for people who build things.',
+    },
   },
 
   scripts: googleAnalyticsId
@@ -253,10 +254,10 @@ export default defineNuxtConfig({
               ad_storage: 'denied',
               ad_user_data: 'denied',
               ad_personalization: 'denied',
-              analytics_storage: 'granted'
-            }
-          }
-        }
+              analytics_storage: 'granted',
+            },
+          },
+        },
       }
     : {},
 
@@ -270,7 +271,7 @@ export default defineNuxtConfig({
       '/crypto/**',
       '/color/**',
       '/image/**',
-      '/dev/**'
-    ]
-  }
+      '/dev/**',
+    ],
+  },
 })

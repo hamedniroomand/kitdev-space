@@ -43,8 +43,8 @@ describe('parseXml', () => {
         name: 'KitDev',
         tag: ['a', 'b'],
         note: { '@lang': 'en', '#text': 'hi' },
-        empty: ''
-      }
+        empty: '',
+      },
     })
   })
 

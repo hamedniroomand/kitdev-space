@@ -2,13 +2,6 @@
 import type { Extension } from '@codemirror/state'
 import type { ToolEditorLang } from '#shared/utils/dev/editor-lang'
 
-/**
- * The frame of a code editor: the label, the height, and the expand button.
- * The CodeMirror code sits in `ToolCodeMirror`, which loads only in the
- * browser, so this component keeps the editor chunk out of the page preload.
- */
-const model = defineModel<string>({ default: '' })
-
 const props = withDefaults(defineProps<{
   label: string
   readonly?: boolean
@@ -21,8 +14,15 @@ const props = withDefaults(defineProps<{
   rows: 12,
   lang: 'text',
   wrap: true,
-  extensions: () => []
+  extensions: () => [],
 })
+
+/**
+ * The frame of a code editor: the label, the height, and the expand button.
+ * The CodeMirror code sits in `ToolCodeMirror`, which loads only in the
+ * browser, so this component keeps the editor chunk out of the page preload.
+ */
+const model = defineModel<string>({ default: '' })
 
 const [expanded, toggleExpanded] = useToggle(false)
 

@@ -8,8 +8,8 @@ describe('formatMarkdownTable', () => {
       alignments: ['left', 'right'],
       rows: [
         ['Apple', '$1.00'],
-        ['Banana', '$0.50']
-      ]
+        ['Banana', '$0.50'],
+      ],
     })
 
     expect(table).toContain('| Name   | Price |')
@@ -21,7 +21,7 @@ describe('formatMarkdownTable', () => {
   it('handles empty rows gracefully', () => {
     const table = formatMarkdownTable({
       headers: ['Col A', 'Col B'],
-      rows: []
+      rows: [],
     })
     expect(table).toContain('| Col A | Col B |')
   })

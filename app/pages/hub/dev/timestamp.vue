@@ -31,7 +31,7 @@ const items = computed(() => {
     { label: 'Local Time', value: date.toLocaleString(), id: 'local' },
     { label: 'Formatted Date', value: formattedUtc.value, id: 'formatted' },
     { label: 'Unix Seconds', value: String(seconds), id: 'seconds' },
-    { label: 'Unix Milliseconds', value: String(milliseconds), id: 'ms' }
+    { label: 'Unix Milliseconds', value: String(milliseconds), id: 'ms' },
   ]
 })
 
@@ -136,7 +136,7 @@ async function copyValue(val: string, key: string) {
           class="mt-8"
           :items="[
             { label: 'Cron Visualizer', to: '/hub/dev/cron' },
-            { label: 'ID & Secret Generator', to: '/hub/crypto/generator' }
+            { label: 'ID & Secret Generator', to: '/hub/crypto/generator' },
           ]"
         />
       </ToolDocs>

@@ -1,10 +1,6 @@
 <script setup lang="ts">
-import {
-  type ChmodPermissions,
-  octalToPermissions,
-  permissionsToOctal,
-  permissionsToSymbolic
-} from '#shared/utils/dev/chmod'
+import type { ChmodPermissions } from '#shared/utils/dev/chmod'
+import { octalToPermissions, permissionsToOctal, permissionsToSymbolic } from '#shared/utils/dev/chmod'
 
 useToolSeo('chmod')
 
@@ -21,7 +17,8 @@ const chmodCommand = computed(() => `chmod ${octalOutput.value} ${fileName.value
 watch(octalInput, (val) => {
   try {
     permissions.value = octalToPermissions(val)
-  } catch {
+  }
+  catch {
     // Ignore partial edits
   }
 })
@@ -234,7 +231,7 @@ function handleCopy() {
           :items="[
             { label: 'Number Base Converter', to: '/hub/data/number-base' },
             { label: 'Glob Tester', to: '/hub/dev/glob-tester' },
-            { label: 'Tar Explorer', to: '/hub/dev/tar' }
+            { label: 'Tar Explorer', to: '/hub/dev/tar' },
           ]"
         />
       </ToolDocs>

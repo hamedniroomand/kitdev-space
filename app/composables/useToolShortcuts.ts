@@ -1,4 +1,4 @@
-import { whenever, useMagicKeys } from '@vueuse/core'
+import { useMagicKeys, whenever } from '@vueuse/core'
 
 export interface ToolShortcutsOptions {
   onRun?: () => void
@@ -11,8 +11,10 @@ export function useToolShortcuts(options: ToolShortcutsOptions) {
   const keys = useMagicKeys()
 
   if (options.onRun) {
-    if (keys.Meta_Enter) whenever(keys.Meta_Enter, options.onRun)
-    if (keys.Ctrl_Enter) whenever(keys.Ctrl_Enter, options.onRun)
+    if (keys.Meta_Enter)
+      whenever(keys.Meta_Enter, options.onRun)
+    if (keys.Ctrl_Enter)
+      whenever(keys.Ctrl_Enter, options.onRun)
   }
 
   if (options.onCopy && keys.Alt_C) {

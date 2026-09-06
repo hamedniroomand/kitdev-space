@@ -1,4 +1,5 @@
 import type { H3Event } from 'h3'
+import type { Buffer } from 'node:buffer'
 import { ImageError } from './errors'
 import { MAX_IMAGE_BYTES } from './limits'
 
@@ -47,7 +48,7 @@ export async function readImageForm(event: H3Event): Promise<{
     return {
       bytes: new Uint8Array(file.data),
       filename: file.filename,
-      fields
+      fields,
     }
   }
 

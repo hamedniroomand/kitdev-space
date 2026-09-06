@@ -9,8 +9,8 @@ const { list, containerProps, wrapperProps } = useVirtualList(
   computed(() => props.lines),
   {
     itemHeight: 28,
-    overscan: 12
-  }
+    overscan: 12,
+  },
 )
 
 function lineClass(type: DiffLine['type']) {

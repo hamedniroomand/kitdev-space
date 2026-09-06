@@ -5,7 +5,7 @@ export class DataError extends Error {
 
   constructor(
     message: string,
-    options?: { line?: number, column?: number, position?: number, cause?: unknown }
+    options?: { line?: number, column?: number, position?: number, cause?: unknown },
   ) {
     super(message, options?.cause ? { cause: options.cause } : undefined)
     this.name = 'DataError'
@@ -21,7 +21,7 @@ export function positionToLineColumn(input: string, position: number): { line: n
   const lines = before.split('\n')
   return {
     line: lines.length,
-    column: (lines[lines.length - 1]?.length ?? 0) + 1
+    column: (lines[lines.length - 1]?.length ?? 0) + 1,
   }
 }
 
@@ -33,7 +33,7 @@ export function formatJsonError(cause: unknown, input: string): DataError {
       const { line, column } = positionToLineColumn(input, position)
       return new DataError(
         `Invalid JSON.\n\nCheck the syntax near this point.\n\nLine ${line}, column ${column}.`,
-        { line, column, position, cause }
+        { line, column, position, cause },
       )
     }
   }

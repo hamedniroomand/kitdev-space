@@ -14,7 +14,7 @@ export async function extractOgFromHtml(html: string, pageUrl: string): Promise<
     image: '',
     url: pageUrl,
     siteName: '',
-    twitterCard: ''
+    twitterCard: '',
   }
 
   let fallbackTitle = ''
@@ -23,7 +23,7 @@ export async function extractOgFromHtml(html: string, pageUrl: string): Promise<
     .on('title', {
       text(text) {
         fallbackTitle += text.text
-      }
+      },
     })
     .on('meta', {
       element(element) {
@@ -59,7 +59,7 @@ export async function extractOgFromHtml(html: string, pageUrl: string): Promise<
         if (prop === 'twitter:image' && !data.image) {
           data.image = content
         }
-      }
+      },
     })
 
   const transformed = rewriter.transform(new Response(html))

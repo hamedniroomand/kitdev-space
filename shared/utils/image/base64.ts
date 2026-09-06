@@ -12,7 +12,7 @@ export function parseDataUri(input: string): DataUriInfo {
     return {
       mimeType: match[1],
       base64: match[2],
-      isDataUri: true
+      isDataUri: true,
     }
   }
 
@@ -20,7 +20,7 @@ export function parseDataUri(input: string): DataUriInfo {
   return {
     mimeType: 'image/png',
     base64: trimmed,
-    isDataUri: false
+    isDataUri: false,
   }
 }
 

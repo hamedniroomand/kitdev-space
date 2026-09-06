@@ -25,7 +25,8 @@ function loadSample() {
 }
 
 async function generate() {
-  if (!file.value) return
+  if (!file.value)
+    return
 
   await run(async () => {
     const formData = new FormData()
@@ -36,14 +37,15 @@ async function generate() {
 
     const data = await $fetch<{ result: FaviconPackageResult }>('/api/image/favicon-generator', {
       method: 'POST',
-      body: formData
+      body: formData,
     })
     return data.result
   }, 'The favicon generation failed.')
 }
 
 function downloadZip() {
-  if (!result.value?.zipBase64) return
+  if (!result.value?.zipBase64)
+    return
   const binaryString = atob(result.value.zipBase64)
   const len = binaryString.length
   const bytes = new Uint8Array(len)
@@ -319,7 +321,7 @@ function handleReset() {
           :items="[
             { label: 'Image Studio', to: '/hub/image/studio' },
             { label: 'SVG to PNG / WebP', to: '/hub/image/svg-converter' },
-            { label: 'Placeholder Image Generator', to: '/hub/image/placeholder' }
+            { label: 'Placeholder Image Generator', to: '/hub/image/placeholder' },
           ]"
         />
       </ToolDocs>

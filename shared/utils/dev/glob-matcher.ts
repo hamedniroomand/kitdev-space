@@ -30,14 +30,16 @@ export function globToRegex(glob: string): RegExp {
 export function testGlobMatch(pattern: string, path: string): boolean {
   const cleanPattern = pattern.trim()
   const cleanPath = path.trim()
-  if (!cleanPattern || !cleanPath) return false
+  if (!cleanPattern || !cleanPath)
+    return false
 
   const isNegative = cleanPattern.startsWith('!')
   try {
     const regex = globToRegex(cleanPattern)
     const matches = regex.test(cleanPath)
     return isNegative ? !matches : matches
-  } catch {
+  }
+  catch {
     return false
   }
 }

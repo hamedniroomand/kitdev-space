@@ -23,7 +23,7 @@
           :items="[
             { label: 'Password Benchmark', to: '/hub/crypto/password-benchmark' },
             { label: 'Hash Generator', to: '/hub/crypto/hash-generator' },
-            { label: 'Encoder & Escaper', to: '/hub/dev/encoder' }
+            { label: 'Encoder & Escaper', to: '/hub/dev/encoder' },
           ]"
         />
       </ToolDocs>

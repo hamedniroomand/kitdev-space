@@ -14,7 +14,7 @@ describe('inspectUrl', () => {
       pathname: '/path',
       search: '?q=1&x=2',
       searchParams: { q: '1', x: '2' },
-      hash: '#top'
+      hash: '#top',
     })
   })
 

@@ -9,7 +9,8 @@ export function useKitDevOgImage(props: KitDevOgImageProps) {
   const siteHost = computed(() => {
     try {
       return new URL(String(site.url || 'https://kitdev.space')).host
-    } catch {
+    }
+    catch {
       return 'kitdev.space'
     }
   })
@@ -18,7 +19,7 @@ export function useKitDevOgImage(props: KitDevOgImageProps) {
     title: props.title,
     description: props.description,
     eyebrow: props.eyebrow ?? site.name ?? 'KitDev Space',
-    siteName: siteHost
+    siteName: siteHost,
   })
 
   // Absolute og:image URLs are not crawled on all Nitro presets (e.g. vercel).
@@ -27,7 +28,8 @@ export function useKitDevOgImage(props: KitDevOgImageProps) {
     const paths = urls.map((url) => {
       try {
         return new URL(url, String(site.url || 'https://kitdev.space')).pathname
-      } catch {
+      }
+      catch {
         return url.startsWith('/') ? url : `/${url}`
       }
     })

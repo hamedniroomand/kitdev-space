@@ -1,5 +1,5 @@
-import { parseColor, rgbToHex } from './parse'
 import type { Hsl } from './types'
+import { parseColor, rgbToHex } from './parse'
 
 function hslToRgbLocal({ h, s, l }: Hsl) {
   // Reuse parse path via hsl string to avoid duplicating conversion in public API.
@@ -17,7 +17,7 @@ export function createPalette(base: string, count = 5): string[] {
     const next: Hsl = {
       h: hsl.h,
       s: hsl.s,
-      l: start + step * index
+      l: start + step * index,
     }
     return rgbToHex(hslToRgbLocal(next))
   })

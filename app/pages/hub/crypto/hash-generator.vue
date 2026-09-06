@@ -1,16 +1,16 @@
 <script setup lang="ts">
 import type { HashAlgorithm } from '#shared/utils/crypto/types'
 import { canHashInBrowser, hashBytes, hashString } from '#shared/utils/crypto/hash'
-import { formatBytes } from '#shared/utils/format'
 import { parseJson } from '#shared/utils/data/json'
 import { stableStringify } from '#shared/utils/data/stable-json'
+import { formatBytes } from '#shared/utils/format'
 
 type Source = 'text' | 'json' | 'file'
 
 const SOURCE_ITEMS: { label: string, value: Source, icon: string }[] = [
   { label: 'Text', value: 'text', icon: 'i-lucide-type' },
   { label: 'JSON object', value: 'json', icon: 'i-lucide-braces' },
-  { label: 'File', value: 'file', icon: 'i-lucide-file' }
+  { label: 'File', value: 'file', icon: 'i-lucide-file' },
 ]
 
 const algorithmItems = [
@@ -21,7 +21,7 @@ const algorithmItems = [
   { label: 'MD5 (Legacy)', value: 'md5' },
   { label: 'xxHash64 (Bun Fast Hash)', value: 'xxhash64' },
   { label: 'wyhash (Bun Fast Hash)', value: 'wyhash' },
-  { label: 'CRC32 (Checksum)', value: 'crc32' }
+  { label: 'CRC32 (Checksum)', value: 'crc32' },
 ]
 
 const source = ref<Source>('text')
@@ -78,8 +78,8 @@ async function hash() {
       method: 'POST',
       body: {
         input: text,
-        algorithm: algorithm.value
-      }
+        algorithm: algorithm.value,
+      },
     })
     return data.result
   }, 'The hash operation failed.')
@@ -110,8 +110,8 @@ defineShortcuts({
     usingInput: true,
     handler: () => {
       hash()
-    }
-  }
+    },
+  },
 })
 </script>
 
@@ -284,7 +284,7 @@ defineShortcuts({
           class="mt-8"
           :items="[
             { label: 'HMAC Generator', to: '/hub/crypto/hmac' },
-            { label: 'Password Benchmark', to: '/hub/crypto/password-benchmark' }
+            { label: 'Password Benchmark', to: '/hub/crypto/password-benchmark' },
           ]"
         />
       </ToolDocs>

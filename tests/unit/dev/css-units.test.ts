@@ -3,7 +3,7 @@ import {
   convertAllCssUnits,
   convertCssUnit,
   fromPx,
-  toPx
+  toPx,
 } from '#shared/utils/dev/css-units'
 
 describe('css units converter', () => {
@@ -31,7 +31,7 @@ describe('css units converter', () => {
     const results = convertAllCssUnits(16, 'px', {
       rootFontSize: 16,
       viewportWidth: 1600,
-      viewportHeight: 800
+      viewportHeight: 800,
     })
 
     expect(results.px).toBe(16)

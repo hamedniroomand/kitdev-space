@@ -1,14 +1,14 @@
+import type { CodeAction, CodeLanguage } from '#shared/utils/dev/code-format'
 import { minifySync } from 'oxc-minify'
 import prettier from 'prettier'
 import { formatJson, minifyJson } from '#shared/utils/data/json'
 import {
+
   isCodeAction,
   isCodeLanguage,
   minifyCss,
   minifyHtml,
   requireCodeInput,
-  type CodeAction,
-  type CodeLanguage
 } from '#shared/utils/dev/code-format'
 
 export { isCodeAction, isCodeLanguage }
@@ -17,7 +17,8 @@ export type { CodeAction, CodeLanguage }
 function stripTypes(code: string, loader: 'ts' | 'tsx' | 'js' | 'jsx'): string {
   try {
     return new Bun.Transpiler({ loader }).transformSync(code)
-  } catch (cause) {
+  }
+  catch (cause) {
     const message = cause instanceof Error ? cause.message : 'Parse failed.'
     throw new Error(`Syntax error.\n\n${message}`, { cause })
   }
@@ -31,17 +32,18 @@ function minifyJsTs(code: string, language: 'javascript' | 'typescript'): string
   try {
     const result = minifySync('input.js', source, {
       compress: {
-        target: 'esnext'
+        target: 'esnext',
       },
       mangle: {
-        toplevel: true
+        toplevel: true,
       },
       codegen: {
-        removeWhitespace: true
-      }
+        removeWhitespace: true,
+      },
     })
     return result.code
-  } catch (cause) {
+  }
+  catch (cause) {
     const message = cause instanceof Error ? cause.message : 'Minify failed.'
     throw new Error(`Syntax error.\n\n${message}`, { cause })
   }
@@ -60,9 +62,10 @@ async function beautifyWithPrettier(code: string, language: CodeLanguage): Promi
       printWidth: 80,
       tabWidth: 2,
       semi: true,
-      singleQuote: false
+      singleQuote: false,
     })
-  } catch (cause) {
+  }
+  catch (cause) {
     const message = cause instanceof Error ? cause.message : 'Format failed.'
     throw new Error(`Syntax error.\n\n${message}`, { cause })
   }
@@ -71,7 +74,7 @@ async function beautifyWithPrettier(code: string, language: CodeLanguage): Promi
 export async function processCode(
   code: string,
   language: CodeLanguage,
-  action: CodeAction
+  action: CodeAction,
 ): Promise<{ code: string, engine: string }> {
   if (!isCodeLanguage(language)) {
     throw new Error('Choose a valid language.')
@@ -88,7 +91,7 @@ export async function processCode(
     }
     return {
       code: await beautifyWithPrettier(text, language),
-      engine: 'prettier'
+      engine: 'prettier',
     }
   }
 

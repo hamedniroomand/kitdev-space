@@ -24,7 +24,7 @@
           :items="[
             { label: 'Encoder & Escaper', to: '/hub/dev/encoder' },
             { label: 'URL Inspector', to: '/hub/network/url-inspector' },
-            { label: 'Base64 Encoder & Decoder', to: '/hub/dev/base64' }
+            { label: 'Base64 Encoder & Decoder', to: '/hub/dev/base64' },
           ]"
         />
       </ToolDocs>

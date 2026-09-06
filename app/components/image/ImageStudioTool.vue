@@ -1,10 +1,10 @@
 <script setup lang="ts">
+import type { CropRect } from '#shared/utils/image/crop'
 import type { ImageEncodeFormat, ImageFilter, ImageFit, ImagePresetId } from '#shared/utils/image/types'
+import { formatBytes } from '#shared/utils/format'
+import { readImageMetadata } from '#shared/utils/image/exif'
 import { imageExtensionFor } from '#shared/utils/image/format'
 import { readImageResponse } from '#shared/utils/image/response'
-import { readImageMetadata } from '#shared/utils/image/exif'
-import { formatBytes } from '#shared/utils/format'
-import type { CropRect } from '#shared/utils/image/crop'
 import { cropImageFile } from '~/utils/image/crop-file'
 
 type SizeMode = ImagePresetId | 'original' | 'custom'
@@ -27,14 +27,14 @@ const cropAspectItems: { label: string, value: CropAspectMode }[] = [
   { label: 'Square (1:1)', value: '1:1' },
   { label: 'Wide (16:9)', value: '16:9' },
   { label: 'Standard (4:3)', value: '4:3' },
-  { label: 'Photo (3:2)', value: '3:2' }
+  { label: 'Photo (3:2)', value: '3:2' },
 ]
 
 const PRESET_SIZES: Record<ImagePresetId, { width: number, height: number }> = {
   'twitter-banner': { width: 1500, height: 500 },
   'instagram-square': { width: 1080, height: 1080 },
   'open-graph': { width: 1200, height: 630 },
-  'favicon': { width: 32, height: 32 }
+  'favicon': { width: 32, height: 32 },
 }
 
 const sizeItems = [
@@ -43,12 +43,12 @@ const sizeItems = [
   { label: 'Twitter Banner (1500×500)', value: 'twitter-banner' },
   { label: 'Instagram Square (1080×1080)', value: 'instagram-square' },
   { label: 'Favicon (32×32)', value: 'favicon' },
-  { label: 'Custom size', value: 'custom' }
+  { label: 'Custom size', value: 'custom' },
 ]
 
 const fitItems = [
   { label: 'Inside (keep the ratio)', value: 'inside' },
-  { label: 'Fill (stretch)', value: 'fill' }
+  { label: 'Fill (stretch)', value: 'fill' },
 ]
 
 const filterItems = [
@@ -56,21 +56,21 @@ const filterItems = [
   { label: 'Mitchell', value: 'mitchell' },
   { label: 'Cubic', value: 'cubic' },
   { label: 'Box', value: 'box' },
-  { label: 'Nearest', value: 'nearest' }
+  { label: 'Nearest', value: 'nearest' },
 ]
 
 const formatItems = [
   { label: 'WebP', value: 'webp' },
   { label: 'AVIF', value: 'avif' },
   { label: 'JPEG', value: 'jpeg' },
-  { label: 'PNG', value: 'png' }
+  { label: 'PNG', value: 'png' },
 ]
 
 const rotateItems = [
   { label: 'None', value: 0 },
   { label: '90°', value: 90 },
   { label: '180°', value: 180 },
-  { label: '270°', value: 270 }
+  { label: '270°', value: 270 },
 ]
 
 const file = ref<File | null>(null)

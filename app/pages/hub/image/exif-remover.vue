@@ -32,7 +32,7 @@
           :items="[
             { label: 'EXIF & Metadata Inspector', to: '/hub/image/metadata' },
             { label: 'Image Converter', to: '/hub/image/converter' },
-            { label: 'Image Resizer', to: '/hub/image/resizer' }
+            { label: 'Image Resizer', to: '/hub/image/resizer' },
           ]"
         />
       </ToolDocs>

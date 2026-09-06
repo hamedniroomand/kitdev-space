@@ -26,7 +26,7 @@ export function describeCron(expression: string): string {
     '@weekly': 'Once a week at midnight on Sunday.',
     '@daily': 'Once a day at midnight.',
     '@midnight': 'Once a day at midnight.',
-    '@hourly': 'Once an hour at minute 0.'
+    '@hourly': 'Once an hour at minute 0.',
   }
 
   if (nicknames[text.toLowerCase()]) {
@@ -39,20 +39,20 @@ export function describeCron(expression: string): string {
   }
 
   const [minute, hour, day, month, weekday] = parts
-  return [
+  return `${[
     fieldLabel(minute!, 'minute'),
     fieldLabel(hour!, 'hour'),
     fieldLabel(day!, 'day'),
     fieldLabel(month!, 'month'),
-    fieldLabel(weekday!, 'weekday')
-  ].join('; ') + '.'
+    fieldLabel(weekday!, 'weekday'),
+  ].join('; ')}.`
 }
 
 export function nextCronRuns(
   expression: string,
   count: number,
   from: Date,
-  timeZone: string
+  timeZone: string,
 ): string[] {
   const text = expression.trim()
   if (!text) {
@@ -62,7 +62,7 @@ export function nextCronRuns(
     throw new Error('Count must be an integer from 1 to 20.')
   }
   if (Number.isNaN(from.getTime())) {
-    throw new Error('Enter a valid start time.')
+    throw new TypeError('Enter a valid start time.')
   }
 
   const tz = timeZone.trim() || 'UTC'
@@ -94,9 +94,10 @@ export function formatCronRunLocal(iso: string, timeZone: string): string {
       timeZone: timeZone || 'UTC',
       dateStyle: 'medium',
       timeStyle: 'short',
-      weekday: 'short'
+      weekday: 'short',
     }).format(date)
-  } catch {
+  }
+  catch {
     return `${weekday} ${iso}`
   }
 }

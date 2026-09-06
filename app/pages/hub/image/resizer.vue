@@ -24,7 +24,7 @@
           :items="[
             { label: 'Image Studio', to: '/hub/image/studio' },
             { label: 'Image Converter', to: '/hub/image/converter' },
-            { label: 'Favicon Set Generator', to: '/hub/image/favicon-generator' }
+            { label: 'Favicon Set Generator', to: '/hub/image/favicon-generator' },
           ]"
         />
       </ToolDocs>

@@ -1,6 +1,6 @@
-import { lookupDns, isDnsRecordType } from '#server/utils/network/dns'
-import { inspectEmailHealth } from '#server/utils/network/email-health'
 import { getClientKey } from '#server/utils/network/client-ip'
+import { isDnsRecordType, lookupDns } from '#server/utils/network/dns'
+import { inspectEmailHealth } from '#server/utils/network/email-health'
 import { enforceRateLimit } from '#server/utils/network/rate-limit'
 
 interface DnsBody {
@@ -22,11 +22,12 @@ export default defineEventHandler(async (event) => {
     try {
       const result = await inspectEmailHealth(domain, body.dkimSelectors)
       return { result }
-    } catch (cause) {
+    }
+    catch (cause) {
       const message = cause instanceof Error ? cause.message : 'The lookup failed.'
       throw createError({
         statusCode: 400,
-        message
+        message,
       })
     }
   }
@@ -34,7 +35,7 @@ export default defineEventHandler(async (event) => {
   if (mode !== 'lookup') {
     throw createError({
       statusCode: 400,
-      message: 'Choose a valid mode.'
+      message: 'Choose a valid mode.',
     })
   }
 
@@ -43,18 +44,19 @@ export default defineEventHandler(async (event) => {
   if (!isDnsRecordType(type)) {
     throw createError({
       statusCode: 400,
-      message: 'Choose a valid record type.'
+      message: 'Choose a valid record type.',
     })
   }
 
   try {
     const result = await lookupDns(domain, type)
     return { result }
-  } catch (cause) {
+  }
+  catch (cause) {
     const message = cause instanceof Error ? cause.message : 'The lookup failed.'
     throw createError({
       statusCode: 400,
-      message
+      message,
     })
   }
 })

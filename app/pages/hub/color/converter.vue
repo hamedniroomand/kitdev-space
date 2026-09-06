@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { parseColor, toHslString, toRgbString } from '#shared/utils/color/parse'
 import { isOutOfSrgbGamut, toOklchString } from '#shared/utils/color/oklch'
+import { parseColor, toHslString, toRgbString } from '#shared/utils/color/parse'
 
 const input = ref('#7c3aed')
 const hex = ref('')
@@ -44,8 +44,8 @@ defineShortcuts({
     usingInput: true,
     handler: () => {
       convert()
-    }
-  }
+    },
+  },
 })
 
 onMounted(() => {
@@ -101,7 +101,7 @@ onMounted(() => {
           { label: 'HEX', value: hex },
           { label: 'RGB', value: rgb },
           { label: 'HSL', value: hsl },
-          { label: 'OKLCH', value: oklch }
+          { label: 'OKLCH', value: oklch },
         ]"
         :key="item.label"
         class="flex items-center justify-between gap-3 font-mono text-sm"
@@ -146,7 +146,7 @@ onMounted(() => {
           class="mt-8"
           :items="[
             { label: 'Contrast Checker', to: '/hub/color/contrast-checker' },
-            { label: 'Color Inspector', to: '/hub/color/inspector' }
+            { label: 'Color Inspector', to: '/hub/color/inspector' },
           ]"
         />
       </ToolDocs>

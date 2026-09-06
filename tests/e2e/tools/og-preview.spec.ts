@@ -14,9 +14,9 @@ test.describe('Open Graph Preview tool', () => {
             image: 'https://example.com/og.png',
             url: 'https://example.com/post/1',
             siteName: 'Example Portal',
-            twitterCard: 'summary_large_image'
-          }
-        })
+            twitterCard: 'summary_large_image',
+          },
+        }),
       })
     })
 

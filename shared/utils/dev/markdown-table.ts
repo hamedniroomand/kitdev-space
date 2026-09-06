@@ -28,7 +28,8 @@ export function formatMarkdownTable(options: MarkdownTableOptions): string {
   })
 
   const pad = (text: string, width: number, align: ColumnAlign): string => {
-    if (!pretty) return text
+    if (!pretty)
+      return text
     const trimmed = text.trim()
     const diff = Math.max(0, width - trimmed.length)
     if (align === 'right') {
@@ -50,15 +51,17 @@ export function formatMarkdownTable(options: MarkdownTableOptions): string {
     .map((w, i) => {
       const align = normalizedAlignments[i]
       const dashes = Math.max(3, w)
-      if (align === 'center') return `:${'-'.repeat(dashes - 2)}:`
-      if (align === 'right') return `${'-'.repeat(dashes - 1)}:`
+      if (align === 'center')
+        return `:${'-'.repeat(dashes - 2)}:`
+      if (align === 'right')
+        return `${'-'.repeat(dashes - 1)}:`
       return `:${'-'.repeat(dashes - 1)}`
     })
     .join(' | ')} |`
 
   // Row lines
   const rowLines = rows.map(
-    row => `| ${Array.from({ length: colCount }, (_, i) => pad(row[i] || '', colWidths[i]!, normalizedAlignments[i]!)).join(' | ')} |`
+    row => `| ${Array.from({ length: colCount }, (_, i) => pad(row[i] || '', colWidths[i]!, normalizedAlignments[i]!)).join(' | ')} |`,
   )
 
   return [headerLine, separatorLine, ...rowLines].join('\n')

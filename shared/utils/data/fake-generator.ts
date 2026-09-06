@@ -84,17 +84,20 @@ export function generateFakeRows(options: GenerateOptions): Record<string, strin
 
 export function formatAsSqlInserts(
   rows: Record<string, string | number | boolean>[],
-  tableName = 'users'
+  tableName = 'users',
 ): string {
-  if (rows.length === 0) return ''
+  if (rows.length === 0)
+    return ''
   const columns = Object.keys(rows[0]!)
   const colList = columns.map(c => `"${c}"`).join(', ')
 
   const valueRows = rows.map((row) => {
     const vals = columns.map((col) => {
       const val = row[col]
-      if (typeof val === 'number') return val
-      if (typeof val === 'boolean') return val ? 'TRUE' : 'FALSE'
+      if (typeof val === 'number')
+        return val
+      if (typeof val === 'boolean')
+        return val ? 'TRUE' : 'FALSE'
       return `'${String(val).replace(/'/g, '\'\'')}'`
     })
     return `  (${vals.join(', ')})`
@@ -104,7 +107,8 @@ export function formatAsSqlInserts(
 }
 
 export function formatAsCsv(rows: Record<string, string | number | boolean>[]): string {
-  if (rows.length === 0) return ''
+  if (rows.length === 0)
+    return ''
   const columns = Object.keys(rows[0]!)
   const lines = [columns.join(',')]
 

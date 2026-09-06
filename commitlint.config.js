@@ -15,15 +15,15 @@ export default {
             passes,
             hit
               ? `commit message must not contain a "${hit}:" trailer`
-              : 'commit message must contain a disallowed trailer'
+              : 'commit message must contain a disallowed trailer',
           ]
-        }
-      }
-    }
+        },
+      },
+    },
   ],
   rules: {
     'body-max-length': [2, 'always', 0],
     'footer-disallowed-trailer': [2, 'always', DISALLOWED_TRAILERS],
-    'footer-max-length': [0]
-  }
+    'footer-max-length': [0],
+  },
 }

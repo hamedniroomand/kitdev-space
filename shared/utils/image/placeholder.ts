@@ -52,10 +52,7 @@ ${defs}
 }
 
 export function svgToDataUri(svg: string): string {
-  if (typeof btoa !== 'undefined') {
-    const encoded = btoa(unescape(encodeURIComponent(svg)))
-    return `data:image/svg+xml;base64,${encoded}`
-  }
-  const base64 = Buffer.from(svg).toString('base64')
-  return `data:image/svg+xml;base64,${base64}`
+  // `btoa` exists in every browser, in Node 16 and later, and in Bun.
+  const encoded = btoa(unescape(encodeURIComponent(svg)))
+  return `data:image/svg+xml;base64,${encoded}`
 }

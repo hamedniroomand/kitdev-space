@@ -5,7 +5,7 @@ export async function generateHmac(
   message: string,
   secret: string,
   algorithm: HmacAlgorithm = 'SHA-256',
-  encoding: HmacEncoding = 'hex'
+  encoding: HmacEncoding = 'hex',
 ): Promise<string> {
   const encoder = new TextEncoder()
   const keyData = encoder.encode(secret)
@@ -21,7 +21,7 @@ export async function generateHmac(
     keyData,
     { name: 'HMAC', hash: { name: algorithm } },
     false,
-    ['sign']
+    ['sign'],
   )
 
   const signatureBuffer = await cryptoObj.subtle.sign('HMAC', cryptoKey, messageData)

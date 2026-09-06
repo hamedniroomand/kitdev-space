@@ -11,7 +11,7 @@ export interface StripResult {
 const MIME: Partial<Record<ImageContainer, string>> = {
   jpeg: 'image/jpeg',
   png: 'image/png',
-  webp: 'image/webp'
+  webp: 'image/webp',
 }
 
 /** The chunks of a PNG that hold metadata. The color profile stays. */
@@ -20,7 +20,7 @@ const PNG_METADATA_CHUNKS: Record<string, string> = {
   zTXt: 'Text',
   iTXt: 'Text',
   eXIf: 'EXIF',
-  tIME: 'Time'
+  tIME: 'Time',
 }
 
 function chunkName(bytes: Uint8Array, offset: number): string {
@@ -90,18 +90,22 @@ function stripJpeg(bytes: Uint8Array): StripResult {
 
     if (marker === 0xE1) {
       drop = matches(bytes, payload, 'Exif\0\0') ? 'EXIF' : 'XMP'
-    } else if (marker === 0xED) {
+    }
+    else if (marker === 0xED) {
       drop = 'IPTC'
-    } else if (marker === 0xFE) {
+    }
+    else if (marker === 0xFE) {
       drop = 'Comment'
-    } else if (marker >= 0xE2 && marker <= 0xEF) {
+    }
+    else if (marker >= 0xE2 && marker <= 0xEF) {
       // Keep the ICC color profile. Drop every other application segment.
       drop = matches(bytes, payload, 'ICC_PROFILE\0') ? null : 'Application data'
     }
 
     if (drop) {
       removed.push(drop)
-    } else {
+    }
+    else {
       parts.push(bytes.subarray(offset, end))
     }
 
@@ -133,7 +137,8 @@ function stripPng(bytes: Uint8Array): StripResult {
     const drop = PNG_METADATA_CHUNKS[name]
     if (drop) {
       removed.push(drop)
-    } else {
+    }
+    else {
       parts.push(bytes.subarray(offset, end))
     }
 
@@ -165,7 +170,8 @@ function stripWebp(bytes: Uint8Array): StripResult {
 
     if (name === 'EXIF' || name === 'XMP ') {
       removed.push(name === 'EXIF' ? 'EXIF' : 'XMP')
-    } else {
+    }
+    else {
       const chunk = bytes.slice(offset, end)
       // VP8X states which blocks the file holds. Clear the EXIF and the XMP bits.
       if (name === 'VP8X' && chunk.length > 8) {

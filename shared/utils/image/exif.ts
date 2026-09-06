@@ -33,7 +33,18 @@ const MAX_TAG_COUNT = 512
 const MAX_VALUE_COUNT = 4096
 
 const TYPE_SIZES: Record<number, number> = {
-  1: 1, 2: 1, 3: 2, 4: 4, 5: 8, 6: 1, 7: 1, 8: 2, 9: 4, 10: 8, 11: 4, 12: 8
+  1: 1,
+  2: 1,
+  3: 2,
+  4: 4,
+  5: 8,
+  6: 1,
+  7: 1,
+  8: 2,
+  9: 4,
+  10: 8,
+  11: 4,
+  12: 8,
 }
 
 function ascii(view: DataView, offset: number, length: number): string {
@@ -57,7 +68,7 @@ function fourCC(view: DataView, offset: number): string {
     view.getUint8(offset),
     view.getUint8(offset + 1),
     view.getUint8(offset + 2),
-    view.getUint8(offset + 3)
+    view.getUint8(offset + 3),
   )
 }
 
@@ -102,7 +113,7 @@ function readEntryValues(
   view: DataView,
   tiffStart: number,
   entryOffset: number,
-  little: boolean
+  little: boolean,
 ): RawTag | null {
   const tag = view.getUint16(entryOffset, little)
   const type = view.getUint16(entryOffset + 2, little)
@@ -180,7 +191,8 @@ function readEntryValues(
         return formatRational(numerator, denominator)
       })
       .join(', ')
-  } else {
+  }
+  else {
     text = values.map(formatNumber).join(', ')
   }
 
@@ -191,7 +203,7 @@ function readIfd(
   view: DataView,
   tiffStart: number,
   ifdOffset: number,
-  little: boolean
+  little: boolean,
 ): { entries: RawTag[], subIfds: Record<number, number>, next: number } {
   const entries: RawTag[] = []
   const subIfds: Record<number, number> = {}
@@ -243,7 +255,7 @@ function toDegrees(parts: (number | string)[], ref: string): number | null {
  */
 export function parseTiffBlock(
   view: DataView,
-  tiffStart: number
+  tiffStart: number,
 ): { tags: MetadataTag[], gps: GpsPosition | null } {
   const tags: MetadataTag[] = []
 
@@ -271,7 +283,7 @@ export function parseTiffBlock(
         group,
         name,
         value: label ?? entry.text,
-        private: isPrivateTag(name)
+        private: isPrivateTag(name),
       })
     }
   }
@@ -364,18 +376,22 @@ function readJpeg(view: DataView, result: ImageMetadata) {
     if (marker >= 0xC0 && marker <= 0xCF && marker !== 0xC4 && marker !== 0xC8 && marker !== 0xCC) {
       result.height = view.getUint16(payload + 1, false)
       result.width = view.getUint16(payload + 3, false)
-    } else if (marker === 0xE1 && startsWith(view, payload, 'Exif\0\0')) {
+    }
+    else if (marker === 0xE1 && startsWith(view, payload, 'Exif\0\0')) {
       result.blocks.push('EXIF')
       const block = parseTiffBlock(view, payload + 6)
       result.tags.push(...block.tags)
       result.gps = result.gps ?? block.gps
-    } else if (marker === 0xE1 && startsWith(view, payload, 'http://ns.adobe.com/xap/1.0/')) {
+    }
+    else if (marker === 0xE1 && startsWith(view, payload, 'http://ns.adobe.com/xap/1.0/')) {
       result.blocks.push('XMP')
       result.tags.push({ group: 'XMP', name: 'XMP packet', value: `${payloadLength} bytes`, private: true })
-    } else if (marker === 0xED) {
+    }
+    else if (marker === 0xED) {
       result.blocks.push('IPTC')
       result.tags.push({ group: 'Text', name: 'Photoshop IRB', value: `${payloadLength} bytes`, private: true })
-    } else if (marker === 0xFE) {
+    }
+    else if (marker === 0xFE) {
       result.blocks.push('Comment')
       result.tags.push({ group: 'Text', name: 'Comment', value: ascii(view, payload, payloadLength), private: true })
     }
@@ -399,24 +415,28 @@ function readPng(view: DataView, bytes: Uint8Array, result: ImageMetadata) {
     if (type === 'IHDR') {
       result.width = view.getUint32(payload, false)
       result.height = view.getUint32(payload + 4, false)
-    } else if (type === 'eXIf') {
+    }
+    else if (type === 'eXIf') {
       result.blocks.push('EXIF')
       const block = parseTiffBlock(view, payload)
       result.tags.push(...block.tags)
       result.gps = result.gps ?? block.gps
-    } else if (type === 'tEXt' || type === 'iTXt') {
+    }
+    else if (type === 'tEXt' || type === 'iTXt') {
       result.blocks.push('Text')
       const separator = bytes.indexOf(0, payload)
       const key = separator > payload ? ascii(view, payload, separator - payload) : type
       const start = type === 'tEXt' ? separator + 1 : payload + length
       const value = type === 'tEXt' ? ascii(view, start, payload + length - start) : `${length} bytes`
       result.tags.push({ group: 'Text', name: key, value, private: true })
-    } else if (type === 'zTXt') {
+    }
+    else if (type === 'zTXt') {
       result.blocks.push('Text')
       const separator = bytes.indexOf(0, payload)
       const key = separator > payload ? ascii(view, payload, separator - payload) : 'zTXt'
       result.tags.push({ group: 'Text', name: key, value: 'compressed text', private: true })
-    } else if (type === 'tIME') {
+    }
+    else if (type === 'tIME') {
       result.blocks.push('Time')
       const year = view.getUint16(payload, false)
       const pad = (value: number) => String(value).padStart(2, '0')
@@ -425,9 +445,10 @@ function readPng(view: DataView, bytes: Uint8Array, result: ImageMetadata) {
         name: 'ModifyDate',
         value: `${year}-${pad(view.getUint8(payload + 2))}-${pad(view.getUint8(payload + 3))} `
           + `${pad(view.getUint8(payload + 4))}:${pad(view.getUint8(payload + 5))}:${pad(view.getUint8(payload + 6))}`,
-        private: true
+        private: true,
       })
-    } else if (type === 'IDAT' || type === 'IEND') {
+    }
+    else if (type === 'IDAT' || type === 'IEND') {
       break
     }
 
@@ -450,14 +471,16 @@ function readWebp(view: DataView, result: ImageMetadata) {
     if (type === 'VP8X') {
       result.width = 1 + (view.getUint8(payload + 4) | (view.getUint8(payload + 5) << 8) | (view.getUint8(payload + 6) << 16))
       result.height = 1 + (view.getUint8(payload + 7) | (view.getUint8(payload + 8) << 8) | (view.getUint8(payload + 9) << 16))
-    } else if (type === 'EXIF') {
+    }
+    else if (type === 'EXIF') {
       result.blocks.push('EXIF')
       // Some encoders put the Exif\0\0 marker before the TIFF header.
       const start = startsWith(view, payload, 'Exif\0\0') ? payload + 6 : payload
       const block = parseTiffBlock(view, start)
       result.tags.push(...block.tags)
       result.gps = result.gps ?? block.gps
-    } else if (type === 'XMP ') {
+    }
+    else if (type === 'XMP ') {
       result.blocks.push('XMP')
       result.tags.push({ group: 'XMP', name: 'XMP packet', value: `${length} bytes`, private: true })
     }
@@ -477,18 +500,21 @@ export function readImageMetadata(bytes: Uint8Array): ImageMetadata {
     bytes: bytes.byteLength,
     tags: [],
     gps: null,
-    blocks: []
+    blocks: [],
   }
 
   try {
     if (result.container === 'jpeg') {
       readJpeg(view, result)
-    } else if (result.container === 'png') {
+    }
+    else if (result.container === 'png') {
       readPng(view, bytes, result)
-    } else if (result.container === 'webp') {
+    }
+    else if (result.container === 'webp') {
       readWebp(view, result)
     }
-  } catch {
+  }
+  catch {
     // A malformed file gives the tags that the parser read before the error.
   }
 

@@ -16,15 +16,15 @@ export function createUuidV7(): string {
   crypto.getRandomValues(bytes)
 
   const now = Date.now()
-  bytes[0] = Math.floor(now / 0x10000000000) & 0xff
-  bytes[1] = Math.floor(now / 0x100000000) & 0xff
-  bytes[2] = (now >>> 24) & 0xff
-  bytes[3] = (now >>> 16) & 0xff
-  bytes[4] = (now >>> 8) & 0xff
-  bytes[5] = now & 0xff
+  bytes[0] = Math.floor(now / 0x10000000000) & 0xFF
+  bytes[1] = Math.floor(now / 0x100000000) & 0xFF
+  bytes[2] = (now >>> 24) & 0xFF
+  bytes[3] = (now >>> 16) & 0xFF
+  bytes[4] = (now >>> 8) & 0xFF
+  bytes[5] = now & 0xFF
 
-  bytes[6] = 0x70 | (bytes[6]! & 0x0f)
-  bytes[8] = 0x80 | (bytes[8]! & 0x3f)
+  bytes[6] = 0x70 | (bytes[6]! & 0x0F)
+  bytes[8] = 0x80 | (bytes[8]! & 0x3F)
 
   const hex = Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('')
   return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20, 32)}`
@@ -47,7 +47,7 @@ export function createUlid(): string {
     const byteIndex = Math.floor((i * 5) / 8)
     const bitOffset = (i * 5) % 8
     let val = (randomBytes[byteIndex]! << 8) | (randomBytes[byteIndex + 1] ?? 0)
-    val = (val >>> (11 - bitOffset)) & 0x1f
+    val = (val >>> (11 - bitOffset)) & 0x1F
     randStr += CROCKFORD_BASE32[val]
   }
 

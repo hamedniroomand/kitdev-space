@@ -15,7 +15,7 @@ const props = defineProps<{
 
 const RESOLVE_MODE_ITEMS: { label: string, value: ResolveMode }[] = [
   { label: 'ESM (import)', value: 'esm' },
-  { label: 'Node (require)', value: 'node' }
+  { label: 'Node (require)', value: 'node' },
 ]
 
 const mode = ref<ResolveMode>('esm')
@@ -44,8 +44,8 @@ async function resolve() {
         mode: 'resolve',
         resolveMode: mode.value,
         directory: directory.value || undefined,
-        specifiers: specifiers.value
-      }
+        specifiers: specifiers.value,
+      },
     })
     rows.value = data.result
     return JSON.stringify(data.result)

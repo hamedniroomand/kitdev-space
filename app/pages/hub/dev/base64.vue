@@ -24,7 +24,7 @@
           :items="[
             { label: 'Encoder & Escaper', to: '/hub/dev/encoder' },
             { label: 'URL Encoder & Decoder', to: '/hub/dev/url-encoder' },
-            { label: 'JWT Decoder', to: '/hub/crypto/jwt' }
+            { label: 'JWT Decoder', to: '/hub/crypto/jwt' },
           ]"
         />
       </ToolDocs>

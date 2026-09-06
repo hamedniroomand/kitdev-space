@@ -41,7 +41,7 @@ export function createGradientStop(color: string, position: number, id?: string)
   return {
     id: id ?? `stop-${Math.random().toString(36).slice(2, 10)}`,
     color,
-    position: clampPosition(position)
+    position: clampPosition(position),
   }
 }
 
@@ -96,7 +96,7 @@ export function averageStopColor(stops: GradientStop[]): string {
 
 export function checkGradientTextContrast(
   textColor: string,
-  stops: GradientStop[]
+  stops: GradientStop[],
 ): GradientContrastResult {
   if (stops.length === 0) {
     throw new Error('Add at least one color stop.')
@@ -106,15 +106,15 @@ export function checkGradientTextContrast(
   const samples = [
     ...sorted.map((stop, index) => ({
       label: `Stop ${index + 1}`,
-      color: parseColor(stop.color).hex
+      color: parseColor(stop.color).hex,
     })),
     {
       label: 'Average',
-      color: averageStopColor(sorted)
-    }
+      color: averageStopColor(sorted),
+    },
   ].map(sample => ({
     ...sample,
-    ratio: contrastRatio(textColor, sample.color)
+    ratio: contrastRatio(textColor, sample.color),
   }))
 
   const worst = samples.reduce((min, sample) => (sample.ratio < min.ratio ? sample : min))
@@ -122,6 +122,6 @@ export function checkGradientTextContrast(
     textColor: parseColor(textColor).hex,
     worstRatio: worst.ratio,
     levels: wcagLevel(worst.ratio),
-    samples
+    samples,
   }
 }

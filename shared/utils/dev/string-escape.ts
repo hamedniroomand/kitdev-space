@@ -31,7 +31,8 @@ export function unescapeString(text: string, mode: EscapeMode): string {
     case 'json':
       try {
         return JSON.parse(`"${text}"`)
-      } catch {
+      }
+      catch {
         return text
       }
     case 'javascript':

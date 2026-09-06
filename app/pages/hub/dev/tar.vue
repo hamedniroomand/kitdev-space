@@ -49,7 +49,8 @@ function downloadEntry(path: string) {
     const content = readTarEntry(archive.value, path)
     downloadBlob(path.split('/').pop() || 'entry.bin', new Blob([content.slice()]))
     toast.add({ title: 'Downloaded', color: 'success' })
-  } catch (cause) {
+  }
+  catch (cause) {
     const message = cause instanceof Error ? cause.message : 'Download failed.'
     toast.add({ title: message, color: 'error' })
   }
@@ -68,8 +69,8 @@ defineShortcuts({
     usingInput: true,
     handler: () => {
       inspect()
-    }
-  }
+    },
+  },
 })
 </script>
 
@@ -188,7 +189,7 @@ defineShortcuts({
         <RelatedTools
           :items="[
             { label: 'Semver Calculator', to: '/hub/dev/semver' },
-            { label: 'Cron Visualizer', to: '/hub/dev/cron' }
+            { label: 'Cron Visualizer', to: '/hub/dev/cron' },
           ]"
         />
       </ToolDocs>

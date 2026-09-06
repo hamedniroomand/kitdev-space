@@ -41,7 +41,8 @@ async function readCappedBody(response: Response): Promise<Uint8Array> {
       }
       chunks.push(value)
     }
-  } finally {
+  }
+  finally {
     void reader.cancel().catch(() => {})
   }
 
@@ -65,8 +66,8 @@ export async function fetchHtmlDocument(input: string): Promise<{ html: string, 
         redirect: 'manual',
         signal: AbortSignal.timeout(TIMEOUT_MS),
         headers: {
-          Accept: 'text/html,application/xhtml+xml;q=0.9,*/*;q=0.8'
-        }
+          Accept: 'text/html,application/xhtml+xml;q=0.9,*/*;q=0.8',
+        },
       })
 
       const location = response.headers.get('location')
@@ -102,10 +103,11 @@ export async function fetchHtmlDocument(input: string): Promise<{ html: string, 
       const html = new TextDecoder('utf-8').decode(buffer)
       return {
         html,
-        finalUrl: response.url || current.href
+        finalUrl: response.url || current.href,
       }
     }
-  } catch (cause) {
+  }
+  catch (cause) {
     if (cause instanceof Error && (
       cause.message.includes('too large')
       || cause.message.includes('did not return HTML')

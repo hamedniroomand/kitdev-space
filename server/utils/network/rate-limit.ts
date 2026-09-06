@@ -46,7 +46,7 @@ export function enforceRateLimit(ip: string, key: string, maxRequests = MAX_REQU
     hits.set(id, recent)
     throw createError({
       statusCode: 429,
-      message: 'Too many requests. Try again later.'
+      message: 'Too many requests. Try again later.',
     })
   }
 

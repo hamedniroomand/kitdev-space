@@ -4,7 +4,7 @@ export type DnsRecordType = 'A' | 'AAAA' | 'CNAME' | 'MX' | 'NS' | 'TXT' | 'CAA'
 
 export const DNS_RECORD_TYPES: DnsRecordType[] = ['A', 'AAAA', 'CNAME', 'MX', 'NS', 'TXT', 'CAA']
 
-type MxRecord = { priority: number, exchange: string }
+interface MxRecord { priority: number, exchange: string }
 
 type BunDnsResolvers = typeof Bun.dns & {
   resolve: (hostname: string, rrtype?: string) => Promise<unknown>
@@ -103,7 +103,8 @@ export async function lookupDns(domain: string, type: DnsRecordType): Promise<st
 
   try {
     return await resolveRecords(host, type)
-  } catch (cause) {
+  }
+  catch (cause) {
     if (isNoData(cause)) {
       return []
     }

@@ -21,7 +21,7 @@ export function getTextStats(text: string): TextStatistics {
       sentences: 0,
       bytes: 0,
       readingTimeMinutes: 0,
-      speakingTimeMinutes: 0
+      speakingTimeMinutes: 0,
     }
   }
 
@@ -49,7 +49,7 @@ export function getTextStats(text: string): TextStatistics {
     sentences,
     bytes,
     readingTimeMinutes,
-    speakingTimeMinutes
+    speakingTimeMinutes,
   }
 }
 

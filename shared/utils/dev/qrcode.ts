@@ -46,7 +46,8 @@ export function buildQrPayload(kind: QrPayloadKind, value: string, wifi?: QrWifi
       if (/^[a-z][a-z0-9+.-]*:/i.test(trimmed)) {
         void new URL(trimmed)
       }
-    } catch (cause) {
+    }
+    catch (cause) {
       throw new Error('Enter a valid URL.', { cause })
     }
   }
@@ -60,6 +61,6 @@ export function generateQrSvg(payload: string): string {
   return renderSVG(payload, {
     ecc: 'M',
     border: 1,
-    pixelSize: 8
+    pixelSize: 8,
   })
 }

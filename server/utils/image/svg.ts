@@ -7,10 +7,10 @@ const SVG_HEAD = /^\s*(?:<\?xml\b[^>]*>\s*)?(?:<!--[\s\S]*?-->\s*)*<svg\b/i
 
 /** href / xlink:href / src with http(s) or protocol-relative // */
 const REMOTE_ATTR
-  = /\b(?:href|xlink:href)\s*=\s*(['"]?)(?:https?:|\/\/)/i
+  = /\b(?:href|xlink:href)\s*=\s*['"]?(?:https?:|\/\/)/i
 
 /** url(http…) or url(//…) in CSS */
-const REMOTE_URL = /url\(\s*(['"]?)\s*(?:https?:|\/\/)/i
+const REMOTE_URL = /url\(\s*(?:['"]\s*)?(?:https?:|\/\/)/i
 
 const EXTERNAL_MESSAGE
   = 'This SVG uses an external resource.\n\nRemove remote links, fonts, and images, then try again.'
@@ -41,7 +41,7 @@ export function assertNoExternalSvgResources(input: Uint8Array): void {
 
 export function rasterizeSvg(
   input: Uint8Array,
-  opts?: { width?: number, height?: number, scale?: number }
+  opts?: { width?: number, height?: number, scale?: number },
 ): Uint8Array {
   assertNoExternalSvgResources(input)
 
@@ -52,7 +52,7 @@ export function rasterizeSvg(
     const srcH = base.height
     if (!(srcW > 0 && srcH > 0)) {
       throw new ImageError(
-        'The SVG could not be read.\n\nCheck the file and try again.'
+        'The SVG could not be read.\n\nCheck the file and try again.',
       )
     }
 
@@ -63,9 +63,11 @@ export function rasterizeSvg(
         throw new ImageError('Scale must be a number greater than 0.')
       }
       fitTo = { mode: 'zoom', value: opts.scale }
-    } else if (opts?.width != null && opts?.height != null) {
+    }
+    else if (opts?.width != null && opts?.height != null) {
       fitTo = fitInside(srcW, srcH, opts.width, opts.height)
-    } else if (srcW * srcH > MAX_PIXELS) {
+    }
+    else if (srcW * srcH > MAX_PIXELS) {
       const zoom = Math.sqrt(MAX_PIXELS / (srcW * srcH))
       fitTo = { mode: 'zoom', value: zoom }
     }
@@ -78,18 +80,19 @@ export function rasterizeSvg(
     const pngData = renderer.render()
     if (pngData.width * pngData.height > MAX_PIXELS) {
       throw new ImageError(
-        'The image is too large.\n\nUse a smaller SVG or lower dimensions.'
+        'The image is too large.\n\nUse a smaller SVG or lower dimensions.',
       )
     }
 
     return new Uint8Array(pngData.asPng())
-  } catch (cause) {
+  }
+  catch (cause) {
     if (cause instanceof ImageError) {
       throw cause
     }
     throw new ImageError(
       'The SVG could not be read.\n\nCheck the file and try again.',
-      { cause }
+      { cause },
     )
   }
 }

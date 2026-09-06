@@ -30,7 +30,8 @@ export function envToJson(envText: string): Record<string, string> {
       if (cleaned.slice(equalIndex + 1).trim().startsWith('"')) {
         value = value.replace(/\\n/g, '\n').replace(/\\r/g, '\r').replace(/\\"/g, '"')
       }
-    } else {
+    }
+    else {
       // Remove trailing inline comments for unquoted values
       const commentIndex = value.indexOf(' #')
       if (commentIndex !== -1) {
@@ -50,7 +51,8 @@ export function jsonToEnv(jsonInput: Record<string, unknown> | string): string {
   let parsed: Record<string, unknown>
   if (typeof jsonInput === 'string') {
     parsed = JSON.parse(jsonInput)
-  } else {
+  }
+  else {
     parsed = jsonInput
   }
 
@@ -64,7 +66,8 @@ export function jsonToEnv(jsonInput: Record<string, unknown> | string): string {
     const str = typeof value === 'object' ? JSON.stringify(value) : String(value)
     if (str.includes('\n') || str.includes(' ') || str.includes('"') || str.includes('\'')) {
       lines.push(`${key}="${str.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n')}"`)
-    } else {
+    }
+    else {
       lines.push(`${key}=${str}`)
     }
   }

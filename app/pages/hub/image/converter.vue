@@ -24,7 +24,7 @@
           :items="[
             { label: 'Image Studio', to: '/hub/image/studio' },
             { label: 'Image Resizer', to: '/hub/image/resizer' },
-            { label: 'SVG to PNG / WebP', to: '/hub/image/svg-converter' }
+            { label: 'SVG to PNG / WebP', to: '/hub/image/svg-converter' },
           ]"
         />
       </ToolDocs>

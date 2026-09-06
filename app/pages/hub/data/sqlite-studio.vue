@@ -37,7 +37,7 @@ const {
   downloadDatabase,
   exportCsv,
   exportJson,
-  closeDatabase
+  closeDatabase,
 } = useSqliteStudio()
 
 const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
@@ -83,7 +83,7 @@ const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeed
               :items="[
                 { label: 'Table Viewer', to: '/hub/data/table-viewer' },
                 { label: 'SQL Formatter', to: '/hub/data/sql-formatter' },
-                { label: 'CSV ↔ JSON', to: '/hub/data/converters/csv-json' }
+                { label: 'CSV ↔ JSON', to: '/hub/data/converters/csv-json' },
               ]"
             />
           </ToolDocs>

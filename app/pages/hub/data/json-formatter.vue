@@ -13,20 +13,20 @@ const validateFeedback = useActionFeedback({
     label: 'Validate',
     icon: 'i-lucide-circle-check',
     color: 'neutral',
-    variant: 'subtle'
+    variant: 'subtle',
   },
   success: {
     label: 'Valid',
     icon: 'i-lucide-check',
     color: 'success',
-    variant: 'subtle'
+    variant: 'subtle',
   },
   error: {
     label: 'Invalid',
     icon: 'i-lucide-x',
     color: 'error',
-    variant: 'subtle'
-  }
+    variant: 'subtle',
+  },
 })
 const { downloadText } = useDownload()
 
@@ -69,7 +69,8 @@ async function validate() {
     statusMessage.value = 'Valid JSON'
     setStats(input.value)
     validateFeedback.flashSuccess()
-  } else if (status.value === 'error') {
+  }
+  else if (status.value === 'error') {
     validateFeedback.flashError()
   }
 }
@@ -102,8 +103,8 @@ defineShortcuts({
     usingInput: true,
     handler: () => {
       format()
-    }
-  }
+    },
+  },
 })
 </script>
 
@@ -206,7 +207,7 @@ defineShortcuts({
           :items="[
             { label: 'JSON → TypeScript', to: '/hub/data/json-to-typescript' },
             { label: 'JSON ↔ YAML', to: '/hub/data/converters/json-yaml' },
-            { label: 'Text Diff', to: '/hub/data/text-diff' }
+            { label: 'Text Diff', to: '/hub/data/text-diff' },
           ]"
         />
       </ToolDocs>

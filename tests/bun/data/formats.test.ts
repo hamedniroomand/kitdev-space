@@ -15,7 +15,7 @@ describe('bun format engine', () => {
     const yamlText = transformWithBun(
       '{"name":"KitDev","labs":["data","crypto"],"meta":{"version":1}}',
       'json',
-      'yaml'
+      'yaml',
     )
     expect(yamlText).toBe('name: KitDev\nlabs: \n  - data\n  - crypto\nmeta: \n  version: 1')
   })

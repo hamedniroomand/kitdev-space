@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { TLS_PORTS, assertSafeUrl } from '#server/utils/network/ssrf'
+import { assertSafeUrl, TLS_PORTS } from '#server/utils/network/ssrf'
 
 function rejects(url: string, options?: { allowedPorts?: readonly number[] }) {
   return expect(assertSafeUrl(url, options)).rejects.toMatchObject({ statusCode: 400 })

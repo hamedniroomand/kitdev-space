@@ -1,5 +1,5 @@
-import { ImageError } from '#server/utils/image/errors'
 import { cleanImageMetadata } from '#server/utils/image/clean'
+import { ImageError } from '#server/utils/image/errors'
 import { readImageForm } from '#server/utils/image/read-upload'
 import { getClientKey } from '#server/utils/network/client-ip'
 import { enforceRateLimit } from '#server/utils/network/rate-limit'
@@ -19,13 +19,14 @@ export default defineEventHandler(async (event) => {
     setHeader(event, 'X-Input-Bytes', String(bytes.byteLength))
     setHeader(event, 'X-Output-Bytes', String(result.bytes.byteLength))
     return result.bytes
-  } catch (cause) {
+  }
+  catch (cause) {
     const message = cause instanceof ImageError
       ? cause.message
       : 'The image could not be cleaned.'
     throw createError({
       statusCode: 400,
-      message
+      message,
     })
   }
 })

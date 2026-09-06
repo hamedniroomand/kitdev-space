@@ -4,7 +4,7 @@ const CHARSETS: Record<RandomCharset, string> = {
   alnum: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
   alpha: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
   numeric: '0123456789',
-  hex: '0123456789abcdef'
+  hex: '0123456789abcdef',
 }
 
 export function createRandomString(options: { length: number, charset: RandomCharset }): string {

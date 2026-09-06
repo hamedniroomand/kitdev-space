@@ -35,7 +35,7 @@ const SKIP_KEYS = new Set([
   'operator',
   'kind',
   'sourceType',
-  'directive'
+  'directive',
 ])
 
 export function offsetToPosition(source: string, offset: number): SourcePosition {
@@ -46,7 +46,8 @@ export function offsetToPosition(source: string, offset: number): SourcePosition
     if (source[i] === '\n') {
       line += 1
       column = 1
-    } else {
+    }
+    else {
       column += 1
     }
   }
@@ -56,7 +57,7 @@ export function offsetToPosition(source: string, offset: number): SourcePosition
 export function createSpan(source: string, start: number, end: number): SourceSpan {
   return {
     start: offsetToPosition(source, start),
-    end: offsetToPosition(source, end)
+    end: offsetToPosition(source, end),
   }
 }
 
@@ -92,7 +93,7 @@ function isAstNode(value: unknown): value is Record<string, unknown> & { type: s
 export function buildAstTree(
   node: unknown,
   source: string,
-  path = '0'
+  path = '0',
 ): AstTreeNode | null {
   if (!isAstNode(node)) {
     return null
@@ -132,7 +133,7 @@ export function buildAstTree(
     start,
     end,
     span: createSpan(source, start, end),
-    children
+    children,
   }
 }
 

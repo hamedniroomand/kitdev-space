@@ -1,11 +1,12 @@
-import { describe, expect, it } from 'bun:test'
+import { Buffer } from 'node:buffer'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { describe, expect, it } from 'bun:test'
 import { unzipSync } from 'fflate'
 import { generateFaviconPackage } from '#server/utils/image/favicon'
 
 const fixture = new Uint8Array(
-  readFileSync(join(import.meta.dir, 'fixtures/tiny.png'))
+  readFileSync(join(import.meta.dir, 'fixtures/tiny.png')),
 )
 
 const EXPECTED_NAMES = [
@@ -14,7 +15,7 @@ const EXPECTED_NAMES = [
   'favicon-48x48.png',
   'apple-touch-icon.png',
   'android-chrome-192x192.png',
-  'android-chrome-512x512.png'
+  'android-chrome-512x512.png',
 ]
 
 describe('generateFaviconPackage', () => {

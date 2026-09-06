@@ -1,15 +1,16 @@
+import type { EmailHealthResult } from '#shared/utils/network/email-health'
 import {
   buildEmailHealthResult,
+
   normalizeDkimSelectors,
-  type EmailHealthResult
 } from '#shared/utils/network/email-health'
 import { lookupDns, normalizeDomain } from './dns'
 
-type MxRecord = { priority: number, exchange: string }
+interface MxRecord { priority: number, exchange: string }
 
 export async function inspectEmailHealth(
   domain: string,
-  dkimSelectors?: string[] | string
+  dkimSelectors?: string[] | string,
 ): Promise<EmailHealthResult> {
   const host = normalizeDomain(domain)
   const selectors = normalizeDkimSelectors(dkimSelectors)
@@ -18,7 +19,7 @@ export async function inspectEmailHealth(
     lookupDns(host, 'TXT') as Promise<string[]>,
     lookupDns(host, 'MX') as Promise<MxRecord[]>,
     // A failed _dmarc lookup must not stop the rest of the report.
-    (lookupDns(`_dmarc.${host}`, 'TXT') as Promise<string[]>).catch(() => [])
+    (lookupDns(`_dmarc.${host}`, 'TXT') as Promise<string[]>).catch(() => []),
   ])
 
   const dkim = await Promise.all(selectors.map(async (selector) => {
@@ -31,6 +32,6 @@ export async function inspectEmailHealth(
     txtRecords,
     dmarcRecords,
     mxRecords,
-    dkim
+    dkim,
   })
 }

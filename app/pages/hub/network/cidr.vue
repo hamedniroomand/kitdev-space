@@ -11,18 +11,20 @@ const presets = [
   { label: 'VPC Subnet (/20)', value: '10.0.0.0/20' },
   { label: 'Class B (/16)', value: '172.16.0.0/16' },
   { label: 'Point-to-Point (/31)', value: '10.255.0.0/31' },
-  { label: 'Host Route (/32)', value: '1.1.1.1/32' }
+  { label: 'Host Route (/32)', value: '1.1.1.1/32' },
 ]
 
 const calculation = computed(() => {
-  if (!input.value.trim()) return { data: null, error: null }
+  if (!input.value.trim())
+    return { data: null, error: null }
   try {
     const data = parseCidr(input.value)
     return { data, error: null }
-  } catch (err) {
+  }
+  catch (err) {
     return {
       data: null,
-      error: err instanceof Error ? err.message : 'Invalid CIDR notation.'
+      error: err instanceof Error ? err.message : 'Invalid CIDR notation.',
     }
   }
 })
@@ -274,7 +276,7 @@ function handlePreset(val: string) {
           :items="[
             { label: 'IP Address Info', to: '/hub/network/ip-info' },
             { label: 'DNS Lookup', to: '/hub/network/dns-lookup' },
-            { label: 'HTTP Inspector', to: '/hub/network/http-inspector' }
+            { label: 'HTTP Inspector', to: '/hub/network/http-inspector' },
           ]"
         />
       </ToolDocs>

@@ -10,8 +10,20 @@ export interface VueConvertOptions {
 }
 
 const VOID_TAGS = new Set([
-  'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input',
-  'link', 'meta', 'param', 'source', 'track', 'wbr'
+  'area',
+  'base',
+  'br',
+  'col',
+  'embed',
+  'hr',
+  'img',
+  'input',
+  'link',
+  'meta',
+  'param',
+  'source',
+  'track',
+  'wbr',
 ])
 
 const JSX_ATTR_MAP: Record<string, string> = {
@@ -45,7 +57,7 @@ const JSX_ATTR_MAP: Record<string, string> = {
   'stop-color': 'stopColor',
   'stop-opacity': 'stopOpacity',
   'color-interpolation-filters': 'colorInterpolationFilters',
-  'viewbox': 'viewBox'
+  'viewbox': 'viewBox',
 }
 
 export function parseCssToJsxStyle(styleStr: string): string {
@@ -54,14 +66,16 @@ export function parseCssToJsxStyle(styleStr: string): string {
 
   for (const part of parts) {
     const colon = part.indexOf(':')
-    if (colon === -1) continue
+    if (colon === -1)
+      continue
     const prop = part.slice(0, colon).trim()
     const val = part.slice(colon + 1).trim()
 
     let key = prop
     if (key.startsWith('--')) {
       key = `'${key}'`
-    } else {
+    }
+    else {
       key = key.replace(/-([a-z])/g, (_, char: string) => char.toUpperCase())
     }
 
@@ -74,7 +88,7 @@ export function parseCssToJsxStyle(styleStr: string): string {
 
 export function selfCloseVoidTags(html: string): string {
   // Matches void tags that do not end with />
-  const regex = /<([a-zA-Z0-9_-]+)([^>]*?)>/g
+  const regex = /<([\w-]+)((?:\s[^>]*)?)>/g
   return html.replace(regex, (match, tagName: string, attrs: string) => {
     const lower = tagName.toLowerCase()
     if (VOID_TAGS.has(lower)) {
@@ -90,7 +104,8 @@ export function selfCloseVoidTags(html: string): string {
 
 export function convertHtmlToJsx(html: string, options: JsxConvertOptions = {}): string {
   const input = html.trim()
-  if (!input) return ''
+  if (!input)
+    return ''
 
   // 1. Convert HTML comments <!-- ... --> to JSX {/* ... */}
   let output = input.replace(/<!--([\s\S]*?)-->/g, '{/*$1*/}')
@@ -99,7 +114,7 @@ export function convertHtmlToJsx(html: string, options: JsxConvertOptions = {}):
   output = selfCloseVoidTags(output)
 
   // 3. Process tags and attributes
-  output = output.replace(/<([a-zA-Z0-9_-]+)([^>]*?)>/g, (_, tagName: string, attrs: string) => {
+  output = output.replace(/<([\w-]+)((?:\s[^>]*)?)>/g, (_, tagName: string, attrs: string) => {
     let newAttrs = attrs
 
     // Convert inline styles: style="..." or style='...'
@@ -122,7 +137,7 @@ export function convertHtmlToJsx(html: string, options: JsxConvertOptions = {}):
 
     // A caller of an icon needs to pass className, width, and the rest.
     if (options.spreadProps) {
-      output = output.replace(/^<([a-zA-Z0-9_-]+)/, '<$1 {...props}')
+      output = output.replace(/^<([\w-]+)/, '<$1 {...props}')
     }
 
     const indented = output
@@ -139,7 +154,8 @@ export function convertHtmlToJsx(html: string, options: JsxConvertOptions = {}):
 
 export function convertHtmlToVue(html: string, options: VueConvertOptions = {}): string {
   const input = html.trim()
-  if (!input) return ''
+  if (!input)
+    return ''
 
   // 1. Self-close void tags for valid clean Vue template
   let output = selfCloseVoidTags(input)

@@ -9,7 +9,7 @@ export interface ImageProcessResult {
 export async function readImageResponse(
   response: Response,
   fallbackErrorMessage: string,
-  fallbackInputBytes?: number
+  fallbackInputBytes?: number,
 ): Promise<ImageProcessResult> {
   if (!response.ok) {
     const payload = await response.json().catch(() => null) as { message?: string, statusMessage?: string } | null
@@ -27,6 +27,6 @@ export async function readImageResponse(
     inputBytes,
     outputBytes,
     width,
-    height
+    height,
   }
 }

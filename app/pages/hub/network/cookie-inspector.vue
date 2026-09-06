@@ -7,13 +7,13 @@ useToolSeo('cookie-inspector')
 const SAMPLE = [
   'Set-Cookie: session=eyJhbGciOiJIUzI1NiJ9.e30.abc; Path=/; Secure; HttpOnly; SameSite=Lax; Max-Age=3600',
   'Set-Cookie: theme=dark; Path=/; SameSite=None',
-  'Set-Cookie: __Host-csrf=9f2c; Path=/; Domain=example.com; Secure'
+  'Set-Cookie: __Host-csrf=9f2c; Path=/; Domain=example.com; Secure',
 ].join('\n')
 
 const presets: { label: string, value: string }[] = [
   { label: 'Sample headers', value: SAMPLE },
   { label: 'Secure session cookie', value: 'Set-Cookie: sid=abc123; Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=86400' },
-  { label: 'Request header', value: 'Cookie: sid=abc123; theme=dark; consent=1' }
+  { label: 'Request header', value: 'Cookie: sid=abc123; theme=dark; consent=1' },
 ]
 
 const input = ref(SAMPLE)
@@ -25,13 +25,13 @@ const total = computed(() => report.value.setCookies.length + report.value.reque
 const LEVEL_COLOR: Record<FindingLevel, 'error' | 'warning' | 'info'> = {
   error: 'error',
   warning: 'warning',
-  info: 'info'
+  info: 'info',
 }
 
 const LEVEL_ICON: Record<FindingLevel, string> = {
   error: 'i-lucide-circle-x',
   warning: 'i-lucide-triangle-alert',
-  info: 'i-lucide-info'
+  info: 'i-lucide-info',
 }
 
 function lifetimeLabel(seconds: number | null): string {
@@ -296,7 +296,7 @@ function handleClear() {
           :items="[
             { label: 'HTTP Inspector', to: '/hub/network/http-inspector' },
             { label: 'JWT Decoder', to: '/hub/crypto/jwt' },
-            { label: 'URL Inspector', to: '/hub/network/url-inspector' }
+            { label: 'URL Inspector', to: '/hub/network/url-inspector' },
           ]"
         />
       </ToolDocs>

@@ -10,7 +10,7 @@ describe('inspectUnicode', () => {
       char: 'H',
       codePoint: 72,
       hex: 'U+0048',
-      category: 'Basic Latin (ASCII)'
+      category: 'Basic Latin (ASCII)',
     })
     expect(res.hasZeroWidth).toBe(false)
   })

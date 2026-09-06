@@ -2,7 +2,7 @@ export type ToolRunStatus = 'idle' | 'processing' | 'success' | 'error'
 
 const DEFAULT_ERROR_MESSAGE = 'The tool failed.'
 
-type FetchErrorShape = {
+interface FetchErrorShape {
   data?: { message?: string }
   statusMessage?: string
 }
@@ -35,7 +35,8 @@ export function useTool<TResult = string>() {
       result.value = await task()
       status.value = 'success'
       track('tool_execute')
-    } catch (cause) {
+    }
+    catch (cause) {
       error.value = toErrorMessage(cause, fallbackMessage)
       status.value = 'error'
       track('tool_error')
@@ -53,6 +54,6 @@ export function useTool<TResult = string>() {
     error,
     result,
     run,
-    reset
+    reset,
   }
 }

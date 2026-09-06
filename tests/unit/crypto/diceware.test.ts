@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   createDicewarePassphrase,
-  estimateDicewareEntropyBits
+  estimateDicewareEntropyBits,
 } from '#shared/utils/crypto/diceware'
 import { DICEWARE_WORDS } from '#shared/utils/crypto/diceware-wordlist'
 
@@ -14,7 +14,7 @@ describe('diceware', () => {
     const value = createDicewarePassphrase({
       wordCount: 5,
       separator: '-',
-      capitalize: 'none'
+      capitalize: 'none',
     })
     const parts = value.split('-')
     expect(parts).toHaveLength(5)
@@ -27,7 +27,7 @@ describe('diceware', () => {
     const value = createDicewarePassphrase({
       wordCount: 4,
       separator: ' ',
-      capitalize: 'all'
+      capitalize: 'all',
     })
     for (const part of value.split(' ')) {
       expect(part.charAt(0)).toBe(part.charAt(0).toUpperCase())

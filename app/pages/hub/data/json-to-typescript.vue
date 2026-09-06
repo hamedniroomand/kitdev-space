@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { parseJson } from '#shared/utils/data/json'
-import { jsonToTypeScript } from '#shared/utils/data/typescript'
 import { getTextStats } from '#shared/utils/data/stats'
+import { jsonToTypeScript } from '#shared/utils/data/typescript'
 
 const input = ref('{\n  "id": 10,\n  "name": "Hamed",\n  "active": true\n}')
 const output = ref('')
@@ -47,8 +47,8 @@ defineShortcuts({
     usingInput: true,
     handler: () => {
       convert()
-    }
-  }
+    },
+  },
 })
 </script>
 
@@ -128,7 +128,7 @@ defineShortcuts({
           class="mt-8"
           :items="[
             { label: 'JSON Formatter', to: '/hub/data/json-formatter' },
-            { label: 'JSON ↔ YAML', to: '/hub/data/converters/json-yaml' }
+            { label: 'JSON ↔ YAML', to: '/hub/data/converters/json-yaml' },
           ]"
         />
       </ToolDocs>

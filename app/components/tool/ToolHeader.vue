@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { BreadcrumbCrumb } from '#shared/utils/breadcrumbs'
 import type { Tool } from '#shared/types/tools'
+import type { BreadcrumbCrumb } from '#shared/utils/breadcrumbs'
 
 /**
  * The heading of a tool page.
@@ -16,7 +16,7 @@ const props = defineProps<{
 
 const breadcrumbs = inject<ComputedRef<BreadcrumbCrumb[]> | undefined>(
   'toolBreadcrumbs',
-  undefined
+  undefined,
 )
 
 const tool = inject<ComputedRef<Tool> | undefined>('currentTool', undefined)

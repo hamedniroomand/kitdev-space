@@ -5,7 +5,7 @@ import {
   toKebabCase,
   toPascalCase,
   toSlug,
-  toSnakeCase
+  toSnakeCase,
 } from '#shared/utils/dev/case'
 
 const input = ref('hello world developer')
@@ -21,7 +21,7 @@ const conversions = computed(() => {
     { label: 'snake_case', value: toSnakeCase(text), id: 'snake' },
     { label: 'kebab-case', value: toKebabCase(text), id: 'kebab' },
     { label: 'URL slug', value: toSlug(text), id: 'slug' },
-    { label: 'CONSTANT_CASE', value: toConstantCase(text), id: 'constant' }
+    { label: 'CONSTANT_CASE', value: toConstantCase(text), id: 'constant' },
   ]
 })
 
@@ -124,7 +124,7 @@ function handleClear() {
           class="mt-8"
           :items="[
             { label: 'JSON Formatter', to: '/hub/data/json-formatter' },
-            { label: 'ID & Secret Generator', to: '/hub/crypto/generator' }
+            { label: 'ID & Secret Generator', to: '/hub/crypto/generator' },
           ]"
         />
       </ToolDocs>

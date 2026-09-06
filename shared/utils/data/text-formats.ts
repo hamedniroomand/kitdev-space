@@ -4,7 +4,7 @@ import {
   parseYAML,
   stringifyJSON5,
   stringifyTOML,
-  stringifyYAML
+  stringifyYAML,
 } from 'confbox'
 import { DataError } from './errors'
 
@@ -28,7 +28,8 @@ function withFinalNewline(text: string): string {
 export function parseYamlText(text: string): unknown {
   try {
     return parseYAML(text)
-  } catch (cause) {
+  }
+  catch (cause) {
     throw new DataError('Invalid YAML.\n\nCheck the syntax and try again.', { cause })
   }
 }
@@ -36,7 +37,8 @@ export function parseYamlText(text: string): unknown {
 export function stringifyYamlText(value: unknown): string {
   try {
     return withFinalNewline(stringifyYAML(value))
-  } catch (cause) {
+  }
+  catch (cause) {
     throw new DataError('Could not write YAML.', { cause })
   }
 }
@@ -44,7 +46,8 @@ export function stringifyYamlText(value: unknown): string {
 export function parseTomlText(text: string): unknown {
   try {
     return parseTOML(text)
-  } catch (cause) {
+  }
+  catch (cause) {
     throw new DataError('Invalid TOML.\n\nCheck the syntax and try again.', { cause })
   }
 }
@@ -55,7 +58,8 @@ export function stringifyTomlText(value: unknown): string {
   }
   try {
     return withFinalNewline(stringifyTOML(value))
-  } catch (cause) {
+  }
+  catch (cause) {
     throw new DataError('Could not write TOML.', { cause })
   }
 }
@@ -63,7 +67,8 @@ export function stringifyTomlText(value: unknown): string {
 export function parseJson5Text(text: string): unknown {
   try {
     return parseJSON5(text)
-  } catch (cause) {
+  }
+  catch (cause) {
     throw new DataError('Invalid JSON5.\n\nCheck the syntax and try again.', { cause })
   }
 }
@@ -71,7 +76,8 @@ export function parseJson5Text(text: string): unknown {
 export function stringifyJson5Text(value: unknown): string {
   try {
     return withFinalNewline(stringifyJSON5(value))
-  } catch (cause) {
+  }
+  catch (cause) {
     throw new DataError('Could not write JSON5.', { cause })
   }
 }

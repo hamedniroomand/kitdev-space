@@ -3,7 +3,7 @@ import type { ToolCategory } from '#shared/types/tools'
 import { categoryLabels, getToolsByCategory } from '#shared/utils/tools'
 
 definePageMeta({
-  layout: false
+  layout: false,
 })
 
 const route = useRoute()
@@ -23,8 +23,8 @@ defineShortcuts({
   meta_k: {
     handler: () => {
       openSearch()
-    }
-  }
+    },
+  },
 })
 
 const categoryOrder: ToolCategory[] = ['data', 'network', 'crypto', 'color', 'image', 'dev']
@@ -48,7 +48,7 @@ const categorizedTools = computed(() => {
       category: cat,
       label: categoryLabels[cat],
       tools: list,
-      total: getToolsByCategory(cat).length
+      total: getToolsByCategory(cat).length,
     }
   }).filter(group => group.tools.length > 0)
 })

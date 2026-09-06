@@ -1,20 +1,11 @@
 <script setup lang="ts">
-import CodeMirror from 'vue-codemirror6'
+import type { LanguageSupport } from '@codemirror/language'
+import type { Extension } from '@codemirror/state'
+import type { ToolEditorLang } from '#shared/utils/dev/editor-lang'
 import { oneDark } from '@codemirror/theme-one-dark'
 import { EditorView } from '@codemirror/view'
-import type { Extension } from '@codemirror/state'
-import type { LanguageSupport } from '@codemirror/language'
-import {
-  resolveEditorLanguage,
-  type ToolEditorLang
-} from '#shared/utils/dev/editor-lang'
-
-/**
- * The CodeMirror part of `ToolEditor`. It lives in its own chunk and loads
- * only in the browser, after the first paint, so the page HTML does not
- * preload the editor code.
- */
-const model = defineModel<string>({ default: '' })
+import CodeMirror from 'vue-codemirror6'
+import { resolveEditorLanguage } from '#shared/utils/dev/editor-lang'
 
 const props = withDefaults(defineProps<{
   label: string
@@ -26,8 +17,15 @@ const props = withDefaults(defineProps<{
 }>(), {
   lang: 'text',
   wrap: true,
-  extensions: () => []
+  extensions: () => [],
 })
+
+/**
+ * The CodeMirror part of `ToolEditor`. It lives in its own chunk and loads
+ * only in the browser, after the first paint, so the page HTML does not
+ * preload the editor code.
+ */
+const model = defineModel<string>({ default: '' })
 
 const colorMode = useColorMode()
 const isDark = computed(() => colorMode.value === 'dark')
@@ -49,20 +47,20 @@ const extensions = computed((): Extension[] => {
     EditorView.theme({
       '&': {
         height: '100%',
-        fontSize: '0.875rem'
+        fontSize: '0.875rem',
       },
       '.cm-scroller': {
         fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
-        lineHeight: '1.5'
+        lineHeight: '1.5',
       },
       '.cm-content': {
-        paddingBlock: '0.75rem'
+        paddingBlock: '0.75rem',
       },
       '.cm-gutters': {
         backgroundColor: 'transparent',
-        border: 'none'
-      }
-    })
+        border: 'none',
+      },
+    }),
   ]
 
   if (isDark.value) {

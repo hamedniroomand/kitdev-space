@@ -9,7 +9,7 @@ describe('analyzeSecurityHeaders', () => {
       'x-content-type-options': 'nosniff',
       'x-frame-options': 'DENY',
       'referrer-policy': 'no-referrer',
-      'access-control-allow-origin': 'https://app.example.com'
+      'access-control-allow-origin': 'https://app.example.com',
     }, { requestOrigin: 'https://app.example.com' })
 
     expect(report.grade).toMatch(/A|B/)
@@ -20,7 +20,7 @@ describe('analyzeSecurityHeaders', () => {
   it('flags missing security headers and wildcard CORS with credentials', () => {
     const report = analyzeSecurityHeaders({
       'access-control-allow-origin': '*',
-      'access-control-allow-credentials': 'true'
+      'access-control-allow-credentials': 'true',
     })
 
     expect(report.findings.some(item => item.id === 'csp' && item.level === 'error')).toBe(true)

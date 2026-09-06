@@ -1,8 +1,6 @@
 <script setup lang="ts">
-import {
-  convertAllCssUnits,
-  type CssUnit
-} from '#shared/utils/dev/css-units'
+import type { CssUnit } from '#shared/utils/dev/css-units'
+import { convertAllCssUnits } from '#shared/utils/dev/css-units'
 
 const inputValue = ref(16)
 const sourceUnit = ref<CssUnit>('px')
@@ -19,7 +17,7 @@ const unitOptions = [
   { label: 'rem (Root EM)', value: 'rem' },
   { label: 'em (Element EM)', value: 'em' },
   { label: 'vw (Viewport Width %)', value: 'vw' },
-  { label: 'vh (Viewport Height %)', value: 'vh' }
+  { label: 'vh (Viewport Height %)', value: 'vh' },
 ]
 
 function formatNumber(num: number): string {
@@ -33,7 +31,7 @@ const conversions = computed(() => {
   const results = convertAllCssUnits(Number(inputValue.value) || 0, sourceUnit.value, {
     rootFontSize: Number(rootFontSize.value) || 16,
     viewportWidth: Number(viewportWidth.value) || 1920,
-    viewportHeight: Number(viewportHeight.value) || 1080
+    viewportHeight: Number(viewportHeight.value) || 1080,
   })
 
   return [
@@ -41,7 +39,7 @@ const conversions = computed(() => {
     { label: 'Root EM (rem)', unit: 'rem', value: `${formatNumber(results.rem)}rem`, raw: results.rem },
     { label: 'Element EM (em)', unit: 'em', value: `${formatNumber(results.em)}em`, raw: results.em },
     { label: 'Viewport Width (vw)', unit: 'vw', value: `${formatNumber(results.vw)}vw`, raw: results.vw },
-    { label: 'Viewport Height (vh)', unit: 'vh', value: `${formatNumber(results.vh)}vh`, raw: results.vh }
+    { label: 'Viewport Height (vh)', unit: 'vh', value: `${formatNumber(results.vh)}vh`, raw: results.vh },
   ]
 })
 
@@ -177,7 +175,7 @@ function handleReset() {
           class="mt-8"
           :items="[
             { label: 'Color Converter', to: '/hub/color/converter' },
-            { label: 'Contrast Checker', to: '/hub/color/contrast-checker' }
+            { label: 'Contrast Checker', to: '/hub/color/contrast-checker' },
           ]"
         />
       </ToolDocs>

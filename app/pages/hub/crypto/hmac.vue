@@ -1,10 +1,6 @@
 <script setup lang="ts">
-import {
-  generateHmac,
-  generateRandomSecret,
-  type HmacAlgorithm,
-  type HmacEncoding
-} from '#shared/utils/crypto/hmac'
+import type { HmacAlgorithm, HmacEncoding } from '#shared/utils/crypto/hmac'
+import { generateHmac, generateRandomSecret } from '#shared/utils/crypto/hmac'
 
 useToolSeo('hmac')
 
@@ -20,7 +16,7 @@ const { copy, label, color, icon } = useCopyFeedback()
 const algorithms: HmacAlgorithm[] = ['SHA-256', 'SHA-384', 'SHA-512', 'SHA-1']
 const encodings: { label: string, value: HmacEncoding }[] = [
   { label: 'Hexadecimal', value: 'hex' },
-  { label: 'Base64', value: 'base64' }
+  { label: 'Base64', value: 'base64' },
 ]
 
 async function computeSignature() {
@@ -35,7 +31,8 @@ async function computeSignature() {
       sig = sig.toUpperCase()
     }
     signature.value = sig
-  } catch {
+  }
+  catch {
     signature.value = ''
   }
 }
@@ -202,7 +199,7 @@ function handleClear() {
           :items="[
             { label: 'Hash Generator', to: '/hub/crypto/hash-generator' },
             { label: 'JWT Decoder', to: '/hub/crypto/jwt' },
-            { label: 'AES Encrypt & Decrypt', to: '/hub/crypto/aes' }
+            { label: 'AES Encrypt & Decrypt', to: '/hub/crypto/aes' },
           ]"
         />
       </ToolDocs>

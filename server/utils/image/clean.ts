@@ -8,7 +8,7 @@ const KEEP_FORMAT: Record<string, ImageEncodeFormat> = {
   jpg: 'jpeg',
   png: 'png',
   webp: 'webp',
-  avif: 'avif'
+  avif: 'avif',
 }
 
 /**

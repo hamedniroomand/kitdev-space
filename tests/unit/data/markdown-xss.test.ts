@@ -11,7 +11,7 @@ describe('parseMarkdown escapes HTML in the input', () => {
     ['<svg onload=alert(1)>', '<svg'],
     ['<iframe src="https://evil.test"></iframe>', '<iframe'],
     ['text <b onmouseover=alert(1)>hover</b>', '<b '],
-    ['<style>body{display:none}</style>', '<style']
+    ['<style>body{display:none}</style>', '<style'],
   ])('escapes %s', (source, liveTag) => {
     const html = parseMarkdown(source)
 
@@ -27,7 +27,7 @@ describe('parseMarkdown drops executable link and image targets', () => {
     '[click](  javascript:alert(1))',
     '![i](javascript:alert(1))',
     '[d](data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg==)',
-    '[v](vbscript:msgbox(1))'
+    '[v](vbscript:msgbox(1))',
   ])('drops the target of %s', (source) => {
     const html = parseMarkdown(source)
 
@@ -55,7 +55,7 @@ describe('parseMarkdown keeps safe markdown', () => {
   it.each([
     ['[rel](./docs/my-page.md)', './docs/my-page.md'],
     ['[anchor](#my-section)', '#my-section'],
-    ['[mail](mailto:a@b.com)', 'mailto:a@b.com']
+    ['[mail](mailto:a@b.com)', 'mailto:a@b.com'],
   ])('keeps %s', (source, expected) => {
     expect(parseMarkdown(source)).toContain(expected)
   })

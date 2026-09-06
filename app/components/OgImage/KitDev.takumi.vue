@@ -8,7 +8,7 @@ withDefaults(defineProps<{
   title: 'KitDev Space',
   description: 'Developer tools for people who build things.',
   eyebrow: 'KitDev Space',
-  siteName: 'kitdev.space'
+  siteName: 'kitdev.space',
 })
 </script>
 

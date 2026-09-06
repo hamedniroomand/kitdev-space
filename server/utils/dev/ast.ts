@@ -1,14 +1,15 @@
+import type { AstLanguage, AstTreeNode, ResolveMode } from '#shared/utils/dev/ast'
 import { isAbsolute, resolve, sep } from 'node:path'
+import process from 'node:process'
 import { parseSync } from 'oxc-parser'
 import { ResolverFactory } from 'oxc-resolver'
 import { transformSync } from 'oxc-transform'
 import {
+
   buildAstTree,
   collectImportSpecifiers,
   languageToFilename,
-  type AstLanguage,
-  type AstTreeNode,
-  type ResolveMode
+
 } from '#shared/utils/dev/ast'
 
 const MAX_INPUT_CHARS = 200_000
@@ -63,12 +64,12 @@ export function parseSourceAst(code: string, language: AstLanguage): AstParseRes
   const parsed = parseSync(filename, source, {
     lang,
     sourceType: 'module',
-    range: true
+    range: true,
   })
 
   const errors = (parsed.errors ?? []).map(error => ({
     message: error.message,
-    codeframe: error.codeframe ?? null
+    codeframe: error.codeframe ?? null,
   }))
 
   if (!parsed.program) {
@@ -87,7 +88,7 @@ export function parseSourceAst(code: string, language: AstLanguage): AstParseRes
     program: parsed.program,
     imports: collectImportSpecifiers(parsed.program),
     errors,
-    comments: parsed.comments ?? []
+    comments: parsed.comments ?? [],
   }
 }
 
@@ -103,19 +104,19 @@ export function transformSourceAst(code: string, language: AstLanguage): AstTran
 
   const result = transformSync(filename, source, {
     typescript: {
-      onlyRemoveTypeImports: false
+      onlyRemoveTypeImports: false,
     },
     jsx: {
-      runtime: 'automatic'
-    }
+      runtime: 'automatic',
+    },
   })
 
   return {
     code: result.code,
     errors: (result.errors ?? []).map(error => ({
-      message: typeof error === 'string' ? error : (error as { message?: string }).message || 'Transform error.'
+      message: typeof error === 'string' ? error : (error as { message?: string }).message || 'Transform error.',
     })),
-    helpersUsed: result.helpersUsed
+    helpersUsed: result.helpersUsed,
   }
 }
 
@@ -172,7 +173,7 @@ function createResolver(mode: ResolveMode): ResolverFactory {
     conditionNames,
     mainFields: mode === 'esm' ? ['module', 'main'] : ['main', 'module'],
     exportsFields: ['exports'],
-    modules: ['node_modules']
+    modules: ['node_modules'],
   })
 }
 
@@ -207,7 +208,7 @@ export function resolveSpecifiers(input: {
         ok: false,
         path: null,
         error: result.error || 'Resolve failed.',
-        packageJsonPath: null
+        packageJsonPath: null,
       }
     }
 
@@ -218,7 +219,7 @@ export function resolveSpecifiers(input: {
       ok: true,
       path: toRootRelative(result.path),
       error: null,
-      packageJsonPath: result.packageJsonPath ? toRootRelative(result.packageJsonPath) : null
+      packageJsonPath: result.packageJsonPath ? toRootRelative(result.packageJsonPath) : null,
     }
   })
 }

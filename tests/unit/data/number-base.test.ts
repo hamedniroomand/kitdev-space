@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { convertFromBase } from '#shared/utils/data/number-base'
 
-describe('Number Base Converter', () => {
+describe('number Base Converter', () => {
   it('converts decimal 255 across all bases', () => {
     const res = convertFromBase('255', 10)
     expect(res.decimal).toBe('255')

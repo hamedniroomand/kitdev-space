@@ -1,6 +1,6 @@
+import { getClientKey } from '#server/utils/network/client-ip'
 import { fetchHtmlDocument } from '#server/utils/network/fetch-html'
 import { extractOgFromHtml } from '#server/utils/network/og'
-import { getClientKey } from '#server/utils/network/client-ip'
 import { enforceRateLimit } from '#server/utils/network/rate-limit'
 
 interface OgPreviewBody {
@@ -18,14 +18,15 @@ export default defineEventHandler(async (event) => {
     const { html, finalUrl } = await fetchHtmlDocument(url)
     const result = await extractOgFromHtml(html, finalUrl)
     return { result }
-  } catch (cause) {
+  }
+  catch (cause) {
     if (typeof cause === 'object' && cause !== null && 'statusCode' in cause) {
       throw cause
     }
     const message = cause instanceof Error ? cause.message : 'The OpenGraph preview failed.'
     throw createError({
       statusCode: 400,
-      message
+      message,
     })
   }
 })

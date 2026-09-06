@@ -11,7 +11,7 @@ const timeZoneItems = [
   { label: 'Europe/London', value: 'Europe/London' },
   { label: 'Europe/Berlin', value: 'Europe/Berlin' },
   { label: 'Asia/Tehran', value: 'Asia/Tehran' },
-  { label: 'Asia/Tokyo', value: 'Asia/Tokyo' }
+  { label: 'Asia/Tokyo', value: 'Asia/Tokyo' },
 ]
 
 useToolSeo('cron')
@@ -21,9 +21,10 @@ function formatRun(iso: string): string {
     return new Intl.DateTimeFormat('en-GB', {
       timeZone: timeZone.value || 'UTC',
       dateStyle: 'full',
-      timeStyle: 'short'
+      timeStyle: 'short',
     }).format(new Date(iso))
-  } catch {
+  }
+  catch {
     return iso
   }
 }
@@ -39,8 +40,8 @@ async function execute() {
       body: {
         expression: expression.value,
         timeZone: timeZone.value,
-        count: 5
-      }
+        count: 5,
+      },
     })
     description.value = data.result.description
     nextRuns.value = data.result.nextRuns
@@ -59,8 +60,8 @@ defineShortcuts({
     usingInput: true,
     handler: () => {
       execute()
-    }
-  }
+    },
+  },
 })
 </script>
 
@@ -151,7 +152,7 @@ defineShortcuts({
         <RelatedTools
           :items="[
             { label: 'Semver Calculator', to: '/hub/dev/semver' },
-            { label: 'URL Inspector', to: '/hub/network/url-inspector' }
+            { label: 'URL Inspector', to: '/hub/network/url-inspector' },
           ]"
         />
       </ToolDocs>

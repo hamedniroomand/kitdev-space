@@ -9,7 +9,7 @@ describe('tls utilities', () => {
       OU: 'IT Dept',
       C: 'US',
       ST: 'California',
-      L: 'San Francisco'
+      L: 'San Francisco',
     }
 
     const parsed = parseSubject(rawSubject as unknown as Record<string, string>)

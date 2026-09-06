@@ -3,7 +3,7 @@ import {
   htmlEntityDecode,
   htmlEntityEncode,
   urlDecode,
-  urlEncode
+  urlEncode,
 } from '#shared/utils/dev/html-url'
 
 describe('html-url codec utilities', () => {

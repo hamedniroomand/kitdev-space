@@ -39,9 +39,11 @@ export function parseToTable(input: string): TableData {
             const val = item && typeof item === 'object' ? (item as Record<string, unknown>)[col] : undefined
             if (val === null || val === undefined) {
               row[col] = ''
-            } else if (typeof val === 'object') {
+            }
+            else if (typeof val === 'object') {
               row[col] = JSON.stringify(val)
-            } else {
+            }
+            else {
               row[col] = val as string | number | boolean
             }
           }
@@ -49,7 +51,8 @@ export function parseToTable(input: string): TableData {
         })
         return { columns, rows }
       }
-    } catch {
+    }
+    catch {
       // Fall through to CSV parsing
     }
   }
@@ -65,7 +68,8 @@ export function parseToTable(input: string): TableData {
 
   for (let r = 1; r < csvGrid.length; r++) {
     const rowValues = csvGrid[r]!
-    if (rowValues.length === 1 && rowValues[0] === '') continue
+    if (rowValues.length === 1 && rowValues[0] === '')
+      continue
     const row: TableRow = {}
     for (let c = 0; c < columns.length; c++) {
       const colName = columns[c]!
@@ -81,14 +85,14 @@ export function filterAndSortRows(
   rows: TableRow[],
   query: string,
   sortCol?: string,
-  sortAsc = true
+  sortAsc = true,
 ): TableRow[] {
   let result = [...rows]
 
   if (query.trim()) {
     const q = query.toLowerCase()
     result = result.filter(row =>
-      Object.values(row).some(val => String(val ?? '').toLowerCase().includes(q))
+      Object.values(row).some(val => String(val ?? '').toLowerCase().includes(q)),
     )
   }
 

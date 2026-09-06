@@ -24,7 +24,7 @@ export default defineEventHandler(async (event) => {
   if (!algorithm || !algorithms.has(algorithm)) {
     throw createError({
       statusCode: 400,
-      message: 'Choose argon2id or bcrypt.'
+      message: 'Choose argon2id or bcrypt.',
     })
   }
 
@@ -35,15 +35,16 @@ export default defineEventHandler(async (event) => {
       memoryCost: body.memoryCost,
       timeCost: body.timeCost,
       cost: body.cost,
-      verify: body.verify ?? true
+      verify: body.verify ?? true,
     })
 
     return { result }
-  } catch (cause) {
+  }
+  catch (cause) {
     const message = cause instanceof Error ? cause.message : 'The password benchmark failed.'
     throw createError({
       statusCode: 400,
-      message
+      message,
     })
   }
 })

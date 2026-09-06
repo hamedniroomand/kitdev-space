@@ -37,7 +37,7 @@ describe('formatReadingTime', () => {
 
 describe('getTextStats reading and speaking time', () => {
   it('reports a slower speaking time than reading time', () => {
-    const stats = getTextStats(Array.from({ length: 450 }, () => 'word').join(' '))
+    const stats = getTextStats(Array.from({ length: 450 }).fill('word').join(' '))
     expect(stats.words).toBe(450)
     expect(stats.readingTimeMinutes).toBe(3)
     expect(stats.speakingTimeMinutes).toBe(4)

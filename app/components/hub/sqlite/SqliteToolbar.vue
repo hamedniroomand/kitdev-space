@@ -14,9 +14,12 @@ const emit = defineEmits<{
 
 const formattedSize = computed(() => {
   const bytes = props.sizeBytes
-  if (!bytes) return '0 KB'
-  if (bytes < 1024) return `${bytes} B`
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+  if (!bytes)
+    return '0 KB'
+  if (bytes < 1024)
+    return `${bytes} B`
+  if (bytes < 1024 * 1024)
+    return `${(bytes / 1024).toFixed(1)} KB`
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 })
 </script>

@@ -22,7 +22,8 @@ describe('enforceRateLimit', () => {
     try {
       enforceRateLimit(ip, key)
       throw new Error('expected a 429 error')
-    } catch (error) {
+    }
+    catch (error) {
       expect(error).toMatchObject({ statusCode: 429 })
     }
   })
@@ -48,7 +49,8 @@ describe('enforceRateLimit', () => {
     try {
       enforceRateLimit(ip, key, 5)
       throw new Error('expected a 429 error')
-    } catch (error) {
+    }
+    catch (error) {
       expect(error).toMatchObject({ statusCode: 429 })
     }
   })

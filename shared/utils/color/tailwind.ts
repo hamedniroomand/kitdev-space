@@ -17,14 +17,20 @@ function hslToHex(h: number, s: number, l: number): string {
 
   if (normS === 0) {
     r = g = b = normL
-  } else {
+  }
+  else {
     const hue2rgb = (p: number, q: number, t: number) => {
       let curT = t
-      if (curT < 0) curT += 1
-      if (curT > 1) curT -= 1
-      if (curT < 1 / 6) return p + (q - p) * 6 * curT
-      if (curT < 1 / 2) return q
-      if (curT < 2 / 3) return p + (q - p) * (2 / 3 - curT) * 6
+      if (curT < 0)
+        curT += 1
+      if (curT > 1)
+        curT -= 1
+      if (curT < 1 / 6)
+        return p + (q - p) * 6 * curT
+      if (curT < 1 / 2)
+        return q
+      if (curT < 2 / 3)
+        return p + (q - p) * (2 / 3 - curT) * 6
       return p
     }
 
@@ -48,7 +54,7 @@ export function generateTailwindPalette(colorInput: string): TailwindShade[] {
     { key: '100', t: 0.82 },
     { key: '200', t: 0.65 },
     { key: '300', t: 0.45 },
-    { key: '400', t: 0.22 }
+    { key: '400', t: 0.22 },
   ]
 
   const darker = [
@@ -56,7 +62,7 @@ export function generateTailwindPalette(colorInput: string): TailwindShade[] {
     { key: '700', t: 0.35 },
     { key: '800', t: 0.55 },
     { key: '900', t: 0.74 },
-    { key: '950', t: 0.88 }
+    { key: '950', t: 0.88 },
   ]
 
   const shades: TailwindShade[] = []
@@ -67,14 +73,14 @@ export function generateTailwindPalette(colorInput: string): TailwindShade[] {
     shades.push({
       shade: item.key,
       hex: hslToHex(h, curS, curL),
-      isDark: curL < 50
+      isDark: curL < 50,
     })
   }
 
   shades.push({
     shade: '500',
     hex: parsed.hex.toLowerCase(),
-    isDark: l < 50
+    isDark: l < 50,
   })
 
   for (const item of darker) {
@@ -83,7 +89,7 @@ export function generateTailwindPalette(colorInput: string): TailwindShade[] {
     shades.push({
       shade: item.key,
       hex: hslToHex(h, curS, curL),
-      isDark: curL < 50
+      isDark: curL < 50,
     })
   }
 

@@ -18,7 +18,7 @@ const presets = [
   { label: 'Cloudflare DNS', ip: '1.1.1.1' },
   { label: 'Google DNS', ip: '8.8.8.8' },
   { label: 'Localhost IPv4', ip: '127.0.0.1' },
-  { label: 'Localhost IPv6', ip: '::1' }
+  { label: 'Localhost IPv6', ip: '::1' },
 ]
 
 async function fetchInfo(targetIp?: string) {
@@ -32,10 +32,12 @@ async function fetchInfo(targetIp?: string) {
     if (!targetIp && res.ip) {
       inputIp.value = res.ip
     }
-  } catch (err: unknown) {
+  }
+  catch (err: unknown) {
     const fetchErr = err as { data?: { message?: string }, message?: string }
     errorMsg.value = fetchErr.data?.message || fetchErr.message || 'Failed to fetch IP details.'
-  } finally {
+  }
+  finally {
     loading.value = false
   }
 }
@@ -43,7 +45,8 @@ async function fetchInfo(targetIp?: string) {
 function handleLookup() {
   if (inputIp.value.trim()) {
     fetchInfo(inputIp.value.trim())
-  } else {
+  }
+  else {
     fetchInfo()
   }
 }
@@ -291,7 +294,7 @@ fetchInfo()
           :items="[
             { label: 'CIDR Subnet Calculator', to: '/hub/network/cidr' },
             { label: 'DNS Lookup', to: '/hub/network/dns-lookup' },
-            { label: 'RDAP / WHOIS Lookup', to: '/hub/network/rdap-lookup' }
+            { label: 'RDAP / WHOIS Lookup', to: '/hub/network/rdap-lookup' },
           ]"
         />
       </ToolDocs>

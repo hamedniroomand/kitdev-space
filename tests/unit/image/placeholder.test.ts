@@ -17,7 +17,7 @@ describe('generatePlaceholderSvg', () => {
       bgType: 'gradient',
       bgColor1: '#ff0000',
       bgColor2: '#0000ff',
-      text: 'Hero Banner'
+      text: 'Hero Banner',
     })
     expect(svg).toContain('<linearGradient id="grad"')
     expect(svg).toContain('stop-color="#ff0000"')

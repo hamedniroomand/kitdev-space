@@ -1,12 +1,7 @@
 <script setup lang="ts">
-import {
-  type FakeFieldConfig,
-  type FieldType,
-  formatAsCsv,
-  formatAsSqlInserts,
-  generateFakeRows
-} from '#shared/utils/data/fake-generator'
+import type { FakeFieldConfig, FieldType } from '#shared/utils/data/fake-generator'
 import type { ToolEditorLang } from '#shared/utils/dev/editor-lang'
+import { formatAsCsv, formatAsSqlInserts, generateFakeRows } from '#shared/utils/data/fake-generator'
 
 useToolSeo('fake-data')
 
@@ -31,7 +26,7 @@ const availableTypes: { label: string, value: FieldType }[] = [
   { label: 'Country', value: 'country' },
   { label: 'Past Date', value: 'date' },
   { label: 'Boolean', value: 'boolean' },
-  { label: 'Price ($)', value: 'price' }
+  { label: 'Price ($)', value: 'price' },
 ]
 
 const fields = ref<FakeFieldConfig[]>([
@@ -40,7 +35,7 @@ const fields = ref<FakeFieldConfig[]>([
   { name: 'email', type: 'email' },
   { name: 'company', type: 'company' },
   { name: 'job_title', type: 'jobTitle' },
-  { name: 'created_at', type: 'date' }
+  { name: 'created_at', type: 'date' },
 ])
 
 const { copy, label, color, icon } = useCopyFeedback()
@@ -54,17 +49,19 @@ function applyPreset(preset: 'users' | 'products' | 'contacts') {
       { name: 'name', type: 'fullName' },
       { name: 'email', type: 'email' },
       { name: 'company', type: 'company' },
-      { name: 'created_at', type: 'date' }
+      { name: 'created_at', type: 'date' },
     ]
-  } else if (preset === 'products') {
+  }
+  else if (preset === 'products') {
     tableName.value = 'products'
     fields.value = [
       { name: 'id', type: 'uuid' },
       { name: 'name', type: 'company' },
       { name: 'price', type: 'price' },
-      { name: 'in_stock', type: 'boolean' }
+      { name: 'in_stock', type: 'boolean' },
     ]
-  } else {
+  }
+  else {
     tableName.value = 'contacts'
     fields.value = [
       { name: 'id', type: 'integerId' },
@@ -73,7 +70,7 @@ function applyPreset(preset: 'users' | 'products' | 'contacts') {
       { name: 'email', type: 'email' },
       { name: 'phone', type: 'phone' },
       { name: 'city', type: 'city' },
-      { name: 'country', type: 'country' }
+      { name: 'country', type: 'country' },
     ]
   }
   regenerate()
@@ -82,7 +79,7 @@ function applyPreset(preset: 'users' | 'products' | 'contacts') {
 function addField() {
   fields.value.push({
     name: `field_${fields.value.length + 1}`,
-    type: 'fullName'
+    type: 'fullName',
   })
 }
 
@@ -97,11 +94,11 @@ function regenerate() {
 }
 
 const rows = computed(() => {
-  // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+  // eslint-disable-next-line ts/no-unused-expressions -- read the key so the rows recompute on refresh
   refreshKey.value
   return generateFakeRows({
     count: rowCount.value,
-    fields: fields.value
+    fields: fields.value,
   })
 })
 
@@ -116,8 +113,10 @@ const outputText = computed(() => {
 })
 
 const editorLang = computed<ToolEditorLang>(() => {
-  if (format.value === 'json') return 'json'
-  if (format.value === 'sql') return 'sql'
+  if (format.value === 'json')
+    return 'json'
+  if (format.value === 'sql')
+    return 'sql'
   return 'text'
 })
 
@@ -128,12 +127,13 @@ function handleCopy() {
 }
 
 function handleDownload() {
-  if (!outputText.value) return
+  if (!outputText.value)
+    return
   const extensions = { json: 'json', csv: 'csv', sql: 'sql' }
   const mimeTypes = {
     json: 'application/json',
     csv: 'text/csv',
-    sql: 'application/sql'
+    sql: 'application/sql',
   }
   const ext = extensions[format.value]
   downloadText(`mock-${tableName.value || 'data'}.${ext}`, outputText.value, mimeTypes[format.value])
@@ -211,7 +211,7 @@ function handleDownload() {
                   { label: '10 Rows', value: 10 },
                   { label: '25 Rows', value: 25 },
                   { label: '50 Rows', value: 50 },
-                  { label: '100 Rows', value: 100 }
+                  { label: '100 Rows', value: 100 },
                 ]"
                 class="w-full"
               />
@@ -334,7 +334,7 @@ function handleDownload() {
           :items="[
             { label: 'Lorem Ipsum', to: '/hub/data/lorem' },
             { label: 'Table Viewer', to: '/hub/data/table-viewer' },
-            { label: 'JSON Schema Validator', to: '/hub/data/json-schema' }
+            { label: 'JSON Schema Validator', to: '/hub/data/json-schema' },
           ]"
         />
       </ToolDocs>

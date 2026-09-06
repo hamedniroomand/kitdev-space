@@ -20,13 +20,13 @@ test.describe('RDAP Lookup tool', () => {
               name: 'MarkMonitor Inc.',
               ianaId: '292',
               abuseEmail: 'abusecomplaints@markmonitor.com',
-              abusePhone: '+1.2083895740'
+              abusePhone: '+1.2083895740',
             },
             status: ['clientDeleteProhibited', 'clientTransferProhibited'],
             nameservers: ['dns1.p08.nsone.net', 'dns2.p08.nsone.net'],
-            raw: { objectClassName: 'domain', handle: 'github.com' }
-          }
-        })
+            raw: { objectClassName: 'domain', handle: 'github.com' },
+          },
+        }),
       })
     })
 

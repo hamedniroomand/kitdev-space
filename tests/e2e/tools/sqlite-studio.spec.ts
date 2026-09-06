@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 import { fillCodeMirror, gotoHydrated } from '../utils'
 
 test.describe('SQLite Studio', () => {
@@ -10,7 +10,7 @@ test.describe('SQLite Studio', () => {
 
     // Verify sidebar displays tables
     const tableList = page.locator('aside').filter({
-      has: page.getByPlaceholder('Filter tables...')
+      has: page.getByPlaceholder('Filter tables...'),
     })
     await expect(tableList.getByText('products')).toBeVisible()
     await expect(tableList.getByText('customers')).toBeVisible()

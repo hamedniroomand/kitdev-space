@@ -1,9 +1,6 @@
 <script setup lang="ts">
-import {
-  convertHtmlToJsx,
-  convertHtmlToVue
-} from '#shared/utils/dev/html-converter'
 import type { ToolEditorLang } from '#shared/utils/dev/editor-lang'
+import { convertHtmlToJsx, convertHtmlToVue } from '#shared/utils/dev/html-converter'
 
 type TargetFormat = 'jsx' | 'vue-template' | 'vue-sfc'
 
@@ -63,13 +60,14 @@ function handleClear() {
 }
 
 const convertedOutput = computed(() => {
-  if (!htmlInput.value.trim()) return ''
+  if (!htmlInput.value.trim())
+    return ''
 
   if (targetFormat.value === 'jsx') {
     return convertHtmlToJsx(htmlInput.value, {
       wrapComponent: wrapJsxComponent.value,
       componentName: componentName.value,
-      spreadProps: spreadProps.value
+      spreadProps: spreadProps.value,
     })
   }
 
@@ -81,8 +79,10 @@ const convertedOutput = computed(() => {
 })
 
 const editorLang = computed<ToolEditorLang>(() => {
-  if (targetFormat.value === 'jsx') return 'javascript'
-  if (targetFormat.value === 'vue-sfc') return 'html'
+  if (targetFormat.value === 'jsx')
+    return 'javascript'
+  if (targetFormat.value === 'vue-sfc')
+    return 'html'
   return 'html'
 })
 
@@ -93,7 +93,8 @@ function handleCopy() {
 }
 
 function handleDownload() {
-  if (!convertedOutput.value) return
+  if (!convertedOutput.value)
+    return
   const isJsx = targetFormat.value === 'jsx'
   const isSfc = targetFormat.value === 'vue-sfc'
 

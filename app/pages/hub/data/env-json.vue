@@ -18,15 +18,15 @@ const sampleJson = JSON.stringify(
     NODE_ENV: 'production',
     APP_NAME: 'KitDev Space',
     DEBUG: 'false',
-    ALLOWED_HOSTS: 'localhost,127.0.0.1'
+    ALLOWED_HOSTS: 'localhost,127.0.0.1',
   },
   null,
-  2
+  2,
 )
 
 const SAMPLES: Record<ConversionMode, string> = {
   'env-to-json': sampleEnv,
-  'json-to-env': sampleJson
+  'json-to-env': sampleJson,
 }
 
 const mode = ref<ConversionMode>('env-to-json')
@@ -36,19 +36,22 @@ const { copy, label, color, icon } = useCopyFeedback()
 const { holdsSample, applySample } = useSampleInput(input, SAMPLES)
 
 const conversion = computed(() => {
-  if (!input.value.trim()) return { output: '', error: null }
+  if (!input.value.trim())
+    return { output: '', error: null }
 
   try {
     if (mode.value === 'env-to-json') {
       const parsed = envToJson(input.value)
       return { output: JSON.stringify(parsed, null, 2), error: null }
-    } else {
+    }
+    else {
       return { output: jsonToEnv(input.value), error: null }
     }
-  } catch (err) {
+  }
+  catch (err) {
     return {
       output: '',
-      error: err instanceof Error ? err.message : 'Conversion failed.'
+      error: err instanceof Error ? err.message : 'Conversion failed.',
     }
   }
 })
@@ -195,7 +198,7 @@ function handleCopy() {
           :items="[
             { label: 'JSON Formatter', to: '/hub/data/json-formatter' },
             { label: 'JSON ↔ YAML', to: '/hub/data/converters/json-yaml' },
-            { label: 'Fake Data Generator', to: '/hub/data/fake-generator' }
+            { label: 'Fake Data Generator', to: '/hub/data/fake-generator' },
           ]"
         />
       </ToolDocs>

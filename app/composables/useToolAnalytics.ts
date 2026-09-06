@@ -32,6 +32,7 @@ export function useToolAnalytics() {
     }
 
     if (import.meta.dev) {
+      // eslint-disable-next-line no-console -- a dev-only trace of the analytics events
       console.debug('[analytics]', event, tool)
     }
 
@@ -40,7 +41,7 @@ export function useToolAnalytics() {
     }
 
     analytics.proxy.gtag('event', event, {
-      tool_id: tool
+      tool_id: tool,
     })
   }
 

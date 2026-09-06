@@ -19,7 +19,7 @@ async function signHs256(secret: string, input: string): Promise<string> {
     new TextEncoder().encode(secret),
     { name: 'HMAC', hash: 'SHA-256' },
     false,
-    ['sign']
+    ['sign'],
   )
   const signature = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(input))
   return encodeBase64Url(new Uint8Array(signature))

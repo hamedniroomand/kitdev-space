@@ -26,15 +26,16 @@ async function inspect() {
       method: 'POST',
       body: {
         host: host.value,
-        port: port.value
-      }
+        port: port.value,
+      },
     })
     return data.result
   }, 'The TLS connection failed.')
 }
 
 function handleCopy() {
-  if (!result.value) return
+  if (!result.value)
+    return
   copy(JSON.stringify(result.value, null, 2))
 }
 
@@ -378,7 +379,7 @@ function handleReset() {
           :items="[
             { label: 'HTTP Inspector', to: '/hub/network/http-inspector' },
             { label: 'DNS Lookup', to: '/hub/network/dns-lookup' },
-            { label: 'RDAP / WHOIS Lookup', to: '/hub/network/rdap-lookup' }
+            { label: 'RDAP / WHOIS Lookup', to: '/hub/network/rdap-lookup' },
           ]"
         />
       </ToolDocs>

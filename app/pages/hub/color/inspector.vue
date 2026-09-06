@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { parseColor, toHslString, toRgbString } from '#shared/utils/color/parse'
 import { toOklchString } from '#shared/utils/color/oklch'
+import { parseColor, toHslString, toRgbString } from '#shared/utils/color/parse'
 
 const input = ref('#7c3aed')
 const hex = ref('')
@@ -37,8 +37,8 @@ defineShortcuts({
     usingInput: true,
     handler: () => {
       inspect()
-    }
-  }
+    },
+  },
 })
 
 onMounted(() => {
@@ -146,7 +146,7 @@ onMounted(() => {
           class="mt-8"
           :items="[
             { label: 'Color Converter', to: '/hub/color/converter' },
-            { label: 'Palette Generator', to: '/hub/color/palette-generator' }
+            { label: 'Palette Generator', to: '/hub/color/palette-generator' },
           ]"
         />
       </ToolDocs>

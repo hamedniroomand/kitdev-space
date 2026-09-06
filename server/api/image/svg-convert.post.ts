@@ -1,3 +1,4 @@
+import type { Buffer } from 'node:buffer'
 import { ImageError } from '#server/utils/image/errors'
 import { convertSvgAtScale } from '#server/utils/image/pipeline'
 import { assertImageSize } from '#server/utils/image/read-upload'
@@ -40,7 +41,8 @@ export default defineEventHandler(async (event) => {
       scale = Number(body.scale ?? 1)
       format = (body.format ?? 'png') as SvgFormat
       quality = body.quality != null ? Number(body.quality) : 80
-    } else if (contentType.includes('multipart/form-data')) {
+    }
+    else if (contentType.includes('multipart/form-data')) {
       const form = await readMultipartFormData(event)
       const fields: Record<string, string> = {}
       for (const part of form ?? []) {
@@ -62,7 +64,8 @@ export default defineEventHandler(async (event) => {
       scale = Number(fields.scale ?? 1)
       format = (fields.format ?? 'png') as SvgFormat
       quality = fields.quality != null ? Number(fields.quality) : 80
-    } else {
+    }
+    else {
       throw new ImageError('Paste SVG code or upload an SVG file.')
     }
 
@@ -85,13 +88,14 @@ export default defineEventHandler(async (event) => {
     setHeader(event, 'X-Input-Bytes', String(bytes.byteLength))
     setHeader(event, 'X-Output-Bytes', String(result.bytes.byteLength))
     return result.bytes
-  } catch (cause) {
+  }
+  catch (cause) {
     const message = cause instanceof ImageError
       ? cause.message
       : 'The SVG convert operation failed.'
     throw createError({
       statusCode: 400,
-      message
+      message,
     })
   }
 })

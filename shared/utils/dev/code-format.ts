@@ -51,7 +51,8 @@ export async function minifyCss(code: string): Promise<string> {
   try {
     const { minify } = await import('csso')
     return minify(code).css
-  } catch (cause) {
+  }
+  catch (cause) {
     const message = cause instanceof Error ? cause.message : 'CSS minify failed.'
     throw new Error(`Syntax error.\n\n${message}`, { cause })
   }
@@ -67,7 +68,7 @@ export function canFormatInBrowser(language: CodeLanguage, action: CodeAction): 
 export async function formatInBrowser(
   code: string,
   language: CodeLanguage,
-  action: CodeAction
+  action: CodeAction,
 ): Promise<{ code: string, engine: string }> {
   if (!canFormatInBrowser(language, action)) {
     throw new Error('This language and action need the server.')
@@ -78,7 +79,7 @@ export async function formatInBrowser(
   if (language === 'json') {
     return {
       code: action === 'minify' ? minifyJson(text) : formatJson(text),
-      engine: 'json'
+      engine: 'json',
     }
   }
   if (language === 'html') {

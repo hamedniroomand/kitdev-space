@@ -1,12 +1,9 @@
 <script setup lang="ts">
-import {
-  buildQrPayload,
-  generateQrSvg,
-  type QrPayloadKind
-} from '#shared/utils/dev/qrcode'
+import type { QrPayloadKind } from '#shared/utils/dev/qrcode'
+import { buildQrPayload, generateQrSvg } from '#shared/utils/dev/qrcode'
 
 definePageMeta({
-  ssr: false
+  ssr: false,
 })
 
 const kind = ref<QrPayloadKind>('url')
@@ -29,13 +26,13 @@ const { downloadText } = useDownload()
 const kindItems = [
   { label: 'URL', value: 'url' },
   { label: 'Plain text', value: 'text' },
-  { label: 'Wi-Fi', value: 'wifi' }
+  { label: 'Wi-Fi', value: 'wifi' },
 ]
 
 const securityItems = [
   { label: 'WPA / WPA2', value: 'WPA' },
   { label: 'WEP', value: 'WEP' },
-  { label: 'Open', value: 'nopass' }
+  { label: 'Open', value: 'nopass' },
 ]
 
 useToolSeo('qr-code')
@@ -50,9 +47,9 @@ async function generate() {
             ssid: ssid.value,
             password: password.value,
             security: security.value,
-            hidden: hidden.value
+            hidden: hidden.value,
           }
-        : undefined
+        : undefined,
     )
     svg.value = generateQrSvg(payload)
     return svg.value
@@ -83,8 +80,8 @@ defineShortcuts({
     usingInput: true,
     handler: () => {
       generate()
-    }
-  }
+    },
+  },
 })
 </script>
 
@@ -203,7 +200,7 @@ defineShortcuts({
           class="mt-8"
           :items="[
             { label: 'URL Inspector', to: '/hub/network/url-inspector' },
-            { label: 'Lorem Ipsum & Mock Data', to: '/hub/data/lorem' }
+            { label: 'Lorem Ipsum & Mock Data', to: '/hub/data/lorem' },
           ]"
         />
       </ToolDocs>

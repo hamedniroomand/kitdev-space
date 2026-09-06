@@ -27,8 +27,8 @@ describe('convertInBrowser', () => {
       convertInBrowser(
         '{"name":"KitDev","labs":["data","crypto"],"meta":{"version":1}}',
         'json',
-        'yaml'
-      )
+        'yaml',
+      ),
     ).toBe('name: KitDev\nlabs:\n  - data\n  - crypto\nmeta:\n  version: 1\n')
   })
 

@@ -7,11 +7,11 @@ export default defineNuxtRouteMiddleware((to) => {
       {
         path: target,
         query: to.query,
-        hash: to.hash
+        hash: to.hash,
       },
       {
-        redirectCode: 301
-      }
+        redirectCode: 301,
+      },
     )
   }
 })

@@ -17,7 +17,7 @@ useDropZone(dropZoneRef, {
     if (files && files[0]) {
       emit('loadFile', files[0])
     }
-  }
+  },
 })
 
 function onFileSelect(event: Event) {

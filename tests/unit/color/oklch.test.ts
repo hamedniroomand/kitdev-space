@@ -30,7 +30,7 @@ describe('oklchToRgb', () => {
       { r: 16, g: 185, b: 129 },
       { r: 250, g: 204, b: 21 },
       { r: 0, g: 0, b: 0 },
-      { r: 255, g: 255, b: 255 }
+      { r: 255, g: 255, b: 255 },
     ]) {
       expect(oklchToRgb(rgbToOklch(rgb))).toEqual(rgb)
     }

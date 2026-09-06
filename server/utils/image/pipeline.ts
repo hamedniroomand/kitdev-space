@@ -1,7 +1,7 @@
 import type {
   ImageEncodeFormat,
   ImageFilter,
-  ImageFit
+  ImageFit,
 } from '#shared/utils/image/types'
 import { ImageError } from './errors'
 import { MAX_PIXELS } from './limits'
@@ -44,13 +44,13 @@ export function mapImageCause(cause: unknown, fallback: string): ImageError {
   if (code === 'ERR_IMAGE_UNKNOWN_FORMAT') {
     return new ImageError(
       'This file type is not supported.\n\nUse JPEG, PNG, WebP, GIF, BMP, TIFF, HEIC, AVIF, or SVG.',
-      { cause }
+      { cause },
     )
   }
   if (code === 'ERR_IMAGE_FORMAT_UNSUPPORTED') {
     return new ImageError(
       'This image format is not supported on this server.\n\nTry WebP, JPEG, or PNG.',
-      { cause }
+      { cause },
     )
   }
 
@@ -72,7 +72,7 @@ function applyFormat(img: Bun.Image, format: ImageEncodeFormat, quality = 80, lo
 
 async function finish(
   img: ReturnType<typeof applyFormat>,
-  format: ImageEncodeFormat
+  format: ImageEncodeFormat,
 ): Promise<ImageResult> {
   try {
     const bytes = await img.bytes()
@@ -80,12 +80,13 @@ async function finish(
       bytes,
       mime: mimeFor(format),
       width: img.width,
-      height: img.height
+      height: img.height,
     }
-  } catch (cause) {
+  }
+  catch (cause) {
     throw mapImageCause(
       cause,
-      'The image operation failed.\n\nCheck the file and try again.'
+      'The image operation failed.\n\nCheck the file and try again.',
     )
   }
 }
@@ -106,12 +107,13 @@ export async function getImageMetadata(input: Uint8Array): Promise<ImageMetadata
     return {
       width: meta.width,
       height: meta.height,
-      format: String(meta.format)
+      format: String(meta.format),
     }
-  } catch (cause) {
+  }
+  catch (cause) {
     throw mapImageCause(
       cause,
-      'The image could not be read.\n\nCheck the file and try again.'
+      'The image could not be read.\n\nCheck the file and try again.',
     )
   }
 }
@@ -120,7 +122,7 @@ const SVG_SCALES = new Set([1, 2, 4])
 
 export async function convertSvgAtScale(
   input: Uint8Array,
-  opts: { scale: number, format: 'png' | 'webp', quality?: number }
+  opts: { scale: number, format: 'png' | 'webp', quality?: number },
 ): Promise<ImageResult> {
   if (!SVG_SCALES.has(opts.scale)) {
     throw new ImageError('Choose a scale of 1, 2, or 4.')
@@ -135,13 +137,14 @@ export async function convertSvgAtScale(
     const img = applyFormat(
       new Bun.Image(png, { maxPixels: MAX_PIXELS, autoOrient: true }),
       opts.format,
-      quality
+      quality,
     )
     return await finish(img, opts.format)
-  } catch (cause) {
+  }
+  catch (cause) {
     throw mapImageCause(
       cause,
-      'The SVG convert operation failed.\n\nCheck the input and try again.'
+      'The SVG convert operation failed.\n\nCheck the input and try again.',
     )
   }
 }
@@ -170,7 +173,7 @@ export interface ImageProcessOptions {
  */
 export async function processImage(
   input: Uint8Array,
-  opts: ImageProcessOptions
+  opts: ImageProcessOptions,
 ): Promise<ImageResult> {
   const format = opts.format ?? 'webp'
   const quality = clampQuality(opts.quality)
@@ -208,7 +211,7 @@ export async function processImage(
       img = img.resize(opts.width!, opts.height!, {
         fit: opts.fit ?? 'inside',
         withoutEnlargement: opts.withoutEnlargement ?? false,
-        filter: opts.filter ?? 'lanczos3'
+        filter: opts.filter ?? 'lanczos3',
       })
     }
     if (opts.grayscale) {
@@ -216,10 +219,11 @@ export async function processImage(
     }
 
     return await finish(applyFormat(img, format, quality, opts.lossless), format)
-  } catch (cause) {
+  }
+  catch (cause) {
     throw mapImageCause(
       cause,
-      'The image operation failed.\n\nCheck the file and try again.'
+      'The image operation failed.\n\nCheck the file and try again.',
     )
   }
 }

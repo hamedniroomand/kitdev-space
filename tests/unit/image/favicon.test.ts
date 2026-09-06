@@ -6,7 +6,7 @@ describe('favicon utility', () => {
     const manifestStr = buildWebmanifest({
       appName: 'Super App',
       shortName: 'Super',
-      themeColor: '#0066ff'
+      themeColor: '#0066ff',
     })
     const manifest = JSON.parse(manifestStr)
 
@@ -18,7 +18,7 @@ describe('favicon utility', () => {
 
   it('builds an HTML snippet with required link and meta tags', () => {
     const html = buildHtmlSnippet({
-      themeColor: '#10b981'
+      themeColor: '#10b981',
     })
 
     expect(html).toContain('<link rel="icon" type="image/x-icon" href="/favicon.ico">')
@@ -33,7 +33,7 @@ describe('favicon utility', () => {
 
     const ico = buildIco([
       { width: 16, height: 16, bytes: dummyPng16 },
-      { width: 32, height: 32, bytes: dummyPng32 }
+      { width: 32, height: 32, bytes: dummyPng32 },
     ])
 
     const view = new DataView(ico.buffer, ico.byteOffset, ico.byteLength)

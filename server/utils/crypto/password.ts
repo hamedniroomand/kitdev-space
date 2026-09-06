@@ -34,7 +34,8 @@ export async function benchmarkPassword(options: {
       throw new Error(`Bcrypt cost must be an integer from 4 to ${MAX_BCRYPT_COST}.`)
     }
     hash = await Bun.password.hash(password, { algorithm: 'bcrypt', cost })
-  } else {
+  }
+  else {
     const memoryCost = options.memoryCost ?? 4096
     const timeCost = options.timeCost ?? 2
     if (!Number.isInteger(memoryCost) || memoryCost < 1024 || memoryCost > MAX_ARGON_MEMORY) {
@@ -46,7 +47,7 @@ export async function benchmarkPassword(options: {
     hash = await Bun.password.hash(password, {
       algorithm: 'argon2id',
       memoryCost,
-      timeCost
+      timeCost,
     })
   }
 
@@ -59,6 +60,6 @@ export async function benchmarkPassword(options: {
     hash,
     durationMs,
     verified,
-    algorithm: options.algorithm
+    algorithm: options.algorithm,
   }
 }

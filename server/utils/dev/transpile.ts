@@ -14,7 +14,8 @@ export function transpileSource(code: string, loader: TranspileLoader): { code: 
   try {
     const transpiler = new Bun.Transpiler({ loader })
     return { code: transpiler.transformSync(text) }
-  } catch (cause) {
+  }
+  catch (cause) {
     const message = cause instanceof Error ? cause.message : 'Transpile failed.'
     throw new Error(`Syntax error.\n\n${message}`, { cause })
   }

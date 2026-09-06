@@ -1,6 +1,6 @@
+import type { Tool } from '#shared/types/tools'
 import { useStorage } from '@vueuse/core'
 import { getToolById } from '#shared/utils/tools'
-import type { Tool } from '#shared/types/tools'
 
 export function useToolPreferences() {
   const pinnedIds = useStorage<string[]>('kitdev:pinned-tools', [])
@@ -10,7 +10,8 @@ export function useToolPreferences() {
     const index = pinnedIds.value.indexOf(toolId)
     if (index === -1) {
       pinnedIds.value.push(toolId)
-    } else {
+    }
+    else {
       pinnedIds.value.splice(index, 1)
     }
   }
@@ -50,6 +51,6 @@ export function useToolPreferences() {
     togglePin,
     isPinned,
     recordRecent,
-    clearRecents
+    clearRecents,
   }
 }

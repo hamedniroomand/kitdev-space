@@ -6,7 +6,7 @@ describe('IMAGE_PRESETS', () => {
     expect(IMAGE_PRESETS['open-graph']).toEqual({
       width: 1200,
       height: 630,
-      label: 'OpenGraph'
+      label: 'OpenGraph',
     })
   })
 })

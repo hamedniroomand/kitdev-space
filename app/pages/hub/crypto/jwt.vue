@@ -1,10 +1,6 @@
 <script setup lang="ts">
-import {
-  decodeJwt,
-  verifyJwtHs256,
-  type JwtDecodeResult,
-  type JwtVerifyStatus
-} from '#shared/utils/crypto/jwt'
+import type { JwtDecodeResult, JwtVerifyStatus } from '#shared/utils/crypto/jwt'
+import { decodeJwt, verifyJwtHs256 } from '#shared/utils/crypto/jwt'
 
 const token = ref('')
 const secret = ref('')
@@ -46,9 +42,11 @@ async function handleDecode() {
     decoded.value = decodeJwt(token.value)
     if (secret.value.trim()) {
       verifyStatus.value = await verifyJwtHs256(token.value, secret.value)
-    } else if (decoded.value.algorithm === 'HS256') {
+    }
+    else if (decoded.value.algorithm === 'HS256') {
       verifyStatus.value = 'missing-secret'
-    } else if (decoded.value.algorithm) {
+    }
+    else if (decoded.value.algorithm) {
       verifyStatus.value = 'unsupported'
     }
     return decoded.value.payloadJson
@@ -75,8 +73,8 @@ defineShortcuts({
     usingInput: true,
     handler: () => {
       handleDecode()
-    }
-  }
+    },
+  },
 })
 </script>
 
@@ -224,7 +222,7 @@ defineShortcuts({
           class="mt-8"
           :items="[
             { label: 'Encoder & Escaper', to: '/hub/dev/encoder' },
-            { label: 'Hash Generator', to: '/hub/crypto/hash-generator' }
+            { label: 'Hash Generator', to: '/hub/crypto/hash-generator' },
           ]"
         />
       </ToolDocs>

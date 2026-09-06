@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest'
 import type { ColumnInfo } from '~/types/sqlite'
+import { describe, expect, it } from 'vitest'
 import {
   buildTableQuery,
   filterLabel,
@@ -7,7 +7,7 @@ import {
   isTextColumn,
   quoteIdentifier,
   sqlLiteral,
-  tableSnippets
+  tableSnippets,
 } from '~/utils/sqlite/query-builder'
 
 function column(name: string, type: string, pk = 0): ColumnInfo {
@@ -54,11 +54,11 @@ describe('query builder', () => {
       filters: [
         { column: 'price', operator: 'gt' as const, value: '30' },
         { column: 'name', operator: 'contains' as const, value: 'lamp' },
-        { column: 'category_id', operator: 'null' as const, value: '' }
+        { column: 'category_id', operator: 'null' as const, value: '' },
       ],
       sort: { column: 'price', direction: 'desc' as const },
       limit: 50,
-      offset: 100
+      offset: 100,
     }
     const { sql } = buildTableQuery(state, { hasRowId: true, textColumns: ['name'] })
     expect(sql).toBe([
@@ -66,7 +66,7 @@ describe('query builder', () => {
       'FROM "products"',
       'WHERE "price" > 30 AND "name" LIKE \'%lamp%\' ESCAPE \'\\\' AND "category_id" IS NULL',
       'ORDER BY "price" DESC',
-      'LIMIT 50 OFFSET 100;'
+      'LIMIT 50 OFFSET 100;',
     ].join('\n'))
   })
 

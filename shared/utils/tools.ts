@@ -8,7 +8,7 @@ export const categoryLabels: Record<ToolCategory, string> = {
   color: 'Color Lab',
   network: 'Network Lab',
   image: 'Image Lab',
-  dev: 'Dev Lab'
+  dev: 'Dev Lab',
 }
 
 export const tools: Tool[] = [
@@ -23,7 +23,7 @@ export const tools: Tool[] = [
     route: '/hub/data/json-formatter',
     clientOnly: true,
     serverRequired: false,
-    status: 'available'
+    status: 'available',
   },
   {
     id: 'json-to-typescript',
@@ -37,7 +37,7 @@ export const tools: Tool[] = [
     clientOnly: true,
     serverRequired: false,
     status: 'available',
-    seoTitle: 'JSON to TypeScript Converter'
+    seoTitle: 'JSON to TypeScript Converter',
   },
   {
     id: 'json-yaml',
@@ -51,7 +51,7 @@ export const tools: Tool[] = [
     clientOnly: true,
     serverRequired: false,
     status: 'available',
-    seoTitle: 'JSON to YAML Converter'
+    seoTitle: 'JSON to YAML Converter',
   },
   {
     id: 'json-toml',
@@ -65,7 +65,7 @@ export const tools: Tool[] = [
     clientOnly: true,
     serverRequired: false,
     status: 'available',
-    seoTitle: 'JSON to TOML Converter'
+    seoTitle: 'JSON to TOML Converter',
   },
   {
     id: 'json-xml',
@@ -79,7 +79,7 @@ export const tools: Tool[] = [
     clientOnly: true,
     serverRequired: false,
     status: 'available',
-    seoTitle: 'JSON to XML Converter'
+    seoTitle: 'JSON to XML Converter',
   },
   {
     id: 'text-diff',
@@ -93,7 +93,7 @@ export const tools: Tool[] = [
     clientOnly: true,
     serverRequired: false,
     status: 'available',
-    seoTitle: 'Text Diff Checker'
+    seoTitle: 'Text Diff Checker',
   },
   {
     id: 'lorem',
@@ -107,7 +107,7 @@ export const tools: Tool[] = [
     clientOnly: true,
     serverRequired: false,
     status: 'available',
-    seoTitle: 'Lorem Ipsum Generator'
+    seoTitle: 'Lorem Ipsum Generator',
   },
   {
     id: 'markdown-studio',
@@ -121,7 +121,7 @@ export const tools: Tool[] = [
     clientOnly: true,
     serverRequired: false,
     status: 'available',
-    seoTitle: 'Markdown Editor with Live Preview'
+    seoTitle: 'Markdown Editor with Live Preview',
   },
   {
     id: 'sql-formatter',
@@ -134,7 +134,7 @@ export const tools: Tool[] = [
     route: '/hub/data/sql-formatter',
     clientOnly: true,
     serverRequired: false,
-    status: 'available'
+    status: 'available',
   },
   {
     id: 'csv-json',
@@ -148,7 +148,7 @@ export const tools: Tool[] = [
     clientOnly: true,
     serverRequired: false,
     status: 'available',
-    seoTitle: 'CSV to JSON Converter'
+    seoTitle: 'CSV to JSON Converter',
   },
   {
     id: 'text-stats',
@@ -162,7 +162,7 @@ export const tools: Tool[] = [
     clientOnly: true,
     serverRequired: false,
     status: 'available',
-    seoTitle: 'Word Counter and Text Statistics'
+    seoTitle: 'Word Counter and Text Statistics',
   },
   {
     id: 'number-base',
@@ -175,7 +175,7 @@ export const tools: Tool[] = [
     route: '/hub/data/number-base',
     clientOnly: true,
     serverRequired: false,
-    status: 'available'
+    status: 'available',
   },
   {
     id: 'env-json',
@@ -188,7 +188,7 @@ export const tools: Tool[] = [
     route: '/hub/data/env-json',
     clientOnly: true,
     serverRequired: false,
-    status: 'available'
+    status: 'available',
   },
   {
     id: 'unicode',
@@ -201,7 +201,7 @@ export const tools: Tool[] = [
     route: '/hub/data/unicode',
     clientOnly: true,
     serverRequired: false,
-    status: 'available'
+    status: 'available',
   },
   {
     id: 'yaml-validator',
@@ -214,7 +214,7 @@ export const tools: Tool[] = [
     route: '/hub/data/yaml-validator',
     clientOnly: true,
     serverRequired: false,
-    status: 'available'
+    status: 'available',
   },
   {
     id: 'json-schema',
@@ -227,7 +227,7 @@ export const tools: Tool[] = [
     route: '/hub/data/json-schema',
     clientOnly: true,
     serverRequired: false,
-    status: 'available'
+    status: 'available',
   },
   {
     id: 'table-viewer',
@@ -241,7 +241,7 @@ export const tools: Tool[] = [
     clientOnly: true,
     serverRequired: false,
     status: 'available',
-    seoTitle: 'CSV and JSON Table Viewer'
+    seoTitle: 'CSV and JSON Table Viewer',
   },
   {
     id: 'fake-data',
@@ -254,7 +254,7 @@ export const tools: Tool[] = [
     route: '/hub/data/fake-generator',
     clientOnly: true,
     serverRequired: false,
-    status: 'available'
+    status: 'available',
   },
   {
     id: 'hash',
@@ -267,7 +267,7 @@ export const tools: Tool[] = [
     route: '/hub/crypto/hash-generator',
     clientOnly: false,
     serverRequired: false,
-    status: 'available'
+    status: 'available',
   },
   {
     id: 'encoder',
@@ -277,14 +277,29 @@ export const tools: Tool[] = [
     category: 'dev',
     icon: 'i-lucide-binary',
     keywords: [
-      'base64', 'base64url', 'encode', 'decode', 'hex', 'hexadecimal', 'url', 'urlencode',
-      'percent', 'html', 'entities', 'escape', 'unescape', 'json', 'sql', 'shell', 'codec'
+      'base64',
+      'base64url',
+      'encode',
+      'decode',
+      'hex',
+      'hexadecimal',
+      'url',
+      'urlencode',
+      'percent',
+      'html',
+      'entities',
+      'escape',
+      'unescape',
+      'json',
+      'sql',
+      'shell',
+      'codec',
     ],
     route: '/hub/dev/encoder',
     clientOnly: true,
     serverRequired: false,
     status: 'available',
-    seoTitle: 'Text Encoder and Escaper'
+    seoTitle: 'Text Encoder and Escaper',
   },
   {
     id: 'generator',
@@ -294,14 +309,28 @@ export const tools: Tool[] = [
     category: 'crypto',
     icon: 'i-lucide-dices',
     keywords: [
-      'uuid', 'uuidv4', 'uuidv7', 'ulid', 'nanoid', 'id', 'guid', 'random', 'string',
-      'token', 'api key', 'passphrase', 'diceware', 'password', 'secret', 'generator'
+      'uuid',
+      'uuidv4',
+      'uuidv7',
+      'ulid',
+      'nanoid',
+      'id',
+      'guid',
+      'random',
+      'string',
+      'token',
+      'api key',
+      'passphrase',
+      'diceware',
+      'password',
+      'secret',
+      'generator',
     ],
     route: '/hub/crypto/generator',
     clientOnly: true,
     serverRequired: false,
     status: 'available',
-    seoTitle: 'Random ID and Secret Generator'
+    seoTitle: 'Random ID and Secret Generator',
   },
   {
     id: 'password-benchmark',
@@ -315,7 +344,7 @@ export const tools: Tool[] = [
     clientOnly: false,
     serverRequired: true,
     status: 'available',
-    seoTitle: 'Argon2 and bcrypt Password Hash Benchmark'
+    seoTitle: 'Argon2 and bcrypt Password Hash Benchmark',
   },
   {
     id: 'jwt',
@@ -329,7 +358,7 @@ export const tools: Tool[] = [
     clientOnly: true,
     serverRequired: false,
     status: 'available',
-    seoTitle: 'JWT Decoder and Debugger'
+    seoTitle: 'JWT Decoder and Debugger',
   },
   {
     id: 'hmac',
@@ -342,7 +371,7 @@ export const tools: Tool[] = [
     route: '/hub/crypto/hmac',
     clientOnly: true,
     serverRequired: false,
-    status: 'available'
+    status: 'available',
   },
   {
     id: 'totp',
@@ -355,7 +384,7 @@ export const tools: Tool[] = [
     route: '/hub/crypto/totp',
     clientOnly: true,
     serverRequired: false,
-    status: 'available'
+    status: 'available',
   },
   {
     id: 'aes',
@@ -369,7 +398,7 @@ export const tools: Tool[] = [
     clientOnly: true,
     serverRequired: false,
     status: 'available',
-    seoTitle: 'AES-256 Encrypt and Decrypt'
+    seoTitle: 'AES-256 Encrypt and Decrypt',
   },
   {
     id: 'color-converter',
@@ -382,7 +411,7 @@ export const tools: Tool[] = [
     route: '/hub/color/converter',
     clientOnly: true,
     serverRequired: false,
-    status: 'available'
+    status: 'available',
   },
   {
     id: 'contrast',
@@ -396,7 +425,7 @@ export const tools: Tool[] = [
     clientOnly: true,
     serverRequired: false,
     status: 'available',
-    seoTitle: 'WCAG Color Contrast Checker'
+    seoTitle: 'WCAG Color Contrast Checker',
   },
   {
     id: 'palette',
@@ -410,7 +439,7 @@ export const tools: Tool[] = [
     clientOnly: true,
     serverRequired: false,
     status: 'available',
-    seoTitle: 'Color Palette Generator'
+    seoTitle: 'Color Palette Generator',
   },
   {
     id: 'color-inspector',
@@ -423,7 +452,7 @@ export const tools: Tool[] = [
     route: '/hub/color/inspector',
     clientOnly: true,
     serverRequired: false,
-    status: 'available'
+    status: 'available',
   },
   {
     id: 'gradient-studio',
@@ -437,7 +466,7 @@ export const tools: Tool[] = [
     clientOnly: true,
     serverRequired: false,
     status: 'available',
-    seoTitle: 'CSS Gradient Generator'
+    seoTitle: 'CSS Gradient Generator',
   },
   {
     id: 'tailwind-shades',
@@ -451,7 +480,7 @@ export const tools: Tool[] = [
     clientOnly: true,
     serverRequired: false,
     status: 'available',
-    seoTitle: 'Tailwind Color Shade Generator'
+    seoTitle: 'Tailwind Color Shade Generator',
   },
   {
     id: 'image-palette',
@@ -464,7 +493,7 @@ export const tools: Tool[] = [
     route: '/hub/color/palette-extractor',
     clientOnly: true,
     serverRequired: false,
-    status: 'available'
+    status: 'available',
   },
   {
     id: 'dns',
@@ -478,7 +507,7 @@ export const tools: Tool[] = [
     clientOnly: false,
     serverRequired: true,
     status: 'available',
-    seoTitle: 'DNS Record Lookup'
+    seoTitle: 'DNS Record Lookup',
   },
   {
     id: 'email-health',
@@ -492,7 +521,7 @@ export const tools: Tool[] = [
     clientOnly: false,
     serverRequired: true,
     status: 'available',
-    seoTitle: 'SPF, DKIM, and DMARC Checker'
+    seoTitle: 'SPF, DKIM, and DMARC Checker',
   },
   {
     id: 'http-inspector',
@@ -502,14 +531,23 @@ export const tools: Tool[] = [
     category: 'network',
     icon: 'i-lucide-list-tree',
     keywords: [
-      'http', 'headers', 'response', 'redirect', 'location', 'cors', 'csp', 'hsts',
-      'security', 'x-frame-options', 'preflight'
+      'http',
+      'headers',
+      'response',
+      'redirect',
+      'location',
+      'cors',
+      'csp',
+      'hsts',
+      'security',
+      'x-frame-options',
+      'preflight',
     ],
     route: '/hub/network/http-inspector',
     clientOnly: false,
     serverRequired: true,
     status: 'available',
-    seoTitle: 'HTTP Headers and Redirect Checker'
+    seoTitle: 'HTTP Headers and Redirect Checker',
   },
   {
     id: 'url-inspector',
@@ -523,7 +561,7 @@ export const tools: Tool[] = [
     clientOnly: true,
     serverRequired: false,
     status: 'available',
-    seoTitle: 'URL Parser and Inspector'
+    seoTitle: 'URL Parser and Inspector',
   },
   {
     id: 'og-preview',
@@ -537,7 +575,7 @@ export const tools: Tool[] = [
     clientOnly: false,
     serverRequired: true,
     status: 'available',
-    seoTitle: 'Open Graph and Social Preview'
+    seoTitle: 'Open Graph and Social Preview',
   },
   {
     id: 'cidr',
@@ -550,7 +588,7 @@ export const tools: Tool[] = [
     route: '/hub/network/cidr',
     clientOnly: true,
     serverRequired: false,
-    status: 'available'
+    status: 'available',
   },
   {
     id: 'user-agent',
@@ -563,7 +601,7 @@ export const tools: Tool[] = [
     route: '/hub/network/user-agent',
     clientOnly: true,
     serverRequired: false,
-    status: 'available'
+    status: 'available',
   },
   {
     id: 'cookie-inspector',
@@ -577,7 +615,7 @@ export const tools: Tool[] = [
     clientOnly: true,
     serverRequired: false,
     status: 'available',
-    seoTitle: 'Set-Cookie Header Parser and Checker'
+    seoTitle: 'Set-Cookie Header Parser and Checker',
   },
   {
     id: 'ip-info',
@@ -591,7 +629,7 @@ export const tools: Tool[] = [
     clientOnly: false,
     serverRequired: true,
     status: 'available',
-    seoTitle: 'IP Address Lookup'
+    seoTitle: 'IP Address Lookup',
   },
   {
     id: 'tls-inspector',
@@ -605,7 +643,7 @@ export const tools: Tool[] = [
     clientOnly: false,
     serverRequired: true,
     status: 'available',
-    seoTitle: 'SSL Certificate Checker'
+    seoTitle: 'SSL Certificate Checker',
   },
   {
     id: 'rdap-lookup',
@@ -619,7 +657,7 @@ export const tools: Tool[] = [
     clientOnly: false,
     serverRequired: true,
     status: 'available',
-    seoTitle: 'WHOIS and RDAP Domain Lookup'
+    seoTitle: 'WHOIS and RDAP Domain Lookup',
   },
   {
     id: 'image-studio',
@@ -629,13 +667,27 @@ export const tools: Tool[] = [
     category: 'image',
     icon: 'i-lucide-image',
     keywords: [
-      'image', 'convert', 'converter', 'resize', 'resizer', 'rotate', 'flip', 'mirror',
-      'grayscale', 'webp', 'avif', 'jpeg', 'png', 'compress', 'optimize', 'transform'
+      'image',
+      'convert',
+      'converter',
+      'resize',
+      'resizer',
+      'rotate',
+      'flip',
+      'mirror',
+      'grayscale',
+      'webp',
+      'avif',
+      'jpeg',
+      'png',
+      'compress',
+      'optimize',
+      'transform',
     ],
     route: '/hub/image/studio',
     clientOnly: false,
     serverRequired: true,
-    status: 'available'
+    status: 'available',
   },
   {
     id: 'image-metadata',
@@ -649,7 +701,7 @@ export const tools: Tool[] = [
     clientOnly: false,
     serverRequired: false,
     status: 'available',
-    seoTitle: 'EXIF Viewer and Remover'
+    seoTitle: 'EXIF Viewer and Remover',
   },
   {
     id: 'svg-converter',
@@ -663,7 +715,7 @@ export const tools: Tool[] = [
     clientOnly: false,
     serverRequired: true,
     status: 'available',
-    seoTitle: 'SVG to PNG Converter'
+    seoTitle: 'SVG to PNG Converter',
   },
   {
     id: 'image-base64',
@@ -677,7 +729,7 @@ export const tools: Tool[] = [
     clientOnly: true,
     serverRequired: false,
     status: 'available',
-    seoTitle: 'Image to Base64 Converter'
+    seoTitle: 'Image to Base64 Converter',
   },
   {
     id: 'placeholder',
@@ -690,7 +742,7 @@ export const tools: Tool[] = [
     route: '/hub/image/placeholder',
     clientOnly: true,
     serverRequired: false,
-    status: 'available'
+    status: 'available',
   },
   {
     id: 'favicon-generator',
@@ -704,7 +756,7 @@ export const tools: Tool[] = [
     clientOnly: false,
     serverRequired: true,
     status: 'available',
-    seoTitle: 'Favicon Generator'
+    seoTitle: 'Favicon Generator',
   },
   {
     id: 'semver',
@@ -717,7 +769,7 @@ export const tools: Tool[] = [
     route: '/hub/dev/semver',
     clientOnly: false,
     serverRequired: false,
-    status: 'available'
+    status: 'available',
   },
   {
     id: 'cron',
@@ -731,7 +783,7 @@ export const tools: Tool[] = [
     clientOnly: false,
     serverRequired: true,
     status: 'available',
-    seoTitle: 'Cron Expression Visualizer'
+    seoTitle: 'Cron Expression Visualizer',
   },
   {
     id: 'tar-explorer',
@@ -745,7 +797,7 @@ export const tools: Tool[] = [
     clientOnly: true,
     serverRequired: false,
     status: 'available',
-    seoTitle: 'Tar Archive Viewer and Extractor'
+    seoTitle: 'Tar Archive Viewer and Extractor',
   },
   {
     id: 'transpiler',
@@ -759,7 +811,7 @@ export const tools: Tool[] = [
     clientOnly: false,
     serverRequired: true,
     status: 'available',
-    seoTitle: 'TypeScript to JavaScript Transpiler'
+    seoTitle: 'TypeScript to JavaScript Transpiler',
   },
   {
     id: 'code-minifier',
@@ -772,7 +824,7 @@ export const tools: Tool[] = [
     route: '/hub/dev/code-minifier',
     clientOnly: false,
     serverRequired: false,
-    status: 'available'
+    status: 'available',
   },
   {
     id: 'ast-playground',
@@ -785,7 +837,7 @@ export const tools: Tool[] = [
     route: '/hub/dev/ast-playground',
     clientOnly: false,
     serverRequired: true,
-    status: 'available'
+    status: 'available',
   },
   {
     id: 'regex-tester',
@@ -798,7 +850,7 @@ export const tools: Tool[] = [
     route: '/hub/dev/regex-tester',
     clientOnly: true,
     serverRequired: false,
-    status: 'available'
+    status: 'available',
   },
   {
     id: 'case-converter',
@@ -811,7 +863,7 @@ export const tools: Tool[] = [
     route: '/hub/dev/case-converter',
     clientOnly: true,
     serverRequired: false,
-    status: 'available'
+    status: 'available',
   },
   {
     id: 'timestamp',
@@ -825,7 +877,7 @@ export const tools: Tool[] = [
     clientOnly: true,
     serverRequired: false,
     status: 'available',
-    seoTitle: 'Unix Timestamp Converter'
+    seoTitle: 'Unix Timestamp Converter',
   },
   {
     id: 'css-units',
@@ -838,7 +890,7 @@ export const tools: Tool[] = [
     route: '/hub/dev/css-units',
     clientOnly: true,
     serverRequired: false,
-    status: 'available'
+    status: 'available',
   },
   {
     id: 'qr-code',
@@ -852,7 +904,7 @@ export const tools: Tool[] = [
     clientOnly: true,
     serverRequired: false,
     status: 'available',
-    seoTitle: 'QR Code Generator'
+    seoTitle: 'QR Code Generator',
   },
   {
     id: 'sqlite-studio',
@@ -866,7 +918,7 @@ export const tools: Tool[] = [
     clientOnly: true,
     serverRequired: false,
     status: 'available',
-    seoTitle: 'SQLite Database Viewer and Editor'
+    seoTitle: 'SQLite Database Viewer and Editor',
   },
   {
     id: 'chmod',
@@ -879,7 +931,7 @@ export const tools: Tool[] = [
     route: '/hub/dev/chmod',
     clientOnly: true,
     serverRequired: false,
-    status: 'available'
+    status: 'available',
   },
   {
     id: 'markdown-table',
@@ -892,7 +944,7 @@ export const tools: Tool[] = [
     route: '/hub/dev/markdown-table',
     clientOnly: true,
     serverRequired: false,
-    status: 'available'
+    status: 'available',
   },
   {
     id: 'glob-tester',
@@ -905,7 +957,7 @@ export const tools: Tool[] = [
     route: '/hub/dev/glob-tester',
     clientOnly: true,
     serverRequired: false,
-    status: 'available'
+    status: 'available',
   },
   {
     id: 'curl-to-code',
@@ -918,7 +970,7 @@ export const tools: Tool[] = [
     route: '/hub/dev/curl-converter',
     clientOnly: true,
     serverRequired: false,
-    status: 'available'
+    status: 'available',
   },
   {
     id: 'html-converter',
@@ -928,13 +980,22 @@ export const tools: Tool[] = [
     category: 'dev',
     icon: 'i-lucide-code-xml',
     keywords: [
-      'html', 'svg', 'jsx', 'react', 'vue', 'converter', 'sfc', 'style', 'component', 'icon'
+      'html',
+      'svg',
+      'jsx',
+      'react',
+      'vue',
+      'converter',
+      'sfc',
+      'style',
+      'component',
+      'icon',
     ],
     route: '/hub/dev/html-converter',
     clientOnly: true,
     serverRequired: false,
     status: 'available',
-    seoTitle: 'HTML to React and Vue Converter'
+    seoTitle: 'HTML to React and Vue Converter',
   },
 
   // Variant entries. A variant renders the component of its parent with a
@@ -952,7 +1013,7 @@ export const tools: Tool[] = [
     clientOnly: true,
     serverRequired: false,
     status: 'available',
-    variantOf: 'generator'
+    variantOf: 'generator',
   },
   {
     id: 'passphrase',
@@ -966,7 +1027,7 @@ export const tools: Tool[] = [
     clientOnly: true,
     serverRequired: false,
     status: 'available',
-    variantOf: 'generator'
+    variantOf: 'generator',
   },
   {
     id: 'base64',
@@ -981,7 +1042,7 @@ export const tools: Tool[] = [
     serverRequired: false,
     status: 'available',
     seoTitle: 'Base64 Encoder and Decoder',
-    variantOf: 'encoder'
+    variantOf: 'encoder',
   },
   {
     id: 'url-encoder',
@@ -996,7 +1057,7 @@ export const tools: Tool[] = [
     serverRequired: false,
     status: 'available',
     seoTitle: 'URL Encoder and Decoder',
-    variantOf: 'encoder'
+    variantOf: 'encoder',
   },
   {
     id: 'image-resizer',
@@ -1010,7 +1071,7 @@ export const tools: Tool[] = [
     clientOnly: false,
     serverRequired: true,
     status: 'available',
-    variantOf: 'image-studio'
+    variantOf: 'image-studio',
   },
   {
     id: 'image-converter',
@@ -1024,7 +1085,7 @@ export const tools: Tool[] = [
     clientOnly: false,
     serverRequired: true,
     status: 'available',
-    variantOf: 'image-studio'
+    variantOf: 'image-studio',
   },
   {
     id: 'image-cropper',
@@ -1038,7 +1099,7 @@ export const tools: Tool[] = [
     clientOnly: false,
     serverRequired: true,
     status: 'available',
-    variantOf: 'image-studio'
+    variantOf: 'image-studio',
   },
   {
     id: 'exif-remover',
@@ -1053,7 +1114,7 @@ export const tools: Tool[] = [
     serverRequired: false,
     status: 'available',
     seoTitle: 'Remove EXIF Data from a Photo',
-    variantOf: 'image-metadata'
+    variantOf: 'image-metadata',
   },
   {
     id: 'html-to-jsx',
@@ -1067,7 +1128,7 @@ export const tools: Tool[] = [
     clientOnly: true,
     serverRequired: false,
     status: 'available',
-    variantOf: 'html-converter'
+    variantOf: 'html-converter',
   },
   {
     id: 'svg-component',
@@ -1081,8 +1142,8 @@ export const tools: Tool[] = [
     clientOnly: true,
     serverRequired: false,
     status: 'available',
-    variantOf: 'html-converter'
-  }
+    variantOf: 'html-converter',
+  },
 ]
 
 export function getToolById(id: string): Tool | undefined {
@@ -1113,7 +1174,7 @@ export function searchTools(query: string): Tool[] {
       tool.name,
       tool.description,
       tool.category,
-      ...tool.keywords
+      ...tool.keywords,
     ]
       .join(' ')
       .toLowerCase()

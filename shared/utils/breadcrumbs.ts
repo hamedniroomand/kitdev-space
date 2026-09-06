@@ -16,8 +16,8 @@ export function buildHubBreadcrumbs(crumbs: BreadcrumbCrumb[]): BreadcrumbCrumb[
     { label: 'Hub', to: '/hub' },
     ...crumbs.map(crumb => ({
       label: crumb.label,
-      ...(crumb.to ? { to: crumb.to } : {})
-    }))
+      ...(crumb.to ? { to: crumb.to } : {}),
+    })),
   ]
 }
 
@@ -25,18 +25,18 @@ export function buildToolBreadcrumbs(tool: Tool): BreadcrumbCrumb[] {
   return buildHubBreadcrumbs([
     {
       label: categoryLabels[tool.category],
-      to: hubCategoryPath(tool.category)
+      to: hubCategoryPath(tool.category),
     },
     {
-      label: tool.name
-    }
+      label: tool.name,
+    },
   ])
 }
 
 export function buildCategoryBreadcrumbs(category: ToolCategory): BreadcrumbCrumb[] {
   return buildHubBreadcrumbs([
     {
-      label: categoryLabels[category]
-    }
+      label: categoryLabels[category],
+    },
   ])
 }

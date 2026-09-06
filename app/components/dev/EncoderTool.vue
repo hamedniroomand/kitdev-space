@@ -13,7 +13,7 @@ const props = withDefaults(defineProps<{
 
 const DIRECTION_ITEMS: { label: string, value: Direction, icon: string }[] = [
   { label: 'Encode', value: 'encode', icon: 'i-lucide-arrow-right' },
-  { label: 'Decode', value: 'decode', icon: 'i-lucide-arrow-left' }
+  { label: 'Decode', value: 'decode', icon: 'i-lucide-arrow-left' },
 ]
 
 const SAMPLE = 'Hello, "world" & <friends>'
@@ -28,7 +28,7 @@ const { downloadText } = useDownload()
 useToolSeo(props.toolId)
 
 const activeOption = computed(
-  () => CODEC_OPTIONS.find(option => option.value === format.value) ?? CODEC_OPTIONS[0]!
+  () => CODEC_OPTIONS.find(option => option.value === format.value) ?? CODEC_OPTIONS[0]!,
 )
 
 const conversion = computed(() => {
@@ -41,10 +41,11 @@ const conversion = computed(() => {
       ? encodeWith(input.value, format.value)
       : decodeWith(input.value, format.value)
     return { output, error: null }
-  } catch (cause) {
+  }
+  catch (cause) {
     return {
       output: '',
-      error: cause instanceof Error ? cause.message : 'The operation failed.'
+      error: cause instanceof Error ? cause.message : 'The operation failed.',
     }
   }
 })

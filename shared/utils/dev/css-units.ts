@@ -11,7 +11,7 @@ export const CSS_UNITS: CssUnit[] = ['px', 'rem', 'em', 'vw', 'vh']
 export function toPx(
   value: number,
   fromUnit: CssUnit,
-  options?: CssUnitConversionOptions
+  options?: CssUnitConversionOptions,
 ): number {
   const rootFontSize = options?.rootFontSize ?? 16
   const viewportWidth = options?.viewportWidth ?? 1920
@@ -33,7 +33,7 @@ export function toPx(
 export function fromPx(
   pxValue: number,
   toUnit: CssUnit,
-  options?: CssUnitConversionOptions
+  options?: CssUnitConversionOptions,
 ): number {
   const rootFontSize = options?.rootFontSize ?? 16
   const viewportWidth = options?.viewportWidth ?? 1920
@@ -56,7 +56,7 @@ export function convertCssUnit(
   value: number,
   fromUnit: CssUnit,
   toUnit: CssUnit,
-  options?: CssUnitConversionOptions
+  options?: CssUnitConversionOptions,
 ): number {
   const px = toPx(value, fromUnit, options)
   return fromPx(px, toUnit, options)
@@ -65,7 +65,7 @@ export function convertCssUnit(
 export function convertAllCssUnits(
   value: number,
   fromUnit: CssUnit,
-  options?: CssUnitConversionOptions
+  options?: CssUnitConversionOptions,
 ): Record<CssUnit, number> {
   const px = toPx(value, fromUnit, options)
   return {
@@ -73,6 +73,6 @@ export function convertAllCssUnits(
     rem: fromPx(px, 'rem', options),
     em: fromPx(px, 'em', options),
     vw: fromPx(px, 'vw', options),
-    vh: fromPx(px, 'vh', options)
+    vh: fromPx(px, 'vh', options),
   }
 }

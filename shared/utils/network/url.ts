@@ -21,7 +21,8 @@ export function inspectUrl(input: string): UrlParts {
   let url: URL
   try {
     url = new URL(trimmed)
-  } catch {
+  }
+  catch {
     throw new Error('Enter a valid URL.')
   }
 
@@ -41,6 +42,6 @@ export function inspectUrl(input: string): UrlParts {
     pathname: url.pathname,
     search: url.search,
     searchParams,
-    hash: url.hash
+    hash: url.hash,
   }
 }

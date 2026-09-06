@@ -28,13 +28,13 @@ export interface UnicodeAnalysis {
 }
 
 const ZERO_WIDTH_NAMES: Record<number, string> = {
-  0x200b: 'Zero-Width Space (ZWSP)',
-  0x200c: 'Zero-Width Non-Joiner (ZWNJ)',
-  0x200d: 'Zero-Width Joiner (ZWJ)',
-  0x200e: 'Left-to-Right Mark (LRM)',
-  0x200f: 'Right-to-Left Mark (RLM)',
+  0x200B: 'Zero-Width Space (ZWSP)',
+  0x200C: 'Zero-Width Non-Joiner (ZWNJ)',
+  0x200D: 'Zero-Width Joiner (ZWJ)',
+  0x200E: 'Left-to-Right Mark (LRM)',
+  0x200F: 'Right-to-Left Mark (RLM)',
   0x2060: 'Word Joiner (WJ)',
-  0xfeff: 'Zero-Width No-Break Space (BOM)'
+  0xFEFF: 'Zero-Width No-Break Space (BOM)',
 }
 
 function getUtf8Bytes(str: string): string[] {
@@ -55,34 +55,34 @@ function getCharCategory(codePoint: number): string {
   if (ZERO_WIDTH_NAMES[codePoint]) {
     return ZERO_WIDTH_NAMES[codePoint]
   }
-  if (codePoint <= 0x1f || (codePoint >= 0x7f && codePoint <= 0x9f)) {
+  if (codePoint <= 0x1F || (codePoint >= 0x7F && codePoint <= 0x9F)) {
     return 'Control Character'
   }
-  if (codePoint >= 0x20 && codePoint <= 0x7e) {
+  if (codePoint >= 0x20 && codePoint <= 0x7E) {
     return 'Basic Latin (ASCII)'
   }
-  if (codePoint >= 0x80 && codePoint <= 0xff) {
+  if (codePoint >= 0x80 && codePoint <= 0xFF) {
     return 'Latin-1 Supplement'
   }
-  if (codePoint >= 0x0100 && codePoint <= 0x024f) {
+  if (codePoint >= 0x0100 && codePoint <= 0x024F) {
     return 'Latin Extended'
   }
-  if (codePoint >= 0x0370 && codePoint <= 0x03ff) {
+  if (codePoint >= 0x0370 && codePoint <= 0x03FF) {
     return 'Greek and Coptic'
   }
-  if (codePoint >= 0x0400 && codePoint <= 0x04ff) {
+  if (codePoint >= 0x0400 && codePoint <= 0x04FF) {
     return 'Cyrillic'
   }
-  if (codePoint >= 0x0600 && codePoint <= 0x06ff) {
+  if (codePoint >= 0x0600 && codePoint <= 0x06FF) {
     return 'Arabic'
   }
-  if (codePoint >= 0x0590 && codePoint <= 0x05ff) {
+  if (codePoint >= 0x0590 && codePoint <= 0x05FF) {
     return 'Hebrew'
   }
-  if (codePoint >= 0x3000 && codePoint <= 0x9fff) {
+  if (codePoint >= 0x3000 && codePoint <= 0x9FFF) {
     return 'CJK Symbols & Ideographs'
   }
-  if (codePoint >= 0x1f300 && codePoint <= 0x1f9ff) {
+  if (codePoint >= 0x1F300 && codePoint <= 0x1F9FF) {
     return 'Emoji & Symbols'
   }
   return 'Unicode Character'
@@ -98,26 +98,33 @@ export function inspectUnicode(input: string): UnicodeAnalysis {
     const codePoint = ch.codePointAt(0) ?? 0
     const hex = `U+${codePoint.toString(16).toUpperCase().padStart(4, '0')}`
     const isZeroWidth = !!ZERO_WIDTH_NAMES[codePoint]
-    const isControl = (codePoint <= 0x1f && codePoint !== 0x09 && codePoint !== 0x0a && codePoint !== 0x0d)
-      || (codePoint >= 0x7f && codePoint <= 0x9f)
+    const isControl = (codePoint <= 0x1F && codePoint !== 0x09 && codePoint !== 0x0A && codePoint !== 0x0D)
+      || (codePoint >= 0x7F && codePoint <= 0x9F)
     const isWhitespace = /\s/.test(ch)
 
-    if (isZeroWidth) hasZeroWidth = true
-    if (isControl) hasControlChars = true
+    if (isZeroWidth)
+      hasZeroWidth = true
+    if (isControl)
+      hasControlChars = true
 
     let displayChar = ch
     const zeroWidthName = ZERO_WIDTH_NAMES[codePoint]
     if (isZeroWidth && zeroWidthName) {
       displayChar = `[${zeroWidthName.split(' ')[0]}]`
-    } else if (codePoint === 0x20) {
+    }
+    else if (codePoint === 0x20) {
       displayChar = '[Space]'
-    } else if (codePoint === 0x09) {
+    }
+    else if (codePoint === 0x09) {
       displayChar = '[Tab]'
-    } else if (codePoint === 0x0a) {
+    }
+    else if (codePoint === 0x0A) {
       displayChar = '[LF]'
-    } else if (codePoint === 0x0d) {
+    }
+    else if (codePoint === 0x0D) {
       displayChar = '[CR]'
-    } else if (isControl) {
+    }
+    else if (isControl) {
       displayChar = `[Control ${hex}]`
     }
 
@@ -131,7 +138,7 @@ export function inspectUnicode(input: string): UnicodeAnalysis {
       isControl,
       isWhitespace,
       isZeroWidth,
-      category: getCharCategory(codePoint)
+      category: getCharCategory(codePoint),
     }
   })
 
@@ -151,8 +158,8 @@ export function inspectUnicode(input: string): UnicodeAnalysis {
       nfkc,
       nfkd,
       isNfc: input === nfc,
-      isNfd: input === nfd
+      isNfd: input === nfd,
     },
-    chars
+    chars,
   }
 }

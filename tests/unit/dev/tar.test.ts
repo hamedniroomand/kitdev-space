@@ -4,7 +4,7 @@ import {
   assertArchiveSize,
   assertSafeEntryPath,
   listTarEntries,
-  readTarEntry
+  readTarEntry,
 } from '#shared/utils/dev/tar'
 
 const tar = new Uint8Array(readFileSync('tests/bun/dev/fixtures/sample.tar'))
@@ -74,7 +74,7 @@ describe('guards', () => {
   })
 })
 
-describe('PAX extended headers', () => {
+describe('pAX extended headers', () => {
   it('reads a path longer than the 100 byte name field', () => {
     const paths = listTarEntries(pax).map(entry => entry.path)
     expect(paths).toContain(LONG_PATH)

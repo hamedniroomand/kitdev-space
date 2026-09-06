@@ -61,7 +61,7 @@ describe('parseCookieHeader', () => {
     expect(parseCookieHeader('a=1; b=two; empty=')).toEqual([
       { name: 'a', value: '1' },
       { name: 'b', value: 'two' },
-      { name: 'empty', value: '' }
+      { name: 'empty', value: '' },
     ])
   })
 })
@@ -73,7 +73,7 @@ describe('inspectCookies', () => {
       'cookie: a=1; b=2',
       'plain=value; Path=/',
       'x=1; y=2; z=3',
-      ''
+      '',
     ].join('\n'), NOW)
     expect(report.setCookies.map(c => c.name)).toEqual(['sid', 'plain'])
     expect(report.requestCookies.map(c => c.name)).toEqual(['a', 'b', 'x', 'y', 'z'])

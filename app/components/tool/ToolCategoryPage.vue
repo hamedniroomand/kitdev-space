@@ -17,13 +17,13 @@ useSeoMeta({
   description: () => `${label.value} tools in KitDev Space.`,
   ogTitle: () => label.value,
   ogDescription: () => `${label.value} tools in KitDev Space.`,
-  ogType: 'website'
+  ogType: 'website',
 })
 
 useKitDevOgImage({
   title: () => label.value,
   description: () => `${label.value} tools in KitDev Space.`,
-  eyebrow: 'Category'
+  eyebrow: 'Category',
 })
 
 useSchemaOrg([
@@ -31,9 +31,9 @@ useSchemaOrg([
     itemListElement: [
       { name: 'Home', item: '/' },
       { name: 'Hub', item: '/hub' },
-      { name: categoryLabels[props.category], item: `/hub/${props.category}` }
-    ]
-  })
+      { name: categoryLabels[props.category], item: `/hub/${props.category}` },
+    ],
+  }),
 ])
 </script>
 

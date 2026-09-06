@@ -1,10 +1,7 @@
 <script setup lang="ts">
+import type { TableRow } from '#shared/utils/data/table-viewer'
 import { jsonToCsv } from '#shared/utils/data/csv'
-import {
-  filterAndSortRows,
-  parseToTable,
-  type TableRow
-} from '#shared/utils/data/table-viewer'
+import { filterAndSortRows, parseToTable } from '#shared/utils/data/table-viewer'
 
 useToolSeo('table-viewer')
 
@@ -19,7 +16,7 @@ const sampleJson = JSON.stringify([
   { id: 101, product: 'Wireless Mouse', category: 'Electronics', price: 29.99, inStock: true },
   { id: 102, product: 'Mechanical Keyboard', category: 'Electronics', price: 89.99, inStock: true },
   { id: 103, product: 'Ergonomic Desk Chair', category: 'Furniture', price: 249.50, inStock: false },
-  { id: 104, product: 'USB-C Cable Pack', category: 'Accessories', price: 15.00, inStock: true }
+  { id: 104, product: 'USB-C Cable Pack', category: 'Accessories', price: 15.00, inStock: true },
 ], null, 2)
 
 const input = ref(sampleCsv)
@@ -33,7 +30,8 @@ const { downloadText } = useDownload()
 const tableData = computed(() => {
   try {
     return parseToTable(input.value)
-  } catch {
+  }
+  catch {
     return { columns: [], rows: [] }
   }
 })
@@ -43,7 +41,7 @@ const displayedRows = computed<TableRow[]>(() => {
     tableData.value.rows,
     searchQuery.value,
     sortColumn.value || undefined,
-    sortAsc.value
+    sortAsc.value,
   )
 })
 
@@ -51,11 +49,13 @@ function handleSort(col: string) {
   if (sortColumn.value === col) {
     if (sortAsc.value) {
       sortAsc.value = false
-    } else {
+    }
+    else {
       sortColumn.value = null
       sortAsc.value = true
     }
-  } else {
+  }
+  else {
     sortColumn.value = col
     sortAsc.value = true
   }
@@ -79,7 +79,8 @@ function handleCopyJson() {
 
 function handleDownloadCsv() {
   const columns = tableData.value.columns
-  if (columns.length === 0) return
+  if (columns.length === 0)
+    return
   const rows = displayedRows.value.map(row => columns.map(column => row[column] ?? ''))
   downloadText('table-export.csv', jsonToCsv([columns, ...rows]), 'text/csv')
 }
@@ -258,7 +259,7 @@ function handleDownloadCsv() {
           :items="[
             { label: 'CSV ↔ JSON', to: '/hub/data/converters/csv-json' },
             { label: 'SQLite Studio', to: '/hub/data/sqlite-studio' },
-            { label: 'JSON Formatter', to: '/hub/data/json-formatter' }
+            { label: 'JSON Formatter', to: '/hub/data/json-formatter' },
           ]"
         />
       </ToolDocs>

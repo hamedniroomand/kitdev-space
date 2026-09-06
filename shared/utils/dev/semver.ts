@@ -40,10 +40,12 @@ export function semverBump(version: string, release: SemverRelease): string {
     major += 1
     minor = 0
     patch = 0
-  } else if (release === 'minor') {
+  }
+  else if (release === 'minor') {
     minor += 1
     patch = 0
-  } else {
+  }
+  else {
     patch += 1
   }
 

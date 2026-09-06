@@ -1,7 +1,7 @@
 import type { ImageEncodeFormat, ImageFilter, ImageFit, ImagePresetId } from '#shared/utils/image/types'
 import { ImageError } from '#server/utils/image/errors'
-import { IMAGE_PRESETS } from '#server/utils/image/presets'
 import { processImage } from '#server/utils/image/pipeline'
+import { IMAGE_PRESETS } from '#server/utils/image/presets'
 import { readImageForm } from '#server/utils/image/read-upload'
 import { getClientKey } from '#server/utils/network/client-ip'
 import { enforceRateLimit } from '#server/utils/network/rate-limit'
@@ -62,7 +62,8 @@ export default defineEventHandler(async (event) => {
       }
       width = IMAGE_PRESETS[fields.preset].width
       height = IMAGE_PRESETS[fields.preset].height
-    } else if (fields.width && fields.height) {
+    }
+    else if (fields.width && fields.height) {
       width = Number(fields.width)
       height = Number(fields.height)
     }
@@ -87,7 +88,7 @@ export default defineEventHandler(async (event) => {
       flop: flag(fields.flop),
       grayscale: flag(fields.grayscale),
       format,
-      quality
+      quality,
     })
 
     setHeader(event, 'Content-Type', result.mime)
@@ -96,13 +97,14 @@ export default defineEventHandler(async (event) => {
     setHeader(event, 'X-Input-Bytes', String(bytes.byteLength))
     setHeader(event, 'X-Output-Bytes', String(result.bytes.byteLength))
     return result.bytes
-  } catch (cause) {
+  }
+  catch (cause) {
     const message = cause instanceof ImageError
       ? cause.message
       : 'The image operation failed.'
     throw createError({
       statusCode: 400,
-      message
+      message,
     })
   }
 })

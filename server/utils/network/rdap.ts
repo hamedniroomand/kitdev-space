@@ -55,15 +55,18 @@ export function parseRdapEntity(entity: Record<string, unknown>): RdapRegistrar 
   if (Array.isArray(entity.vcardArray) && entity.vcardArray[1] && Array.isArray(entity.vcardArray[1])) {
     const vcards = entity.vcardArray[1] as unknown[][]
     for (const v of vcards) {
-      if (!Array.isArray(v) || v.length < 4) continue
+      if (!Array.isArray(v) || v.length < 4)
+        continue
       const fieldName = String(v[0]).toLowerCase()
       const val = v[3]
 
       if (fieldName === 'fn' && typeof val === 'string' && !result.name) {
         result.name = val
-      } else if (fieldName === 'email' && typeof val === 'string' && !result.abuseEmail) {
+      }
+      else if (fieldName === 'email' && typeof val === 'string' && !result.abuseEmail) {
         result.abuseEmail = val
-      } else if (fieldName === 'tel' && typeof val === 'string' && !result.abusePhone) {
+      }
+      else if (fieldName === 'tel' && typeof val === 'string' && !result.abusePhone) {
         result.abusePhone = val
       }
     }
@@ -74,9 +77,12 @@ export function parseRdapEntity(entity: Record<string, unknown>): RdapRegistrar 
     for (const sub of entity.entities) {
       if (sub && typeof sub === 'object') {
         const subParsed = parseRdapEntity(sub as Record<string, unknown>)
-        if (!result.name && subParsed.name) result.name = subParsed.name
-        if (!result.abuseEmail && subParsed.abuseEmail) result.abuseEmail = subParsed.abuseEmail
-        if (!result.abusePhone && subParsed.abusePhone) result.abusePhone = subParsed.abusePhone
+        if (!result.name && subParsed.name)
+          result.name = subParsed.name
+        if (!result.abuseEmail && subParsed.abuseEmail)
+          result.abuseEmail = subParsed.abuseEmail
+        if (!result.abusePhone && subParsed.abusePhone)
+          result.abusePhone = subParsed.abusePhone
       }
     }
   }
@@ -94,18 +100,22 @@ export function parseRdapData(data: Record<string, unknown>, query: string, type
 
   if (Array.isArray(data.events)) {
     for (const ev of data.events) {
-      if (!ev || typeof ev !== 'object') continue
+      if (!ev || typeof ev !== 'object')
+        continue
       const action = String(ev.eventAction ?? '').toLowerCase()
       const dateStr = String(ev.eventDate ?? '')
-      if (!dateStr) continue
+      if (!dateStr)
+        continue
 
       if (action === 'registration') {
         registrationDate = new Date(dateStr).toISOString()
-      } else if (action === 'expiration') {
+      }
+      else if (action === 'expiration') {
         expirationDate = new Date(dateStr).toISOString()
         const diffMs = new Date(dateStr).getTime() - Date.now()
         daysUntilExpiration = Math.floor(diffMs / (1000 * 60 * 60 * 24))
-      } else if (action === 'last changed' || action === 'last update of rdap database') {
+      }
+      else if (action === 'last changed' || action === 'last update of rdap database') {
         updatedDate = new Date(dateStr).toISOString()
       }
     }
@@ -116,14 +126,16 @@ export function parseRdapData(data: Record<string, unknown>, query: string, type
   if (Array.isArray(data.entities)) {
     // Find entity with role 'registrar' or 'registrant'
     const regEntity = data.entities.find((e) => {
-      if (!e || typeof e !== 'object') return false
+      if (!e || typeof e !== 'object')
+        return false
       const roles = Array.isArray(e.roles) ? e.roles : []
       return roles.includes('registrar') || roles.includes('registrant')
     }) as Record<string, unknown> | undefined
 
     if (regEntity) {
       registrar = parseRdapEntity(regEntity)
-    } else if (data.entities.length > 0) {
+    }
+    else if (data.entities.length > 0) {
       registrar = parseRdapEntity(data.entities[0] as Record<string, unknown>)
     }
   }
@@ -134,7 +146,8 @@ export function parseRdapData(data: Record<string, unknown>, query: string, type
     for (const ns of data.nameservers) {
       if (ns && typeof ns === 'object') {
         const name = String(ns.ldhName || ns.handle || '').toLowerCase()
-        if (name) nameservers.push(name)
+        if (name)
+          nameservers.push(name)
       }
     }
   }
@@ -157,7 +170,7 @@ export function parseRdapData(data: Record<string, unknown>, query: string, type
     registrar,
     nameservers,
     dnssec,
-    raw: data
+    raw: data,
   }
 }
 
@@ -196,7 +209,7 @@ async function loadDnsBootstrap(): Promise<RdapBootstrapService[] | null> {
   try {
     const res = await fetch(DNS_BOOTSTRAP_URL, {
       headers: { Accept: 'application/json' },
-      signal: AbortSignal.timeout(BOOTSTRAP_TIMEOUT_MS)
+      signal: AbortSignal.timeout(BOOTSTRAP_TIMEOUT_MS),
     })
     if (!res.ok) {
       return bootstrapCache?.services ?? null
@@ -207,7 +220,8 @@ async function loadDnsBootstrap(): Promise<RdapBootstrapService[] | null> {
     }
     bootstrapCache = { services: data.services, fetchedAt: Date.now() }
     return data.services
-  } catch {
+  }
+  catch {
     // A stale table is better than no table.
     return bootstrapCache?.services ?? null
   }
@@ -224,9 +238,10 @@ async function fetchRdap(url: string): Promise<Response> {
     try {
       return await fetch(url, {
         headers: { Accept: 'application/rdap+json, application/json' },
-        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS)
+        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
       })
-    } catch (cause) {
+    }
+    catch (cause) {
       lastCause = cause
       if (!isTimeout(cause)) {
         throw cause
@@ -268,7 +283,7 @@ export async function lookupRdap(rawQuery: string): Promise<RdapResult> {
         found: false,
         status: ['available'],
         nameservers: [],
-        raw: { message: 'Object does not exist or domain is available.' }
+        raw: { message: 'Object does not exist or domain is available.' },
       }
     }
 
@@ -278,7 +293,8 @@ export async function lookupRdap(rawQuery: string): Promise<RdapResult> {
 
     const data = await res.json() as Record<string, unknown>
     return parseRdapData(data, clean, type)
-  } catch (cause) {
+  }
+  catch (cause) {
     if (isTimeout(cause)) {
       const server = new URL(targetUrl).host
       throw new Error(`RDAP request for ${clean} timed out.\n\nThe server ${server} did not answer twice. Try again in a moment.`, { cause })

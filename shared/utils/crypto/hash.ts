@@ -12,7 +12,7 @@ const SUBTLE_NAMES: Partial<Record<HashAlgorithm, string>> = {
   sha1: 'SHA-1',
   sha256: 'SHA-256',
   sha384: 'SHA-384',
-  sha512: 'SHA-512'
+  sha512: 'SHA-512',
 }
 
 export function canHashInBrowser(algorithm: HashAlgorithm): boolean {

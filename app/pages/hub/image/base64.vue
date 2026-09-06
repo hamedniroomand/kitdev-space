@@ -1,10 +1,6 @@
 <script setup lang="ts">
 import { useImage as useImageElement } from '@vueuse/core'
-import {
-  formatAsCssBackground,
-  formatAsHtmlImg,
-  parseDataUri
-} from '#shared/utils/image/base64'
+import { formatAsCssBackground, formatAsHtmlImg, parseDataUri } from '#shared/utils/image/base64'
 
 useToolSeo('image-base64')
 
@@ -24,7 +20,7 @@ const { downloadUrl } = useDownload()
 // so the preview still loads, and no request goes out while there is no file.
 const { state: previewImage } = useImageElement(
   () => ({ src: dataUri.value }),
-  { immediate: false }
+  { immediate: false },
 )
 
 const fileName = computed(() => file.value?.name ?? '')
@@ -42,18 +38,22 @@ function handleClear() {
 }
 
 const parsedInput = computed(() => {
-  if (!base64Input.value.trim()) return null
+  if (!base64Input.value.trim())
+    return null
   return parseDataUri(base64Input.value)
 })
 
 const decodedDataUri = computed(() => {
-  if (!parsedInput.value) return ''
-  if (parsedInput.value.isDataUri) return base64Input.value.trim()
+  if (!parsedInput.value)
+    return ''
+  if (parsedInput.value.isDataUri)
+    return base64Input.value.trim()
   return `data:${parsedInput.value.mimeType};base64,${parsedInput.value.base64}`
 })
 
 function handleDownloadDecoded() {
-  if (!decodedDataUri.value) return
+  if (!decodedDataUri.value)
+    return
   downloadUrl('decoded-image.png', decodedDataUri.value)
 }
 </script>
@@ -274,7 +274,7 @@ function handleDownloadDecoded() {
           :items="[
             { label: 'Image Studio', to: '/hub/image/studio' },
             { label: 'Placeholder Image Generator', to: '/hub/image/placeholder' },
-            { label: 'Encoder & Escaper', to: '/hub/dev/encoder' }
+            { label: 'Encoder & Escaper', to: '/hub/dev/encoder' },
           ]"
         />
       </ToolDocs>

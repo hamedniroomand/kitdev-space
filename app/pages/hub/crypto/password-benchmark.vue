@@ -15,7 +15,7 @@ const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeed
 
 const algorithmItems = [
   { label: 'Argon2id', value: 'argon2id' },
-  { label: 'Bcrypt', value: 'bcrypt' }
+  { label: 'Bcrypt', value: 'bcrypt' },
 ]
 
 useToolSeo('password-benchmark')
@@ -41,8 +41,8 @@ async function execute() {
         memoryCost: algorithm.value === 'argon2id' ? memoryCost.value : undefined,
         timeCost: algorithm.value === 'argon2id' ? timeCost.value : undefined,
         cost: algorithm.value === 'bcrypt' ? cost.value : undefined,
-        verify: verify.value
-      }
+        verify: verify.value,
+      },
     })
 
     hash.value = data.result.hash
@@ -72,8 +72,8 @@ defineShortcuts({
     usingInput: true,
     handler: () => {
       execute()
-    }
-  }
+    },
+  },
 })
 </script>
 
@@ -222,7 +222,7 @@ defineShortcuts({
         <RelatedTools
           :items="[
             { label: 'Hash Generator', to: '/hub/crypto/hash-generator' },
-            { label: 'ID & Secret Generator', to: '/hub/crypto/generator' }
+            { label: 'ID & Secret Generator', to: '/hub/crypto/generator' },
           ]"
         />
       </ToolDocs>

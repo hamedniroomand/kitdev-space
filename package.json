@@ -1,9 +1,11 @@
 {
   "name": "kitdev-space",
+  "type": "module",
   "private": true,
+  "packageManager": "bun@1.4.2",
   "description": "Developer tools that run in the browser. Convert, inspect, and clean data without an upload.",
-  "license": "MIT",
   "author": "Hamed Niroomand",
+  "license": "MIT",
   "homepage": "https://kitdev.space",
   "repository": {
     "type": "git",
@@ -21,7 +23,9 @@
     "exif",
     "privacy"
   ],
-  "type": "module",
+  "engines": {
+    "bun": ">=1.4"
+  },
   "scripts": {
     "build": "nuxt build",
     "dev": "bun --bun nuxt dev",
@@ -101,9 +105,5 @@
   },
   "lint-staged": {
     "*.{ts,mts,cts,js,mjs,cjs,vue}": "bun lint --fix"
-  },
-  "engines": {
-    "bun": ">=1.4"
-  },
-  "packageManager": "bun@1.4.2"
+  }
 }

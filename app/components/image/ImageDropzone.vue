@@ -23,7 +23,7 @@ const { isOverDropZone } = useDropZone(dropZoneRef, {
     if (file) {
       emit('update:modelValue', file)
     }
-  }
+  },
 })
 
 function onPick(event: Event) {

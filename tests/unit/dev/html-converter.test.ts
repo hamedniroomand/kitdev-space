@@ -3,7 +3,7 @@ import {
   convertHtmlToJsx,
   convertHtmlToVue,
   parseCssToJsxStyle,
-  selfCloseVoidTags
+  selfCloseVoidTags,
 } from '#shared/utils/dev/html-converter'
 
 describe('html-converter', () => {
@@ -70,7 +70,7 @@ describe('convertHtmlToJsx with an SVG', () => {
     const out = convertHtmlToJsx(svg, {
       wrapComponent: true,
       componentName: 'SvgIcon',
-      spreadProps: true
+      spreadProps: true,
     })
     expect(out).toContain('export default function SvgIcon(props)')
     expect(out).toContain('<svg {...props}')

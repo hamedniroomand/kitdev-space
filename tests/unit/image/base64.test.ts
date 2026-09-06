@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   formatAsCssBackground,
   formatAsHtmlImg,
-  parseDataUri
+  parseDataUri,
 } from '#shared/utils/image/base64'
 
 describe('parseDataUri', () => {

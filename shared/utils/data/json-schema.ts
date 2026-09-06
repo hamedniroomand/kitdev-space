@@ -40,8 +40,20 @@ export function detectSchemaDraft(schema: unknown): SchemaDraft {
 
 /** Keywords that only wrap the errors of their children. The child error names the real problem. */
 const CONTAINER_KEYWORDS = new Set([
-  'properties', 'patternProperties', 'items', 'prefixItems', 'allOf', 'anyOf', 'oneOf',
-  'then', 'else', 'dependentSchemas', 'contains', 'unevaluatedProperties', 'unevaluatedItems', '$ref'
+  'properties',
+  'patternProperties',
+  'items',
+  'prefixItems',
+  'allOf',
+  'anyOf',
+  'oneOf',
+  'then',
+  'else',
+  'dependentSchemas',
+  'contains',
+  'unevaluatedProperties',
+  'unevaluatedItems',
+  '$ref',
 ])
 
 function toPath(location: string): string {
@@ -55,7 +67,7 @@ function toErrors(units: OutputUnit[]): SchemaValidationError[] {
     path: toPath(unit.instanceLocation),
     message: unit.error,
     keyword: unit.keyword,
-    schemaPath: unit.keywordLocation
+    schemaPath: unit.keywordLocation,
   }))
 }
 
@@ -66,29 +78,31 @@ export function validateJsonSchema(schemaInput: string, dataInput: string): Sche
   if (!trimmedSchema || !trimmedData) {
     return {
       isValid: true,
-      errors: []
+      errors: [],
     }
   }
 
   let parsedSchema: unknown
   try {
     parsedSchema = JSON.parse(trimmedSchema)
-  } catch (err) {
+  }
+  catch (err) {
     return {
       isValid: false,
       schemaError: `Schema JSON parse error: ${err instanceof Error ? err.message : 'Invalid JSON'}`,
-      errors: []
+      errors: [],
     }
   }
 
   let parsedData: unknown
   try {
     parsedData = JSON.parse(trimmedData)
-  } catch (err) {
+  }
+  catch (err) {
     return {
       isValid: false,
       dataError: `Data JSON parse error: ${err instanceof Error ? err.message : 'Invalid JSON'}`,
-      errors: []
+      errors: [],
     }
   }
 
@@ -96,7 +110,7 @@ export function validateJsonSchema(schemaInput: string, dataInput: string): Sche
     return {
       isValid: false,
       schemaError: 'Invalid JSON Schema definition: the schema must be a JSON object.',
-      errors: []
+      errors: [],
     }
   }
 
@@ -105,40 +119,46 @@ export function validateJsonSchema(schemaInput: string, dataInput: string): Sche
     // `shortCircuit: false` collects every error instead of the first one.
     const validator = new Validator(parsedSchema as Schema, detectSchemaDraft(parsedSchema), false)
     result = validator.validate(parsedData)
-  } catch (err) {
+  }
+  catch (err) {
     return {
       isValid: false,
       schemaError: `Invalid JSON Schema definition: ${err instanceof Error ? err.message : 'Schema error'}`,
-      errors: []
+      errors: [],
     }
   }
 
   if (result.valid) {
     return {
       isValid: true,
-      errors: []
+      errors: [],
     }
   }
 
   return {
     isValid: false,
-    errors: toErrors(result.errors)
+    errors: toErrors(result.errors),
   }
 }
 
 export function generateSchemaFromJson(data: unknown): Record<string, unknown> {
-  if (data === null) return { type: 'null' }
+  if (data === null)
+    return { type: 'null' }
   if (Array.isArray(data)) {
-    if (data.length === 0) return { type: 'array', items: {} }
+    if (data.length === 0)
+      return { type: 'array', items: {} }
     return {
       type: 'array',
-      items: generateSchemaFromJson(data[0])
+      items: generateSchemaFromJson(data[0]),
     }
   }
   const type = typeof data
-  if (type === 'string') return { type: 'string' }
-  if (type === 'number') return { type: Number.isInteger(data) ? 'integer' : 'number' }
-  if (type === 'boolean') return { type: 'boolean' }
+  if (type === 'string')
+    return { type: 'string' }
+  if (type === 'number')
+    return { type: Number.isInteger(data) ? 'integer' : 'number' }
+  if (type === 'boolean')
+    return { type: 'boolean' }
   if (type === 'object') {
     const properties: Record<string, unknown> = {}
     const required: string[] = []
@@ -149,7 +169,7 @@ export function generateSchemaFromJson(data: unknown): Record<string, unknown> {
     return {
       type: 'object',
       properties,
-      required
+      required,
     }
   }
   return {}

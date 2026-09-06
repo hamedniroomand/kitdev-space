@@ -1,10 +1,10 @@
 <script setup lang="ts">
+import type { TailwindShade } from '#shared/utils/color/tailwind'
 import {
   formatAsCssVars,
   formatAsTailwindV3,
   formatAsTailwindV4,
   generateTailwindPalette,
-  type TailwindShade
 } from '#shared/utils/color/tailwind'
 
 useToolSeo('tailwind-shades')
@@ -21,19 +21,21 @@ const presets = [
   { label: 'Emerald', hex: '#10b981' },
   { label: 'Rose', hex: '#f43f5e' },
   { label: 'Amber', hex: '#f59e0b' },
-  { label: 'Violet', hex: '#8b5cf6' }
+  { label: 'Violet', hex: '#8b5cf6' },
 ]
 
 const palette = computed<TailwindShade[]>(() => {
   try {
     return generateTailwindPalette(inputColor.value)
-  } catch {
+  }
+  catch {
     return []
   }
 })
 
 const codeOutput = computed(() => {
-  if (palette.value.length === 0) return ''
+  if (palette.value.length === 0)
+    return ''
   const name = colorName.value.trim() || 'brand'
   if (format.value === 'v4') {
     return formatAsTailwindV4(palette.value, name)
@@ -55,7 +57,7 @@ function handleCopyCode() {
 }
 
 useToolShortcuts({
-  onCopy: handleCopyCode
+  onCopy: handleCopyCode,
 })
 </script>
 
@@ -223,7 +225,7 @@ useToolShortcuts({
           :items="[
             { label: 'Contrast Checker', to: '/hub/color/contrast-checker' },
             { label: 'Palette Generator', to: '/hub/color/palette-generator' },
-            { label: 'Color Converter', to: '/hub/color/converter' }
+            { label: 'Color Converter', to: '/hub/color/converter' },
           ]"
         />
       </ToolDocs>

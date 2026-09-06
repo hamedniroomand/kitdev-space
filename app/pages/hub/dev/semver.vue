@@ -14,13 +14,13 @@ const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeed
 const actionItems = [
   { label: 'Satisfies range', value: 'satisfies' },
   { label: 'Sort versions', value: 'sort' },
-  { label: 'Bump version', value: 'bump' }
+  { label: 'Bump version', value: 'bump' },
 ]
 
 const releaseItems = [
   { label: 'Patch', value: 'patch' },
   { label: 'Minor', value: 'minor' },
-  { label: 'Major', value: 'major' }
+  { label: 'Major', value: 'major' },
 ]
 
 useToolSeo('semver')
@@ -38,7 +38,8 @@ async function execute() {
     if (action.value === 'satisfies') {
       body.version = version.value
       body.range = range.value
-    } else {
+    }
+    else {
       body.versions = versionsText.value
     }
 
@@ -46,7 +47,7 @@ async function execute() {
       result: { ok?: boolean, versions?: string[], version?: string }
     }>('/api/dev/semver', {
       method: 'POST',
-      body
+      body,
     })
 
     let text = ''
@@ -54,9 +55,11 @@ async function execute() {
       text = data.result.ok
         ? 'true — version satisfies range'
         : 'false — version does not satisfy range'
-    } else if (data.result.versions) {
+    }
+    else if (data.result.versions) {
       text = data.result.versions.join('\n')
-    } else {
+    }
+    else {
       text = data.result.version ?? ''
     }
     output.value = text
@@ -81,8 +84,8 @@ defineShortcuts({
     usingInput: true,
     handler: () => {
       execute()
-    }
-  }
+    },
+  },
 })
 </script>
 
@@ -190,7 +193,7 @@ defineShortcuts({
         <RelatedTools
           :items="[
             { label: 'Cron Visualizer', to: '/hub/dev/cron' },
-            { label: 'Hash Generator', to: '/hub/crypto/hash-generator' }
+            { label: 'Hash Generator', to: '/hub/crypto/hash-generator' },
           ]"
         />
       </ToolDocs>

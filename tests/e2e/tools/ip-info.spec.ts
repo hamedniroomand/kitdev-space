@@ -17,8 +17,8 @@ test.describe('IP Address Info tool', () => {
           hostname: 'one.one.one.one',
           decimal: 16843009,
           hex: '0x01010101',
-          binary: '00000001.00000001.00000001.00000001'
-        })
+          binary: '00000001.00000001.00000001.00000001',
+        }),
       })
     })
 

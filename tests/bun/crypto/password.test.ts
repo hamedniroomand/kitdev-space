@@ -7,7 +7,7 @@ describe('benchmarkPassword', () => {
       password: 'test-password',
       algorithm: 'bcrypt',
       cost: 4,
-      verify: true
+      verify: true,
     })
     expect(result.hash.length).toBeGreaterThan(10)
     expect(result.durationMs).toBeGreaterThanOrEqual(0)
@@ -16,7 +16,7 @@ describe('benchmarkPassword', () => {
 
   it('rejects over-ceiling cost', async () => {
     await expect(
-      benchmarkPassword({ password: 'x', algorithm: 'bcrypt', cost: 20 })
+      benchmarkPassword({ password: 'x', algorithm: 'bcrypt', cost: 20 }),
     ).rejects.toThrow()
   })
 })

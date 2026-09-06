@@ -8,7 +8,7 @@ export interface ExtractedColor {
 
 export function extractPaletteFromPixels(
   pixels: Uint8ClampedArray | Uint8Array,
-  colorCount = 8
+  colorCount = 8,
 ): ExtractedColor[] {
   const colorMap = new Map<number, { count: number, r: number, g: number, b: number }>()
   let validCount = 0
@@ -20,7 +20,8 @@ export function extractPaletteFromPixels(
     const a = pixels[i + 3]!
 
     // Skip transparent or near-transparent pixels
-    if (a < 128) continue
+    if (a < 128)
+      continue
     validCount++
 
     // Quantize channels by grouping into buckets of 16
@@ -35,7 +36,8 @@ export function extractPaletteFromPixels(
       existing.r += r
       existing.g += g
       existing.b += b
-    } else {
+    }
+    else {
       colorMap.set(key, { count: 1, r, g, b })
     }
   }
@@ -72,10 +74,11 @@ export function extractPaletteFromPixels(
         rgb: { r: avgR, g: avgG, b: avgB },
         count: item.count,
         percentage,
-        isDark: luminance < 0.55
+        isDark: luminance < 0.55,
       })
 
-      if (palette.length >= colorCount) break
+      if (palette.length >= colorCount)
+        break
     }
   }
 

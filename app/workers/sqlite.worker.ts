@@ -1,8 +1,9 @@
-import initSqlJs, { type Database } from 'sql.js'
+import type { Database } from 'sql.js'
 import type { ColumnInfo, TableInfo, WorkerMessage, WorkerResponse } from '~/types/sqlite'
+import initSqlJs from 'sql.js'
 import { buildUpdateQuery } from '~/types/sqlite'
-import { getSampleSqlScript } from '~/utils/sqlite/sample-data'
 import { quoteIdentifier } from '~/utils/sqlite/query-builder'
+import { getSampleSqlScript } from '~/utils/sqlite/sample-data'
 
 let db: Database | null = null
 let SQL: Awaited<ReturnType<typeof initSqlJs>> | null = null
@@ -10,7 +11,7 @@ let SQL: Awaited<ReturnType<typeof initSqlJs>> | null = null
 async function getSqlEngine() {
   if (!SQL) {
     SQL = await initSqlJs({
-      locateFile: () => '/sql-wasm.wasm'
+      locateFile: () => '/sql-wasm.wasm',
     })
   }
   return SQL
@@ -18,7 +19,7 @@ async function getSqlEngine() {
 
 function introspectSchema(database: Database): TableInfo[] {
   const tablesResult = database.exec(
-    'SELECT name FROM sqlite_master WHERE type=\'table\' AND name NOT LIKE \'sqlite_%\' ORDER BY name;'
+    'SELECT name FROM sqlite_master WHERE type=\'table\' AND name NOT LIKE \'sqlite_%\' ORDER BY name;',
   )
 
   if (!tablesResult || tablesResult.length === 0 || !tablesResult[0]?.values) {
@@ -35,7 +36,8 @@ function introspectSchema(database: Database): TableInfo[] {
       if (countRes.length > 0 && countRes[0]?.values?.[0]?.[0] !== undefined) {
         rowCount = Number(countRes[0].values[0][0])
       }
-    } catch {
+    }
+    catch {
       rowCount = 0
     }
 
@@ -50,18 +52,20 @@ function introspectSchema(database: Database): TableInfo[] {
             type: String(row[2]),
             notnull: Number(row[3]),
             dflt_value: row[4],
-            pk: Number(row[5])
+            pk: Number(row[5]),
           })
         }
       }
-    } catch {
+    }
+    catch {
       // Keep empty columns array on pragma error
     }
 
     let hasRowId = true
     try {
       database.exec(`SELECT rowid FROM "${name}" LIMIT 1;`)
-    } catch {
+    }
+    catch {
       hasRowId = false
     }
 
@@ -104,7 +108,7 @@ function insertBlankRow(database: Database, table: string): void {
   database.run(`INSERT INTO ${quoteIdentifier(table)} (${columns}) VALUES (${values});`)
 }
 
-self.onmessage = async (event: MessageEvent<WorkerMessage>) => {
+globalThis.onmessage = async (event: MessageEvent<WorkerMessage>) => {
   const message = event.data
 
   try {
@@ -119,7 +123,7 @@ self.onmessage = async (event: MessageEvent<WorkerMessage>) => {
         const tables = introspectSchema(db)
         const sizeBytes = message.bytes ? message.bytes.byteLength : 0
         const response: WorkerResponse = { type: 'DB_READY', tables, sizeBytes }
-        self.postMessage(response)
+        globalThis.postMessage(response)
         break
       }
 
@@ -132,7 +136,7 @@ self.onmessage = async (event: MessageEvent<WorkerMessage>) => {
         const tables = introspectSchema(db)
         const exported = db.export()
         const response: WorkerResponse = { type: 'DB_READY', tables, sizeBytes: exported.byteLength }
-        self.postMessage(response)
+        globalThis.postMessage(response)
         break
       }
 
@@ -148,9 +152,9 @@ self.onmessage = async (event: MessageEvent<WorkerMessage>) => {
         if (results.length === 0) {
           const response: WorkerResponse = {
             type: 'QUERY_RESULT',
-            result: { columns: [], rows: [], rowCount: 0, durationMs }
+            result: { columns: [], rows: [], rowCount: 0, durationMs },
           }
-          self.postMessage(response)
+          globalThis.postMessage(response)
           break
         }
 
@@ -167,9 +171,9 @@ self.onmessage = async (event: MessageEvent<WorkerMessage>) => {
         const response: WorkerResponse = {
           type: 'QUERY_RESULT',
           result: { columns, rows: slicedRows, rowCount: totalRows, durationMs },
-          total
+          total,
         }
-        self.postMessage(response)
+        globalThis.postMessage(response)
         break
       }
 
@@ -179,7 +183,7 @@ self.onmessage = async (event: MessageEvent<WorkerMessage>) => {
         }
         insertBlankRow(db, message.table)
         const response: WorkerResponse = { type: 'MUTATION_SUCCESS', table: message.table, rowCount: countRows(db, message.table) }
-        self.postMessage(response)
+        globalThis.postMessage(response)
         break
       }
 
@@ -194,7 +198,7 @@ self.onmessage = async (event: MessageEvent<WorkerMessage>) => {
         }
         db.run(`INSERT INTO ${table} (${columns}) SELECT ${columns} FROM ${table} WHERE rowid = :rowid;`, { ':rowid': message.rowid })
         const response: WorkerResponse = { type: 'MUTATION_SUCCESS', table: message.table, rowCount: countRows(db, message.table) }
-        self.postMessage(response)
+        globalThis.postMessage(response)
         break
       }
 
@@ -204,7 +208,7 @@ self.onmessage = async (event: MessageEvent<WorkerMessage>) => {
         }
         db.run(`DELETE FROM ${quoteIdentifier(message.table)} WHERE rowid = :rowid;`, { ':rowid': message.rowid })
         const response: WorkerResponse = { type: 'MUTATION_SUCCESS', table: message.table, rowCount: countRows(db, message.table) }
-        self.postMessage(response)
+        globalThis.postMessage(response)
         break
       }
 
@@ -215,7 +219,7 @@ self.onmessage = async (event: MessageEvent<WorkerMessage>) => {
         const result = db.exec('SELECT sql FROM sqlite_master WHERE name = :name AND sql IS NOT NULL;', { ':name': message.table })
         const sql = (result[0]?.values ?? []).map(row => `${String(row[0])};`).join('\n\n')
         const response: WorkerResponse = { type: 'SCHEMA_RESULT', table: message.table, sql }
-        self.postMessage(response)
+        globalThis.postMessage(response)
         break
       }
 
@@ -232,9 +236,9 @@ self.onmessage = async (event: MessageEvent<WorkerMessage>) => {
           table: message.table,
           rowid: message.rowid,
           column: message.column,
-          value: message.value
+          value: message.value,
         }
-        self.postMessage(response)
+        globalThis.postMessage(response)
         break
       }
 
@@ -244,13 +248,14 @@ self.onmessage = async (event: MessageEvent<WorkerMessage>) => {
         }
         const bytes = db.export()
         const response: WorkerResponse = { type: 'EXPORT_RESULT', bytes }
-        self.postMessage(response, [bytes.buffer])
+        globalThis.postMessage(response, [bytes.buffer])
         break
       }
     }
-  } catch (error) {
+  }
+  catch (error) {
     const messageText = error instanceof Error ? error.message : 'Database error occurred.'
     const response: WorkerResponse = { type: 'ERROR', message: messageText }
-    self.postMessage(response)
+    globalThis.postMessage(response)
   }
 }

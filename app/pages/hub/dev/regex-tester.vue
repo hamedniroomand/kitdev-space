@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { testRegex, type RegexTestResult } from '#shared/utils/dev/regex'
+import type { RegexTestResult } from '#shared/utils/dev/regex'
+import { testRegex } from '#shared/utils/dev/regex'
 
 const pattern = ref('\\b(?<word>[A-Z][a-z]+)\\b')
 const sample = ref('Hello world. KitDev Space helps builders ship tools.')
@@ -9,7 +10,7 @@ const flags = ref({
   m: false,
   s: false,
   u: false,
-  y: false
+  y: false,
 })
 
 useToolSeo('regex-tester')
@@ -28,7 +29,7 @@ const flagItems = [
   { key: 'm' as const, label: 'm', hint: 'Multiline' },
   { key: 's' as const, label: 's', hint: 'DotAll' },
   { key: 'u' as const, label: 'u', hint: 'Unicode' },
-  { key: 'y' as const, label: 'y', hint: 'Sticky' }
+  { key: 'y' as const, label: 'y', hint: 'Sticky' },
 ]
 
 function handleClear() {
@@ -219,7 +220,7 @@ function handleClear() {
           :items="[
             { label: 'Text Diff', to: '/hub/data/text-diff' },
             { label: 'Encoder & Escaper', to: '/hub/dev/encoder' },
-            { label: 'Case and Slug Converter', to: '/hub/dev/case-converter' }
+            { label: 'Case and Slug Converter', to: '/hub/dev/case-converter' },
           ]"
         />
       </ToolDocs>

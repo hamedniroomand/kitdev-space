@@ -17,7 +17,7 @@ const loaderItems = [
   { label: 'TypeScript (.ts)', value: 'ts' },
   { label: 'TSX (.tsx)', value: 'tsx' },
   { label: 'JavaScript (.js)', value: 'js' },
-  { label: 'JSX (.jsx)', value: 'jsx' }
+  { label: 'JSX (.jsx)', value: 'jsx' },
 ]
 
 useToolSeo('transpiler')
@@ -43,8 +43,8 @@ async function execute() {
       method: 'POST',
       body: {
         input: input.value,
-        loader: loader.value
-      }
+        loader: loader.value,
+      },
     })
     output.value = data.result
     return data.result
@@ -76,8 +76,8 @@ defineShortcuts({
     usingInput: true,
     handler: () => {
       execute()
-    }
-  }
+    },
+  },
 })
 </script>
 
@@ -163,7 +163,7 @@ defineShortcuts({
           :items="[
             { label: 'Code Minifier and Beautifier', to: '/hub/dev/code-minifier' },
             { label: 'JSON → TypeScript', to: '/hub/data/json-to-typescript' },
-            { label: 'Tar Explorer', to: '/hub/dev/tar' }
+            { label: 'Tar Explorer', to: '/hub/dev/tar' },
           ]"
         />
       </ToolDocs>

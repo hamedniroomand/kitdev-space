@@ -8,7 +8,8 @@ export async function cropImageFile(file: Blob, rect: CropRect): Promise<Blob> {
   let bitmap: ImageBitmap
   try {
     bitmap = await createImageBitmap(file, rect.x, rect.y, rect.width, rect.height)
-  } catch {
+  }
+  catch {
     throw new Error('The browser cannot decode this image for a crop.\n\nTurn the crop off, or use a JPEG, PNG, WebP, or GIF file.')
   }
 

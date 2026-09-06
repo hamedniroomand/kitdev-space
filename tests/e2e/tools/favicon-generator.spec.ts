@@ -16,11 +16,11 @@ test.describe('Favicon Set Generator tool', () => {
               {
                 name: 'favicon-32x32.png',
                 size: 32,
-                dataUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
-              }
-            ]
-          }
-        })
+                dataUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+              },
+            ],
+          },
+        }),
       })
     })
 

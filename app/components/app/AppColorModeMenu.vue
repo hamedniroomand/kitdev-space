@@ -11,7 +11,7 @@ const colorMode = useColorMode()
 const MODES = [
   { value: 'system', label: 'System', icon: 'i-lucide-monitor' },
   { value: 'light', label: 'Light', icon: 'i-lucide-sun' },
-  { value: 'dark', label: 'Dark', icon: 'i-lucide-moon' }
+  { value: 'dark', label: 'Dark', icon: 'i-lucide-moon' },
 ] as const
 
 const current = computed(() => MODES.find(mode => mode.value === colorMode.preference) ?? MODES[0])
@@ -23,7 +23,7 @@ const items = computed<DropdownMenuItem[]>(() => MODES.map(mode => ({
   checked: colorMode.preference === mode.value,
   onSelect() {
     colorMode.preference = mode.value
-  }
+  },
 })))
 </script>
 

@@ -29,13 +29,17 @@ export function analyzeIp(ipString: string): IpInfo {
     let type: IpInfo['type'] = 'public'
     if (first === 127) {
       type = 'loopback'
-    } else if (first === 10 || (first === 172 && second >= 16 && second <= 31) || (first === 192 && second === 168)) {
+    }
+    else if (first === 10 || (first === 172 && second >= 16 && second <= 31) || (first === 192 && second === 168)) {
       type = 'private'
-    } else if (first === 169 && second === 254) {
+    }
+    else if (first === 169 && second === 254) {
       type = 'link-local'
-    } else if (first >= 224 && first <= 239) {
+    }
+    else if (first >= 224 && first <= 239) {
       type = 'multicast'
-    } else if (first >= 240) {
+    }
+    else if (first >= 240) {
       type = 'reserved'
     }
 
@@ -50,15 +54,15 @@ export function analyzeIp(ipString: string): IpInfo {
         first.toString(2).padStart(8, '0'),
         second.toString(2).padStart(8, '0'),
         octets[2]!.toString(2).padStart(8, '0'),
-        octets[3]!.toString(2).padStart(8, '0')
-      ].join('.')
+        octets[3]!.toString(2).padStart(8, '0'),
+      ].join('.'),
     }
   }
 
   // Check IPv6
   if (ip.includes(':')) {
     // Basic IPv6 validation
-    const isV6 = /^([0-9a-fA-F]{0,4}:){1,7}[0-9a-fA-F]{0,4}$/.test(ip) || ip === '::1' || ip === '::'
+    const isV6 = /^(?:[0-9a-f]{0,4}:){1,7}[0-9a-f]{0,4}$/i.test(ip) || ip === '::1' || ip === '::'
     if (!isV6) {
       throw new Error(`Invalid IPv6 address: "${ip}"`)
     }
@@ -67,11 +71,14 @@ export function analyzeIp(ipString: string): IpInfo {
     let type: IpInfo['type'] = 'public'
     if (lower === '::1' || lower === '0:0:0:0:0:0:0:1') {
       type = 'loopback'
-    } else if (lower.startsWith('fe80:')) {
+    }
+    else if (lower.startsWith('fe80:')) {
       type = 'link-local'
-    } else if (lower.startsWith('fc') || lower.startsWith('fd')) {
+    }
+    else if (lower.startsWith('fc') || lower.startsWith('fd')) {
       type = 'private'
-    } else if (lower.startsWith('ff')) {
+    }
+    else if (lower.startsWith('ff')) {
       type = 'multicast'
     }
 
@@ -79,7 +86,7 @@ export function analyzeIp(ipString: string): IpInfo {
       ip,
       version: 6,
       type,
-      isSpecial: type !== 'public'
+      isSpecial: type !== 'public',
     }
   }
 

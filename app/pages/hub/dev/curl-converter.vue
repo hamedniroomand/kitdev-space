@@ -1,9 +1,7 @@
 <script setup lang="ts">
-import {
-  convertCurl,
-  type CurlTargetLanguage
-} from '#shared/utils/dev/curl-converter'
+import type { CurlTargetLanguage } from '#shared/utils/dev/curl-converter'
 import type { ToolEditorLang } from '#shared/utils/dev/editor-lang'
+import { convertCurl } from '#shared/utils/dev/curl-converter'
 
 useToolSeo('curl-to-code')
 
@@ -24,7 +22,7 @@ const languages: { label: string, value: CurlTargetLanguage, editorLang: ToolEdi
   { label: 'Fetch', value: 'fetch', editorLang: 'javascript' },
   { label: 'Axios', value: 'axios', editorLang: 'javascript' },
   { label: 'Python Requests', value: 'python', editorLang: 'text' },
-  { label: 'Go net/http', value: 'go', editorLang: 'text' }
+  { label: 'Go net/http', value: 'go', editorLang: 'text' },
 ]
 
 const currentEditorLang = computed(() => {
@@ -32,14 +30,16 @@ const currentEditorLang = computed(() => {
 })
 
 const conversion = computed(() => {
-  if (!input.value.trim()) return { code: '', error: null }
+  if (!input.value.trim())
+    return { code: '', error: null }
   try {
     const code = convertCurl(input.value, target.value)
     return { code, error: null }
-  } catch (err) {
+  }
+  catch (err) {
     return {
       code: '',
-      error: err instanceof Error ? err.message : 'Failed to parse cURL command.'
+      error: err instanceof Error ? err.message : 'Failed to parse cURL command.',
     }
   }
 })
@@ -60,7 +60,7 @@ function handleCopy() {
 
 useToolShortcuts({
   onCopy: handleCopy,
-  onClear: handleClear
+  onClear: handleClear,
 })
 </script>
 
@@ -175,7 +175,7 @@ useToolShortcuts({
           :items="[
             { label: 'HTTP Inspector', to: '/hub/network/http-inspector' },
             { label: 'URL Inspector', to: '/hub/network/url-inspector' },
-            { label: 'JSON Formatter', to: '/hub/data/json-formatter' }
+            { label: 'JSON Formatter', to: '/hub/data/json-formatter' },
           ]"
         />
       </ToolDocs>

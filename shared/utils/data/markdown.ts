@@ -2,7 +2,7 @@ import { marked } from 'marked'
 
 marked.setOptions({
   gfm: true,
-  breaks: true
+  breaks: true,
 })
 
 function escapeHtml(value: string): string {
@@ -60,8 +60,8 @@ marked.use({
       }
       const titleAttr = title ? ` title="${escapeHtml(title)}"` : ''
       return `<img src="${escapeHtml(url)}" alt="${escapeHtml(text)}"${titleAttr}>`
-    }
-  }
+    },
+  },
 })
 
 export function parseMarkdown(input: string): string {
@@ -71,7 +71,8 @@ export function parseMarkdown(input: string): string {
 
   try {
     return marked.parse(input, { async: false }) as string
-  } catch {
+  }
+  catch {
     return ''
   }
 }

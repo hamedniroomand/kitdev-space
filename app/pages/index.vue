@@ -11,13 +11,13 @@ useSeoMeta({
   description: 'Developer tools for people who build things.',
   ogTitle: 'KitDev Space',
   ogDescription: 'Developer tools for people who build things.',
-  ogType: 'website'
+  ogType: 'website',
 })
 
 useKitDevOgImage({
   title: 'Tools for people who build.',
   description: 'Fast, free developer tools. No account.',
-  eyebrow: 'KitDev Space'
+  eyebrow: 'KitDev Space',
 })
 </script>
 

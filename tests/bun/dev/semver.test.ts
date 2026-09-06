@@ -11,7 +11,7 @@ describe('semver helpers', () => {
     expect(semverSort(['1.10.0', '1.2.0', '1.9.0'])).toEqual([
       '1.2.0',
       '1.9.0',
-      '1.10.0'
+      '1.10.0',
     ])
   })
 

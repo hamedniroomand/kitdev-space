@@ -6,7 +6,7 @@ describe('processCode', () => {
     const result = await processCode(
       'const helloWorld = "a" + "b"; console.log(helloWorld);',
       'javascript',
-      'minify'
+      'minify',
     )
     expect(result.engine).toBe('oxc-minify')
     expect(result.code.length).toBeLessThan(60)
@@ -17,7 +17,7 @@ describe('processCode', () => {
     const result = await processCode(
       'const helloWorld: string = "a" + "b"; console.log(helloWorld);',
       'typescript',
-      'minify'
+      'minify',
     )
     expect(result.engine).toBe('oxc-minify')
     expect(result.code).not.toContain(': string')

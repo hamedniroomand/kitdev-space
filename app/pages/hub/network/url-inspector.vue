@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { inspectUrl, type UrlParts } from '#shared/utils/network/url'
+import type { UrlParts } from '#shared/utils/network/url'
+import { inspectUrl } from '#shared/utils/network/url'
 
 const input = ref('https://user:pass@example.com:8443/path?q=1#top')
 const { status, error, result, run, reset } = useTool<UrlParts>()
@@ -22,7 +23,7 @@ const fieldRows = computed(() => {
     { name: 'pathname', value: parts.pathname },
     { name: 'search', value: parts.search },
     { name: 'searchParams', value: JSON.stringify(parts.searchParams) },
-    { name: 'hash', value: parts.hash }
+    { name: 'hash', value: parts.hash },
   ]
 })
 
@@ -49,8 +50,8 @@ defineShortcuts({
     usingInput: true,
     handler: () => {
       inspect()
-    }
-  }
+    },
+  },
 })
 </script>
 
@@ -152,7 +153,7 @@ defineShortcuts({
           class="mt-8"
           :items="[
             { label: 'DNS Lookup', to: '/hub/network/dns-lookup' },
-            { label: 'HTTP Inspector', to: '/hub/network/http-inspector' }
+            { label: 'HTTP Inspector', to: '/hub/network/http-inspector' },
           ]"
         />
       </ToolDocs>

@@ -46,7 +46,7 @@ export type WorkerResponse
     | { type: 'ERROR', message: string }
 
 export function isValidIdentifier(name: string): boolean {
-  return /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(name)
+  return /^[a-z_]\w*$/i.test(name)
 }
 
 export function buildUpdateQuery(table: string, column: string): string {

@@ -19,17 +19,18 @@ export default defineEventHandler(async (event) => {
       appName,
       shortName,
       themeColor,
-      backgroundColor
+      backgroundColor,
     })
 
     return { result }
-  } catch (cause) {
+  }
+  catch (cause) {
     const message = cause instanceof ImageError
       ? cause.message
       : 'The favicon generation failed.'
     throw createError({
       statusCode: 400,
-      message
+      message,
     })
   }
 })

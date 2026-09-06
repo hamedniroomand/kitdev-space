@@ -1,6 +1,6 @@
-import { describe, expect, it } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { describe, expect, it } from 'bun:test'
 import { cleanImageMetadata } from '#server/utils/image/clean'
 import { readImageMetadata } from '#shared/utils/image/exif'
 import { buildTiffBlock } from '../../unit/image/fixtures'

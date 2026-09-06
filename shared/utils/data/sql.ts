@@ -1,8 +1,9 @@
-import { format } from 'sql-formatter'
+import type { Diagnostic } from '@codemirror/lint'
 import type { Extension } from '@codemirror/state'
-import { linter, type Diagnostic } from '@codemirror/lint'
-import { sql, PostgreSQL, MySQL, SQLite } from '@codemirror/lang-sql'
 import type { Parser, SyntaxNodeRef } from '@lezer/common'
+import { MySQL, PostgreSQL, sql, SQLite } from '@codemirror/lang-sql'
+import { linter } from '@codemirror/lint'
+import { format } from 'sql-formatter'
 import { DataError, positionToLineColumn } from './errors'
 
 export type SqlDialect = 'sql' | 'postgresql' | 'mysql' | 'sqlite' | 'transactsql'
@@ -45,7 +46,7 @@ export function formatSql(sqlText: string, options: FormatSqlOptions = {}): stri
   const {
     dialect = 'sql',
     indent = '2',
-    keywordCase = 'upper'
+    keywordCase = 'upper',
   } = options
 
   const useTabs = indent === 'tab'
@@ -56,9 +57,10 @@ export function formatSql(sqlText: string, options: FormatSqlOptions = {}): stri
       language: dialect,
       tabWidth,
       useTabs,
-      keywordCase
+      keywordCase,
     })
-  } catch (cause: unknown) {
+  }
+  catch (cause: unknown) {
     const err = cause as { message?: string, token?: { start?: number } }
     const firstLine = err?.message?.split('\n')[0] || 'SQL formatting failed'
     const position = err?.token?.start
@@ -70,7 +72,7 @@ export function formatSql(sqlText: string, options: FormatSqlOptions = {}): stri
       line,
       column,
       position,
-      cause
+      cause,
     })
   }
 }
@@ -91,7 +93,7 @@ export function validateSql(sqlText: string, dialect: SqlDialect = 'sql'): SqlVa
         syntaxError = { from: node.from, to: node.to }
         return false
       }
-    }
+    },
   })
 
   if (syntaxError !== null) {
@@ -101,7 +103,7 @@ export function validateSql(sqlText: string, dialect: SqlDialect = 'sql'): SqlVa
       valid: false,
       error: `Syntax error near line ${line}, column ${column}`,
       line,
-      column
+      column,
     }
   }
 
@@ -109,19 +111,20 @@ export function validateSql(sqlText: string, dialect: SqlDialect = 'sql'): SqlVa
   try {
     formatSql(sqlText, { dialect })
     return { valid: true }
-  } catch (cause: unknown) {
+  }
+  catch (cause: unknown) {
     if (cause instanceof DataError) {
       return {
         valid: false,
         error: cause.message,
         line: cause.line,
-        column: cause.column
+        column: cause.column,
       }
     }
     const message = (cause as Error)?.message?.split('\n')[0] || 'Invalid SQL syntax'
     return {
       valid: false,
-      error: message
+      error: message,
     }
   }
 }
@@ -145,10 +148,10 @@ export function createSqlLinter(getDialect: () => SqlDialect): Extension {
             from: node.from,
             to: Math.max(node.to, node.from + 1),
             severity: 'error',
-            message: 'Syntax error'
+            message: 'Syntax error',
           })
         }
-      }
+      },
     })
 
     return diagnostics

@@ -11,7 +11,7 @@ function mockResponse(init: {
   const response = new Response(init.body ?? null, {
     status: init.status ?? 200,
     statusText: init.statusText ?? 'OK',
-    headers: init.headers
+    headers: init.headers,
   })
 
   if (init.url) {
@@ -27,7 +27,7 @@ describe('fetchHeaders', () => {
 
   beforeEach(() => {
     lookup = spyOn(Bun.dns, 'lookup').mockResolvedValue([
-      { address: '93.184.216.34', family: 4, ttl: 0 }
+      { address: '93.184.216.34', family: 4, ttl: 0 },
     ])
     fetchSpy = spyOn(Bun, 'fetch')
   })
@@ -39,7 +39,7 @@ describe('fetchHeaders', () => {
 
   it('does not fetch a private URL', async () => {
     await expect(fetchHeaders('http://127.0.0.1/')).rejects.toMatchObject({
-      statusCode: 400
+      statusCode: 400,
     })
     expect(fetchSpy).not.toHaveBeenCalled()
   })
@@ -52,7 +52,7 @@ describe('fetchHeaders', () => {
     fetchSpy.mockResolvedValue(new Response(null, {
       status: 200,
       statusText: 'OK',
-      headers
+      headers,
     }))
 
     const result = await fetchHeaders('https://example.com/')
@@ -65,7 +65,7 @@ describe('fetchHeaders', () => {
       status: 200,
       statusText: 'OK',
       headers: { 'Content-Type': 'text/html', 'X-Test': '1' },
-      url: 'https://example.com/'
+      url: 'https://example.com/',
     }))
 
     const result = await fetchHeaders('https://example.com/')
@@ -75,9 +75,9 @@ describe('fetchHeaders', () => {
       statusText: 'OK',
       headers: {
         'content-type': 'text/html',
-        'x-test': '1'
+        'x-test': '1',
       },
-      url: 'https://example.com/'
+      url: 'https://example.com/',
     })
     expect(fetchSpy).toHaveBeenCalledTimes(1)
     const [url, options] = fetchSpy.mock.calls[0] as [URL, RequestInit]
@@ -95,7 +95,7 @@ describe('fetchHeaders', () => {
         status: 200,
         statusText: 'OK',
         headers: { server: 'test' },
-        url: 'https://example.com/'
+        url: 'https://example.com/',
       }))
 
     const result = await fetchHeaders('https://example.com/')
@@ -112,7 +112,7 @@ describe('fetchHeaders', () => {
       .mockResolvedValueOnce(mockResponse({
         status: 204,
         statusText: 'No Content',
-        url: 'https://example.com/'
+        url: 'https://example.com/',
       }))
 
     const result = await fetchHeaders('https://example.com/')
@@ -125,7 +125,7 @@ describe('fetchHeaders', () => {
     fetchSpy.mockResolvedValue(mockResponse({
       status: 404,
       statusText: 'Not Found',
-      url: 'https://example.com/missing'
+      url: 'https://example.com/missing',
     }))
 
     const result = await fetchHeaders('https://example.com/missing')
@@ -141,7 +141,7 @@ describe('fetchHeaders', () => {
       statusText: 'OK',
       headers: new Headers({ 'x-test': '1' }),
       url: 'https://example.com/',
-      body: { cancel }
+      body: { cancel },
     } as unknown as Response
 
     fetchSpy
@@ -172,7 +172,7 @@ describe('walkRedirects', () => {
 
   beforeEach(() => {
     lookup = spyOn(Bun.dns, 'lookup').mockResolvedValue([
-      { address: '93.184.216.34', family: 4, ttl: 0 }
+      { address: '93.184.216.34', family: 4, ttl: 0 },
     ])
     fetchSpy = spyOn(Bun, 'fetch')
   })
@@ -188,18 +188,18 @@ describe('walkRedirects', () => {
         status: 302,
         statusText: 'Found',
         headers: { Location: 'https://example.com/next' },
-        url: 'https://example.com/start'
+        url: 'https://example.com/start',
       }))
       .mockResolvedValueOnce(mockResponse({
         status: 301,
         statusText: 'Moved Permanently',
         headers: { Location: '/final' },
-        url: 'https://example.com/next'
+        url: 'https://example.com/next',
       }))
       .mockResolvedValueOnce(mockResponse({
         status: 200,
         statusText: 'OK',
-        url: 'https://example.com/final'
+        url: 'https://example.com/final',
       }))
 
     const result = await walkRedirects('https://example.com/start')
@@ -208,17 +208,17 @@ describe('walkRedirects', () => {
       {
         url: 'https://example.com/start',
         status: 302,
-        location: 'https://example.com/next'
+        location: 'https://example.com/next',
       },
       {
         url: 'https://example.com/next',
         status: 301,
-        location: '/final'
+        location: '/final',
       },
       {
         url: 'https://example.com/final',
-        status: 200
-      }
+        status: 200,
+      },
     ])
     expect(fetchSpy).toHaveBeenCalledTimes(3)
     const [url, options] = fetchSpy.mock.calls[0] as [URL, RequestInit]
@@ -233,7 +233,7 @@ describe('walkRedirects', () => {
         status: 302,
         statusText: 'Found',
         headers: { Location: `https://example.com/${index + 1}` },
-        url: `https://example.com/${index}`
+        url: `https://example.com/${index}`,
       }))
     }
 
@@ -246,12 +246,12 @@ describe('walkRedirects', () => {
       'https://example.com/2',
       'https://example.com/3',
       'https://example.com/4',
-      'https://example.com/5'
+      'https://example.com/5',
     ])
     expect(result[5]?.location).toBe('https://example.com/6')
     expect(fetchSpy).toHaveBeenCalledTimes(6)
     expect(
-      fetchSpy.mock.calls.map(call => (call[0] as URL).href)
+      fetchSpy.mock.calls.map(call => (call[0] as URL).href),
     ).not.toContain('https://example.com/6')
   })
 
@@ -260,7 +260,7 @@ describe('walkRedirects', () => {
       status: 302,
       statusText: 'Found',
       headers: { Location: 'http://127.0.0.1/secret' },
-      url: 'https://example.com/'
+      url: 'https://example.com/',
     }))
 
     const result = await walkRedirects('https://example.com/')
@@ -269,8 +269,8 @@ describe('walkRedirects', () => {
       {
         url: 'https://example.com/',
         status: 302,
-        location: 'http://127.0.0.1/secret'
-      }
+        location: 'http://127.0.0.1/secret',
+      },
     ])
     expect(fetchSpy).toHaveBeenCalledTimes(1)
     expect((fetchSpy.mock.calls[0] as [URL, RequestInit])[0].href).toBe('https://example.com/')
@@ -282,7 +282,7 @@ describe('walkRedirects', () => {
         status: 302,
         statusText: 'Found',
         headers: { Location: 'https://example.com/next' },
-        url: 'https://example.com/'
+        url: 'https://example.com/',
       }))
       .mockRejectedValueOnce(new DOMException('The operation was aborted.', 'TimeoutError'))
 
@@ -292,8 +292,8 @@ describe('walkRedirects', () => {
       {
         url: 'https://example.com/',
         status: 302,
-        location: 'https://example.com/next'
-      }
+        location: 'https://example.com/next',
+      },
     ])
     expect(fetchSpy).toHaveBeenCalledTimes(2)
   })

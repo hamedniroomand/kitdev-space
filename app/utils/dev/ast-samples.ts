@@ -4,7 +4,7 @@ export const AST_LANGUAGE_ITEMS: { label: string, value: AstLanguage }[] = [
   { label: 'JavaScript', value: 'javascript' },
   { label: 'JSX', value: 'jsx' },
   { label: 'TypeScript', value: 'typescript' },
-  { label: 'TSX', value: 'tsx' }
+  { label: 'TSX', value: 'tsx' },
 ]
 
 export const AST_SAMPLES: Record<AstLanguage, string> = {
@@ -39,5 +39,5 @@ export function Title({ title }: Props) {
   const ast = parseSync('demo.tsx', '<h1 />')
   return <h1 data-nodes={ast.program.body.length}>{title}</h1>
 }
-`
+`,
 }

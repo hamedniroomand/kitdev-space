@@ -6,7 +6,7 @@ import {
   getToolById,
   getToolsByCategory,
   searchTools,
-  tools
+  tools,
 } from '#shared/utils/tools'
 
 describe('tool registry', () => {

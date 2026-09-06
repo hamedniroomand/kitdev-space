@@ -21,8 +21,8 @@ const { workerFn } = useWebWorkerFn(
   (input: { left: string, right: string }) => diffTexts(input.left, input.right),
   {
     timeout: 30_000,
-    localDependencies: [diffTexts]
-  }
+    localDependencies: [diffTexts],
+  },
 )
 
 useToolSeo('text-diff')
@@ -77,8 +77,8 @@ defineShortcuts({
     usingInput: true,
     handler: () => {
       compare()
-    }
-  }
+    },
+  },
 })
 </script>
 
@@ -172,7 +172,7 @@ defineShortcuts({
           :items="[
             { label: 'JSON Formatter', to: '/hub/data/json-formatter' },
             { label: 'Semver Calculator', to: '/hub/dev/semver' },
-            { label: 'TS / JSX Transpiler', to: '/hub/dev/transpiler' }
+            { label: 'TS / JSX Transpiler', to: '/hub/dev/transpiler' },
           ]"
         />
       </ToolDocs>

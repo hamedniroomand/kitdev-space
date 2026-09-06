@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { buildUpdateQuery, isValidIdentifier } from '~/types/sqlite'
 
-describe('SQLite Utilities', () => {
+describe('sQLite Utilities', () => {
   it('validates SQL identifiers safely', () => {
     expect(isValidIdentifier('users')).toBe(true)
     expect(isValidIdentifier('order_items')).toBe(true)

@@ -24,7 +24,8 @@ export function parseWithBun(input: string, format: BunDataFormat): unknown {
       default:
         throw new DataError(`Unsupported format: ${format}`)
     }
-  } catch (cause) {
+  }
+  catch (cause) {
     if (cause instanceof DataError) {
       throw cause
     }
@@ -46,7 +47,8 @@ export function serializeWithBun(value: unknown, format: BunDataFormat): string 
       default:
         throw new DataError(`Unsupported format: ${format}`)
     }
-  } catch (cause) {
+  }
+  catch (cause) {
     if (cause instanceof DataError) {
       throw cause
     }

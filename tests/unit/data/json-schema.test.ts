@@ -6,9 +6,9 @@ describe('validateJsonSchema', () => {
     type: 'object',
     properties: {
       name: { type: 'string' },
-      age: { type: 'number', minimum: 0 }
+      age: { type: 'number', minimum: 0 },
     },
-    required: ['name']
+    required: ['name'],
   })
 
   it('validates compliant data', () => {
@@ -52,8 +52,8 @@ describe('validateJsonSchema', () => {
         email: { type: 'string', format: 'email' },
         ip: { type: 'string', format: 'ipv4' },
         ip6: { type: 'string', format: 'ipv6' },
-        day: { type: 'string', format: 'date' }
-      }
+        day: { type: 'string', format: 'date' },
+      },
     })
     expect(validateJsonSchema(schema, JSON.stringify({ email: 'a@b.co', ip: '10.0.0.1', ip6: '::1', day: '2026-09-07' })).isValid).toBe(true)
     const res = validateJsonSchema(schema, JSON.stringify({ email: 'nope', ip: '999.1.1.1', ip6: 'zz', day: '2026-13-40' }))
@@ -86,9 +86,9 @@ describe('generateSchemaFromJson', () => {
       type: 'object',
       properties: {
         id: { type: 'integer' },
-        label: { type: 'string' }
+        label: { type: 'string' },
       },
-      required: ['id', 'label']
+      required: ['id', 'label'],
     })
   })
 })

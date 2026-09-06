@@ -27,6 +27,6 @@ export function rgbToHsl({ r, g, b }: Rgb): Hsl {
   return {
     h: hue,
     s: sat * 100,
-    l: light * 100
+    l: light * 100,
   }
 }

@@ -15,7 +15,7 @@ function describe(rgb: Rgb, hsl?: Hsl): ParsedColor {
     hex: rgbToHex(rgb),
     rgb,
     hsl: hsl ?? rgbToHsl(rgb),
-    oklch: rgbToOklch(rgb)
+    oklch: rgbToOklch(rgb),
   }
 }
 
@@ -31,7 +31,7 @@ export function parseColor(input: string): ParsedColor {
     const rgb = {
       r: Number.parseInt(full.slice(0, 2), 16),
       g: Number.parseInt(full.slice(2, 4), 16),
-      b: Number.parseInt(full.slice(4, 6), 16)
+      b: Number.parseInt(full.slice(4, 6), 16),
     }
     return describe(rgb)
   }
@@ -41,7 +41,7 @@ export function parseColor(input: string): ParsedColor {
     const rgb = {
       r: clampByte(Number(rgbMatch[1])),
       g: clampByte(Number(rgbMatch[2])),
-      b: clampByte(Number(rgbMatch[3]))
+      b: clampByte(Number(rgbMatch[3])),
     }
     return describe(rgb)
   }
@@ -51,7 +51,7 @@ export function parseColor(input: string): ParsedColor {
     const hsl: Hsl = {
       h: Number(hslMatch[1]) % 360,
       s: Math.min(100, Math.max(0, Number(hslMatch[2]))),
-      l: Math.min(100, Math.max(0, Number(hslMatch[3])))
+      l: Math.min(100, Math.max(0, Number(hslMatch[3]))),
     }
     return describe(hslToRgb(hsl), hsl)
   }
@@ -61,7 +61,7 @@ export function parseColor(input: string): ParsedColor {
     const oklch: Oklch = {
       l: Math.min(100, Math.max(0, Number(oklchMatch[1]))),
       c: Math.max(0, Number(oklchMatch[2])),
-      h: ((Number(oklchMatch[3]) % 360) + 360) % 360
+      h: ((Number(oklchMatch[3]) % 360) + 360) % 360,
     }
     return describe(oklchToRgb(oklch))
   }
@@ -90,19 +90,24 @@ function hslToRgb({ h, s, l }: Hsl): Rgb {
   if (huePrime < 1) {
     r = chroma
     g = x
-  } else if (huePrime < 2) {
+  }
+  else if (huePrime < 2) {
     r = x
     g = chroma
-  } else if (huePrime < 3) {
+  }
+  else if (huePrime < 3) {
     g = chroma
     b = x
-  } else if (huePrime < 4) {
+  }
+  else if (huePrime < 4) {
     g = x
     b = chroma
-  } else if (huePrime < 5) {
+  }
+  else if (huePrime < 5) {
     r = x
     b = chroma
-  } else {
+  }
+  else {
     r = chroma
     b = x
   }
@@ -111,6 +116,6 @@ function hslToRgb({ h, s, l }: Hsl): Rgb {
   return {
     r: clampByte((r + match) * 255),
     g: clampByte((g + match) * 255),
-    b: clampByte((b + match) * 255)
+    b: clampByte((b + match) * 255),
   }
 }

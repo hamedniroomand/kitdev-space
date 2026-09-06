@@ -14,13 +14,13 @@ test.describe('Email Health Inspector tool', () => {
             spf: {
               raw: ['v=spf1 include:_spf.example.com ~all'],
               mechanisms: [{ raw: 'include:_spf.example.com' }, { raw: '~all' }],
-              issues: [{ code: 'spf-valid', level: 'ok', message: 'Valid SPF record found.' }]
+              issues: [{ code: 'spf-valid', level: 'ok', message: 'Valid SPF record found.' }],
             },
             dkim: {
               issues: [{ code: 'dkim-ok', level: 'ok', message: 'DKIM verified.' }],
               selectors: [
-                { selector: 'default', present: true, issues: [] }
-              ]
+                { selector: 'default', present: true, issues: [] },
+              ],
             },
             dmarc: {
               raw: ['v=DMARC1; p=reject; pct=100; rua=mailto:dmarc@example.com'],
@@ -29,16 +29,16 @@ test.describe('Email Health Inspector tool', () => {
               subdomainPolicy: 'reject',
               percent: 100,
               aggregateReportUris: ['mailto:dmarc@example.com'],
-              issues: [{ code: 'dmarc-reject', level: 'ok', message: 'Enforcing reject policy.' }]
+              issues: [{ code: 'dmarc-reject', level: 'ok', message: 'Enforcing reject policy.' }],
             },
             mx: {
               records: [
-                { priority: 10, exchange: 'mail.example.com', issues: [] }
+                { priority: 10, exchange: 'mail.example.com', issues: [] },
               ],
-              issues: [{ code: 'mx-found', level: 'ok', message: 'MX record found.' }]
-            }
-          }
-        })
+              issues: [{ code: 'mx-found', level: 'ok', message: 'MX record found.' }],
+            },
+          },
+        }),
       })
     })
 

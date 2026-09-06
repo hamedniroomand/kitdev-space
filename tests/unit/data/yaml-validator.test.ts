@@ -16,7 +16,7 @@ features:
     expect(res.parsed).toEqual({
       name: 'KitDev',
       version: '1.0.0',
-      features: ['fast', 'simple']
+      features: ['fast', 'simple'],
     })
     expect(res.formattedJson).toContain('"name": "KitDev"')
   })

@@ -51,7 +51,7 @@ export function useActionFeedback(options: {
         label: 'Failed',
         icon: 'i-lucide-x',
         color: 'error' as const,
-        variant: options.idle.variant
+        variant: options.idle.variant,
       }
     }
     return options.idle
@@ -70,14 +70,14 @@ export function useActionFeedback(options: {
     variant,
     flashSuccess,
     flashError,
-    reset
+    reset,
   })
 }
 
 export function useCopyFeedback(durationMs = DEFAULT_DURATION_MS) {
   const { copy: write, copied } = useClipboard({
     legacy: true,
-    copiedDuring: durationMs
+    copiedDuring: durationMs,
   })
   const activeKey = ref<string | null>(null)
   const failed = ref(false)
@@ -134,6 +134,6 @@ export function useCopyFeedback(durationMs = DEFAULT_DURATION_MS) {
     color,
     isKey,
     failed,
-    activeKey
+    activeKey,
   }
 }

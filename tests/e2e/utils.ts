@@ -13,7 +13,8 @@ export async function gotoHydrated(page: Page, path: string) {
   await page.waitForLoadState('domcontentloaded')
   try {
     await page.waitForLoadState('networkidle', { timeout: 15_000 })
-  } catch {
+  }
+  catch {
     // Ignore timeout when background requests remain active
   }
 }

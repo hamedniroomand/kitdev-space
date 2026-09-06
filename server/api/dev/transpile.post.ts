@@ -20,18 +20,19 @@ export default defineEventHandler(async (event) => {
   if (!loaders.has(loader)) {
     throw createError({
       statusCode: 400,
-      message: 'Choose a valid loader: ts, tsx, js, or jsx.'
+      message: 'Choose a valid loader: ts, tsx, js, or jsx.',
     })
   }
 
   try {
     const result = transpileSource(body.input ?? '', loader)
     return { result: result.code }
-  } catch (cause) {
+  }
+  catch (cause) {
     const message = cause instanceof Error ? cause.message : 'The transpile operation failed.'
     throw createError({
       statusCode: 400,
-      message
+      message,
     })
   }
 })

@@ -24,7 +24,7 @@
           :items="[
             { label: 'HTML & SVG to JSX / Vue', to: '/hub/dev/html-converter' },
             { label: 'SVG to React Component', to: '/hub/dev/svg-component' },
-            { label: 'Code Transpiler', to: '/hub/dev/transpiler' }
+            { label: 'Code Transpiler', to: '/hub/dev/transpiler' },
           ]"
         />
       </ToolDocs>

@@ -1,3 +1,4 @@
+import { Buffer } from 'node:buffer'
 import { expect, test } from '@playwright/test'
 import { gotoHydrated } from '../utils'
 
@@ -10,13 +11,13 @@ test.describe('EXIF & Metadata Inspector tool', () => {
     // 1x1 PNG base64
     const pngBuffer = Buffer.from(
       'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
-      'base64'
+      'base64',
     )
 
     await page.locator('input[type="file"]').setInputFiles({
       name: 'sample.png',
       mimeType: 'image/png',
-      buffer: pngBuffer
+      buffer: pngBuffer,
     })
 
     // Verify format and metadata blocks detected

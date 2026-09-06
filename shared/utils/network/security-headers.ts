@@ -43,7 +43,7 @@ function finding(
   partial: Omit<SecurityFinding, 'present' | 'value'> & {
     present?: boolean
     value?: string | null
-  }
+  },
 ): SecurityFinding {
   return {
     id: partial.id,
@@ -53,7 +53,7 @@ function finding(
     detail: partial.detail,
     fix: partial.fix,
     present: partial.present ?? false,
-    value: partial.value ?? null
+    value: partial.value ?? null,
   }
 }
 
@@ -71,9 +71,11 @@ function scoreFromFindings(findings: SecurityFinding[]): number {
     max += weight * 10
     if (item.level === 'ok') {
       points += weight * 10
-    } else if (item.level === 'info') {
+    }
+    else if (item.level === 'info') {
       points += weight * 7
-    } else if (item.level === 'warning') {
+    }
+    else if (item.level === 'warning') {
       points += weight * 4
     }
   }
@@ -99,7 +101,7 @@ function gradeFromScore(score: number): SecurityHeaderReport['grade'] {
 
 export function analyzeSecurityHeaders(
   headers: Record<string, string>,
-  options: { requestOrigin?: string | null } = {}
+  options: { requestOrigin?: string | null } = {},
 ): SecurityHeaderReport {
   const csp = header(headers, 'content-security-policy')
   const hsts = header(headers, 'strict-transport-security')
@@ -122,16 +124,17 @@ export function analyzeSecurityHeaders(
         ? 'Remove unsafe-inline and unsafe-eval. Prefer nonces or hashes for scripts.'
         : null,
       present: true,
-      value: csp
+      value: csp,
     }))
-  } else {
+  }
+  else {
     findings.push(finding({
       id: 'csp',
       level: 'error',
       header: 'Content-Security-Policy',
       title: 'CSP is missing',
       detail: 'No Content-Security-Policy header was returned.',
-      fix: 'Add Content-Security-Policy with a default-src and script-src policy that fits your app.'
+      fix: 'Add Content-Security-Policy with a default-src and script-src policy that fits your app.',
     }))
   }
 
@@ -150,16 +153,17 @@ export function analyzeSecurityHeaders(
         ? null
         : 'Set max-age to at least 15552000 (180 days). Add includeSubDomains when ready.',
       present: true,
-      value: hsts
+      value: hsts,
     }))
-  } else {
+  }
+  else {
     findings.push(finding({
       id: 'hsts',
       level: 'error',
       header: 'Strict-Transport-Security',
       title: 'HSTS is missing',
       detail: 'No Strict-Transport-Security header was returned.',
-      fix: 'Add Strict-Transport-Security: max-age=15552000; includeSubDomains on HTTPS responses.'
+      fix: 'Add Strict-Transport-Security: max-age=15552000; includeSubDomains on HTTPS responses.',
     }))
   }
 
@@ -173,16 +177,17 @@ export function analyzeSecurityHeaders(
       detail: xcto,
       fix: ok ? null : 'Set X-Content-Type-Options: nosniff.',
       present: true,
-      value: xcto
+      value: xcto,
     }))
-  } else {
+  }
+  else {
     findings.push(finding({
       id: 'xcto',
       level: 'error',
       header: 'X-Content-Type-Options',
       title: 'X-Content-Type-Options is missing',
       detail: 'Browsers may MIME-sniff responses without this header.',
-      fix: 'Add X-Content-Type-Options: nosniff.'
+      fix: 'Add X-Content-Type-Options: nosniff.',
     }))
   }
 
@@ -197,9 +202,10 @@ export function analyzeSecurityHeaders(
       detail: xfo,
       fix: ok ? null : 'Set X-Frame-Options to DENY or SAMEORIGIN, or use CSP frame-ancestors.',
       present: true,
-      value: xfo
+      value: xfo,
     }))
-  } else if (csp && /frame-ancestors/i.test(csp)) {
+  }
+  else if (csp && /frame-ancestors/i.test(csp)) {
     findings.push(finding({
       id: 'xfo',
       level: 'ok',
@@ -208,16 +214,17 @@ export function analyzeSecurityHeaders(
       detail: 'X-Frame-Options is missing, but CSP frame-ancestors is present.',
       fix: null,
       present: false,
-      value: null
+      value: null,
     }))
-  } else {
+  }
+  else {
     findings.push(finding({
       id: 'xfo',
       level: 'error',
       header: 'X-Frame-Options',
       title: 'X-Frame-Options is missing',
       detail: 'The page may be embeddable in a frame on another origin.',
-      fix: 'Add X-Frame-Options: DENY or SAMEORIGIN, or set CSP frame-ancestors.'
+      fix: 'Add X-Frame-Options: DENY or SAMEORIGIN, or set CSP frame-ancestors.',
     }))
   }
 
@@ -230,16 +237,17 @@ export function analyzeSecurityHeaders(
       detail: referrer,
       fix: null,
       present: true,
-      value: referrer
+      value: referrer,
     }))
-  } else {
+  }
+  else {
     findings.push(finding({
       id: 'referrer',
       level: 'info',
       header: 'Referrer-Policy',
       title: 'Referrer-Policy is missing',
       detail: 'Browsers use a default referrer policy when this header is absent.',
-      fix: 'Add Referrer-Policy: strict-origin-when-cross-origin or a stricter value.'
+      fix: 'Add Referrer-Policy: strict-origin-when-cross-origin or a stricter value.',
     }))
   }
 
@@ -258,9 +266,10 @@ export function analyzeSecurityHeaders(
       header: 'Access-Control-Allow-Origin',
       title: 'No CORS allow-origin header',
       detail: 'This response does not advertise cross-origin access.',
-      fix: 'If browsers must call this URL from another origin, set Access-Control-Allow-Origin to that origin (avoid * with credentials).'
+      fix: 'If browsers must call this URL from another origin, set Access-Control-Allow-Origin to that origin (avoid * with credentials).',
     }))
-  } else if (allowOrigin === '*') {
+  }
+  else if (allowOrigin === '*') {
     corsFindings.push(finding({
       id: 'cors-origin',
       level: allowCredentials?.toLowerCase() === 'true' ? 'error' : 'warning',
@@ -273,9 +282,10 @@ export function analyzeSecurityHeaders(
         ? 'Do not combine Access-Control-Allow-Origin: * with Access-Control-Allow-Credentials: true. Echo a specific origin instead.'
         : 'Prefer a specific origin instead of * when the API is not fully public.',
       present: true,
-      value: allowOrigin
+      value: allowOrigin,
     }))
-  } else {
+  }
+  else {
     corsFindings.push(finding({
       id: 'cors-origin',
       level: 'ok',
@@ -284,7 +294,7 @@ export function analyzeSecurityHeaders(
       detail: allowOrigin,
       fix: null,
       present: true,
-      value: allowOrigin
+      value: allowOrigin,
     }))
   }
 
@@ -297,9 +307,10 @@ export function analyzeSecurityHeaders(
       detail: allowCredentials,
       fix: null,
       present: true,
-      value: allowCredentials
+      value: allowCredentials,
     }))
-  } else if (allowCredentials?.toLowerCase() === 'true') {
+  }
+  else if (allowCredentials?.toLowerCase() === 'true') {
     corsFindings.push(finding({
       id: 'cors-credentials',
       level: 'warning',
@@ -308,7 +319,7 @@ export function analyzeSecurityHeaders(
       detail: allowCredentials,
       fix: 'Only enable credentials when the allow-origin value is a specific trusted origin.',
       present: true,
-      value: allowCredentials
+      value: allowCredentials,
     }))
   }
 
@@ -321,7 +332,7 @@ export function analyzeSecurityHeaders(
       detail: allowMethods,
       fix: null,
       present: true,
-      value: allowMethods
+      value: allowMethods,
     }))
   }
 
@@ -334,7 +345,7 @@ export function analyzeSecurityHeaders(
       detail: allowHeaders,
       fix: null,
       present: true,
-      value: allowHeaders
+      value: allowHeaders,
     }))
   }
 
@@ -347,7 +358,7 @@ export function analyzeSecurityHeaders(
       detail: `Request Origin was ${options.requestOrigin}. Response allow-origin was ${allowOrigin}.`,
       fix: 'Echo the request Origin when it is on your allow list.',
       present: true,
-      value: allowOrigin
+      value: allowOrigin,
     }))
   }
 
@@ -365,7 +376,7 @@ export function analyzeSecurityHeaders(
       allowCredentials,
       exposeHeaders,
       maxAge,
-      findings: corsFindings
-    }
+      findings: corsFindings,
+    },
   }
 }

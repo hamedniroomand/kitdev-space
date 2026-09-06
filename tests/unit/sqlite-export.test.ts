@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import { rowsToCsv, rowsToJson } from '~/utils/sqlite/export'
 
-describe('SQLite Data Exporters', () => {
+describe('sQLite Data Exporters', () => {
   const columns = ['id', 'name', 'price']
   const rows = [
     [1, 'Keyboard', 89.99],
-    [2, 'Mouse, Wireless', 29.5]
+    [2, 'Mouse, Wireless', 29.5],
   ]
 
   it('converts rows to CSV with proper quoting', () => {

@@ -24,7 +24,7 @@
           :items="[
             { label: 'HTML & SVG to JSX / Vue', to: '/hub/dev/html-converter' },
             { label: 'HTML to JSX Converter', to: '/hub/dev/html-to-jsx' },
-            { label: 'SVG to PNG / WebP', to: '/hub/image/svg-converter' }
+            { label: 'SVG to PNG / WebP', to: '/hub/image/svg-converter' },
           ]"
         />
       </ToolDocs>

@@ -5,7 +5,7 @@ import {
   buildEmailHealthResult,
   normalizeDkimSelectors,
   parseDmarc,
-  parseSpf
+  parseSpf,
 } from '#shared/utils/network/email-health'
 
 describe('parseSpf', () => {
@@ -20,7 +20,7 @@ describe('parseSpf', () => {
     expect(report.present).toBe(true)
     expect(report.mechanisms).toEqual([
       { qualifier: '+', type: 'include', value: '_spf.google.com', raw: 'include:_spf.google.com' },
-      { qualifier: '~', type: 'all', value: undefined, raw: '~all' }
+      { qualifier: '~', type: 'all', value: undefined, raw: '~all' },
     ])
     expect(report.issues.some(issue => issue.code === 'spf-softfail')).toBe(true)
   })
@@ -41,13 +41,13 @@ describe('analyzeMx', () => {
     const report = analyzeMx([
       { priority: 20, exchange: 'b.mail.example.com.' },
       { priority: 10, exchange: 'a.mail.example.com' },
-      { priority: 10, exchange: 'c.mail.example.com' }
+      { priority: 10, exchange: 'c.mail.example.com' },
     ])
 
     expect(report.records.map(row => row.exchange)).toEqual([
       'a.mail.example.com',
       'c.mail.example.com',
-      'b.mail.example.com'
+      'b.mail.example.com',
     ])
     expect(report.issues.some(issue => issue.code === 'mx-duplicate-priority')).toBe(true)
   })
@@ -67,7 +67,7 @@ describe('analyzeDkim', () => {
   it('marks selectors with DKIM keys as present', () => {
     const report = analyzeDkim([
       { selector: 'google', records: ['v=DKIM1; k=rsa; p=MIGf'] },
-      { selector: 'default', records: [] }
+      { selector: 'default', records: [] },
     ])
 
     expect(report.selectors[0]?.present).toBe(true)
@@ -157,7 +157,7 @@ describe('buildEmailHealthResult', () => {
       txtRecords: ['v=spf1 mx -all'],
       dmarcRecords: ['v=DMARC1; p=reject; rua=mailto:r@example.com'],
       mxRecords: [{ priority: 10, exchange: 'mail.example.com' }],
-      dkim: [{ selector: 'default', records: ['v=DKIM1; p=abc'] }]
+      dkim: [{ selector: 'default', records: ['v=DKIM1; p=abc'] }],
     })
 
     expect(result.domain).toBe('example.com')

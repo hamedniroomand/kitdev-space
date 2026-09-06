@@ -1,8 +1,5 @@
 <script setup lang="ts">
-import {
-  generateLoremParagraphs,
-  generateLoremWords
-} from '#shared/utils/data/lorem'
+import { generateLoremParagraphs, generateLoremWords } from '#shared/utils/data/lorem'
 
 type LoremMode = 'paragraphs' | 'words'
 
@@ -15,7 +12,7 @@ const { downloadText } = useDownload()
 
 const modeItems = [
   { label: 'Paragraphs', value: 'paragraphs' },
-  { label: 'Words', value: 'words' }
+  { label: 'Words', value: 'words' },
 ]
 
 useToolSeo('lorem')
@@ -58,8 +55,8 @@ defineShortcuts({
   meta_enter: {
     handler: () => {
       generate()
-    }
-  }
+    },
+  },
 })
 </script>
 
@@ -150,7 +147,7 @@ defineShortcuts({
           class="mt-8"
           :items="[
             { label: 'Fake Data Generator', to: '/hub/data/fake-generator' },
-            { label: 'Text Statistics', to: '/hub/data/text-stats' }
+            { label: 'Text Statistics', to: '/hub/data/text-stats' },
           ]"
         />
       </ToolDocs>

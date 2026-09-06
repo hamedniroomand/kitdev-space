@@ -1,6 +1,6 @@
 import { describe, expect, it, spyOn } from 'bun:test'
-import { inspectEmailHealth } from '#server/utils/network/email-health'
 import * as dns from '#server/utils/network/dns'
+import { inspectEmailHealth } from '#server/utils/network/email-health'
 
 describe('inspectEmailHealth', () => {
   it('looks up SPF, MX, and DKIM selector records', async () => {
@@ -30,7 +30,8 @@ describe('inspectEmailHealth', () => {
       expect(result.dmarc.present).toBe(true)
       expect(result.dmarc.policy).toBe('reject')
       expect(lookupDns).toHaveBeenCalled()
-    } finally {
+    }
+    finally {
       lookupDns.mockRestore()
     }
   })
@@ -54,7 +55,8 @@ describe('inspectEmailHealth', () => {
       expect(result.spf.present).toBe(true)
       expect(result.mx.records).toHaveLength(1)
       expect(result.dmarc.present).toBe(false)
-    } finally {
+    }
+    finally {
       lookupDns.mockRestore()
     }
   })

@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import type { ImageMetadata, MetadataGroup } from '#shared/utils/image/exif'
-import { readImageMetadata } from '#shared/utils/image/exif'
-import { canStripInPlace, stripImageMetadata } from '#shared/utils/image/strip'
-import { readImageResponse } from '#shared/utils/image/response'
 import { formatBytes } from '#shared/utils/format'
+import { readImageMetadata } from '#shared/utils/image/exif'
+import { readImageResponse } from '#shared/utils/image/response'
+import { canStripInPlace, stripImageMetadata } from '#shared/utils/image/strip'
 
 /**
  * Reads the metadata of an image and removes it. Two paths remove it: the
@@ -21,7 +21,7 @@ const EXTENSION_FOR_MIME: Record<string, string> = {
   'image/jpeg': 'jpg',
   'image/png': 'png',
   'image/webp': 'webp',
-  'image/avif': 'avif'
+  'image/avif': 'avif',
 }
 
 interface CleanResult {
@@ -111,7 +111,7 @@ async function handleStrip() {
       removed: result.removed,
       path: 'browser',
       remainingTags: readImageMetadata(copy).tags.length,
-      name: `clean-${file.value!.name}`
+      name: `clean-${file.value!.name}`,
     }
     return 'cleaned'
   }, 'The metadata could not be removed.')
@@ -142,7 +142,7 @@ async function handleServerClean() {
       removed: meta.value?.blocks.length ? meta.value.blocks : ['every metadata block'],
       path: 'server',
       remainingTags: check.container === 'unknown' ? null : check.tags.length,
-      name: `clean-${baseName.value}.${extension}`
+      name: `clean-${baseName.value}.${extension}`,
     }
     return 'cleaned'
   }, 'The server could not clean the image.')
@@ -166,7 +166,7 @@ function handleReport() {
     bytes: meta.value.bytes,
     gps: meta.value.gps,
     blocks: meta.value.blocks,
-    tags: meta.value.tags
+    tags: meta.value.tags,
   }
   downloadText(`${baseName.value}-metadata.json`, JSON.stringify(report, null, 2))
 }

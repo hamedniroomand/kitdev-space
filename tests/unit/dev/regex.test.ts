@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   explainRegex,
   normalizeRegexFlags,
-  testRegex
+  testRegex,
 } from '#shared/utils/dev/regex'
 
 describe('normalizeRegexFlags', () => {

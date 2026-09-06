@@ -26,7 +26,7 @@ export function jsonToTypeScript(value: unknown, rootName = 'Root'): string {
         return 'unknown[]'
       }
       const itemTypes = [...new Set(node.map((item, index) =>
-        typeOf(item, `${name}Item${index === 0 ? '' : index + 1}`)
+        typeOf(item, `${name}Item${index === 0 ? '' : index + 1}`),
       ))]
       if (itemTypes.length === 1) {
         return `${itemTypes[0]}[]`
@@ -44,7 +44,7 @@ export function jsonToTypeScript(value: unknown, rootName = 'Root'): string {
         const interfaceName = uniqueName(name)
         const entries = Object.entries(node as Record<string, unknown>)
         const fields = entries.map(([key, child]) => {
-          const fieldName = /^[A-Za-z_][A-Za-z0-9_]*$/.test(key) ? key : `'${key}'`
+          const fieldName = /^[A-Z_]\w*$/i.test(key) ? key : `'${key}'`
           const childName = `${interfaceName}${capitalize(key)}`
           return `  ${fieldName}: ${typeOf(child, childName)}`
         })
@@ -70,7 +70,7 @@ export function jsonToTypeScript(value: unknown, rootName = 'Root'): string {
 }
 
 function capitalize(value: string): string {
-  const clean = value.replace(/[^A-Za-z0-9]/g, '')
+  const clean = value.replace(/[^A-Z0-9]/gi, '')
   if (!clean) {
     return 'Field'
   }

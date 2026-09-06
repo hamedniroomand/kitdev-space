@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { decryptAesGcm, encryptAesGcm } from '#shared/utils/crypto/aes'
 
-describe('AES-GCM encryption and decryption', () => {
+describe('aES-GCM encryption and decryption', () => {
   it('encrypts and decrypts text round-trip successfully', async () => {
     const original = 'KitDev Space Secret Payload 🚀'
     const password = 'SuperSecretPassword123!'

@@ -37,7 +37,7 @@ export const FILTER_OPERATORS: { value: FilterOperator, label: string, needsValu
   { value: 'gt', label: 'greater than', needsValue: true },
   { value: 'lt', label: 'less than', needsValue: true },
   { value: 'null', label: 'is null', needsValue: false },
-  { value: 'notnull', label: 'is not null', needsValue: false }
+  { value: 'notnull', label: 'is not null', needsValue: false },
 ]
 
 export function quoteIdentifier(name: string): string {
@@ -47,7 +47,7 @@ export function quoteIdentifier(name: string): string {
 /** A number stays a number, so `price > 30` compares numbers. Any other text is a quoted string. */
 export function sqlLiteral(value: string): string {
   const trimmed = value.trim()
-  if (trimmed !== '' && /^-?\d+(\.\d+)?$/.test(trimmed)) {
+  if (trimmed !== '' && /^-?\d+(?:\.\d+)?$/.test(trimmed)) {
     return trimmed
   }
   return `'${value.replace(/'/g, '\'\'')}'`
@@ -93,7 +93,14 @@ export function filterToSql(filter: TableFilter): string {
 /** A short label for a filter chip, such as `price > 30` or `name contains "lamp"`. */
 export function filterLabel(filter: TableFilter): string {
   const symbol: Record<FilterOperator, string> = {
-    eq: '=', neq: '≠', contains: 'contains', starts: 'starts with', gt: '>', lt: '<', null: 'is null', notnull: 'is not null'
+    eq: '=',
+    neq: '≠',
+    contains: 'contains',
+    starts: 'starts with',
+    gt: '>',
+    lt: '<',
+    null: 'is null',
+    notnull: 'is not null',
   }
   const needsValue = FILTER_OPERATORS.find(op => op.value === filter.operator)?.needsValue
   return needsValue ? `${filter.column} ${symbol[filter.operator]} ${JSON.stringify(filter.value)}` : `${filter.column} ${symbol[filter.operator]}`
@@ -118,7 +125,7 @@ export function buildWhere(state: TableQueryState, textColumns: string[]): strin
  */
 export function buildTableQuery(
   state: TableQueryState,
-  options: { hasRowId: boolean, textColumns: string[] }
+  options: { hasRowId: boolean, textColumns: string[] },
 ): { sql: string, countSql: string } {
   const table = quoteIdentifier(state.table)
   const where = buildWhere(state, options.textColumns)
@@ -129,7 +136,7 @@ export function buildTableQuery(
   const offset = Math.max(0, Math.floor(state.offset))
   return {
     sql: `${select}\nFROM ${table}${whereClause}${order}\nLIMIT ${limit} OFFSET ${offset};`,
-    countSql: `SELECT COUNT(*) FROM ${table}${whereClause};`
+    countSql: `SELECT COUNT(*) FROM ${table}${whereClause};`,
   }
 }
 
@@ -142,7 +149,7 @@ export function tableSnippets(table: string, columns: ColumnInfo[]): { label: st
     const column = quoteIdentifier(text.name)
     snippets.push(
       { label: `Distinct values of ${text.name}`, sql: `SELECT DISTINCT ${column}\nFROM ${quoted}\nORDER BY ${column};` },
-      { label: `Count by ${text.name}`, sql: `SELECT ${column}, COUNT(*) AS row_count\nFROM ${quoted}\nGROUP BY ${column}\nORDER BY row_count DESC;` }
+      { label: `Count by ${text.name}`, sql: `SELECT ${column}, COUNT(*) AS row_count\nFROM ${quoted}\nGROUP BY ${column}\nORDER BY row_count DESC;` },
     )
   }
   return snippets

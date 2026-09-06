@@ -66,8 +66,8 @@ defineShortcuts({
     usingInput: true,
     handler: () => {
       convert()
-    }
-  }
+    },
+  },
 })
 </script>
 

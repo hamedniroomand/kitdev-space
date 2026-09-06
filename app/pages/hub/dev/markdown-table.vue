@@ -1,8 +1,6 @@
 <script setup lang="ts">
-import {
-  type ColumnAlign,
-  formatMarkdownTable
-} from '#shared/utils/dev/markdown-table'
+import type { ColumnAlign } from '#shared/utils/dev/markdown-table'
+import { formatMarkdownTable } from '#shared/utils/dev/markdown-table'
 
 useToolSeo('markdown-table')
 
@@ -11,7 +9,7 @@ const alignments = ref<ColumnAlign[]>(['left', 'center', 'left'])
 const rows = ref<string[][]>([
   ['Dark Mode', 'Done', 'Built with Tailwind'],
   ['Search', 'Active', 'Command palette Cmd+K'],
-  ['Offline', 'Planned', 'Service Worker']
+  ['Offline', 'Planned', 'Service Worker'],
 ])
 
 const { copy, label, color, icon } = useCopyFeedback()
@@ -20,7 +18,7 @@ const markdownOutput = computed(() => {
   return formatMarkdownTable({
     headers: headers.value,
     alignments: alignments.value,
-    rows: rows.value
+    rows: rows.value,
   })
 })
 
@@ -32,7 +30,8 @@ function addColumn() {
 }
 
 function removeColumn(colIndex: number) {
-  if (headers.value.length <= 1) return
+  if (headers.value.length <= 1)
+    return
   headers.value.splice(colIndex, 1)
   alignments.value.splice(colIndex, 1)
   rows.value.forEach(row => row.splice(colIndex, 1))
@@ -43,7 +42,8 @@ function addRow() {
 }
 
 function removeRow(rowIndex: number) {
-  if (rows.value.length <= 1) return
+  if (rows.value.length <= 1)
+    return
   rows.value.splice(rowIndex, 1)
 }
 
@@ -225,7 +225,7 @@ function handleCopy() {
           :items="[
             { label: 'Markdown Studio', to: '/hub/data/markdown-studio' },
             { label: 'CSV ↔ JSON', to: '/hub/data/converters/csv-json' },
-            { label: 'Table Viewer', to: '/hub/data/table-viewer' }
+            { label: 'Table Viewer', to: '/hub/data/table-viewer' },
           ]"
         />
       </ToolDocs>

@@ -71,7 +71,7 @@ const ARROWS: Record<string, [number, number]> = {
   ArrowLeft: [-1, 0],
   ArrowRight: [1, 0],
   ArrowUp: [0, -1],
-  ArrowDown: [0, 1]
+  ArrowDown: [0, 1],
 }
 
 function onKeydown(event: KeyboardEvent) {
@@ -93,7 +93,7 @@ const boxStyle = computed(() => {
     left: `${rect.x * scale.value}px`,
     top: `${rect.y * scale.value}px`,
     width: `${rect.width * scale.value}px`,
-    height: `${rect.height * scale.value}px`
+    height: `${rect.height * scale.value}px`,
   }
 })
 
@@ -101,7 +101,7 @@ const HANDLES: { id: CropHandle, class: string }[] = [
   { id: 'nw', class: '-left-1.5 -top-1.5 cursor-nwse-resize' },
   { id: 'ne', class: '-right-1.5 -top-1.5 cursor-nesw-resize' },
   { id: 'sw', class: '-left-1.5 -bottom-1.5 cursor-nesw-resize' },
-  { id: 'se', class: '-right-1.5 -bottom-1.5 cursor-nwse-resize' }
+  { id: 'se', class: '-right-1.5 -bottom-1.5 cursor-nwse-resize' },
 ]
 </script>
 

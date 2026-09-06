@@ -12,9 +12,12 @@ export interface ChmodPermissions {
 
 export function tripletToOctal(triplet: PermissionTriplet): number {
   let value = 0
-  if (triplet.read) value += 4
-  if (triplet.write) value += 2
-  if (triplet.execute) value += 1
+  if (triplet.read)
+    value += 4
+  if (triplet.write)
+    value += 2
+  if (triplet.execute)
+    value += 1
   return value
 }
 
@@ -22,7 +25,7 @@ export function octalToTriplet(digit: number): PermissionTriplet {
   return {
     read: (digit & 4) !== 0,
     write: (digit & 2) !== 0,
-    execute: (digit & 1) !== 0
+    execute: (digit & 1) !== 0,
   }
 }
 
@@ -42,7 +45,7 @@ export function octalToPermissions(octal: string): ChmodPermissions {
   return {
     owner: octalToTriplet(Number(digits[0])),
     group: octalToTriplet(Number(digits[1])),
-    others: octalToTriplet(Number(digits[2]))
+    others: octalToTriplet(Number(digits[2])),
   }
 }
 

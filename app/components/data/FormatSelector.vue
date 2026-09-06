@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import type { DataFormat } from '#shared/utils/data/types'
 
-const from = defineModel<Exclude<DataFormat, 'typescript'>>('from', { required: true })
-const to = defineModel<Exclude<DataFormat, 'typescript'>>('to', { required: true })
-
 const props = defineProps<{
   formats: { label: string, value: Exclude<DataFormat, 'typescript'> }[]
 }>()
+const from = defineModel<Exclude<DataFormat, 'typescript'>>('from', { required: true })
+const to = defineModel<Exclude<DataFormat, 'typescript'>>('to', { required: true })
 
 function swap() {
   const previousFrom = from.value

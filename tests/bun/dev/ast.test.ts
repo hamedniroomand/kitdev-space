@@ -2,14 +2,14 @@ import { describe, expect, it } from 'bun:test'
 import {
   parseSourceAst,
   resolveSpecifiers,
-  transformSourceAst
+  transformSourceAst,
 } from '#server/utils/dev/ast'
 
 describe('parseSourceAst', () => {
   it('parses typescript into an ESTree tree', () => {
     const result = parseSourceAst(
       'import { join } from "node:path"\nexport const x: number = 1\n',
-      'typescript'
+      'typescript',
     )
     expect(result.filename).toBe('input.ts')
     expect(result.tree.type).toBe('Program')
@@ -29,7 +29,7 @@ describe('transformSourceAst', () => {
   it('transforms typescript and jsx with oxc-transform', () => {
     const result = transformSourceAst(
       'export const x: number = 1\nconst el = <span />\n',
-      'tsx'
+      'tsx',
     )
     expect(result.code).not.toContain(': number')
     expect(result.code.length).toBeGreaterThan(0)
@@ -40,7 +40,7 @@ describe('resolveSpecifiers', () => {
   it('resolves installed packages with esm rules', () => {
     const rows = resolveSpecifiers({
       mode: 'esm',
-      specifiers: ['oxc-parser', './package.json']
+      specifiers: ['oxc-parser', './package.json'],
     })
     expect(rows[0]?.ok).toBe(true)
     expect(rows[0]?.path).toContain('oxc-parser')
@@ -51,7 +51,7 @@ describe('resolveSpecifiers', () => {
   it('reports missing modules', () => {
     const rows = resolveSpecifiers({
       mode: 'node',
-      specifiers: ['./definitely-missing-module-xyz']
+      specifiers: ['./definitely-missing-module-xyz'],
     })
     expect(rows[0]?.ok).toBe(false)
     expect(rows[0]?.error).toBeTruthy()

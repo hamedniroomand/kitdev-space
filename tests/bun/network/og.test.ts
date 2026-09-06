@@ -22,7 +22,7 @@ describe('extractOgFromHtml', () => {
   it('falls back to title when og:title is missing', async () => {
     const data = await extractOgFromHtml(
       '<html><head><title> Page Title </title></head></html>',
-      'https://example.com'
+      'https://example.com',
     )
     expect(data.title).toBe('Page Title')
   })

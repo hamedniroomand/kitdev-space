@@ -12,6 +12,6 @@ export function useToolSearch() {
   return {
     query,
     results,
-    setQuery
+    setQuery,
   }
 }

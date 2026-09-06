@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest'
 import type { RdapBootstrapService } from '#server/utils/network/rdap'
+import { describe, expect, it } from 'vitest'
 import { parseRdapData, parseRdapEntity, resolveRdapBase } from '#server/utils/network/rdap'
 
 describe('rdap parser', () => {
@@ -13,9 +13,9 @@ describe('rdap parser', () => {
           ['version', {}, 'text', '4.0'],
           ['fn', {}, 'text', 'MarkMonitor Inc.'],
           ['email', {}, 'text', 'abusecomplaints@markmonitor.com'],
-          ['tel', {}, 'uri', '+1.2083895740']
-        ]
-      ]
+          ['tel', {}, 'uri', '+1.2083895740'],
+        ],
+      ],
     }
 
     const registrar = parseRdapEntity(rawEntity)
@@ -32,24 +32,24 @@ describe('rdap parser', () => {
       events: [
         { eventAction: 'registration', eventDate: '1995-08-14T04:00:00Z' },
         { eventAction: 'expiration', eventDate: '2028-08-13T04:00:00Z' },
-        { eventAction: 'last changed', eventDate: '2024-08-14T07:00:00Z' }
+        { eventAction: 'last changed', eventDate: '2024-08-14T07:00:00Z' },
       ],
       nameservers: [
         { ldhName: 'A.IANA-SERVERS.NET' },
-        { ldhName: 'B.IANA-SERVERS.NET' }
+        { ldhName: 'B.IANA-SERVERS.NET' },
       ],
       secureDNS: {
-        delegationSigned: true
+        delegationSigned: true,
       },
       entities: [
         {
           roles: ['registrar'],
           vcardArray: [
             'vcard',
-            [['fn', {}, 'text', 'RESERVED-Internet Assigned Numbers Authority']]
-          ]
-        }
-      ]
+            [['fn', {}, 'text', 'RESERVED-Internet Assigned Numbers Authority']],
+          ],
+        },
+      ],
     }
 
     const result = parseRdapData(samplePayload, 'example.com', 'domain')
@@ -66,7 +66,7 @@ describe('rdap parser', () => {
   const bootstrap: RdapBootstrapService[] = [
     [['dev', 'app', 'page'], ['https://pubapi.registry.google/rdap/']],
     [['com', 'net'], ['http://rdap.verisign.com/com/v1/', 'https://rdap.verisign.com/com/v1/']],
-    [['co.uk'], ['https://rdap.nominet.uk/uk/']]
+    [['co.uk'], ['https://rdap.nominet.uk/uk/']],
   ]
 
   it('resolves the authoritative server of a domain from the bootstrap table', () => {

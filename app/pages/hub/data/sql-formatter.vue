@@ -1,12 +1,6 @@
 <script setup lang="ts">
-import {
-  createSqlLinter,
-  formatSql,
-  validateSql,
-  type SqlDialect,
-  type SqlIndent,
-  type SqlKeywordCase
-} from '#shared/utils/data/sql'
+import type { SqlDialect, SqlIndent, SqlKeywordCase } from '#shared/utils/data/sql'
+import { createSqlLinter, formatSql, validateSql } from '#shared/utils/data/sql'
 import { getTextStats } from '#shared/utils/data/stats'
 
 const SAMPLE_QUERY
@@ -17,19 +11,19 @@ const dialectItems = [
   { label: 'PostgreSQL', value: 'postgresql' },
   { label: 'MySQL', value: 'mysql' },
   { label: 'SQLite', value: 'sqlite' },
-  { label: 'Transact-SQL', value: 'transactsql' }
+  { label: 'Transact-SQL', value: 'transactsql' },
 ]
 
 const indentItems = [
   { label: '2 spaces', value: '2' },
   { label: '4 spaces', value: '4' },
-  { label: 'Tabs', value: 'tab' }
+  { label: 'Tabs', value: 'tab' },
 ]
 
 const keywordCaseItems = [
   { label: 'UPPERCASE', value: 'upper' },
   { label: 'lowercase', value: 'lower' },
-  { label: 'Preserve', value: 'preserve' }
+  { label: 'Preserve', value: 'preserve' },
 ]
 
 const dialect = ref<SqlDialect>('sql')
@@ -48,20 +42,20 @@ const validateFeedback = useActionFeedback({
     label: 'Validate',
     icon: 'i-lucide-circle-check',
     color: 'neutral',
-    variant: 'subtle'
+    variant: 'subtle',
   },
   success: {
     label: 'Valid',
     icon: 'i-lucide-check',
     color: 'success',
-    variant: 'subtle'
+    variant: 'subtle',
   },
   error: {
     label: 'Invalid',
     icon: 'i-lucide-x',
     color: 'error',
-    variant: 'subtle'
-  }
+    variant: 'subtle',
+  },
 })
 
 const { downloadText } = useDownload()
@@ -80,7 +74,7 @@ async function format() {
   await run(() => formatSql(input.value, {
     dialect: dialect.value,
     indent: indent.value,
-    keywordCase: keywordCase.value
+    keywordCase: keywordCase.value,
   }))
 
   if (status.value === 'success' && result.value !== null) {
@@ -103,7 +97,8 @@ async function validate() {
     statusMessage.value = 'Valid SQL query'
     setStats(input.value)
     validateFeedback.flashSuccess()
-  } else if (status.value === 'error') {
+  }
+  else if (status.value === 'error') {
     validateFeedback.flashError()
   }
 }
@@ -145,8 +140,8 @@ defineShortcuts({
     usingInput: true,
     handler: () => {
       format()
-    }
-  }
+    },
+  },
 })
 </script>
 
@@ -275,7 +270,7 @@ defineShortcuts({
           :items="[
             { label: 'JSON Formatter', to: '/hub/data/json-formatter' },
             { label: 'Text Diff', to: '/hub/data/text-diff' },
-            { label: 'Code Minifier', to: '/hub/dev/code-minifier' }
+            { label: 'Code Minifier', to: '/hub/dev/code-minifier' },
           ]"
         />
       </ToolDocs>

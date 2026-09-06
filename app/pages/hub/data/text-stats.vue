@@ -4,7 +4,7 @@ import { getTextStats } from '#shared/utils/data/stats'
 useToolSeo('text-stats')
 
 const input = ref(
-  'KitDev Space is an open-source suite of developer utilities designed for efficiency.\n\nAll tools run directly in the browser or on the Bun runtime with zero tracking, high performance, and complete data privacy.'
+  'KitDev Space is an open-source suite of developer utilities designed for efficiency.\n\nAll tools run directly in the browser or on the Bun runtime with zero tracking, high performance, and complete data privacy.',
 )
 
 const stats = computed(() => getTextStats(input.value))
@@ -120,7 +120,7 @@ function handleLoadSample() {
           :items="[
             { label: 'Text Diff', to: '/hub/data/text-diff' },
             { label: 'Markdown Studio', to: '/hub/data/markdown-studio' },
-            { label: 'Unicode Inspector', to: '/hub/data/unicode' }
+            { label: 'Unicode Inspector', to: '/hub/data/unicode' },
           ]"
         />
       </ToolDocs>

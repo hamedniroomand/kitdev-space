@@ -15,24 +15,24 @@ onMounted(() => {
 const presets = [
   {
     label: 'My Browser',
-    value: () => (typeof navigator !== 'undefined' ? navigator.userAgent : '')
+    value: () => (typeof navigator !== 'undefined' ? navigator.userAgent : ''),
   },
   {
     label: 'Chrome on macOS',
-    value: () => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
+    value: () => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
   },
   {
     label: 'Safari on iPhone',
-    value: () => 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Mobile/15E148 Safari/604.1'
+    value: () => 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Mobile/15E148 Safari/604.1',
   },
   {
     label: 'Firefox on Windows',
-    value: () => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:125.0) Gecko/20100101 Firefox/125.0'
+    value: () => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:125.0) Gecko/20100101 Firefox/125.0',
   },
   {
     label: 'Googlebot',
-    value: () => 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)'
-  }
+    value: () => 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
+  },
 ]
 
 const parsed = computed(() => parseUserAgent(input.value))
@@ -272,7 +272,7 @@ function handleClear() {
           :items="[
             { label: 'HTTP Inspector', to: '/hub/network/http-inspector' },
             { label: 'IP Address Info', to: '/hub/network/ip-info' },
-            { label: 'URL Inspector', to: '/hub/network/url-inspector' }
+            { label: 'URL Inspector', to: '/hub/network/url-inspector' },
           ]"
         />
       </ToolDocs>

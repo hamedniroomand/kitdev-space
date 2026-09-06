@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { jsonToTypeScript } from '#shared/utils/data/typescript'
 import { parseJson } from '#shared/utils/data/json'
+import { jsonToTypeScript } from '#shared/utils/data/typescript'
 
 describe('jsonToTypeScript', () => {
   it('builds a root interface', () => {

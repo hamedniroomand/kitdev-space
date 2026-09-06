@@ -5,7 +5,8 @@ export function urlEncode(input: string): string {
 export function urlDecode(input: string): string {
   try {
     return decodeURIComponent(input)
-  } catch {
+  }
+  catch {
     return decodeURI(input)
   }
 }
@@ -26,13 +27,13 @@ const HTML_ENTITY_MAP: Record<string, string> = {
   '&quot;': '"',
   '&#39;': '\'',
   '&apos;': '\'',
-  '&nbsp;': ' '
+  '&nbsp;': ' ',
 }
 
 export function htmlEntityDecode(input: string): string {
   let result = input.replace(
     /&(?:amp|lt|gt|quot|apos|nbsp|#39);/g,
-    match => HTML_ENTITY_MAP[match] ?? match
+    match => HTML_ENTITY_MAP[match] ?? match,
   )
 
   // Handle decimal entities &#123;

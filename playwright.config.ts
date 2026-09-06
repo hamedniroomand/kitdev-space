@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { defineConfig, devices } from '@playwright/test'
 
 const port = 3000
@@ -14,13 +15,13 @@ export default defineConfig({
     : 'list',
   use: {
     baseURL,
-    trace: 'on-first-retry'
+    trace: 'on-first-retry',
   },
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] }
-    }
+      use: { ...devices['Desktop Chrome'] },
+    },
   ],
   webServer: {
     command: `bun run dev -- --port ${port} --host 127.0.0.1`,
@@ -30,7 +31,7 @@ export default defineConfig({
     env: {
       ...process.env,
       NUXT_TELEMETRY_DISABLED: '1',
-      NUXT_DEVTOOLS: 'false'
-    }
-  }
+      NUXT_DEVTOOLS: 'false',
+    },
+  },
 })

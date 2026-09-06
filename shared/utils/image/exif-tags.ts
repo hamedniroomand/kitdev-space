@@ -56,7 +56,7 @@ export const TIFF_TAG_NAMES: Record<number, string> = {
   0xA432: 'LensInfo',
   0xA433: 'LensMake',
   0xA434: 'LensModel',
-  0xA435: 'LensSerialNumber'
+  0xA435: 'LensSerialNumber',
 }
 
 export const GPS_TAG_NAMES: Record<number, string> = {
@@ -73,7 +73,7 @@ export const GPS_TAG_NAMES: Record<number, string> = {
   0x000D: 'GPSSpeed',
   0x0010: 'GPSImgDirectionRef',
   0x0011: 'GPSImgDirection',
-  0x001D: 'GPSDateStamp'
+  0x001D: 'GPSDateStamp',
 }
 
 const ORIENTATION: Record<number, string> = {
@@ -84,13 +84,13 @@ const ORIENTATION: Record<number, string> = {
   5: 'Mirror horizontal and rotate 270°',
   6: 'Rotate 90°',
   7: 'Mirror horizontal and rotate 90°',
-  8: 'Rotate 270°'
+  8: 'Rotate 270°',
 }
 
 const RESOLUTION_UNIT: Record<number, string> = {
   1: 'None',
   2: 'Inches',
-  3: 'Centimeters'
+  3: 'Centimeters',
 }
 
 const EXPOSURE_PROGRAM: Record<number, string> = {
@@ -102,7 +102,7 @@ const EXPOSURE_PROGRAM: Record<number, string> = {
   5: 'Creative',
   6: 'Action',
   7: 'Portrait',
-  8: 'Landscape'
+  8: 'Landscape',
 }
 
 const METERING_MODE: Record<number, string> = {
@@ -112,30 +112,30 @@ const METERING_MODE: Record<number, string> = {
   3: 'Spot',
   4: 'Multi spot',
   5: 'Multi segment',
-  6: 'Partial'
+  6: 'Partial',
 }
 
 const WHITE_BALANCE: Record<number, string> = {
   0: 'Auto',
-  1: 'Manual'
+  1: 'Manual',
 }
 
 const EXPOSURE_MODE: Record<number, string> = {
   0: 'Auto',
   1: 'Manual',
-  2: 'Auto bracket'
+  2: 'Auto bracket',
 }
 
 const COLOR_SPACE: Record<number, string> = {
   1: 'sRGB',
-  0xFFFF: 'Uncalibrated'
+  0xFFFF: 'Uncalibrated',
 }
 
 const SCENE_CAPTURE_TYPE: Record<number, string> = {
   0: 'Standard',
   1: 'Landscape',
   2: 'Portrait',
-  3: 'Night'
+  3: 'Night',
 }
 
 const ENUMS: Record<string, Record<number, string>> = {
@@ -146,7 +146,7 @@ const ENUMS: Record<string, Record<number, string>> = {
   WhiteBalance: WHITE_BALANCE,
   ExposureMode: EXPOSURE_MODE,
   ColorSpace: COLOR_SPACE,
-  SceneCaptureType: SCENE_CAPTURE_TYPE
+  SceneCaptureType: SCENE_CAPTURE_TYPE,
 }
 
 /** Returns the readable name of an enumerated value, or null when there is none. */

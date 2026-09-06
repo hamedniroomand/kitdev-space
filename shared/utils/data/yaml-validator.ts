@@ -20,7 +20,7 @@ export function validateYaml(yamlText: string): YamlValidationResult {
       isValid: true,
       errors: [],
       parsed: null,
-      formattedJson: ''
+      formattedJson: '',
     }
   }
 
@@ -32,7 +32,7 @@ export function validateYaml(yamlText: string): YamlValidationResult {
       return {
         message: err.message,
         line: linePos?.line,
-        column: linePos?.col
+        column: linePos?.col,
       }
     })
 
@@ -40,7 +40,7 @@ export function validateYaml(yamlText: string): YamlValidationResult {
       isValid: false,
       errors,
       parsed: null,
-      formattedJson: ''
+      formattedJson: '',
     }
   }
 
@@ -48,7 +48,8 @@ export function validateYaml(yamlText: string): YamlValidationResult {
   let formattedJson = ''
   try {
     formattedJson = JSON.stringify(parsed, null, 2)
-  } catch {
+  }
+  catch {
     // Leave formattedJson as empty string
   }
 
@@ -56,6 +57,6 @@ export function validateYaml(yamlText: string): YamlValidationResult {
     isValid: true,
     errors: [],
     parsed,
-    formattedJson
+    formattedJson,
   }
 }

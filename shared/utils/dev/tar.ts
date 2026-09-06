@@ -140,7 +140,8 @@ export function inflateArchive(input: Uint8Array): Uint8Array {
     const out = gunzipSync(input)
     assertArchiveSize(out.byteLength)
     return out
-  } catch (cause) {
+  }
+  catch (cause) {
     if (cause instanceof Error && cause.message.includes('25 MB')) {
       throw cause
     }

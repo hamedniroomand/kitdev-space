@@ -1,8 +1,6 @@
 <script setup lang="ts">
-import {
-  extractPaletteFromPixels,
-  type ExtractedColor
-} from '#shared/utils/color/palette-extractor'
+import type { ExtractedColor } from '#shared/utils/color/palette-extractor'
+import { extractPaletteFromPixels } from '#shared/utils/color/palette-extractor'
 
 useToolSeo('image-palette')
 
@@ -73,13 +71,15 @@ function handleClear() {
 }
 
 const cssVariablesOutput = computed(() => {
-  if (palette.value.length === 0) return ''
+  if (palette.value.length === 0)
+    return ''
   const lines = palette.value.map((c, i) => `  --palette-${i + 1}: ${c.hex};`)
   return `:root {\n${lines.join('\n')}\n}`
 })
 
 const jsonOutput = computed(() => {
-  if (palette.value.length === 0) return ''
+  if (palette.value.length === 0)
+    return ''
   return JSON.stringify(palette.value.map(c => c.hex), null, 2)
 })
 </script>
@@ -232,7 +232,7 @@ const jsonOutput = computed(() => {
           :items="[
             { label: 'Palette Generator', to: '/hub/color/palette-generator' },
             { label: 'Color Converter', to: '/hub/color/converter' },
-            { label: 'Contrast Checker', to: '/hub/color/contrast-checker' }
+            { label: 'Contrast Checker', to: '/hub/color/contrast-checker' },
           ]"
         />
       </ToolDocs>

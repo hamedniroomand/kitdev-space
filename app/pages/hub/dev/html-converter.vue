@@ -18,7 +18,7 @@
           :items="[
             { label: 'Encoder & Escaper', to: '/hub/dev/encoder' },
             { label: 'Case Converter', to: '/hub/dev/case-converter' },
-            { label: 'Code Transpiler', to: '/hub/dev/transpiler' }
+            { label: 'Code Transpiler', to: '/hub/dev/transpiler' },
           ]"
         />
       </ToolDocs>

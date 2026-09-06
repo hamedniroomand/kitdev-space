@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   octalToPermissions,
   permissionsToOctal,
-  permissionsToSymbolic
+  permissionsToSymbolic,
 } from '#shared/utils/dev/chmod'
 
 describe('chmod utilities', () => {

@@ -89,7 +89,7 @@ export const DEFAULT_DKIM_SELECTORS = [
   'google',
   'selector1',
   'selector2',
-  'k1'
+  'k1',
 ] as const
 
 const AUTHORIZING_TYPES = new Set(['a', 'mx', 'ip4', 'ip6', 'include', 'exists'])
@@ -128,10 +128,12 @@ function parseMechanism(token: string): SpfMechanism | null {
   if (colon >= 0) {
     type = rest.slice(0, colon).toLowerCase()
     value = rest.slice(colon + 1)
-  } else if (slash >= 0) {
+  }
+  else if (slash >= 0) {
     type = rest.slice(0, slash).toLowerCase()
     value = rest.slice(slash)
-  } else {
+  }
+  else {
     type = rest.toLowerCase()
   }
 
@@ -156,7 +158,7 @@ export function parseSpf(txtRecords: string[]): SpfReport {
       raw: [],
       version: null,
       mechanisms: [],
-      issues
+      issues,
     }
   }
 
@@ -189,7 +191,7 @@ export function parseSpf(txtRecords: string[]): SpfReport {
     issues.push(issue(
       'warning',
       'spf-no-permissions',
-      'SPF has no authorizing mechanisms (a, mx, ip4, ip6, include, exists) or redirect.'
+      'SPF has no authorizing mechanisms (a, mx, ip4, ip6, include, exists) or redirect.',
     ))
   }
 
@@ -205,9 +207,11 @@ export function parseSpf(txtRecords: string[]): SpfReport {
   if (lastAll) {
     if (lastAll.qualifier === '+') {
       issues.push(issue('error', 'spf-plus-all', 'SPF uses +all. This permits any sender.'))
-    } else if (lastAll.qualifier === '~') {
+    }
+    else if (lastAll.qualifier === '~') {
       issues.push(issue('warning', 'spf-softfail', 'SPF uses ~all (soft fail). Prefer -all for stricter policy.'))
-    } else if (lastAll.qualifier === '?') {
+    }
+    else if (lastAll.qualifier === '?') {
       issues.push(issue('warning', 'spf-neutral-all', 'SPF uses ?all (neutral). Prefer -all for stricter policy.'))
     }
   }
@@ -237,7 +241,7 @@ export function parseSpf(txtRecords: string[]): SpfReport {
     raw,
     version,
     mechanisms,
-    issues
+    issues,
   }
 }
 
@@ -245,7 +249,18 @@ const DMARC_POLICIES = new Set<DmarcPolicy>(['none', 'quarantine', 'reject'])
 
 // RFC 7489 tags, plus np from RFC 9091.
 const DMARC_TAGS = new Set([
-  'v', 'p', 'sp', 'np', 'rua', 'ruf', 'adkim', 'aspf', 'ri', 'fo', 'rf', 'pct'
+  'v',
+  'p',
+  'sp',
+  'np',
+  'rua',
+  'ruf',
+  'adkim',
+  'aspf',
+  'ri',
+  'fo',
+  'rf',
+  'pct',
 ])
 
 function isDmarcPolicy(value: string): value is DmarcPolicy {
@@ -285,14 +300,14 @@ export function parseDmarc(txtRecords: string[]): DmarcReport {
     aggregateReportUris: [],
     forensicReportUris: [],
     tags: [],
-    issues
+    issues,
   }
 
   if (raw.length === 0) {
     issues.push(issue(
       'error',
       'dmarc-missing',
-      'No DMARC record found. Mailbox providers apply no policy when SPF or DKIM fails.'
+      'No DMARC record found. Mailbox providers apply no policy when SPF or DKIM fails.',
     ))
     return empty
   }
@@ -344,21 +359,24 @@ export function parseDmarc(txtRecords: string[]): DmarcReport {
 
   if (!policyValue) {
     issues.push(issue('error', 'dmarc-no-policy', 'DMARC has no p tag. The p tag is required.'))
-  } else if (!isDmarcPolicy(policyValue)) {
+  }
+  else if (!isDmarcPolicy(policyValue)) {
     issues.push(issue('error', 'dmarc-bad-policy', `DMARC p tag is not valid: ${policyValue}`))
-  } else {
+  }
+  else {
     policy = policyValue
     if (policy === 'none') {
       issues.push(issue(
         'warning',
         'dmarc-policy-none',
-        'DMARC uses p=none. This monitors only. Move to quarantine, then to reject.'
+        'DMARC uses p=none. This monitors only. Move to quarantine, then to reject.',
       ))
-    } else if (policy === 'quarantine') {
+    }
+    else if (policy === 'quarantine') {
       issues.push(issue(
         'info',
         'dmarc-policy-quarantine',
-        'DMARC uses p=quarantine. Failed mail goes to the spam folder. Move to reject when the reports are clean.'
+        'DMARC uses p=quarantine. Failed mail goes to the spam folder. Move to reject when the reports are clean.',
       ))
     }
   }
@@ -373,10 +391,11 @@ export function parseDmarc(txtRecords: string[]): DmarcReport {
         issues.push(issue(
           'warning',
           'dmarc-subdomain-none',
-          'DMARC uses sp=none. Subdomains have no policy.'
+          'DMARC uses sp=none. Subdomains have no policy.',
         ))
       }
-    } else {
+    }
+    else {
       issues.push(issue('error', 'dmarc-bad-subdomain-policy', `DMARC sp tag is not valid: ${subdomainValue}`))
     }
   }
@@ -388,13 +407,14 @@ export function parseDmarc(txtRecords: string[]): DmarcReport {
     const parsed = Number(percentValue)
     if (!Number.isInteger(parsed) || parsed < 0 || parsed > 100) {
       issues.push(issue('error', 'dmarc-bad-pct', `DMARC pct tag must be a number from 0 to 100: ${percentValue}`))
-    } else {
+    }
+    else {
       percent = parsed
       if (parsed < 100) {
         issues.push(issue(
           'warning',
           'dmarc-partial-pct',
-          `DMARC applies the policy to ${parsed}% of mail. Set pct=100 for full coverage.`
+          `DMARC applies the policy to ${parsed}% of mail. Set pct=100 for full coverage.`,
         ))
       }
     }
@@ -407,7 +427,7 @@ export function parseDmarc(txtRecords: string[]): DmarcReport {
     issues.push(issue(
       'warning',
       'dmarc-no-rua',
-      'DMARC has no rua tag. You get no aggregate reports, so you cannot see who sends mail for the domain.'
+      'DMARC has no rua tag. You get no aggregate reports, so you cannot see who sends mail for the domain.',
     ))
   }
 
@@ -438,7 +458,7 @@ export function parseDmarc(txtRecords: string[]): DmarcReport {
     aggregateReportUris,
     forensicReportUris,
     tags,
-    issues
+    issues,
   }
 }
 
@@ -453,7 +473,7 @@ export function analyzeMx(records: MxRecordInput[]): MxReport {
   const sorted = [...records]
     .map(record => ({
       priority: Number(record.priority),
-      exchange: String(record.exchange ?? '').replace(/\.$/, '').toLowerCase()
+      exchange: String(record.exchange ?? '').replace(/\.$/, '').toLowerCase(),
     }))
     .sort((a, b) => a.priority - b.priority || a.exchange.localeCompare(b.exchange))
 
@@ -469,9 +489,11 @@ export function analyzeMx(records: MxRecordInput[]): MxReport {
 
     if (!record.exchange) {
       entryIssues.push(issue('error', 'mx-empty-exchange', 'MX exchange is empty.'))
-    } else if (IPV4_RE.test(record.exchange) || record.exchange.includes(':')) {
+    }
+    else if (IPV4_RE.test(record.exchange) || record.exchange.includes(':')) {
       entryIssues.push(issue('error', 'mx-ip-exchange', 'MX exchange must be a host name, not an IP address.'))
-    } else if (
+    }
+    else if (
       record.exchange === 'localhost'
       || record.exchange.endsWith('.localhost')
       || record.exchange.endsWith('.local')
@@ -487,7 +509,7 @@ export function analyzeMx(records: MxRecordInput[]): MxReport {
     return {
       priority: record.priority,
       exchange: record.exchange,
-      issues: entryIssues
+      issues: entryIssues,
     }
   })
 
@@ -496,7 +518,7 @@ export function analyzeMx(records: MxRecordInput[]): MxReport {
       issues.push(issue(
         'warning',
         'mx-duplicate-priority',
-        `Multiple MX records share priority ${priority}.`
+        `Multiple MX records share priority ${priority}.`,
       ))
     }
   }
@@ -506,7 +528,7 @@ export function analyzeMx(records: MxRecordInput[]): MxReport {
       issues.push(issue(
         'warning',
         'mx-duplicate-exchange',
-        `MX exchange ${exchange} appears more than once.`
+        `MX exchange ${exchange} appears more than once.`,
       ))
     }
   }
@@ -533,9 +555,11 @@ export function analyzeDkim(inputs: DkimSelectorInput[]): DkimReport {
 
     if (!name) {
       entryIssues.push(issue('error', 'dkim-empty-selector', 'DKIM selector is empty.'))
-    } else if (!present) {
+    }
+    else if (!present) {
       entryIssues.push(issue('warning', 'dkim-missing', `No DKIM record for selector "${name}".`))
-    } else {
+    }
+    else {
       entryIssues.push(issue('ok', 'dkim-present', `DKIM record found for selector "${name}".`))
     }
 
@@ -543,20 +567,22 @@ export function analyzeDkim(inputs: DkimSelectorInput[]): DkimReport {
       selector: name,
       present,
       records,
-      issues: entryIssues
+      issues: entryIssues,
     }
   })
 
   const found = selectors.filter(item => item.present)
   if (selectors.length === 0) {
     issues.push(issue('info', 'dkim-no-selectors', 'No DKIM selectors were checked.'))
-  } else if (found.length === 0) {
+  }
+  else if (found.length === 0) {
     issues.push(issue('warning', 'dkim-none-found', 'No DKIM records found for the checked selectors.'))
-  } else {
+  }
+  else {
     issues.push(issue(
       'ok',
       'dkim-ok',
-      `Found DKIM for ${found.length} of ${selectors.length} selector${selectors.length === 1 ? '' : 's'}.`
+      `Found DKIM for ${found.length} of ${selectors.length} selector${selectors.length === 1 ? '' : 's'}.`,
     ))
   }
 
@@ -597,6 +623,6 @@ export function buildEmailHealthResult(input: {
     spf: parseSpf(input.txtRecords),
     mx: analyzeMx(input.mxRecords),
     dkim: analyzeDkim(input.dkim),
-    dmarc: parseDmarc(input.dmarcRecords)
+    dmarc: parseDmarc(input.dmarcRecords),
   }
 }

@@ -21,7 +21,7 @@ type View = 'security' | 'headers' | 'redirects'
 const VIEW_ITEMS: { label: string, value: View, icon: string }[] = [
   { label: 'Security', value: 'security', icon: 'i-lucide-shield-check' },
   { label: 'Headers', value: 'headers', icon: 'i-lucide-list-tree' },
-  { label: 'Redirects', value: 'redirects', icon: 'i-lucide-route' }
+  { label: 'Redirects', value: 'redirects', icon: 'i-lucide-route' },
 ]
 
 const url = ref('')
@@ -35,7 +35,7 @@ const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeed
 useToolSeo('http-inspector')
 
 const headerRows = computed(() =>
-  Object.entries(result.value?.headers ?? {}).map(([name, value]) => ({ name, value }))
+  Object.entries(result.value?.headers ?? {}).map(([name, value]) => ({ name, value })),
 )
 
 const hopCount = computed(() => Math.max(0, (result.value?.hops.length ?? 1) - 1))
@@ -65,8 +65,8 @@ async function inspect() {
       body: {
         url: url.value,
         origin: origin.value || undefined,
-        method: usePreflight.value ? 'OPTIONS' : undefined
-      }
+        method: usePreflight.value ? 'OPTIONS' : undefined,
+      },
     })
     return data.result
   }, 'The request failed.')
@@ -91,8 +91,8 @@ defineShortcuts({
     usingInput: true,
     handler: () => {
       inspect()
-    }
-  }
+    },
+  },
 })
 </script>
 
@@ -382,7 +382,7 @@ defineShortcuts({
           :items="[
             { label: 'DNS Lookup', to: '/hub/network/dns-lookup' },
             { label: 'TLS Inspector', to: '/hub/network/tls-inspector' },
-            { label: 'URL Inspector', to: '/hub/network/url-inspector' }
+            { label: 'URL Inspector', to: '/hub/network/url-inspector' },
           ]"
         />
       </ToolDocs>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-type OgPreviewData = {
+interface OgPreviewData {
   title: string
   description: string
   image: string
@@ -17,7 +17,7 @@ async function inspect() {
   await run(async () => {
     const data = await $fetch<{ result: OgPreviewData }>('/api/network/og-preview', {
       method: 'POST',
-      body: { url: url.value }
+      body: { url: url.value },
     })
     return data.result
   }, 'The OpenGraph preview failed.')
@@ -33,8 +33,8 @@ defineShortcuts({
     usingInput: true,
     handler: () => {
       inspect()
-    }
-  }
+    },
+  },
 })
 </script>
 
@@ -180,7 +180,7 @@ defineShortcuts({
         </p>
         <RelatedTools
           :items="[
-            { label: 'HTTP Inspector', to: '/hub/network/http-inspector' }
+            { label: 'HTTP Inspector', to: '/hub/network/http-inspector' },
           ]"
         />
       </ToolDocs>

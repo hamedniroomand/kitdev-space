@@ -1,9 +1,6 @@
 <script setup lang="ts">
-import {
-  CSV_DELIMITERS,
-  convertCsvJsonSql,
-  type CsvDelimiter
-} from '#shared/utils/data/csv'
+import type { CsvDelimiter } from '#shared/utils/data/csv'
+import { convertCsvJsonSql, CSV_DELIMITERS } from '#shared/utils/data/csv'
 import { DataError } from '#shared/utils/data/errors'
 import { getTextStats } from '#shared/utils/data/stats'
 
@@ -29,7 +26,7 @@ const { downloadText } = useDownload()
 const modeItems = [
   { label: 'CSV → JSON', value: 'csv-json' },
   { label: 'JSON → CSV', value: 'json-csv' },
-  { label: 'CSV → SQL', value: 'csv-sql' }
+  { label: 'CSV → SQL', value: 'csv-sql' },
 ]
 
 useToolSeo('csv-json')
@@ -103,11 +100,12 @@ async function convert() {
         text: input.value,
         delimiter: delimiter.value,
         tableName: tableName.value,
-        header: header.value
+        header: header.value,
       })
       detectedDelimiter.value = next.delimiter ?? null
       return next.output
-    } catch (cause) {
+    }
+    catch (cause) {
       if (cause instanceof DataError) {
         throw cause
       }
@@ -160,8 +158,8 @@ defineShortcuts({
     usingInput: true,
     handler: () => {
       convert()
-    }
-  }
+    },
+  },
 })
 </script>
 
@@ -295,7 +293,7 @@ defineShortcuts({
           :items="[
             { label: 'JSON Formatter', to: '/hub/data/json-formatter' },
             { label: 'JSON ↔ YAML', to: '/hub/data/converters/json-yaml' },
-            { label: 'JSON → TypeScript', to: '/hub/data/json-to-typescript' }
+            { label: 'JSON → TypeScript', to: '/hub/data/json-to-typescript' },
           ]"
         />
       </ToolDocs>

@@ -24,7 +24,7 @@
           :items="[
             { label: 'ID & Secret Generator', to: '/hub/crypto/generator' },
             { label: 'Password Benchmark', to: '/hub/crypto/password-benchmark' },
-            { label: 'Hash Generator', to: '/hub/crypto/hash-generator' }
+            { label: 'Hash Generator', to: '/hub/crypto/hash-generator' },
           ]"
         />
       </ToolDocs>

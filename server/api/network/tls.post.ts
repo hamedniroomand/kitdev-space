@@ -1,6 +1,6 @@
-import { inspectTlsCertificate } from '#server/utils/network/tls'
 import { getClientKey } from '#server/utils/network/client-ip'
 import { enforceRateLimit } from '#server/utils/network/rate-limit'
+import { inspectTlsCertificate } from '#server/utils/network/tls'
 
 interface TlsBody {
   host?: string
@@ -18,18 +18,19 @@ export default defineEventHandler(async (event) => {
   if (!host) {
     throw createError({
       statusCode: 400,
-      message: 'Enter a valid hostname.'
+      message: 'Enter a valid hostname.',
     })
   }
 
   try {
     const result = await inspectTlsCertificate(host, port)
     return { result }
-  } catch (cause) {
+  }
+  catch (cause) {
     const message = cause instanceof Error ? cause.message : 'The TLS inspection failed.'
     throw createError({
       statusCode: 400,
-      message
+      message,
     })
   }
 })

@@ -7,7 +7,7 @@ describe('diffTexts', () => {
       lines: [],
       added: 0,
       removed: 0,
-      unchanged: 0
+      unchanged: 0,
     })
   })
 
@@ -29,7 +29,7 @@ describe('diffTexts', () => {
       ['equal', 'a'],
       ['delete', 'b'],
       ['insert', 'x'],
-      ['equal', 'c']
+      ['equal', 'c'],
     ])
   })
 
@@ -37,7 +37,7 @@ describe('diffTexts', () => {
     const result = diffTexts('old', 'new')
     expect(result.lines).toEqual([
       { type: 'delete', text: 'old', oldLine: 1, newLine: null },
-      { type: 'insert', text: 'new', oldLine: null, newLine: 1 }
+      { type: 'insert', text: 'new', oldLine: null, newLine: 1 },
     ])
   })
 

@@ -1,5 +1,6 @@
-import { isHashAlgorithm, type HashAlgorithm } from '#shared/utils/crypto/types'
+import type { HashAlgorithm } from '#shared/utils/crypto/types'
 import { hashText } from '#server/utils/crypto/hash'
+import { isHashAlgorithm } from '#shared/utils/crypto/types'
 
 const MAX_INPUT_CHARS = 500_000
 
@@ -16,14 +17,14 @@ export default defineEventHandler(async (event) => {
   if (!isHashAlgorithm(algorithm)) {
     throw createError({
       statusCode: 400,
-      message: 'Choose a valid hash algorithm.'
+      message: 'Choose a valid hash algorithm.',
     })
   }
 
   if (input.length > MAX_INPUT_CHARS) {
     throw createError({
       statusCode: 413,
-      message: 'Input is too large.'
+      message: 'Input is too large.',
     })
   }
 

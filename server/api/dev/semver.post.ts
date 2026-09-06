@@ -26,7 +26,7 @@ export default defineEventHandler(async (event) => {
   if (!action || !actions.has(action)) {
     throw createError({
       statusCode: 400,
-      message: 'Choose a valid action: satisfies, sort, or bump.'
+      message: 'Choose a valid action: satisfies, sort, or bump.',
     })
   }
 
@@ -34,8 +34,8 @@ export default defineEventHandler(async (event) => {
     if (action === 'satisfies') {
       return {
         result: {
-          ok: semverSatisfies(body.version ?? '', body.range ?? '')
-        }
+          ok: semverSatisfies(body.version ?? '', body.range ?? ''),
+        },
       }
     }
 
@@ -61,14 +61,15 @@ export default defineEventHandler(async (event) => {
 
     return {
       result: {
-        version: semverBump(body.version ?? '', release)
-      }
+        version: semverBump(body.version ?? '', release),
+      },
     }
-  } catch (cause) {
+  }
+  catch (cause) {
     const message = cause instanceof Error ? cause.message : 'The semver operation failed.'
     throw createError({
       statusCode: 400,
-      message
+      message,
     })
   }
 })

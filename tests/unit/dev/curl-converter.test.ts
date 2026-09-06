@@ -5,7 +5,7 @@ import {
   toAxios,
   toFetch,
   toGoHttp,
-  toPythonRequests
+  toPythonRequests,
 } from '#shared/utils/dev/curl-converter'
 
 describe('parseCurl', () => {

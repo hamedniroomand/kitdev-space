@@ -6,7 +6,7 @@ import {
   toKebabCase,
   toPascalCase,
   toSlug,
-  toSnakeCase
+  toSnakeCase,
 } from '#shared/utils/dev/case'
 
 describe('case utilities', () => {

@@ -6,7 +6,7 @@ export const CSV_DELIMITERS: { label: string, value: CsvDelimiter | 'auto' }[] =
   { label: 'Auto-detect', value: 'auto' },
   { label: 'Comma (,)', value: ',' },
   { label: 'Semicolon (;)', value: ';' },
-  { label: 'Tab', value: '\t' }
+  { label: 'Tab', value: '\t' },
 ]
 
 const DELIMITER_CANDIDATES: CsvDelimiter[] = [',', ';', '\t']
@@ -88,10 +88,12 @@ export function parseCsv(input: string, delimiter: CsvDelimiter | 'auto' = 'auto
         if (next === '"') {
           field += '"'
           i += 1
-        } else {
+        }
+        else {
           inQuotes = false
         }
-      } else {
+      }
+      else {
         field += char
       }
       continue
@@ -172,7 +174,7 @@ function coerceCell(value: string): string | number | boolean | null {
   if (/^false$/i.test(trimmed)) {
     return false
   }
-  if (/^[+-]?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?$/.test(trimmed)) {
+  if (/^[+-]?\d+(?:\.\d+)?(?:e[+-]?\d+)?$/i.test(trimmed)) {
     const number = Number(trimmed)
     if (Number.isFinite(number)) {
       return number
@@ -187,7 +189,7 @@ export function csvToJson(
     delimiter?: CsvDelimiter | 'auto'
     header?: boolean
     coerce?: boolean
-  } = {}
+  } = {},
 ): unknown[] {
   const rows = parseCsv(input, options.delimiter ?? 'auto')
   if (rows.length === 0) {
@@ -237,7 +239,7 @@ function cellToString(value: unknown): string {
 
 export function jsonToCsv(
   input: string | unknown,
-  options: { delimiter?: CsvDelimiter } = {}
+  options: { delimiter?: CsvDelimiter } = {},
 ): string {
   const data = typeof input === 'string' ? JSON.parse(input) as unknown : input
   const delimiter = options.delimiter ?? ','
@@ -282,7 +284,7 @@ export function jsonToCsv(
     ...data.map((item) => {
       const record = item as Record<string, unknown>
       return keys.map(key => escapeCsvField(cellToString(record[key]), delimiter)).join(delimiter)
-    })
+    }),
   ]
 
   return lines.join('\n')
@@ -293,7 +295,7 @@ function quoteIdent(name: string): string {
   if (!trimmed) {
     throw new DataError('Enter a table name.')
   }
-  if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(trimmed)) {
+  if (!/^[A-Z_]\w*$/i.test(trimmed)) {
     throw new DataError('Use letters, numbers, and underscores for the table name. Start with a letter or underscore.')
   }
   return trimmed
@@ -302,7 +304,7 @@ function quoteIdent(name: string): string {
 function toSqlColumnIdent(name: string, index: number): string {
   let value = name
     .trim()
-    .replace(/[^A-Za-z0-9_]+/g, '_')
+    .replace(/\W+/g, '_')
     .replace(/^_+|_+$/g, '')
     .replace(/_+/g, '_')
 
@@ -335,7 +337,7 @@ export function csvToSqlInsert(
   options: {
     delimiter?: CsvDelimiter | 'auto'
     header?: boolean
-  } = {}
+  } = {},
 ): string {
   const table = quoteIdent(tableName)
   const rows = parseCsv(input, options.delimiter ?? 'auto')
@@ -351,7 +353,8 @@ export function csvToSqlInsert(
     columns = uniqueHeaders(rows[0] ?? []).map((name, index) => toSqlColumnIdent(name, index))
     columns = uniqueHeaders(columns)
     dataRows = rows.slice(1)
-  } else {
+  }
+  else {
     const width = Math.max(...rows.map(row => row.length), 0)
     columns = Array.from({ length: width }, (_, index) => `column_${index + 1}`)
     dataRows = rows
@@ -387,7 +390,7 @@ export function convertCsvJsonSql(input: {
     const data = csvToJson(input.text, { delimiter, header: input.header })
     return {
       output: JSON.stringify(data, null, 2),
-      delimiter: detected
+      delimiter: detected,
     }
   }
 
@@ -395,7 +398,7 @@ export function convertCsvJsonSql(input: {
     const sep = delimiter === 'auto' ? ',' : delimiter
     return {
       output: jsonToCsv(input.text, { delimiter: sep }),
-      delimiter: sep
+      delimiter: sep,
     }
   }
 
@@ -403,8 +406,8 @@ export function convertCsvJsonSql(input: {
   return {
     output: csvToSqlInsert(input.text, input.tableName ?? 'table_name', {
       delimiter,
-      header: input.header
+      header: input.header,
     }),
-    delimiter: detected
+    delimiter: detected,
   }
 }

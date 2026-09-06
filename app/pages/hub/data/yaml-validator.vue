@@ -155,7 +155,7 @@ function handleCopyJson() {
           :items="[
             { label: 'JSON ↔ YAML', to: '/hub/data/converters/json-yaml' },
             { label: 'JSON Formatter', to: '/hub/data/json-formatter' },
-            { label: 'JSON Schema Validator', to: '/hub/data/json-schema' }
+            { label: 'JSON Schema Validator', to: '/hub/data/json-schema' },
           ]"
         />
       </ToolDocs>

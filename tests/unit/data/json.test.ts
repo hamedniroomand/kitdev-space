@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest'
+import { DataError } from '#shared/utils/data/errors'
 import {
   formatJson,
   minifyJson,
   parseJson,
-  validateJson
+  validateJson,
 } from '#shared/utils/data/json'
-import { DataError } from '#shared/utils/data/errors'
 
 describe('json core', () => {
   it('formats json with 2-space indent', () => {
@@ -23,7 +23,8 @@ describe('json core', () => {
   it('returns a clear error for bad json', () => {
     const result = validateJson('{"a":')
     expect(result.ok).toBe(false)
-    if (result.ok) return
+    if (result.ok)
+      return
     expect(result.error).toBeInstanceOf(DataError)
     expect(result.error.message).not.toMatch(/Unexpected token/)
     expect(result.error.message.length).toBeGreaterThan(0)

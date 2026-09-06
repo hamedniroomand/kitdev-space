@@ -25,13 +25,13 @@ const groups = computed<CommandPaletteGroup[]>(() => {
           }
 
           open.value = false
-        }
+        },
       }))
 
     return {
       id: category,
       label: categoryLabels[category],
-      items
+      items,
     }
   })
 })

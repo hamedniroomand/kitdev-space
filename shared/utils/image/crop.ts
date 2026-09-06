@@ -20,7 +20,7 @@ function round(rect: CropRect): CropRect {
     x: Math.round(rect.x),
     y: Math.round(rect.y),
     width: Math.round(rect.width),
-    height: Math.round(rect.height)
+    height: Math.round(rect.height),
   }
 }
 
@@ -44,7 +44,7 @@ export function initialCrop(imageWidth: number, imageHeight: number, aspect?: nu
     x: (imageWidth - width) / 2,
     y: (imageHeight - height) / 2,
     width,
-    height
+    height,
   })
 }
 
@@ -54,7 +54,7 @@ export function moveCrop(rect: CropRect, dx: number, dy: number, imageWidth: num
     x: clamp(rect.x + dx, 0, imageWidth - rect.width),
     y: clamp(rect.y + dy, 0, imageHeight - rect.height),
     width: rect.width,
-    height: rect.height
+    height: rect.height,
   })
 }
 
@@ -70,7 +70,7 @@ export function resizeCrop(
   dy: number,
   imageWidth: number,
   imageHeight: number,
-  aspect?: number | null
+  aspect?: number | null,
 ): CropRect {
   const west = handle.includes('w')
   const north = handle.includes('n')
@@ -90,7 +90,8 @@ export function resizeCrop(
     // The larger drag wins, then the other side follows the aspect.
     if (width / aspect >= height) {
       height = width / aspect
-    } else {
+    }
+    else {
       width = height * aspect
     }
     if (height > roomY) {
@@ -107,6 +108,6 @@ export function resizeCrop(
     x: west ? anchorX - width : anchorX,
     y: north ? anchorY - height : anchorY,
     width,
-    height
+    height,
   })
 }

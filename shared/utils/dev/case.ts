@@ -9,7 +9,7 @@ export function splitIntoWords(input: string): string[] {
     .replace(/([A-Z]+)([A-Z][a-z0-9])/g, '$1 $2')
 
   return expanded
-    .split(/[^a-zA-Z0-9]+/)
+    .split(/[^a-z0-9]+/i)
     .filter(Boolean)
 }
 
@@ -62,7 +62,7 @@ export function toSlug(input: string): string {
 
   return input
     .normalize('NFKD')
-    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[\u0300-\u036F]/g, '')
     .toLowerCase()
     .trim()
     .replace(/[^a-z0-9]+/g, '-')

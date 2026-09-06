@@ -28,19 +28,21 @@ export default defineEventHandler(async (event) => {
       if (hostnames.length > 0) {
         hostname = hostnames[0] || null
       }
-    } catch {
+    }
+    catch {
       // Reverse DNS may fail or have no PTR record
     }
 
     return {
       ...info,
       hostname,
-      clientIp
+      clientIp,
     }
-  } catch (err) {
+  }
+  catch (err) {
     throw createError({
       statusCode: 400,
-      message: err instanceof Error ? err.message : 'Failed to analyze IP address.'
+      message: err instanceof Error ? err.message : 'Failed to analyze IP address.',
     })
   }
 })

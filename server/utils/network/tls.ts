@@ -56,12 +56,13 @@ export function parseSubject(peerSubject: tls.Certificate | tls.DetailedPeerCert
     organizationalUnit: typeof s.OU === 'string' ? s.OU : undefined,
     country: typeof s.C === 'string' ? s.C : undefined,
     state: typeof s.ST === 'string' ? s.ST : undefined,
-    locality: typeof s.L === 'string' ? s.L : undefined
+    locality: typeof s.L === 'string' ? s.L : undefined,
   }
 }
 
 export function parseSans(altnames?: string): string[] {
-  if (!altnames) return []
+  if (!altnames)
+    return []
   return altnames
     .split(',')
     .map(entry => entry.trim())
@@ -72,11 +73,13 @@ export function parseSans(altnames?: string): string[] {
 export function checkHostMatch(host: string, sans: string[], cn?: string): boolean {
   const target = host.toLowerCase()
   const candidates = [...sans]
-  if (cn) candidates.push(cn)
+  if (cn)
+    candidates.push(cn)
 
   return candidates.some((cand) => {
     const pattern = cand.toLowerCase()
-    if (pattern === target) return true
+    if (pattern === target)
+      return true
     if (pattern.startsWith('*.')) {
       const suffix = pattern.slice(2)
       const targetParts = target.split('.')
@@ -92,7 +95,7 @@ export function checkHostMatch(host: string, sans: string[], cn?: string): boole
 export async function inspectTlsCertificate(
   rawHost: string,
   port = 443,
-  timeoutMs = 6000
+  timeoutMs = 6000,
 ): Promise<TlsInspectionResult> {
   const cleanHost = rawHost.trim().replace(/^https?:\/\//i, '').replace(/\/.*$/, '').split(':')[0]!
   if (!cleanHost) {
@@ -104,17 +107,19 @@ export async function inspectTlsCertificate(
   await assertSafeUrl(`https://${cleanHost}:${port}`, { allowedPorts: TLS_PORTS })
 
   return new Promise((resolve, reject) => {
+    // Declared before the timer, which destroys it on a timeout.
+    let socket: tls.TLSSocket
     const timer = setTimeout(() => {
       socket.destroy()
       reject(new Error(`Connection to ${cleanHost}:${port} timed out.`))
     }, timeoutMs)
 
-    const socket = tls.connect(
+    socket = tls.connect(
       {
         host: cleanHost,
         port,
         servername: cleanHost,
-        rejectUnauthorized: false
+        rejectUnauthorized: false,
       },
       () => {
         clearTimeout(timer)
@@ -146,7 +151,8 @@ export async function inspectTlsCertificate(
           let status: 'valid' | 'expiring_soon' | 'expired' = 'valid'
           if (diffMs <= 0) {
             status = 'expired'
-          } else if (daysRemaining <= 30) {
+          }
+          else if (daysRemaining <= 30) {
             status = 'expiring_soon'
           }
 
@@ -164,12 +170,13 @@ export async function inspectTlsCertificate(
               validTo: new Date(curr.valid_to).toISOString(),
               serialNumber: curr.serialNumber,
               fingerprint256: curr.fingerprint256,
-              fingerprint: curr.fingerprint
+              fingerprint: curr.fingerprint,
             })
 
             if (curr.issuerCertificate && curr.issuerCertificate !== curr) {
               curr = curr.issuerCertificate
-            } else {
+            }
+            else {
               break
             }
           }
@@ -189,7 +196,7 @@ export async function inspectTlsCertificate(
             protocol,
             cipher: {
               name: cipher?.name || 'Unknown',
-              version: cipher?.version
+              version: cipher?.version,
             },
             subject,
             issuer,
@@ -203,13 +210,14 @@ export async function inspectTlsCertificate(
             fingerprint256: peer.fingerprint256,
             fingerprint: peer.fingerprint,
             isSelfSigned: Boolean(isSelfSigned),
-            chain
+            chain,
           })
-        } catch (cause) {
+        }
+        catch (cause) {
           socket.destroy()
           reject(cause)
         }
-      }
+      },
     )
 
     socket.on('error', (err) => {

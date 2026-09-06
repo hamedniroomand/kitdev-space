@@ -21,7 +21,7 @@ MULTILINE="Line 1\\nLine 2"
     const obj = {
       APP_NAME: 'KitDev Space',
       PORT: 3000,
-      DEBUG: true
+      DEBUG: true,
     }
     const env = jsonToEnv(obj)
     expect(env).toContain('APP_NAME="KitDev Space"')

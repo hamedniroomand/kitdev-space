@@ -15,7 +15,7 @@ export function parseTimestamp(input: string | number): Date | null {
   }
 
   // Check if trimmed is pure numeric string
-  if (/^-?\d+(\.\d+)?$/.test(trimmed)) {
+  if (/^-?\d+(?:\.\d+)?$/.test(trimmed)) {
     const num = Number(trimmed)
     if (!Number.isFinite(num)) {
       return null

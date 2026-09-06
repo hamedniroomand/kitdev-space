@@ -23,7 +23,7 @@
           :items="[
             { label: 'JWT Decoder', to: '/hub/crypto/jwt' },
             { label: 'Hash Generator', to: '/hub/crypto/hash-generator' },
-            { label: 'URL Inspector', to: '/hub/network/url-inspector' }
+            { label: 'URL Inspector', to: '/hub/network/url-inspector' },
           ]"
         />
       </ToolDocs>

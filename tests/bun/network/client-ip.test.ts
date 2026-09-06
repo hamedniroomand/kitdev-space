@@ -9,7 +9,7 @@ interface FakeEvent {
 function eventWith(headers: Record<string, string>, remoteAddress = '198.51.100.7'): FakeEvent {
   return {
     node: { req: { headers, socket: { remoteAddress } } },
-    context: {}
+    context: {},
   }
 }
 
@@ -19,12 +19,14 @@ const originalTrust = process.env.TRUST_PROXY_HEADERS
 afterEach(() => {
   if (originalVercel === undefined) {
     delete process.env.VERCEL
-  } else {
+  }
+  else {
     process.env.VERCEL = originalVercel
   }
   if (originalTrust === undefined) {
     delete process.env.TRUST_PROXY_HEADERS
-  } else {
+  }
+  else {
     process.env.TRUST_PROXY_HEADERS = originalTrust
   }
 })
@@ -74,7 +76,7 @@ describe('getClientKey behind a trusted edge', () => {
 
     const event = eventWith({
       'x-vercel-forwarded-for': '203.0.113.5',
-      'x-forwarded-for': '1.2.3.4'
+      'x-forwarded-for': '1.2.3.4',
     })
 
     expect(getClientKey(event as never)).toBe('203.0.113.5')

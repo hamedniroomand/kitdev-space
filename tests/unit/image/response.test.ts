@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { readImageResponse } from '#shared/utils/image/response'
 import { imageExtensionFor } from '#shared/utils/image/format'
+import { readImageResponse } from '#shared/utils/image/response'
 
 describe('imageExtensionFor', () => {
   it('maps jpeg to jpg', () => {
@@ -21,7 +21,7 @@ describe('readImageResponse', () => {
       'x-input-bytes': '2048',
       'x-output-bytes': '1024',
       'x-image-width': '800',
-      'x-image-height': '600'
+      'x-image-height': '600',
     })
     const response = new Response(blob, { status: 200, headers })
 
@@ -37,7 +37,7 @@ describe('readImageResponse', () => {
     const errorBody = JSON.stringify({ message: 'Invalid dimensions.' })
     const response = new Response(errorBody, {
       status: 400,
-      headers: { 'content-type': 'application/json' }
+      headers: { 'content-type': 'application/json' },
     })
 
     await expect(readImageResponse(response, 'Fallback error')).rejects.toThrow('Invalid dimensions.')

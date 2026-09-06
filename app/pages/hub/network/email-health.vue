@@ -33,8 +33,8 @@ async function inspect() {
       body: {
         domain: domain.value,
         mode: 'email-health',
-        dkimSelectors: dkimSelectors.value
-      }
+        dkimSelectors: dkimSelectors.value,
+      },
     })
     return data.result
   }, 'The lookup failed.')
@@ -58,8 +58,8 @@ defineShortcuts({
     usingInput: true,
     handler: () => {
       inspect()
-    }
-  }
+    },
+  },
 })
 </script>
 
@@ -429,7 +429,7 @@ defineShortcuts({
           :items="[
             { label: 'DNS Lookup', to: '/hub/network/dns-lookup' },
             { label: 'HTTP Inspector', to: '/hub/network/http-inspector' },
-            { label: 'URL Inspector', to: '/hub/network/url-inspector' }
+            { label: 'URL Inspector', to: '/hub/network/url-inspector' },
           ]"
         />
       </ToolDocs>

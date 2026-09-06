@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   generateLoremParagraphs,
-  generateLoremWords
+  generateLoremWords,
 } from '#shared/utils/data/lorem'
 
 describe('lorem text', () => {

@@ -22,12 +22,12 @@ test.describe('TLS Certificate Inspector tool', () => {
             subject: {
               commonName: '*.google.com',
               organization: 'Google LLC',
-              country: 'US'
+              country: 'US',
             },
             issuer: {
               commonName: 'GTS CA 1C3',
               organization: 'Google Trust Services LLC',
-              country: 'US'
+              country: 'US',
             },
             serialNumber: '34829384920384',
             fingerprint256: 'AB:CD:EF:01:23:45',
@@ -36,11 +36,11 @@ test.describe('TLS Certificate Inspector tool', () => {
               {
                 subject: { commonName: '*.google.com' },
                 issuer: { commonName: 'GTS CA 1C3' },
-                validTo: '2026-12-31T23:59:59.000Z'
-              }
-            ]
-          }
-        })
+                validTo: '2026-12-31T23:59:59.000Z',
+              },
+            ],
+          },
+        }),
       })
     })
 

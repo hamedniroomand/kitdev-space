@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import type { DicewareCapitalize } from '#shared/utils/crypto/diceware'
-import type { IdType } from '#shared/utils/crypto/uuid'
 import type { RandomCharset } from '#shared/utils/crypto/random-string'
+import type { IdType } from '#shared/utils/crypto/uuid'
 import { createDicewarePassphrase, estimateDicewareEntropyBits } from '#shared/utils/crypto/diceware'
-import { createId } from '#shared/utils/crypto/uuid'
 import { createRandomString } from '#shared/utils/crypto/random-string'
+import { createId } from '#shared/utils/crypto/uuid'
 
 type Kind = 'id' | 'string' | 'passphrase'
 
@@ -19,27 +19,27 @@ const props = withDefaults(defineProps<{
 const KIND_ITEMS: { label: string, value: Kind, icon: string }[] = [
   { label: 'ID', value: 'id', icon: 'i-lucide-fingerprint' },
   { label: 'Random string', value: 'string', icon: 'i-lucide-dices' },
-  { label: 'Passphrase', value: 'passphrase', icon: 'i-lucide-key-round' }
+  { label: 'Passphrase', value: 'passphrase', icon: 'i-lucide-key-round' },
 ]
 
 const idItems = [
   { label: 'UUID v4 (random)', value: 'uuidv4' },
   { label: 'UUID v7 (time ordered)', value: 'uuidv7' },
   { label: 'ULID', value: 'ulid' },
-  { label: 'NanoID', value: 'nanoid' }
+  { label: 'NanoID', value: 'nanoid' },
 ]
 
 const charsetItems = [
   { label: 'Letters and digits', value: 'alnum' },
   { label: 'Letters', value: 'alpha' },
   { label: 'Digits', value: 'numeric' },
-  { label: 'Hex', value: 'hex' }
+  { label: 'Hex', value: 'hex' },
 ]
 
 const capitalizeItems = [
   { label: 'None', value: 'none' },
   { label: 'First word', value: 'first' },
-  { label: 'Every word', value: 'all' }
+  { label: 'Every word', value: 'all' },
 ]
 
 const kind = ref<Kind>(props.kind)
@@ -67,7 +67,7 @@ const CHARSET_BITS: Record<RandomCharset, number> = {
   alnum: Math.log2(62),
   alpha: Math.log2(52),
   numeric: Math.log2(10),
-  hex: 4
+  hex: 4,
 }
 
 const entropyBits = computed(() => {
@@ -85,8 +85,10 @@ const entropyBits = computed(() => {
 })
 
 const entropyColor = computed(() => {
-  if (entropyBits.value >= 128) return 'success'
-  if (entropyBits.value >= 72) return 'warning'
+  if (entropyBits.value >= 128)
+    return 'success'
+  if (entropyBits.value >= 72)
+    return 'warning'
   return 'error'
 })
 
@@ -100,7 +102,7 @@ function makeOne(): string {
   return createDicewarePassphrase({
     wordCount: wordCount.value,
     separator: separator.value,
-    capitalize: capitalize.value
+    capitalize: capitalize.value,
   })
 }
 

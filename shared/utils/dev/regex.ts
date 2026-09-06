@@ -63,10 +63,12 @@ export function compileRegex(pattern: string, flagsInput = ''): {
   try {
     const withIndices = flags.includes('d') ? flags : `${flags}d`
     return { regex: new RegExp(pattern, withIndices), flags, error: null }
-  } catch (cause) {
+  }
+  catch (cause) {
     try {
       return { regex: new RegExp(pattern, flags), flags, error: null }
-    } catch (inner) {
+    }
+    catch (inner) {
       const message = inner instanceof Error
         ? inner.message
         : cause instanceof Error
@@ -75,7 +77,7 @@ export function compileRegex(pattern: string, flagsInput = ''): {
       return {
         regex: null,
         flags,
-        error: message.replace(/^Invalid regular expression:\s*/i, 'Invalid regular expression.\n\n')
+        error: message.replace(/^Invalid regular expression:\s*/i, 'Invalid regular expression.\n\n'),
       }
     }
   }
@@ -123,7 +125,7 @@ function readGroup(pattern: string, start: number): { token: string, end: number
       return {
         token: pattern.slice(start, close + 1),
         end: close + 1,
-        meaning: `Named capturing group "${name}".`
+        meaning: `Named capturing group "${name}".`,
       }
     }
   }
@@ -185,7 +187,7 @@ export function explainRegex(pattern: string): RegexTokenExplanation[] {
         meaning: negated
           ? 'Negated character class. Matches one character that is not listed.'
           : 'Character class. Matches one character from the listed set.',
-        index
+        index,
       })
       i = end
       continue
@@ -211,7 +213,7 @@ export function explainRegex(pattern: string): RegexTokenExplanation[] {
         explanations.push({
           token,
           meaning: `Quantifier ${token}. Controls how many times the previous item can match.`,
-          index
+          index,
         })
         i = close + 1
         continue
@@ -226,7 +228,7 @@ export function explainRegex(pattern: string): RegexTokenExplanation[] {
       '+': 'Quantifier. Matches the previous item one or more times.',
       '?': 'Quantifier. Matches the previous item zero or one time. After a quantifier, makes it lazy.',
       '|': 'Alternation. Matches the left side or the right side.',
-      ']': 'End of a character class (orphan token).'
+      ']': 'End of a character class (orphan token).',
     }
 
     if (map[char]) {
@@ -238,7 +240,7 @@ export function explainRegex(pattern: string): RegexTokenExplanation[] {
     explanations.push({
       token: char,
       meaning: `Literal character "${char}".`,
-      index
+      index,
     })
     i += 1
   }
@@ -270,7 +272,7 @@ function collectMatches(regex: RegExp, sample: string): RegexMatchResult[] {
         index: i,
         value: result[i],
         start: indices ? indices[0] : null,
-        end: indices ? indices[1] : null
+        end: indices ? indices[1] : null,
       })
     }
 
@@ -279,13 +281,14 @@ function collectMatches(regex: RegExp, sample: string): RegexMatchResult[] {
         const existing = groups.find(group => group.value === value && group.name === null)
         if (existing) {
           existing.name = name
-        } else {
+        }
+        else {
           groups.push({
             name,
             index: groups.length + 1,
             value,
             start: null,
-            end: null
+            end: null,
           })
         }
       }
@@ -296,7 +299,7 @@ function collectMatches(regex: RegExp, sample: string): RegexMatchResult[] {
       match: result[0],
       start,
       end,
-      groups
+      groups,
     })
 
     if (!global) {
@@ -323,13 +326,13 @@ export function buildHighlights(sample: string, matches: RegexMatchResult[]): Re
       segments.push({
         text: sample.slice(cursor, match.start),
         matched: false,
-        matchIndex: null
+        matchIndex: null,
       })
     }
     segments.push({
       text: sample.slice(match.start, match.end),
       matched: true,
-      matchIndex: match.index
+      matchIndex: match.index,
     })
     cursor = match.end
   }
@@ -338,7 +341,7 @@ export function buildHighlights(sample: string, matches: RegexMatchResult[]): Re
     segments.push({
       text: sample.slice(cursor),
       matched: false,
-      matchIndex: null
+      matchIndex: null,
     })
   }
 
@@ -357,7 +360,7 @@ export function testRegex(pattern: string, sample: string, flagsInput = 'g'): Re
       error,
       matches: [],
       highlights: sample ? [{ text: sample, matched: false, matchIndex: null }] : [],
-      explanations
+      explanations,
     }
   }
 
@@ -369,6 +372,6 @@ export function testRegex(pattern: string, sample: string, flagsInput = 'g'): Re
     error: null,
     matches,
     highlights: buildHighlights(sample, matches),
-    explanations
+    explanations,
   }
 }

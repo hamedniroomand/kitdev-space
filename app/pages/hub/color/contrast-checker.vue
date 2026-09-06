@@ -16,7 +16,7 @@ const results = computed(() => {
 
   return [
     { label: 'Normal text', hint: 'Below 24px', ...wcagLevel(ratio.value, false) },
-    { label: 'Large text', hint: '24px, or 18.66px bold', ...wcagLevel(ratio.value, true) }
+    { label: 'Large text', hint: '24px, or 18.66px bold', ...wcagLevel(ratio.value, true) },
   ]
 })
 
@@ -38,8 +38,8 @@ defineShortcuts({
     usingInput: true,
     handler: () => {
       check()
-    }
-  }
+    },
+  },
 })
 
 onMounted(() => {
@@ -163,7 +163,7 @@ onMounted(() => {
           :items="[
             { label: 'Color Converter', to: '/hub/color/converter' },
             { label: 'Palette Generator', to: '/hub/color/palette-generator' },
-            { label: 'CSS Gradient Studio', to: '/hub/color/gradient-studio' }
+            { label: 'CSS Gradient Studio', to: '/hub/color/gradient-studio' },
           ]"
         />
       </ToolDocs>

@@ -26,13 +26,13 @@ const { downloadBlob } = useDownload()
 
 const formatItems = [
   { label: 'PNG', value: 'png' },
-  { label: 'WebP', value: 'webp' }
+  { label: 'WebP', value: 'webp' },
 ]
 
 const scaleCards = computed(() => [
   { scale: 1 as SvgScale, blob: result1x.value, preview: preview1x.value, meta: meta1x.value },
   { scale: 2 as SvgScale, blob: result2x.value, preview: preview2x.value, meta: meta2x.value },
-  { scale: 4 as SvgScale, blob: result4x.value, preview: preview4x.value, meta: meta4x.value }
+  { scale: 4 as SvgScale, blob: result4x.value, preview: preview4x.value, meta: meta4x.value },
 ])
 
 useToolSeo('svg-converter')
@@ -45,25 +45,29 @@ async function convertScale(scale: SvgScale) {
 
   if (file.value) {
     formData.append('file', file.value)
-  } else if (svgText.value.trim()) {
+  }
+  else if (svgText.value.trim()) {
     formData.append('svg', svgText.value)
-  } else {
+  }
+  else {
     throw new Error('Paste SVG code or upload an SVG file.')
   }
 
   const response = await fetch('/api/image/svg-convert', {
     method: 'POST',
-    body: formData
+    body: formData,
   })
   const processed = await readImageResponse(response, 'The SVG convert operation failed.')
 
   if (scale === 1) {
     result1x.value = processed.blob
     meta1x.value = { width: processed.width, height: processed.height }
-  } else if (scale === 2) {
+  }
+  else if (scale === 2) {
     result2x.value = processed.blob
     meta2x.value = { width: processed.width, height: processed.height }
-  } else {
+  }
+  else {
     result4x.value = processed.blob
     meta4x.value = { width: processed.width, height: processed.height }
   }
@@ -114,8 +118,8 @@ defineShortcuts({
     usingInput: true,
     handler: () => {
       handleConvert()
-    }
-  }
+    },
+  },
 })
 </script>
 
@@ -244,7 +248,7 @@ defineShortcuts({
         </p>
         <RelatedTools
           :items="[
-            { label: 'Image Studio', to: '/hub/image/studio' }
+            { label: 'Image Studio', to: '/hub/image/studio' },
           ]"
         />
       </ToolDocs>

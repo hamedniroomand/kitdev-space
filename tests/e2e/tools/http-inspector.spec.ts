@@ -14,11 +14,11 @@ test.describe('HTTP Inspector tool', () => {
             statusText: 'OK',
             headers: {
               'content-type': 'text/html; charset=utf-8',
-              'x-frame-options': 'DENY'
+              'x-frame-options': 'DENY',
             },
             url: 'https://example.com',
             hops: [
-              { url: 'https://example.com', status: 200 }
+              { url: 'https://example.com', status: 200 },
             ],
             security: {
               score: 85,
@@ -29,7 +29,7 @@ test.describe('HTTP Inspector tool', () => {
                 allowHeaders: 'Content-Type',
                 allowCredentials: 'false',
                 exposeHeaders: '',
-                maxAge: '86400'
+                maxAge: '86400',
               },
               findings: [
                 {
@@ -38,12 +38,12 @@ test.describe('HTTP Inspector tool', () => {
                   title: 'Content Security Policy missing',
                   level: 'warning',
                   detail: 'No CSP header found.',
-                  fix: 'Add a Content-Security-Policy header.'
-                }
-              ]
-            }
-          }
-        })
+                  fix: 'Add a Content-Security-Policy header.',
+                },
+              ],
+            },
+          },
+        }),
       })
     })
 

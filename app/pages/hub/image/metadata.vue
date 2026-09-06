@@ -24,7 +24,7 @@
           :items="[
             { label: 'EXIF Remover', to: '/hub/image/exif-remover' },
             { label: 'Image Studio', to: '/hub/image/studio' },
-            { label: 'Image Converter', to: '/hub/image/converter' }
+            { label: 'Image Converter', to: '/hub/image/converter' },
           ]"
         />
       </ToolDocs>

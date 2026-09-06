@@ -10,8 +10,8 @@
  * exponent are left for JSON.parse to reject.
  */
 
-const IDENTIFIER_START = /[A-Za-z_$]/
-const IDENTIFIER_PART = /[A-Za-z0-9_$]/
+const IDENTIFIER_START = /[A-Z_$]/i
+const IDENTIFIER_PART = /[\w$]/
 
 function isWhitespace(char: string): boolean {
   return char === ' ' || char === '\t' || char === '\n' || char === '\r'
@@ -43,9 +43,11 @@ export function toStrictJson(input: string): string {
           // JSON has no escaped single quote and no line continuation.
           if (next === '\'') {
             value += '\''
-          } else if (next === '\n') {
+          }
+          else if (next === '\n') {
             value += '\\n'
-          } else {
+          }
+          else {
             value += inner + next
           }
           index += 2
@@ -95,7 +97,8 @@ export function toStrictJson(input: string): string {
           while (ahead < input.length && input[ahead] !== '\n') {
             ahead += 1
           }
-        } else {
+        }
+        else {
           ahead += 2
           while (ahead < input.length && !(input[ahead] === '*' && input[ahead + 1] === '/')) {
             ahead += 1
@@ -135,7 +138,8 @@ export function toStrictJson(input: string): string {
       const isKeyword = word === 'true' || word === 'false' || word === 'null'
       if (input[after] === ':' && !isKeyword) {
         out += `"${word}"`
-      } else {
+      }
+      else {
         out += word
       }
 

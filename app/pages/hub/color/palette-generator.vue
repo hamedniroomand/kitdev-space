@@ -30,8 +30,8 @@ defineShortcuts({
     usingInput: true,
     handler: () => {
       generate()
-    }
-  }
+    },
+  },
 })
 
 onMounted(() => {
@@ -118,7 +118,7 @@ onMounted(() => {
           class="mt-8"
           :items="[
             { label: 'Color Converter', to: '/hub/color/converter' },
-            { label: 'Contrast Checker', to: '/hub/color/contrast-checker' }
+            { label: 'Contrast Checker', to: '/hub/color/contrast-checker' },
           ]"
         />
       </ToolDocs>

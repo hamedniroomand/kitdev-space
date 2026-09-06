@@ -1,8 +1,5 @@
 <script setup lang="ts">
-import {
-  generateHtmlDocument,
-  parseMarkdown
-} from '#shared/utils/data/markdown'
+import { generateHtmlDocument, parseMarkdown } from '#shared/utils/data/markdown'
 import { formatReadingTime, getTextStats } from '#shared/utils/data/stats'
 
 const sampleMarkdown = `# Markdown Live Studio
@@ -68,7 +65,7 @@ function handleDownload() {
   downloadText('document.html', documentHtml, 'text/html')
   toast.add({
     title: 'Downloaded HTML file',
-    color: 'success'
+    color: 'success',
   })
 }
 
@@ -225,7 +222,7 @@ function handleClear() {
           :items="[
             { label: 'Text Diff', to: '/hub/data/text-diff' },
             { label: 'Lorem Ipsum & Mock Data', to: '/hub/data/lorem' },
-            { label: 'Encoder & Escaper', to: '/hub/dev/encoder' }
+            { label: 'Encoder & Escaper', to: '/hub/dev/encoder' },
           ]"
         />
       </ToolDocs>

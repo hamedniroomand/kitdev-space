@@ -1,8 +1,5 @@
 <script setup lang="ts">
-import {
-  generatePlaceholderSvg,
-  svgToDataUri
-} from '#shared/utils/image/placeholder'
+import { generatePlaceholderSvg, svgToDataUri } from '#shared/utils/image/placeholder'
 
 useToolSeo('placeholder')
 
@@ -22,7 +19,7 @@ const presets = [
   { label: '1200 × 630 (OG)', w: 1200, h: 630 },
   { label: '1080 × 1080 (Square)', w: 1080, h: 1080 },
   { label: '1920 × 1080 (FHD)', w: 1920, h: 1080 },
-  { label: '300 × 250 (Ad)', w: 300, h: 250 }
+  { label: '300 × 250 (Ad)', w: 300, h: 250 },
 ]
 
 function applyPreset(w: number, h: number) {
@@ -38,7 +35,7 @@ const svgOutput = computed(() => {
     bgColor1: bgColor1.value,
     bgColor2: bgColor2.value,
     text: customText.value ? customText.value : undefined,
-    textColor: textColor.value
+    textColor: textColor.value,
   })
 })
 
@@ -277,7 +274,7 @@ function downloadPng() {
           :items="[
             { label: 'Image Studio', to: '/hub/image/studio' },
             { label: 'Image to Base64', to: '/hub/image/base64' },
-            { label: 'OpenGraph Preview', to: '/hub/network/og-preview' }
+            { label: 'OpenGraph Preview', to: '/hub/network/og-preview' },
           ]"
         />
       </ToolDocs>

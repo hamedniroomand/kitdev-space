@@ -8,7 +8,7 @@ export const HASH_ALGORITHMS: HashAlgorithm[] = [
   'sha512',
   'xxhash64',
   'wyhash',
-  'crc32'
+  'crc32',
 ]
 
 export function isHashAlgorithm(value: string): value is HashAlgorithm {

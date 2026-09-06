@@ -1,14 +1,14 @@
-import { describe, expect, it } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { describe, expect, it } from 'bun:test'
 import {
   convertSvgAtScale,
   getImageMetadata,
-  processImage
+  processImage,
 } from '#server/utils/image/pipeline'
 
 const fixture = new Uint8Array(
-  readFileSync(join(import.meta.dir, 'fixtures/tiny.png'))
+  readFileSync(join(import.meta.dir, 'fixtures/tiny.png')),
 )
 
 describe('image pipeline', () => {
@@ -30,7 +30,7 @@ describe('image pipeline', () => {
       width: 32,
       height: 32,
       fit: 'inside',
-      format: 'png'
+      format: 'png',
     })
     expect(out.width).toBeLessThanOrEqual(32)
     expect(out.height).toBeLessThanOrEqual(32)
@@ -42,7 +42,7 @@ describe('image pipeline', () => {
   })
 
   const svg = new TextEncoder().encode(
-    '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="8"><rect width="16" height="8" fill="#abc"/></svg>'
+    '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="8"><rect width="16" height="8" fill="#abc"/></svg>',
   )
 
   it('converts svg to webp', async () => {
@@ -62,7 +62,7 @@ describe('image pipeline', () => {
 
   it('rejects svg with remote resource', async () => {
     const bad = new TextEncoder().encode(
-      '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><image href="https://example.com/a.png" width="10" height="10"/></svg>'
+      '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><image href="https://example.com/a.png" width="10" height="10"/></svg>',
     )
     expect(processImage(bad, { format: 'png' })).rejects.toThrow(/external resource/i)
   })
@@ -72,7 +72,7 @@ describe('image pipeline', () => {
       width: 32,
       height: 32,
       fit: 'inside',
-      format: 'png'
+      format: 'png',
     })
     expect(out.width).toBeLessThanOrEqual(32)
     expect(out.height).toBeLessThanOrEqual(32)
@@ -81,13 +81,13 @@ describe('image pipeline', () => {
 
   it('rasterizes large svg toward resize target', async () => {
     const large = new TextEncoder().encode(
-      '<svg xmlns="http://www.w3.org/2000/svg" width="2000" height="1000"><rect width="2000" height="1000" fill="#123"/></svg>'
+      '<svg xmlns="http://www.w3.org/2000/svg" width="2000" height="1000"><rect width="2000" height="1000" fill="#123"/></svg>',
     )
     const out = await processImage(large, {
       width: 40,
       height: 40,
       fit: 'inside',
-      format: 'png'
+      format: 'png',
     })
     expect(out.width).toBeLessThanOrEqual(40)
     expect(out.height).toBeLessThanOrEqual(40)
@@ -108,7 +108,7 @@ describe('image pipeline', () => {
       rotate: 90,
       grayscale: true,
       format: 'webp',
-      quality: 70
+      quality: 70,
     })
     // Rotation runs first, so the requested size is the final size.
     expect(out.width).toBe(40)
@@ -125,8 +125,10 @@ describe('image pipeline', () => {
 
   it('rejects a size that is out of range', async () => {
     expect(processImage(fixture, { width: 0, height: 10, format: 'png' }))
-      .rejects.toThrow(/Width must be/)
+      .rejects
+      .toThrow(/Width must be/)
     expect(processImage(fixture, { width: 10, height: 99999, format: 'png' }))
-      .rejects.toThrow(/Height must be/)
+      .rejects
+      .toThrow(/Height must be/)
   })
 })

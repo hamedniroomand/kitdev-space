@@ -28,7 +28,7 @@ export default defineNuxtPlugin(() => {
     proxy.gtag('event', 'page_view', {
       page_title: title,
       page_location: pageLocation,
-      page_referrer: previousLocation
+      page_referrer: previousLocation,
     })
     previousLocation = pageLocation
   })

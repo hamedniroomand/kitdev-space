@@ -13,8 +13,8 @@ defineShortcuts({
   meta_k: {
     handler: () => {
       openSearch()
-    }
-  }
+    },
+  },
 })
 </script>
 

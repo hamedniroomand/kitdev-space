@@ -1,4 +1,5 @@
 import type { H3Event } from 'h3'
+import process from 'node:process'
 import { getHeader, getRequestIP } from 'h3'
 
 /**
@@ -52,7 +53,8 @@ export function getClientKey(event: H3Event): string {
     if (address) {
       return address
     }
-  } else {
+  }
+  else {
     // No trusted edge. The rightmost entry is the hop that reached this
     // server, so a client cannot append a value after it.
     const forwarded = getHeader(event, 'x-forwarded-for')

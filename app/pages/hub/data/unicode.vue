@@ -260,7 +260,7 @@ function copyText(val: string) {
           :items="[
             { label: 'Text Statistics', to: '/hub/data/text-stats' },
             { label: 'Encoder & Escaper', to: '/hub/dev/encoder' },
-            { label: 'Text Diff', to: '/hub/data/text-diff' }
+            { label: 'Text Diff', to: '/hub/data/text-diff' },
           ]"
         />
       </ToolDocs>

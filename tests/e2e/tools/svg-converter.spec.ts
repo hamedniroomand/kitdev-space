@@ -1,3 +1,4 @@
+import { Buffer } from 'node:buffer'
 import { expect, test } from '@playwright/test'
 import { gotoHydrated } from '../utils'
 
@@ -5,7 +6,7 @@ test.describe('SVG to PNG / WebP converter tool', () => {
   test('converts SVG markup to raster images and supports clear', async ({ page }) => {
     const pngBuffer = Buffer.from(
       'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
-      'base64'
+      'base64',
     )
     await page.route('**/api/image/svg-convert', async (route) => {
       await route.fulfill({
@@ -14,9 +15,9 @@ test.describe('SVG to PNG / WebP converter tool', () => {
         headers: {
           'x-image-width': '120',
           'x-image-height': '80',
-          'x-image-bytes': '70'
+          'x-image-bytes': '70',
         },
-        body: pngBuffer
+        body: pngBuffer,
       })
     })
 

@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest'
 import type { CodecFormat } from '#shared/utils/dev/codec'
+import { describe, expect, it } from 'vitest'
 import { CODEC_OPTIONS, decodeWith, encodeWith } from '#shared/utils/dev/codec'
 
 const SAMPLE = 'Hello, "world" & <friends>\n\ttab \'quote\' café 😀'

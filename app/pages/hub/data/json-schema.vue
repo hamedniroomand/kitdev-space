@@ -1,8 +1,5 @@
 <script setup lang="ts">
-import {
-  generateSchemaFromJson,
-  validateJsonSchema
-} from '#shared/utils/data/json-schema'
+import { generateSchemaFromJson, validateJsonSchema } from '#shared/utils/data/json-schema'
 
 useToolSeo('json-schema')
 
@@ -15,12 +12,12 @@ const sampleSchema = JSON.stringify(
       name: { type: 'string' },
       email: { type: 'string', format: 'email' },
       role: { type: 'string', enum: ['admin', 'editor', 'viewer'] },
-      isActive: { type: 'boolean' }
+      isActive: { type: 'boolean' },
     },
-    required: ['id', 'name', 'email']
+    required: ['id', 'name', 'email'],
   },
   null,
-  2
+  2,
 )
 
 const sampleData = JSON.stringify(
@@ -29,10 +26,10 @@ const sampleData = JSON.stringify(
     name: 'Jane Doe',
     email: 'jane@example.com',
     role: 'admin',
-    isActive: true
+    isActive: true,
   },
   null,
-  2
+  2,
 )
 
 const schemaInput = ref(sampleSchema)
@@ -54,7 +51,8 @@ function handleGenerateSchema() {
     const parsed = JSON.parse(dataInput.value)
     const generated = generateSchemaFromJson(parsed)
     schemaInput.value = JSON.stringify(generated, null, 2)
-  } catch (err) {
+  }
+  catch (err) {
     generateError.value = err instanceof Error
       ? err.message
       : 'Cannot parse the JSON data to make a schema.'
@@ -247,7 +245,7 @@ function handleClear() {
           :items="[
             { label: 'JSON Formatter', to: '/hub/data/json-formatter' },
             { label: 'JSON → TypeScript', to: '/hub/data/json-to-typescript' },
-            { label: 'Fake Data Generator', to: '/hub/data/fake-generator' }
+            { label: 'Fake Data Generator', to: '/hub/data/fake-generator' },
           ]"
         />
       </ToolDocs>

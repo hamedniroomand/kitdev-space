@@ -1,7 +1,7 @@
 import type { QueryResult, SqlValue, TableInfo, WorkerResponse } from '~/types/sqlite'
 import type { TableQueryState, TableSort } from '~/utils/sqlite/query-builder'
-import { buildTableQuery, initialTableQuery, isTextColumn, tableSnippets } from '~/utils/sqlite/query-builder'
 import { rowsToCsv, rowsToJson } from '~/utils/sqlite/export'
+import { buildTableQuery, initialTableQuery, isTextColumn, tableSnippets } from '~/utils/sqlite/query-builder'
 
 const HISTORY_LIMIT = 20
 
@@ -51,7 +51,7 @@ export function useSqliteStudio() {
     }
 
     worker = new Worker(new URL('../workers/sqlite.worker.ts', import.meta.url), {
-      type: 'module'
+      type: 'module',
     })
 
     worker.onmessage = (event: MessageEvent<WorkerResponse>) => {
@@ -116,7 +116,8 @@ export function useSqliteStudio() {
     try {
       const bytes = new Uint8Array(await file.arrayBuffer())
       worker?.postMessage({ type: 'INIT_DB', bytes })
-    } catch {
+    }
+    catch {
       error.value = 'Failed to read file.'
       isExecuting.value = false
     }
@@ -154,7 +155,8 @@ export function useSqliteStudio() {
     if (isCustomQuery.value) {
       tableTotal.value = null
       post({ type: 'EXECUTE_QUERY', sql })
-    } else {
+    }
+    else {
       runTableQuery()
     }
   }
@@ -176,7 +178,8 @@ export function useSqliteStudio() {
   function refreshRows() {
     if (isCustomQuery.value) {
       post({ type: 'EXECUTE_QUERY', sql: activeQuery.value })
-    } else {
+    }
+    else {
       runTableQuery()
     }
   }
@@ -317,6 +320,6 @@ export function useSqliteStudio() {
     downloadDatabase,
     exportCsv,
     exportJson,
-    closeDatabase
+    closeDatabase,
   }
 }

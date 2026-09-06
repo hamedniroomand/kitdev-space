@@ -15,9 +15,12 @@ export function parseNumberToBigInt(value: string, base: NumberBase): bigint {
 
   // Strip prefixes if present
   let normalized = clean
-  if (base === 2 && normalized.startsWith('0b')) normalized = normalized.slice(2)
-  if (base === 8 && normalized.startsWith('0o')) normalized = normalized.slice(2)
-  if (base === 16 && normalized.startsWith('0x')) normalized = normalized.slice(2)
+  if (base === 2 && normalized.startsWith('0b'))
+    normalized = normalized.slice(2)
+  if (base === 8 && normalized.startsWith('0o'))
+    normalized = normalized.slice(2)
+  if (base === 16 && normalized.startsWith('0x'))
+    normalized = normalized.slice(2)
 
   if (!normalized) {
     throw new Error('Enter a valid number value.')
@@ -27,8 +30,8 @@ export function parseNumberToBigInt(value: string, base: NumberBase): bigint {
   const validChars: Record<NumberBase, RegExp> = {
     2: /^[01]+$/,
     8: /^[0-7]+$/,
-    10: /^-?[0-9]+$/,
-    16: /^[0-9a-f]+$/
+    10: /^-?\d+$/,
+    16: /^[0-9a-f]+$/,
   }
 
   if (!validChars[base].test(normalized)) {
@@ -58,6 +61,6 @@ export function convertFromBase(value: string, base: NumberBase): NumberBases {
     binary: n.toString(2),
     octal: n.toString(8),
     decimal: n.toString(10),
-    hex: n.toString(16).toUpperCase()
+    hex: n.toString(16).toUpperCase(),
   }
 }

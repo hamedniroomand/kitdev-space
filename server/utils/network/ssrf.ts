@@ -9,7 +9,7 @@ const BLOCKED_HOSTS = new Set([
   'metadata.goog',
   'instance-data',
   'kubernetes.default',
-  'kubernetes.default.svc'
+  'kubernetes.default.svc',
 ])
 
 /** Ports for plain HTTP and HTTPS fetch tools. */
@@ -50,7 +50,7 @@ blocked.addSubnet('ff00::', 8, 'ipv6') // multicast
 function deny(message: string): never {
   throw createError({
     statusCode: 400,
-    message
+    message,
   })
 }
 
@@ -91,7 +91,8 @@ export async function assertSafeUrl(input: string, options: SafeUrlOptions = {})
   let url: URL
   try {
     url = new URL(input)
-  } catch {
+  }
+  catch {
     deny('Enter a valid URL.')
   }
 
@@ -124,7 +125,8 @@ export async function assertSafeUrl(input: string, options: SafeUrlOptions = {})
   let records: { address: string, family: 4 | 6 }[]
   try {
     records = await Bun.dns.lookup(hostname)
-  } catch {
+  }
+  catch {
     deny('This host is not allowed.')
   }
 
