@@ -21,12 +21,12 @@ test.describe('EXIF & Metadata Inspector tool', () => {
     })
 
     // Verify format and metadata blocks detected
-    await expect(page.locator('main').getByText('Format')).toBeVisible()
+    await expect(page.locator('main').getByText('Format', { exact: true })).toBeVisible()
     await expect(page.locator('main').getByText(/png/i).first()).toBeVisible()
     await expect(page.locator('main').getByText('Metadata blocks', { exact: true })).toBeVisible()
 
     // Test clear
     await page.locator('main').getByRole('button', { name: 'Clear', exact: true }).click()
-    await expect(page.locator('main').getByText('Format')).not.toBeVisible()
+    await expect(page.locator('main').getByText('Format', { exact: true })).not.toBeVisible()
   })
 })

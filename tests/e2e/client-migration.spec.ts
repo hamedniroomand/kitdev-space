@@ -46,7 +46,7 @@ test('converts JSON to TOML in the browser, with no server call', async ({ page 
   expect(calls).toEqual([])
 })
 
-test('still sends XML to the server, because Bun parses it there', async ({ page }) => {
+test('converts XML in the browser with DOMParser', async ({ page }) => {
   const calls = watchRoute(page, '/api/data/transform')
   await gotoHydrated(page, '/hub/data/converters/json-xml')
 
@@ -54,7 +54,7 @@ test('still sends XML to the server, because Bun parses it there', async ({ page
   await page.getByRole('button', { name: 'Convert' }).click()
 
   await expect(page.getByRole('textbox', { name: 'Output' })).toContainText('KitDev')
-  expect(calls.length).toBeGreaterThan(0)
+  expect(calls).toEqual([])
 })
 
 test('minifies CSS in the browser, with no server call', async ({ page }) => {

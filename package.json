@@ -36,7 +36,8 @@
     "test": "vitest run && bun test tests/bun",
     "test:watch": "vitest",
     "test:bun": "bun test tests/bun",
-    "test:e2e": "playwright test",
+    "test:e2e": "bun run build && playwright test",
+    "test:e2e:run": "playwright test",
     "prepare": "husky"
   },
   "dependencies": {

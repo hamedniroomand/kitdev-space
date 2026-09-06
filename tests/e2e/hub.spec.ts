@@ -113,7 +113,8 @@ test('clicking on a page from the sidebar scrolls content area to top', async ({
 test('clicking KitDev Space in the hub header navigates to the home page', async ({ page }) => {
   await page.goto('/hub/data/json-formatter')
 
-  await page.getByRole('link', { name: 'KitDev Space' }).click()
+  // Exact, because the sidebar has a link named "KitDev Space source on GitHub".
+  await page.getByRole('link', { name: 'KitDev Space', exact: true }).click()
   await expect(page).toHaveURL('/')
   await expect(page.getByRole('heading', { name: 'Tools for people who build.' })).toBeVisible()
 })

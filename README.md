@@ -44,7 +44,8 @@ bun run dev
 ```bash
 bun run test            # unit tests with Vitest, server tests with bun test
 bunx playwright install chromium
-bun run test:e2e        # browser tests with Playwright
+bun run test:e2e        # builds, then runs the browser tests with Playwright
+bun run test:e2e:run    # runs the browser tests against the last build
 bun run lint
 bun run typecheck
 ```

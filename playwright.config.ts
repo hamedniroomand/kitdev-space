@@ -9,7 +9,8 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
-  workers: process.env.CI ? 1 : 2,
+  // A GitHub runner has four cores. Locally, Playwright picks half of the cores.
+  workers: process.env.CI ? 4 : undefined,
   reporter: process.env.CI
     ? [['list'], ['html', { open: 'never' }]]
     : 'list',
@@ -24,14 +25,15 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: `bun run dev -- --port ${port} --host 127.0.0.1`,
+    command: 'bun .output/server/index.mjs',
     url: baseURL,
     reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
+    timeout: 30_000,
     env: {
       ...process.env,
+      PORT: String(port),
+      HOST: '127.0.0.1',
       NUXT_TELEMETRY_DISABLED: '1',
-      NUXT_DEVTOOLS: 'false',
     },
   },
 })
