@@ -566,6 +566,20 @@ export const tools: Tool[] = [
     status: 'available'
   },
   {
+    id: 'cookie-inspector',
+    slug: 'cookie-inspector',
+    name: 'Cookie Inspector',
+    description: 'Parse a Set-Cookie header and check Secure, HttpOnly, SameSite, the prefixes, and the lifetime.',
+    category: 'network',
+    icon: 'i-lucide-cookie',
+    keywords: ['cookie', 'set-cookie', 'parser', 'httponly', 'secure', 'samesite', 'header', 'session', 'expires', 'max-age'],
+    route: '/hub/network/cookie-inspector',
+    clientOnly: true,
+    serverRequired: false,
+    status: 'available',
+    seoTitle: 'Set-Cookie Header Parser and Checker'
+  },
+  {
     id: 'ip-info',
     slug: 'ip-info',
     name: 'IP Address Info',
