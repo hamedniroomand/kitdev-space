@@ -120,18 +120,25 @@ export async function generateFaviconPackage(
   const previews: FaviconItemPreview[] = []
   const renderedImages: { width: number, height: number, bytes: Uint8Array }[] = []
 
-  for (const { name, size } of sizes) {
-    const res = await processImage(input, {
-      width: size,
-      height: size,
-      fit: 'inside',
-      format: 'png'
+  // One size does not need the result of another, so encode them at the same
+  // time. Promise.all keeps the order of `sizes`, which the previews rely on.
+  const rendered = await Promise.all(
+    sizes.map(async ({ name, size }) => {
+      const res = await processImage(input, {
+        width: size,
+        height: size,
+        fit: 'inside',
+        format: 'png'
+      })
+      return { name, size, bytes: res.bytes }
     })
+  )
 
-    zipFiles[name] = res.bytes
-    renderedImages.push({ width: size, height: size, bytes: res.bytes })
+  for (const { name, size, bytes } of rendered) {
+    zipFiles[name] = bytes
+    renderedImages.push({ width: size, height: size, bytes })
 
-    const base64 = Buffer.from(res.bytes).toString('base64')
+    const base64 = Buffer.from(bytes).toString('base64')
     previews.push({
       name,
       size,
