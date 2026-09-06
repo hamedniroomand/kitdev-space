@@ -14,8 +14,8 @@ describe('qrcode', () => {
     expect(buildQrPayload('url', 'https://example.com')).toBe('https://example.com')
   })
 
-  it('generates svg markup', async () => {
-    const svg = await generateQrSvg('hello')
+  it('generates svg markup', () => {
+    const svg = generateQrSvg('hello')
     expect(svg).toContain('<svg')
     expect(svg).toContain('</svg>')
   })

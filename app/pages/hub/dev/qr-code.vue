@@ -41,7 +41,7 @@ const securityItems = [
 useToolSeo('qr-code')
 
 async function generate() {
-  await run(async () => {
+  await run(() => {
     const payload = buildQrPayload(
       kind.value,
       text.value,
@@ -54,7 +54,7 @@ async function generate() {
           }
         : undefined
     )
-    svg.value = await generateQrSvg(payload)
+    svg.value = generateQrSvg(payload)
     return svg.value
   })
 }
@@ -199,7 +199,7 @@ defineShortcuts({
       <DataToolDocs title="About QR codes">
         <div class="space-y-4 text-muted">
           <p>
-            The tool builds an SVG QR code in the browser and lets you download the file.
+            The tool builds an SVG QR code in the browser with uqr and lets you download the file.
           </p>
           <p>
             Wi-Fi codes use the standard WIFI: payload format.

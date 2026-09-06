@@ -1,4 +1,4 @@
-import QRCode from 'qrcode'
+import { renderSVG } from 'uqr'
 
 export type QrPayloadKind = 'url' | 'text' | 'wifi'
 
@@ -53,14 +53,13 @@ export function buildQrPayload(kind: QrPayloadKind, value: string, wifi?: QrWifi
   return trimmed
 }
 
-export async function generateQrSvg(payload: string): Promise<string> {
+export function generateQrSvg(payload: string): string {
   if (!payload) {
     throw new Error('Enter data for the QR code.')
   }
-  return QRCode.toString(payload, {
-    type: 'svg',
-    errorCorrectionLevel: 'M',
-    margin: 1,
-    width: 256
+  return renderSVG(payload, {
+    ecc: 'M',
+    border: 1,
+    pixelSize: 8
   })
 }
