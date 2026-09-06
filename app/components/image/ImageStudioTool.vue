@@ -4,6 +4,8 @@ import { imageExtensionFor } from '#shared/utils/image/format'
 import { readImageResponse } from '#shared/utils/image/response'
 import { readImageMetadata } from '#shared/utils/image/exif'
 import { formatBytes } from '#shared/utils/format'
+import type { CropRect } from '#shared/utils/image/crop'
+import { cropImageFile } from '~/utils/image/crop-file'
 
 type SizeMode = ImagePresetId | 'original' | 'custom'
 
@@ -13,7 +15,20 @@ const props = withDefaults(defineProps<{
   /** The size mode and the output format that are selected when the page opens. */
   sizeMode?: SizeMode
   format?: ImageEncodeFormat
-}>(), { sizeMode: 'original', format: 'webp' })
+  /** Turns the crop box on when the page opens. */
+  crop?: boolean
+}>(), { sizeMode: 'original', format: 'webp', crop: false })
+
+type CropAspectMode = 'free' | 'output' | '1:1' | '16:9' | '4:3' | '3:2'
+
+const cropAspectItems: { label: string, value: CropAspectMode }[] = [
+  { label: 'Free', value: 'free' },
+  { label: 'Match the output size', value: 'output' },
+  { label: 'Square (1:1)', value: '1:1' },
+  { label: 'Wide (16:9)', value: '16:9' },
+  { label: 'Standard (4:3)', value: '4:3' },
+  { label: 'Photo (3:2)', value: '3:2' }
+]
 
 const PRESET_SIZES: Record<ImagePresetId, { width: number, height: number }> = {
   'twitter-banner': { width: 1500, height: 500 },
@@ -74,6 +89,10 @@ const grayscale = ref(false)
 const format = ref<ImageEncodeFormat>(props.format)
 const quality = ref(80)
 
+const cropEnabled = ref(props.crop)
+const cropAspectMode = ref<CropAspectMode>('free')
+const cropRect = ref<CropRect | null>(null)
+
 const outputBlob = ref<Blob | null>(null)
 const inputBytes = ref<number | null>(null)
 const outputBytes = ref<number | null>(null)
@@ -89,9 +108,22 @@ const isCustom = computed(() => sizeMode.value === 'custom')
 const resizes = computed(() => sizeMode.value !== 'original')
 const filename = computed(() => `studio.${imageExtensionFor(format.value)}`)
 
+const cropAspect = computed<number | null>(() => {
+  const mode = cropAspectMode.value
+  if (mode === 'free') {
+    return null
+  }
+  if (mode === 'output') {
+    return resizes.value && width.value > 0 && height.value > 0 ? width.value / height.value : null
+  }
+  const [w, h] = mode.split(':').map(Number)
+  return w! / h!
+})
+
 watch(file, async (selected) => {
   outputBlob.value = null
   source.value = null
+  cropRect.value = null
   reset()
 
   if (!selected) {
@@ -124,8 +156,13 @@ async function process() {
       throw new Error('Choose an image file before you run the tool.')
     }
 
+    // The crop runs in the browser, so only the chosen pixels leave the device.
+    const upload = cropEnabled.value && cropRect.value
+      ? await cropImageFile(file.value, cropRect.value)
+      : file.value
+
     const form = new FormData()
-    form.append('file', file.value)
+    form.append('file', upload, file.value.name)
     form.append('format', format.value)
     form.append('quality', String(quality.value))
 
@@ -153,7 +190,7 @@ async function process() {
     const response = await fetch('/api/image/process', { method: 'POST', body: form })
     const result = await readImageResponse(response, 'The image operation failed.', file.value.size)
 
-    inputBytes.value = result.inputBytes || file.value.size
+    inputBytes.value = file.value.size
     outputBytes.value = result.outputBytes
     outWidth.value = result.width
     outHeight.value = result.height
@@ -166,6 +203,7 @@ function handleClear() {
   file.value = null
   source.value = null
   outputBlob.value = null
+  cropRect.value = null
   inputBytes.value = null
   outputBytes.value = null
   outWidth.value = null
@@ -190,6 +228,26 @@ function handleClear() {
       <div class="grid gap-6 lg:grid-cols-2">
         <section class="space-y-4">
           <h2 class="text-sm font-medium text-highlighted">
+            Crop
+          </h2>
+          <UFormField
+            label="Crop the image"
+            hint="The crop runs in your browser. Only the chosen pixels go to the server."
+          >
+            <USwitch v-model="cropEnabled" />
+          </UFormField>
+          <UFormField
+            v-if="cropEnabled"
+            label="Crop ratio"
+          >
+            <USelect
+              v-model="cropAspectMode"
+              :items="cropAspectItems"
+              class="w-full"
+            />
+          </UFormField>
+
+          <h2 class="pt-2 text-sm font-medium text-highlighted">
             Size
           </h2>
           <UFormField label="Output size">
@@ -328,8 +386,19 @@ function handleClear() {
         </p>
         <p class="text-xs text-muted">
           {{ source.width ?? '—' }} × {{ source.height ?? '—' }} · {{ formatBytes(source.bytes) }}
+          <template v-if="cropEnabled && cropRect">
+            · crop {{ cropRect.width }} × {{ cropRect.height }}
+          </template>
         </p>
+        <ImageCropBox
+          v-if="cropEnabled"
+          v-model="cropRect"
+          :src="sourceUrl"
+          :aspect="cropAspect"
+          alt="Source image with a crop box"
+        />
         <img
+          v-else
           :src="sourceUrl"
           alt="Source image preview"
           class="max-h-80 w-full rounded bg-default object-contain"

@@ -18,6 +18,9 @@ test('serves the resizer and the converter as variant pages', async ({ page }) =
 
   await page.goto('/hub/image/converter')
   await expect(page.getByRole('heading', { name: 'Image Converter', level: 1 })).toBeVisible()
+
+  await page.goto('/hub/image/cropper')
+  await expect(page.getByRole('heading', { name: 'Image Cropper', level: 1 })).toBeVisible()
 })
 
 test('redirects the exif stripper to the metadata inspector', async ({ page }) => {
