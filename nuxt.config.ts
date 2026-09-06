@@ -89,10 +89,9 @@ const llmsSections = Object.entries(categoryLabels).map(([category, label]) => (
 
 export default defineNuxtConfig({
   modules: [
-    '@nuxt/eslint',
     '@nuxt/ui',
     '@nuxt/a11y',
-    // '@nuxt/hints',
+    '@nuxt/hints',
     '@nuxt/scripts',
     '@nuxtjs/seo',
     '@vueuse/nuxt',
@@ -183,15 +182,6 @@ export default defineNuxtConfig({
     'build:manifest': (manifest) => {
       for (const entry of Object.values(manifest)) {
         entry.dynamicImports = []
-      }
-    }
-  },
-
-  eslint: {
-    config: {
-      stylistic: {
-        commaDangle: 'never',
-        braceStyle: '1tbs'
       }
     }
   },

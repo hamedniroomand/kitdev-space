@@ -256,6 +256,19 @@ onMounted(revealActiveTool)
             />
             <span>Landing Page</span>
           </NuxtLink>
+          <a
+            href="https://github.com/hamedniroomand/kitdev-space"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="flex items-center gap-1 hover:text-highlighted transition-colors"
+            aria-label="KitDev Space source on GitHub"
+          >
+            <UIcon
+              name="i-simple-icons-github"
+              class="size-3.5"
+            />
+            <span>GitHub</span>
+          </a>
         </div>
       </aside>
 

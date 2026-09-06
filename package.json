@@ -1,6 +1,26 @@
 {
   "name": "kitdev-space",
   "private": true,
+  "description": "Developer tools that run in the browser. Convert, inspect, and clean data without an upload.",
+  "license": "MIT",
+  "author": "Hamed Niroomand",
+  "homepage": "https://kitdev.space",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hamedniroomand/kitdev-space.git"
+  },
+  "bugs": {
+    "url": "https://github.com/hamedniroomand/kitdev-space/issues"
+  },
+  "keywords": [
+    "developer-tools",
+    "nuxt",
+    "bun",
+    "json",
+    "sqlite",
+    "exif",
+    "privacy"
+  ],
   "type": "module",
   "scripts": {
     "build": "nuxt build",
@@ -38,7 +58,7 @@
     "@nuxt/ui": "^4.11.0",
     "@nuxtjs/seo": "5.3.14",
     "@resvg/resvg-js": "^2.6.2",
-    "@takumi-rs/core": "^2.13.6",
+    "@takumi-rs/core": "^2.13.7",
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
     "@vueuse/nuxt": "14.4.0",
@@ -62,9 +82,9 @@
     "yaml": "^2.9.0"
   },
   "devDependencies": {
+    "@antfu/eslint-config": "^9.5.1",
     "@commitlint/cli": "^21.2.2",
     "@commitlint/config-conventional": "^21.2.2",
-    "@nuxt/eslint": "^1.17.0",
     "@nuxt/test-utils": "^4.2.0",
     "@playwright/test": "^1.63.0",
     "@types/bun": "^1.4.1",

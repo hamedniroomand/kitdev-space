@@ -70,7 +70,7 @@ describe('rdap parser', () => {
   ]
 
   it('resolves the authoritative server of a domain from the bootstrap table', () => {
-    expect(resolveRdapBase('niroomand.dev', bootstrap)).toBe('https://pubapi.registry.google/rdap/')
+    expect(resolveRdapBase('example.dev', bootstrap)).toBe('https://pubapi.registry.google/rdap/')
     expect(resolveRdapBase('KitDev.Space.APP', bootstrap)).toBe('https://pubapi.registry.google/rdap/')
   })
 
