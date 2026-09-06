@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   categoryLabels,
   getAvailableTools,
+  getPrimaryTools,
   getToolById,
   getToolsByCategory,
   searchTools,
@@ -36,6 +37,29 @@ describe('tool registry', () => {
     const routes = tools.map(tool => tool.route)
     expect(new Set(ids).size).toBe(ids.length)
     expect(new Set(routes).size).toBe(routes.length)
+  })
+
+  it('points every variant to a parent in the same category', () => {
+    const variants = tools.filter(tool => tool.variantOf)
+    expect(variants.length).toBeGreaterThan(0)
+    for (const variant of variants) {
+      const parent = getToolById(variant.variantOf!)
+      expect(parent, variant.id).toBeDefined()
+      expect(parent?.variantOf).toBeUndefined()
+      expect(parent?.category).toBe(variant.category)
+    }
+  })
+
+  it('hides variants from the category lists and the primary count', () => {
+    expect(getToolsByCategory('crypto').some(tool => tool.id === 'uuid')).toBe(false)
+    expect(getToolsByCategory('crypto').some(tool => tool.id === 'generator')).toBe(true)
+    expect(getPrimaryTools().every(tool => !tool.variantOf)).toBe(true)
+    expect(getPrimaryTools().length).toBeLessThan(tools.length)
+  })
+
+  it('finds a variant by search', () => {
+    expect(searchTools('uuid').some(tool => tool.id === 'uuid')).toBe(true)
+    expect(getToolById('base64')?.route).toBe('/hub/dev/base64')
   })
 
   it('provides category labels', () => {

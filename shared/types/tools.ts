@@ -14,4 +14,10 @@ export interface Tool {
   clientOnly: boolean
   serverRequired: boolean
   status: ToolStatus
+  /**
+   * The id of the parent tool. A variant renders the component of its parent
+   * with a preset. It has its own route, title, and prose, so one search
+   * intent gets one URL. The sidebar and the category pages list the parent only.
+   */
+  variantOf?: string
 }

@@ -39,18 +39,15 @@ export const legacyRedirects: Record<string, string> = {
   '/network/redirect': '/hub/network/http-inspector',
 
   // Crypto tools
-  '/hub/crypto/uuid': '/hub/crypto/generator',
   '/hub/crypto/random-string': '/hub/crypto/generator',
-  '/hub/crypto/passphrase': '/hub/crypto/generator',
-  '/crypto/uuid': '/hub/crypto/generator',
-  '/crypto/passphrase': '/hub/crypto/generator',
 
-  // Encodings moved from Crypto Lab to Dev Lab and merged into one tool.
-  '/hub/crypto/base64': '/hub/dev/encoder',
+  // Encodings moved from Crypto Lab to Dev Lab. Base64 keeps its own page as a
+  // variant of the encoder. The other encodings merged into the encoder.
+  '/hub/crypto/base64': '/hub/dev/base64',
   '/hub/crypto/hex': '/hub/dev/encoder',
   '/hub/dev/html-url-codec': '/hub/dev/encoder',
   '/hub/dev/string-escape': '/hub/dev/encoder',
-  '/crypto/base64': '/hub/dev/encoder',
+  '/crypto/base64': '/hub/dev/base64',
   '/crypto/hex': '/hub/dev/encoder',
   '/dev/html-url-codec': '/hub/dev/encoder',
   '/dev/string-escape': '/hub/dev/encoder',
@@ -64,11 +61,7 @@ export const legacyRedirects: Record<string, string> = {
   // Image tools
   '/hub/image/exif-stripper': '/hub/image/metadata',
   '/image/exif-stripper': '/hub/image/metadata',
-  '/hub/image/converter': '/hub/image/studio',
-  '/hub/image/resizer': '/hub/image/studio',
   '/hub/image/transform': '/hub/image/studio',
-  '/image/converter': '/hub/image/studio',
-  '/image/resizer': '/hub/image/studio',
   '/image/transform': '/hub/image/studio',
   '/image/metadata': '/hub/image/metadata',
 
@@ -76,9 +69,7 @@ export const legacyRedirects: Record<string, string> = {
   '/dev/cron': '/hub/dev/cron',
   '/dev/semver': '/hub/dev/semver',
   '/dev/transpiler': '/hub/dev/transpiler',
-  '/dev/tar': '/hub/dev/tar',
-  '/hub/dev/svg-component': '/hub/dev/html-converter',
-  '/dev/svg-component': '/hub/dev/html-converter'
+  '/dev/tar': '/hub/dev/tar'
 }
 
 const legacyPrefixes = ['/data/', '/network/', '/crypto/', '/color/', '/image/', '/dev/']

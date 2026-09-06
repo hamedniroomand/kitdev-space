@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { ToolCategory } from '#shared/types/tools'
 
-const { tools, categoryLabels, getToolsByCategory } = useTools()
+const { categoryLabels, getPrimaryTools, getToolsByCategory } = useTools()
 const openSearch = inject<() => void>('openSearch', () => {})
 
 const categories: ToolCategory[] = ['data', 'network', 'crypto', 'color', 'image', 'dev']
@@ -203,7 +203,7 @@ useKitDevOgImage({
       </div>
 
       <p class="mt-16 text-center font-mono text-xs tracking-wide text-muted">
-        {{ tools.length }} tools ready in KitDev Space.
+        {{ getPrimaryTools().length }} tools ready in KitDev Space.
       </p>
     </UContainer>
   </div>

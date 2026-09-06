@@ -85,3 +85,20 @@ When two tools do one job, merge them and keep each old route as a redirect in
 `shared/utils/redirects.ts`. A name such as "exif stripper" or "image resizer" carries search
 traffic, so the route must continue to work. The prefix fallback covers `/<category>/*` only, so a
 move between labs needs an explicit `/hub/<old>` entry.
+
+## Variant routes
+
+A merged tool can hold more than one search intent. "uuid generator" and "passphrase generator"
+are two intents, and one page has one title. Give such an intent a variant entry in the registry:
+
+- Set `variantOf` to the id of the parent tool.
+- Give the variant its own route, name, description, and keywords. The name carries the query
+  words, such as "Base64 Encoder & Decoder".
+- Do not write new tool logic. The parent tool lives in a component with a `toolId` prop and
+  preset props, such as `EncoderTool`. The variant page renders that component with the preset
+  and fills the `docs` slot with prose that is specific to the intent.
+- Remove the old redirect for the route, so the URL serves the page.
+
+The sidebar, the category pages, and the tool count use `getToolsByCategory` and
+`getPrimaryTools`, which skip variants. The command palette, the search, the sitemap, and
+`llms.txt` list variants, because a user or a crawler can look for them by name.

@@ -21,17 +21,15 @@ describe('legacy redirects', () => {
     expect(resolveLegacyRedirect('/data/json-minifier')).toBe('/hub/data/json-formatter')
     expect(resolveLegacyRedirect('/hub/data/json-validator')).toBe('/hub/data/json-formatter')
     expect(resolveLegacyRedirect('/hub/data/json-minifier')).toBe('/hub/data/json-formatter')
-    expect(resolveLegacyRedirect('/crypto/uuid')).toBe('/hub/crypto/generator')
-    expect(resolveLegacyRedirect('/hub/crypto/uuid')).toBe('/hub/crypto/generator')
+    expect(resolveLegacyRedirect('/crypto/uuid')).toBe('/hub/crypto/uuid')
     expect(resolveLegacyRedirect('/hub/data/converters/json-json5')).toBe('/hub/data/json-formatter')
-    expect(resolveLegacyRedirect('/hub/crypto/passphrase')).toBe('/hub/crypto/generator')
-    expect(resolveLegacyRedirect('/hub/crypto/base64')).toBe('/hub/dev/encoder')
+    expect(resolveLegacyRedirect('/crypto/passphrase')).toBe('/hub/crypto/passphrase')
+    expect(resolveLegacyRedirect('/hub/crypto/base64')).toBe('/hub/dev/base64')
     expect(resolveLegacyRedirect('/hub/crypto/hex')).toBe('/hub/dev/encoder')
     expect(resolveLegacyRedirect('/hub/dev/html-url-codec')).toBe('/hub/dev/encoder')
     expect(resolveLegacyRedirect('/hub/dev/string-escape')).toBe('/hub/dev/encoder')
-    expect(resolveLegacyRedirect('/image/converter')).toBe('/hub/image/studio')
+    expect(resolveLegacyRedirect('/image/converter')).toBe('/hub/image/converter')
     expect(resolveLegacyRedirect('/hub/image/exif-stripper')).toBe('/hub/image/metadata')
-    expect(resolveLegacyRedirect('/hub/image/resizer')).toBe('/hub/image/studio')
     expect(resolveLegacyRedirect('/hub/image/transform')).toBe('/hub/image/studio')
     expect(resolveLegacyRedirect('/hub/network/http-headers')).toBe('/hub/network/http-inspector')
     expect(resolveLegacyRedirect('/hub/network/security-headers')).toBe('/hub/network/http-inspector')
@@ -50,6 +48,13 @@ describe('legacy redirects', () => {
   it('uses prefix fallback for unmapped legacy paths', () => {
     expect(resolveLegacyRedirect('/data/custom-tool')).toBe('/hub/data/custom-tool')
     expect(resolveLegacyRedirect('/image/custom-tool')).toBe('/hub/image/custom-tool')
+  })
+
+  it('keeps the variant routes as real pages', () => {
+    for (const route of ['/hub/crypto/uuid', '/hub/crypto/passphrase', '/hub/dev/base64', '/hub/image/resizer', '/hub/image/converter', '/hub/dev/svg-component']) {
+      expect(resolveLegacyRedirect(route)).toBeNull()
+      expect(legacyRedirects[route]).toBeUndefined()
+    }
   })
 
   it('returns null for non-legacy routes', () => {

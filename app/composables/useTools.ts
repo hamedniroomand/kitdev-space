@@ -1,6 +1,7 @@
 import {
   categoryLabels,
   getAvailableTools,
+  getPrimaryTools,
   getToolById,
   getToolsByCategory,
   tools
@@ -12,6 +13,7 @@ export function useTools() {
     categoryLabels,
     getToolById,
     getToolsByCategory,
-    getAvailableTools
+    getAvailableTools,
+    getPrimaryTools
   }
 }

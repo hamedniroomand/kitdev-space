@@ -883,6 +883,122 @@ export const tools: Tool[] = [
     clientOnly: true,
     serverRequired: false,
     status: 'available'
+  },
+
+  // Variant entries. A variant renders the component of its parent with a
+  // preset. It gives one search intent one URL, one title, and its own prose.
+  // The sidebar and the category pages list the parent only.
+  {
+    id: 'uuid',
+    slug: 'uuid',
+    name: 'UUID Generator',
+    description: 'Generate random UUID v4 and time-ordered UUID v7 values in the browser.',
+    category: 'crypto',
+    icon: 'i-lucide-fingerprint',
+    keywords: ['uuid', 'guid', 'uuidv4', 'uuidv7', 'unique id', 'ulid', 'nanoid'],
+    route: '/hub/crypto/uuid',
+    clientOnly: true,
+    serverRequired: false,
+    status: 'available',
+    variantOf: 'generator'
+  },
+  {
+    id: 'passphrase',
+    slug: 'passphrase',
+    name: 'Passphrase Generator',
+    description: 'Generate a diceware passphrase that is strong and easy to remember.',
+    category: 'crypto',
+    icon: 'i-lucide-key-round',
+    keywords: ['passphrase', 'diceware', 'password', 'words', 'memorable', 'xkcd'],
+    route: '/hub/crypto/passphrase',
+    clientOnly: true,
+    serverRequired: false,
+    status: 'available',
+    variantOf: 'generator'
+  },
+  {
+    id: 'base64',
+    slug: 'base64',
+    name: 'Base64 Encoder & Decoder',
+    description: 'Encode text to Base64, or decode Base64 to text. Supports the URL-safe alphabet.',
+    category: 'dev',
+    icon: 'i-lucide-binary',
+    keywords: ['base64', 'base64url', 'encode', 'decode', 'btoa', 'atob', 'data url'],
+    route: '/hub/dev/base64',
+    clientOnly: true,
+    serverRequired: false,
+    status: 'available',
+    variantOf: 'encoder'
+  },
+  {
+    id: 'url-encoder',
+    slug: 'url-encoder',
+    name: 'URL Encoder & Decoder',
+    description: 'Percent-encode text for a URL, or decode an encoded URL to text.',
+    category: 'dev',
+    icon: 'i-lucide-link',
+    keywords: ['url', 'percent', 'encode', 'decode', 'urlencode', 'query string', 'encodeURIComponent'],
+    route: '/hub/dev/url-encoder',
+    clientOnly: true,
+    serverRequired: false,
+    status: 'available',
+    variantOf: 'encoder'
+  },
+  {
+    id: 'image-resizer',
+    slug: 'resizer',
+    name: 'Image Resizer',
+    description: 'Resize an image to an exact width and height, or to a social media preset.',
+    category: 'image',
+    icon: 'i-lucide-scaling',
+    keywords: ['resize', 'image', 'width', 'height', 'scale', 'open graph', 'twitter banner', 'instagram'],
+    route: '/hub/image/resizer',
+    clientOnly: false,
+    serverRequired: true,
+    status: 'available',
+    variantOf: 'image-studio'
+  },
+  {
+    id: 'image-converter',
+    slug: 'converter',
+    name: 'Image Converter',
+    description: 'Convert an image to WebP, AVIF, JPEG, or PNG with a quality setting.',
+    category: 'image',
+    icon: 'i-lucide-image',
+    keywords: ['convert', 'png to webp', 'jpg to webp', 'jpeg to png', 'avif', 'webp', 'jpeg', 'png'],
+    route: '/hub/image/converter',
+    clientOnly: false,
+    serverRequired: true,
+    status: 'available',
+    variantOf: 'image-studio'
+  },
+  {
+    id: 'html-to-jsx',
+    slug: 'html-to-jsx',
+    name: 'HTML to JSX Converter',
+    description: 'Convert HTML markup into React JSX with renamed attributes and a style object.',
+    category: 'dev',
+    icon: 'i-lucide-code',
+    keywords: ['html', 'jsx', 'tsx', 'react', 'className', 'convert', 'component'],
+    route: '/hub/dev/html-to-jsx',
+    clientOnly: true,
+    serverRequired: false,
+    status: 'available',
+    variantOf: 'html-converter'
+  },
+  {
+    id: 'svg-component',
+    slug: 'svg-component',
+    name: 'SVG to React Component',
+    description: 'Convert an SVG icon into a React component that takes props.',
+    category: 'dev',
+    icon: 'i-lucide-shapes',
+    keywords: ['svg', 'react', 'component', 'icon', 'jsx', 'svgr', 'convert'],
+    route: '/hub/dev/svg-component',
+    clientOnly: true,
+    serverRequired: false,
+    status: 'available',
+    variantOf: 'html-converter'
   }
 ]
 
@@ -890,8 +1006,13 @@ export function getToolById(id: string): Tool | undefined {
   return tools.find(tool => tool.id === id)
 }
 
+/** Every tool that is not a variant. Use it for counts and lists in the UI. */
+export function getPrimaryTools(): Tool[] {
+  return tools.filter(tool => !tool.variantOf)
+}
+
 export function getToolsByCategory(category: ToolCategory): Tool[] {
-  return tools.filter(tool => tool.category === category)
+  return tools.filter(tool => tool.category === category && !tool.variantOf)
 }
 
 export function getAvailableTools(): Tool[] {
