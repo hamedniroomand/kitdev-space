@@ -123,7 +123,7 @@ function handleClear() {
           class="mt-8"
           :items="[
             { label: 'JSON Formatter', to: '/hub/data/json-formatter' },
-            { label: 'Random String Generator', to: '/hub/crypto/random-string' }
+            { label: 'ID & Secret Generator', to: '/hub/crypto/generator' }
           ]"
         />
       </ToolDocs>

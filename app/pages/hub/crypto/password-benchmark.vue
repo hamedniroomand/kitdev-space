@@ -222,7 +222,7 @@ defineShortcuts({
         <RelatedTools
           :items="[
             { label: 'Hash Generator', to: '/hub/crypto/hash-generator' },
-            { label: 'Random String Generator', to: '/hub/crypto/random-string' }
+            { label: 'ID & Secret Generator', to: '/hub/crypto/generator' }
           ]"
         />
       </ToolDocs>

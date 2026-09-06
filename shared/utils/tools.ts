@@ -289,27 +289,17 @@ export const tools: Tool[] = [
     status: 'available'
   },
   {
-    id: 'uuid',
-    slug: 'uuid',
-    name: 'UUID & ID Generator',
-    description: 'Generate UUIDv4, UUIDv7, ULID, and NanoID values.',
+    id: 'generator',
+    slug: 'generator',
+    name: 'ID & Secret Generator',
+    description: 'Generate UUIDs, ULIDs, NanoIDs, random strings, and passphrases.',
     category: 'crypto',
-    icon: 'i-lucide-fingerprint',
-    keywords: ['uuid', 'guid', 'random', 'id', 'uuidv7', 'ulid', 'nanoid'],
-    route: '/hub/crypto/uuid',
-    clientOnly: true,
-    serverRequired: false,
-    status: 'available'
-  },
-  {
-    id: 'random-string',
-    slug: 'random-string',
-    name: 'Random String Generator',
-    description: 'Generate random strings.',
-    category: 'crypto',
-    icon: 'i-lucide-shuffle',
-    keywords: ['random', 'string', 'token', 'password'],
-    route: '/hub/crypto/random-string',
+    icon: 'i-lucide-dices',
+    keywords: [
+      'uuid', 'uuidv4', 'uuidv7', 'ulid', 'nanoid', 'id', 'guid', 'random', 'string',
+      'token', 'api key', 'passphrase', 'diceware', 'password', 'secret', 'generator'
+    ],
+    route: '/hub/crypto/generator',
     clientOnly: true,
     serverRequired: false,
     status: 'available'
@@ -336,19 +326,6 @@ export const tools: Tool[] = [
     icon: 'i-lucide-shield-check',
     keywords: ['jwt', 'token', 'decode', 'hmac', 'hs256', 'exp'],
     route: '/hub/crypto/jwt',
-    clientOnly: true,
-    serverRequired: false,
-    status: 'available'
-  },
-  {
-    id: 'passphrase',
-    slug: 'passphrase',
-    name: 'Passphrase Generator',
-    description: 'Generate Diceware passphrases with the EFF large word list.',
-    category: 'crypto',
-    icon: 'i-lucide-dices',
-    keywords: ['diceware', 'passphrase', 'password', 'eff', 'words'],
-    route: '/hub/crypto/passphrase',
     clientOnly: true,
     serverRequired: false,
     status: 'available'

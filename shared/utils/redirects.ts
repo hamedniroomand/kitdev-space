@@ -38,7 +38,11 @@ export const legacyRedirects: Record<string, string> = {
   '/network/redirect': '/hub/network/http-inspector',
 
   // Crypto tools
-  '/crypto/uuid': '/hub/crypto/uuid',
+  '/hub/crypto/uuid': '/hub/crypto/generator',
+  '/hub/crypto/random-string': '/hub/crypto/generator',
+  '/hub/crypto/passphrase': '/hub/crypto/generator',
+  '/crypto/uuid': '/hub/crypto/generator',
+  '/crypto/passphrase': '/hub/crypto/generator',
   '/hub/crypto/base64': '/hub/dev/encoder',
   '/hub/crypto/hex': '/hub/dev/encoder',
   '/hub/dev/html-url-codec': '/hub/dev/encoder',
@@ -47,7 +51,7 @@ export const legacyRedirects: Record<string, string> = {
   '/crypto/hex': '/hub/dev/encoder',
   '/dev/html-url-codec': '/hub/dev/encoder',
   '/dev/string-escape': '/hub/dev/encoder',
-  '/crypto/random-string': '/hub/crypto/random-string',
+  '/crypto/random-string': '/hub/crypto/generator',
   '/crypto/password-benchmark': '/hub/crypto/password-benchmark',
 
   // Color tools

@@ -136,7 +136,7 @@ async function copyValue(val: string, key: string) {
           class="mt-8"
           :items="[
             { label: 'Cron Visualizer', to: '/hub/dev/cron' },
-            { label: 'UUID Generator', to: '/hub/crypto/uuid' }
+            { label: 'ID & Secret Generator', to: '/hub/crypto/generator' }
           ]"
         />
       </ToolDocs>
