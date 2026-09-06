@@ -659,6 +659,58 @@ export const tools: Tool[] = [
     clientOnly: true,
     serverRequired: false,
     status: 'available'
+  },
+  {
+    id: 'chmod',
+    slug: 'chmod',
+    name: 'Chmod Calculator',
+    description: 'Convert between octal numbers and symbolic file permissions.',
+    category: 'dev',
+    icon: 'i-lucide-shield-check',
+    keywords: ['chmod', 'permissions', 'linux', 'unix', 'octal', 'symbolic'],
+    route: '/hub/dev/chmod',
+    clientOnly: true,
+    serverRequired: false,
+    status: 'available'
+  },
+  {
+    id: 'markdown-table',
+    slug: 'markdown-table',
+    name: 'Markdown Table Generator',
+    description: 'Build, format, and align Markdown tables with real-time output.',
+    category: 'dev',
+    icon: 'i-lucide-table',
+    keywords: ['markdown', 'table', 'generator', 'grid', 'columns', 'align'],
+    route: '/hub/dev/markdown-table',
+    clientOnly: true,
+    serverRequired: false,
+    status: 'available'
+  },
+  {
+    id: 'string-escape',
+    slug: 'string-escape',
+    name: 'String Escape Tool',
+    description: 'Escape and unescape special characters for various languages.',
+    category: 'dev',
+    icon: 'i-lucide-quote',
+    keywords: ['escape', 'unescape', 'string', 'json', 'javascript', 'sql', 'shell', 'html'],
+    route: '/hub/dev/string-escape',
+    clientOnly: true,
+    serverRequired: false,
+    status: 'available'
+  },
+  {
+    id: 'glob-tester',
+    slug: 'glob-tester',
+    name: 'Glob Tester',
+    description: 'Test glob patterns against a list of file paths in real-time.',
+    category: 'dev',
+    icon: 'i-lucide-file-search',
+    keywords: ['glob', 'pattern', 'regex', 'match', 'wildcard', 'path'],
+    route: '/hub/dev/glob-tester',
+    clientOnly: true,
+    serverRequired: false,
+    status: 'available'
   }
 ]
 
