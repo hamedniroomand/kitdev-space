@@ -13,6 +13,9 @@ const algorithmItems = [
   { label: 'SHA-256', value: 'sha256' },
   { label: 'SHA-384', value: 'sha384' },
   { label: 'SHA-512', value: 'sha512' },
+  { label: 'xxHash64 (Bun Fast Hash)', value: 'xxhash64' },
+  { label: 'wyhash (Bun Fast Hash)', value: 'wyhash' },
+  { label: 'CRC32 (Checksum)', value: 'crc32' },
   { label: 'SHA-1 (Legacy)', value: 'sha1' },
   { label: 'MD5 (Legacy)', value: 'md5' }
 ]
