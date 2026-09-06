@@ -1,60 +1,53 @@
 <script setup lang="ts">
+import type { TarEntry } from '#shared/utils/dev/tar'
+import { listTarEntries, readTarEntry } from '#shared/utils/dev/tar'
 import { formatBytes } from '#shared/utils/format'
-
-interface TarEntry {
-  path: string
-  size: number
-  type: string
-}
 
 const file = ref<File | null>(null)
 const entries = ref<TarEntry[]>([])
 const archiveBytes = ref<number | null>(null)
+// The archive is read once and kept, so a download needs no second read.
+const archive = shallowRef<Uint8Array | null>(null)
 const { status, error, run, reset } = useTool<string>()
 const { downloadBlob } = useDownload()
 const toast = useToast()
 
 useToolSeo('tar-explorer')
 
+const fileCount = computed(() => entries.value.filter(entry => entry.type === 'file').length)
+
+watch(file, () => {
+  entries.value = []
+  archiveBytes.value = null
+  archive.value = null
+  reset()
+})
+
 async function inspect() {
   entries.value = []
   archiveBytes.value = null
+
   await run(async () => {
     if (!file.value) {
       throw new Error('Choose a tar or tar.gz file before you run the tool.')
     }
-    const form = new FormData()
-    form.append('file', file.value)
-    const data = await $fetch<{
-      result: { entries: TarEntry[], bytes: number }
-    }>('/api/dev/tar/list', {
-      method: 'POST',
-      body: form
-    })
-    entries.value = data.result.entries
-    archiveBytes.value = data.result.bytes
-    return `${data.result.entries.length} entries`
+
+    const bytes = new Uint8Array(await file.value.arrayBuffer())
+    entries.value = listTarEntries(bytes)
+    archive.value = bytes
+    archiveBytes.value = bytes.byteLength
+    return `${entries.value.length} entries`
   }, 'The archive list failed.')
 }
 
-async function downloadEntry(path: string) {
-  if (!file.value) {
+function downloadEntry(path: string) {
+  if (!archive.value) {
     return
   }
+
   try {
-    const form = new FormData()
-    form.append('file', file.value)
-    form.append('path', path)
-    const response = await fetch('/api/dev/tar/entry', {
-      method: 'POST',
-      body: form
-    })
-    if (!response.ok) {
-      const payload = await response.json().catch(() => null) as { message?: string, statusMessage?: string } | null
-      throw new Error(payload?.message || payload?.statusMessage || 'Download failed.')
-    }
-    const blob = await response.blob()
-    downloadBlob(path.split('/').pop() || 'entry.bin', blob)
+    const content = readTarEntry(archive.value, path)
+    downloadBlob(path.split('/').pop() || 'entry.bin', new Blob([content.slice()]))
     toast.add({ title: 'Downloaded', color: 'success' })
   } catch (cause) {
     const message = cause instanceof Error ? cause.message : 'Download failed.'
@@ -66,6 +59,7 @@ function handleClear() {
   file.value = null
   entries.value = []
   archiveBytes.value = null
+  archive.value = null
   reset()
 }
 
@@ -82,11 +76,11 @@ defineShortcuts({
 <template>
   <ToolPage>
     <UAlert
-      color="info"
+      color="success"
       variant="subtle"
-      icon="i-lucide-server"
-      title="Processed with Bun"
-      description="This tool uses Bun.Archive on the server. Archives are not written to disk."
+      icon="i-lucide-lock"
+      title="The archive stays in your browser"
+      description="This tool reads the archive on your device. The file is not uploaded."
     />
 
     <ImageDropzone
@@ -122,7 +116,7 @@ defineShortcuts({
       v-if="archiveBytes != null"
       class="text-sm text-muted"
     >
-      Archive size {{ formatBytes(archiveBytes) }} · {{ entries.length }} files
+      Archive size {{ formatBytes(archiveBytes) }} · {{ fileCount }} files · {{ entries.length }} entries
     </p>
 
     <div
@@ -153,10 +147,11 @@ defineShortcuts({
               {{ entry.path }}
             </td>
             <td class="px-3 py-2 text-muted">
-              {{ formatBytes(entry.size) }}
+              {{ entry.type === 'directory' ? '—' : formatBytes(entry.size) }}
             </td>
             <td class="px-3 py-2">
               <UButton
+                v-if="entry.type === 'file'"
                 size="xs"
                 color="neutral"
                 variant="soft"
@@ -164,6 +159,10 @@ defineShortcuts({
               >
                 Download
               </UButton>
+              <span
+                v-else
+                class="text-muted"
+              >{{ entry.type }}</span>
             </td>
           </tr>
         </tbody>
@@ -172,9 +171,20 @@ defineShortcuts({
 
     <template #docs>
       <ToolDocs title="About tar archives">
-        <p class="text-sm leading-relaxed text-muted">
-          Use this tool to inspect .tar and .tar.gz files without extracting the full archive to disk.
-        </p>
+        <div class="space-y-4 text-muted">
+          <p>
+            Use this tool to look in a .tar or .tar.gz file without extraction. It lists each entry
+            with the path, the type, and the size. You can download one entry.
+          </p>
+          <p>
+            The tool reads the archive in your browser. It removes the gzip layer, then walks the
+            512-byte header blocks. It reads the long path forms of GNU tar and of bsdtar, so a deep
+            path is correct.
+          </p>
+          <p>
+            Choose a file of 25 MB or smaller. Then select Inspect.
+          </p>
+        </div>
         <RelatedTools
           :items="[
             { label: 'Semver Calculator', to: '/hub/dev/semver' },

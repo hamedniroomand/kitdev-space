@@ -760,13 +760,13 @@ export const tools: Tool[] = [
     id: 'tar-explorer',
     slug: 'tar',
     name: 'Tar Explorer',
-    description: 'Inspect tar and tar.gz archives in memory.',
+    description: 'List and extract the entries of a tar or tar.gz archive in the browser.',
     category: 'dev',
     icon: 'i-lucide-folder-archive',
-    keywords: ['tar', 'gzip', 'archive', 'tarball'],
+    keywords: ['tar', 'gzip', 'archive', 'tarball', 'extract', 'untar', 'tgz'],
     route: '/hub/dev/tar',
-    clientOnly: false,
-    serverRequired: true,
+    clientOnly: true,
+    serverRequired: false,
     status: 'available'
   },
   {
