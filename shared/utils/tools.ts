@@ -627,27 +627,17 @@ export const tools: Tool[] = [
     status: 'available'
   },
   {
-    id: 'image-converter',
-    slug: 'converter',
-    name: 'Image Converter',
-    description: 'Convert images to WebP, AVIF, JPEG, or PNG.',
+    id: 'image-studio',
+    slug: 'studio',
+    name: 'Image Studio',
+    description: 'Resize, rotate, mirror, and convert an image in one pass.',
     category: 'image',
     icon: 'i-lucide-image',
-    keywords: ['image', 'webp', 'avif', 'convert', 'compress'],
-    route: '/hub/image/converter',
-    clientOnly: false,
-    serverRequired: true,
-    status: 'available'
-  },
-  {
-    id: 'image-resizer',
-    slug: 'resizer',
-    name: 'Smart Resizer',
-    description: 'Resize images with social presets.',
-    category: 'image',
-    icon: 'i-lucide-scaling',
-    keywords: ['image', 'resize', 'thumbnail', 'opengraph', 'favicon'],
-    route: '/hub/image/resizer',
+    keywords: [
+      'image', 'convert', 'converter', 'resize', 'resizer', 'rotate', 'flip', 'mirror',
+      'grayscale', 'webp', 'avif', 'jpeg', 'png', 'compress', 'optimize', 'transform'
+    ],
+    route: '/hub/image/studio',
     clientOnly: false,
     serverRequired: true,
     status: 'available'
@@ -663,19 +653,6 @@ export const tools: Tool[] = [
     route: '/hub/image/metadata',
     clientOnly: true,
     serverRequired: false,
-    status: 'available'
-  },
-  {
-    id: 'image-transform',
-    slug: 'transform',
-    name: 'Orientation & Grayscale',
-    description: 'Rotate, mirror, and convert images to grayscale.',
-    category: 'image',
-    icon: 'i-lucide-flip-horizontal-2',
-    keywords: ['image', 'rotate', 'flip', 'grayscale', 'orientation'],
-    route: '/hub/image/transform',
-    clientOnly: false,
-    serverRequired: true,
     status: 'available'
   },
   {

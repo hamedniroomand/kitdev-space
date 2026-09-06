@@ -258,5 +258,29 @@ function downloadPng() {
         </div>
       </div>
     </div>
+
+    <template #docs>
+      <ToolDocs title="About placeholder images">
+        <div class="space-y-4 text-muted">
+          <p>
+            This tool makes a placeholder image at any size, in a solid color or a gradient, with your own text. Use it in a mockup, a test fixture, or a demo.
+          </p>
+          <p>
+            A placeholder that shows its own size helps you find a layout bug. When the image is 1200 by 630, you see at once whether the container crops it.
+          </p>
+          <p>
+            The image is made in your browser, so it works with no network and it needs no external placeholder service.
+          </p>
+        </div>
+        <RelatedTools
+          class="mt-8"
+          :items="[
+            { label: 'Image Studio', to: '/hub/image/studio' },
+            { label: 'Image to Base64', to: '/hub/image/base64' },
+            { label: 'OpenGraph Preview', to: '/hub/network/og-preview' }
+          ]"
+        />
+      </ToolDocs>
+    </template>
   </ToolPage>
 </template>

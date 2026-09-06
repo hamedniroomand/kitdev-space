@@ -116,22 +116,6 @@ export async function getImageMetadata(input: Uint8Array): Promise<ImageMetadata
   }
 }
 
-export async function convertImage(
-  input: Uint8Array,
-  opts: { format: ImageEncodeFormat, quality?: number }
-): Promise<ImageResult> {
-  try {
-    const quality = clampQuality(opts.quality)
-    const img = applyFormat(createPipeline(input), opts.format, quality)
-    return await finish(img, opts.format)
-  } catch (cause) {
-    throw mapImageCause(
-      cause,
-      'The image operation failed.\n\nCheck the file and try again.'
-    )
-  }
-}
-
 const SVG_SCALES = new Set([1, 2, 4])
 
 export async function convertSvgAtScale(
@@ -162,72 +146,78 @@ export async function convertSvgAtScale(
   }
 }
 
-export async function resizeImage(
-  input: Uint8Array,
-  opts: {
-    width: number
-    height: number
-    fit: ImageFit
-    withoutEnlargement?: boolean
-    filter?: ImageFilter
-    format?: ImageEncodeFormat
-    quality?: number
-  }
-): Promise<ImageResult> {
-  if (!Number.isInteger(opts.width) || opts.width < 1 || opts.width > 8192) {
-    throw new ImageError('Width must be an integer from 1 to 8192.')
-  }
-  if (!Number.isInteger(opts.height) || opts.height < 1 || opts.height > 8192) {
-    throw new ImageError('Height must be an integer from 1 to 8192.')
-  }
-
-  const format = opts.format ?? 'webp'
-  const quality = clampQuality(opts.quality)
-
-  const bytes = isSvgBytes(input)
-    ? rasterizeSvg(input, { width: opts.width, height: opts.height })
-    : input
-
-  let img = new Bun.Image(bytes, { maxPixels: MAX_PIXELS, autoOrient: true }).resize(
-    opts.width,
-    opts.height,
-    {
-      fit: opts.fit,
-      withoutEnlargement: opts.withoutEnlargement ?? false,
-      filter: opts.filter ?? 'lanczos3'
-    }
-  )
-  img = applyFormat(img, format, quality)
-  return finish(img, format)
+export interface ImageProcessOptions {
+  width?: number
+  height?: number
+  fit?: ImageFit
+  withoutEnlargement?: boolean
+  filter?: ImageFilter
+  rotate?: 90 | 180 | 270
+  flip?: boolean
+  flop?: boolean
+  grayscale?: boolean
+  format?: ImageEncodeFormat
+  quality?: number
 }
 
-export async function transformImage(
+/**
+ * Runs every image operation in one pass, then encodes once.
+ *
+ * The order is rotate, mirror, resize, grayscale, encode. Rotation comes first,
+ * so the width and the height apply to the final image.
+ */
+export async function processImage(
   input: Uint8Array,
-  opts: {
-    rotate?: 90 | 180 | 270
-    flip?: boolean
-    flop?: boolean
-    grayscale?: boolean
-    format?: ImageEncodeFormat
-    quality?: number
-  }
+  opts: ImageProcessOptions
 ): Promise<ImageResult> {
   const format = opts.format ?? 'webp'
   const quality = clampQuality(opts.quality)
-  let img = createPipeline(input)
+  const resizes = opts.width != null && opts.height != null
 
-  if (opts.rotate) {
-    img = img.rotate(opts.rotate)
-  }
-  if (opts.flip) {
-    img = img.flip()
-  }
-  if (opts.flop) {
-    img = img.flop()
-  }
-  if (opts.grayscale) {
-    img = img.modulate({ saturation: 0 })
+  if (resizes) {
+    if (!Number.isInteger(opts.width) || opts.width! < 1 || opts.width! > 8192) {
+      throw new ImageError('Width must be an integer from 1 to 8192.')
+    }
+    if (!Number.isInteger(opts.height) || opts.height! < 1 || opts.height! > 8192) {
+      throw new ImageError('Height must be an integer from 1 to 8192.')
+    }
   }
 
-  return finish(applyFormat(img, format, quality), format)
+  try {
+    // An SVG has no pixels, so rasterize it at the size that the user asked for.
+    const bytes = isSvgBytes(input)
+      ? (resizes
+          ? rasterizeSvg(input, { width: opts.width, height: opts.height })
+          : rasterizeSvg(input))
+      : input
+
+    let img = new Bun.Image(bytes, { maxPixels: MAX_PIXELS, autoOrient: true })
+
+    if (opts.rotate) {
+      img = img.rotate(opts.rotate)
+    }
+    if (opts.flip) {
+      img = img.flip()
+    }
+    if (opts.flop) {
+      img = img.flop()
+    }
+    if (resizes) {
+      img = img.resize(opts.width!, opts.height!, {
+        fit: opts.fit ?? 'inside',
+        withoutEnlargement: opts.withoutEnlargement ?? false,
+        filter: opts.filter ?? 'lanczos3'
+      })
+    }
+    if (opts.grayscale) {
+      img = img.modulate({ saturation: 0 })
+    }
+
+    return await finish(applyFormat(img, format, quality), format)
+  } catch (cause) {
+    throw mapImageCause(
+      cause,
+      'The image operation failed.\n\nCheck the file and try again.'
+    )
+  }
 }

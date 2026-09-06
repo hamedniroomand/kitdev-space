@@ -243,8 +243,7 @@ defineShortcuts({
         </p>
         <RelatedTools
           :items="[
-            { label: 'Image Converter', to: '/hub/image/converter' },
-            { label: 'Smart Resizer', to: '/hub/image/resizer' }
+            { label: 'Image Studio', to: '/hub/image/studio' }
           ]"
         />
       </ToolDocs>

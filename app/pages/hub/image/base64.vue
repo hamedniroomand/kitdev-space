@@ -249,5 +249,29 @@ function handleDownloadDecoded() {
         </div>
       </div>
     </div>
+
+    <template #docs>
+      <ToolDocs title="About Base64 images">
+        <div class="space-y-4 text-muted">
+          <p>
+            This tool turns an image into a data URI, and a data URI back into an image. A data URI holds the image inside the text, so a CSS file or an HTML file needs no second request.
+          </p>
+          <p>
+            Base64 makes the data about 33 percent larger. Use it for a small icon or a placeholder only. A large image is faster as a normal file, because a browser can cache it and load it in parallel.
+          </p>
+          <p>
+            An email template is the common good use, because many mail clients block a linked image but show an inline one.
+          </p>
+        </div>
+        <RelatedTools
+          class="mt-8"
+          :items="[
+            { label: 'Image Studio', to: '/hub/image/studio' },
+            { label: 'Placeholder Image Generator', to: '/hub/image/placeholder' },
+            { label: 'Encoder & Escaper', to: '/hub/dev/encoder' }
+          ]"
+        />
+      </ToolDocs>
+    </template>
   </ToolPage>
 </template>

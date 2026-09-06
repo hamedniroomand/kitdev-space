@@ -298,5 +298,29 @@ function handleReset() {
         </div>
       </div>
     </div>
+
+    <template #docs>
+      <ToolDocs title="About favicon sets">
+        <div class="space-y-4 text-muted">
+          <p>
+            This tool makes every favicon size from one image: the PNG sizes for a browser and a device, a multi-resolution ICO file, a web manifest, and the HTML tags. All of it arrives in one ZIP file.
+          </p>
+          <p>
+            A browser, an iOS home screen, an Android launcher, and a Windows tile each ask for a different size. One 32 by 32 image is not enough, and a scaled large image looks soft at a small size.
+          </p>
+          <p>
+            Use a square source image of 512 pixels or more. A simple shape reads better than a detailed one, because the icon is often shown at 16 pixels.
+          </p>
+        </div>
+        <RelatedTools
+          class="mt-8"
+          :items="[
+            { label: 'Image Studio', to: '/hub/image/studio' },
+            { label: 'SVG to PNG / WebP', to: '/hub/image/svg-converter' },
+            { label: 'Placeholder Image Generator', to: '/hub/image/placeholder' }
+          ]"
+        />
+      </ToolDocs>
+    </template>
   </ToolPage>
 </template>

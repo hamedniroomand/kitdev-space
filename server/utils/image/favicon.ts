@@ -1,5 +1,5 @@
 import { strToU8, zipSync } from 'fflate'
-import { resizeImage } from './pipeline'
+import { processImage } from './pipeline'
 
 export interface FaviconOptions {
   appName?: string
@@ -121,7 +121,7 @@ export async function generateFaviconPackage(
   const renderedImages: { width: number, height: number, bytes: Uint8Array }[] = []
 
   for (const { name, size } of sizes) {
-    const res = await resizeImage(input, {
+    const res = await processImage(input, {
       width: size,
       height: size,
       fit: 'inside',

@@ -51,9 +51,12 @@ export const legacyRedirects: Record<string, string> = {
   // Image tools
   '/hub/image/exif-stripper': '/hub/image/metadata',
   '/image/exif-stripper': '/hub/image/metadata',
-  '/image/converter': '/hub/image/converter',
-  '/image/resizer': '/hub/image/resizer',
-  '/image/transform': '/hub/image/transform',
+  '/hub/image/converter': '/hub/image/studio',
+  '/hub/image/resizer': '/hub/image/studio',
+  '/hub/image/transform': '/hub/image/studio',
+  '/image/converter': '/hub/image/studio',
+  '/image/resizer': '/hub/image/studio',
+  '/image/transform': '/hub/image/studio',
   '/image/metadata': '/hub/image/metadata',
 
   // Dev tools

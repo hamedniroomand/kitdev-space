@@ -27,12 +27,12 @@ test('hub persistent sidebar allows searching and switching tools', async ({ pag
 
   // Filter tools by name
   await page.getByPlaceholder('Search tools...').first().fill('UUID')
-  await expect(page.getByRole('link', { name: /UUID & ID Generator/ }).first()).toBeVisible()
+  await expect(page.getByRole('link', { name: /ID & Secret Generator/ }).first()).toBeVisible()
 
   // Switch tool via sidebar
-  await page.getByRole('link', { name: /UUID & ID Generator/ }).first().click()
-  await expect(page).toHaveURL(/\/hub\/crypto\/uuid/)
-  await expect(page.getByRole('heading', { name: 'ID Generator' })).toBeVisible()
+  await page.getByRole('link', { name: /ID & Secret Generator/ }).first().click()
+  await expect(page).toHaveURL(/\/hub\/crypto\/generator/)
+  await expect(page.getByRole('heading', { name: 'ID & Secret Generator', level: 1 })).toBeVisible()
 
   // Return to landing page
   await page.getByRole('link', { name: 'Landing Page' }).first().click()
@@ -101,8 +101,8 @@ test('clicking on a page from the sidebar scrolls content area to top', async ({
   expect(scrolledTop).toBeGreaterThan(0)
 
   // Click on another tool from the sidebar
-  await page.getByRole('link', { name: /UUID & ID Generator/ }).first().click()
-  await expect(page).toHaveURL(/\/hub\/crypto\/uuid/)
+  await page.getByRole('link', { name: /ID & Secret Generator/ }).first().click()
+  await expect(page).toHaveURL(/\/hub\/crypto\/generator/)
 
   // Content area must be scrolled back to top
   const resetTop = await main.evaluate(el => el.scrollTop)
