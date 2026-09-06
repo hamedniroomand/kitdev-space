@@ -336,6 +336,32 @@ export const tools: Tool[] = [
     status: 'available'
   },
   {
+    id: 'hmac',
+    slug: 'hmac',
+    name: 'HMAC Generator',
+    description: 'Sign messages using secret keys and Hash-based Message Authentication Codes.',
+    category: 'crypto',
+    icon: 'i-lucide-key',
+    keywords: ['hmac', 'sha256', 'sha512', 'sign', 'hash', 'signature', 'mac'],
+    route: '/hub/crypto/hmac',
+    clientOnly: true,
+    serverRequired: false,
+    status: 'available'
+  },
+  {
+    id: 'totp',
+    slug: 'totp',
+    name: 'TOTP 2FA Generator',
+    description: 'Generate Time-based One-Time Passwords from Base32 secrets or otpauth URIs.',
+    category: 'crypto',
+    icon: 'i-lucide-clock',
+    keywords: ['totp', '2fa', 'otp', 'authenticator', 'two factor', 'security', 'time-based'],
+    route: '/hub/crypto/totp',
+    clientOnly: true,
+    serverRequired: false,
+    status: 'available'
+  },
+  {
     id: 'color-converter',
     slug: 'converter',
     name: 'Color Converter',
@@ -487,6 +513,45 @@ export const tools: Tool[] = [
     icon: 'i-lucide-share-2',
     keywords: ['opengraph', 'og', 'twitter', 'meta', 'social', 'preview'],
     route: '/hub/network/og-preview',
+    clientOnly: false,
+    serverRequired: true,
+    status: 'available'
+  },
+  {
+    id: 'cidr',
+    slug: 'cidr',
+    name: 'CIDR Subnet Calculator',
+    description: 'Calculate IPv4 subnet masks, network addresses, broadcast IPs, and usable host counts.',
+    category: 'network',
+    icon: 'i-lucide-network',
+    keywords: ['cidr', 'subnet', 'ip', 'network', 'mask', 'broadcast', 'hosts'],
+    route: '/hub/network/cidr',
+    clientOnly: true,
+    serverRequired: false,
+    status: 'available'
+  },
+  {
+    id: 'user-agent',
+    slug: 'user-agent',
+    name: 'User Agent Parser',
+    description: 'Parse User Agent strings into browser, operating system, and device details.',
+    category: 'network',
+    icon: 'i-lucide-laptop',
+    keywords: ['user agent', 'ua', 'browser', 'os', 'device', 'bot', 'parse'],
+    route: '/hub/network/user-agent',
+    clientOnly: true,
+    serverRequired: false,
+    status: 'available'
+  },
+  {
+    id: 'ip-info',
+    slug: 'ip-info',
+    name: 'IP Address Info',
+    description: 'Inspect public IP addresses, reverse DNS hostnames, and network classifications.',
+    category: 'network',
+    icon: 'i-lucide-globe',
+    keywords: ['ip', 'my ip', 'public ip', 'dns', 'ptr', 'reverse dns', 'address'],
+    route: '/hub/network/ip-info',
     clientOnly: false,
     serverRequired: true,
     status: 'available'

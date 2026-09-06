@@ -7,7 +7,6 @@ type ConversionMode = 'env-to-json' | 'json-to-env'
 
 const mode = ref<ConversionMode>('env-to-json')
 const input = ref('PORT=3000\nNODE_ENV=production\n# Database connection\nDB_HOST=localhost\nDB_PORT=5432\nAPI_KEY="secret-key-value"')
-const parseError = ref<string | null>(null)
 
 const { copy, label, color, icon } = useCopyFeedback()
 
@@ -70,7 +69,6 @@ function handleLoadSample() {
 
 function handleClear() {
   input.value = ''
-  parseError.value = null
 }
 
 function handleCopy() {
