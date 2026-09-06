@@ -1,8 +1,6 @@
 <template>
   <ConverterPage
     tool-id="json-yaml"
-    title="JSON ↔ YAML"
-    description="Convert between JSON and YAML."
     :formats="[
       { label: 'JSON', value: 'json' },
       { label: 'YAML', value: 'yaml' }

@@ -44,18 +44,10 @@ function applyPreset(val: string) {
 function handleCopy(text: string, key: string) {
   copy(text, key)
 }
-
-useSeoMeta({
-  title: 'Number Base Converter — KitDev Space',
-  description: 'Convert numbers between decimal, hexadecimal, binary, and octal with BigInt support.'
-})
 </script>
 
 <template>
-  <ToolPage
-    title="Number Base Converter"
-    description="Convert numbers across binary, octal, decimal, and hexadecimal formats in real-time."
-  >
+  <ToolPage>
     <div class="space-y-6">
       <!-- Error notice -->
       <ToolError

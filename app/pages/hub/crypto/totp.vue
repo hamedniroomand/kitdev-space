@@ -90,18 +90,10 @@ function handleClear() {
   code.value = ''
   errorMessage.value = null
 }
-
-useSeoMeta({
-  title: 'TOTP 2FA Generator — KitDev Space',
-  description: 'Generate Time-based One-Time Passwords (TOTP) for two-factor authentication (2FA).'
-})
 </script>
 
 <template>
-  <ToolPage
-    title="TOTP 2FA Generator"
-    description="Generate real-time Time-based One-Time Passwords from Base32 secrets or otpauth URIs."
-  >
+  <ToolPage>
     <div class="space-y-6">
       <!-- Toolbar -->
       <div class="flex flex-wrap items-center justify-between gap-3 p-3 border border-default rounded-xl bg-elevated/40">

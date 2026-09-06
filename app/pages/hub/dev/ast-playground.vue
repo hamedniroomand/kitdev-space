@@ -130,13 +130,6 @@ defineShortcuts({
 
 <template>
   <ToolPage>
-    <template #header>
-      <ToolHeader
-        title="AST Playground and Resolver"
-        description="Parse JavaScript and TypeScript with OXC. Inspect the ESTree AST and resolve module paths."
-      />
-    </template>
-
     <UAlert
       color="info"
       variant="subtle"

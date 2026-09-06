@@ -53,13 +53,6 @@ async function copyValue(val: string, key: string) {
 
 <template>
   <ToolPage>
-    <template #header>
-      <ToolHeader
-        title="Timestamp and Date Studio"
-        description="Convert Unix timestamps, ISO 8601 strings, and relative dates."
-      />
-    </template>
-
     <UAlert
       color="neutral"
       variant="subtle"

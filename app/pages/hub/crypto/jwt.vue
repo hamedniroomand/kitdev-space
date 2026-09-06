@@ -82,13 +82,6 @@ defineShortcuts({
 
 <template>
   <ToolPage>
-    <template #header>
-      <ToolHeader
-        title="JWT Debugger"
-        description="Decode JWT header and payload. Verify HS256 signatures in the browser."
-      />
-    </template>
-
     <UAlert
       color="neutral"
       variant="subtle"

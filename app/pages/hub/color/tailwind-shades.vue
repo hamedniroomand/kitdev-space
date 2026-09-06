@@ -57,18 +57,10 @@ function handleCopyCode() {
 useToolShortcuts({
   onCopy: handleCopyCode
 })
-
-useSeoMeta({
-  title: 'Tailwind Shade Generator — KitDev Space',
-  description: 'Generate complete 50 to 950 color shade scales in Tailwind CSS v4, v3, and CSS custom property formats.'
-})
 </script>
 
 <template>
-  <ToolPage
-    title="Tailwind Shade Generator"
-    description="Generate complete 50 to 950 color shade scales for Tailwind CSS v4 and v3."
-  >
+  <ToolPage>
     <div class="space-y-6">
       <!-- Toolbar & Presets -->
       <div class="flex flex-wrap items-center justify-between gap-3 p-3 border border-default rounded-xl bg-elevated/40">

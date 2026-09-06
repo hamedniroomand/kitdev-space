@@ -61,13 +61,6 @@ defineShortcuts({
 
 <template>
   <ToolPage>
-    <template #header>
-      <ToolHeader
-        title="SVG to Component"
-        description="Convert SVG markup into a React JSX or Vue 3 component."
-      />
-    </template>
-
     <UAlert
       color="neutral"
       variant="subtle"

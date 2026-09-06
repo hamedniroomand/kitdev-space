@@ -1,8 +1,6 @@
 <template>
   <ConverterPage
     tool-id="json-toml"
-    title="JSON ↔ TOML"
-    description="Convert between JSON and TOML."
     :formats="[
       { label: 'JSON', value: 'json' },
       { label: 'TOML', value: 'toml' }

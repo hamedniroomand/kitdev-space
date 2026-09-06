@@ -63,13 +63,6 @@ defineShortcuts({
 
 <template>
   <ToolPage>
-    <template #header>
-      <ToolHeader
-        title="DNS Lookup"
-        description="Look up DNS records for a domain."
-      />
-    </template>
-
     <UAlert
       color="info"
       variant="subtle"

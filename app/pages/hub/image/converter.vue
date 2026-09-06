@@ -12,7 +12,6 @@ const outputBytes = ref<number | null>(null)
 const outWidth = ref<number | null>(null)
 const outHeight = ref<number | null>(null)
 const { status, error, run, reset } = useTool<Blob>()
-const { track } = useToolAnalytics()
 
 const formatItems = [
   { label: 'WebP', value: 'webp' },
@@ -22,10 +21,6 @@ const formatItems = [
 ]
 
 useToolSeo('image-converter')
-
-onMounted(() => {
-  track('tool_open', { tool: 'image-converter' })
-})
 
 async function handleConvert() {
   outputBlob.value = null
@@ -51,12 +46,6 @@ async function handleConvert() {
     outputBlob.value = processed.blob
     return processed.blob
   })
-
-  if (status.value === 'success') {
-    track('tool_execute', { tool: 'image-converter' })
-  } else if (status.value === 'error') {
-    track('tool_error', { tool: 'image-converter' })
-  }
 }
 
 function handleClear() {
@@ -81,13 +70,6 @@ defineShortcuts({
 
 <template>
   <ToolPage>
-    <template #header>
-      <ToolHeader
-        title="Image Converter"
-        description="Convert images to WebP, AVIF, JPEG, or PNG."
-      />
-    </template>
-
     <UAlert
       color="info"
       variant="subtle"

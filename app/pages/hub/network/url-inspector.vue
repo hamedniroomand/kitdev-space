@@ -56,13 +56,6 @@ defineShortcuts({
 
 <template>
   <ToolPage>
-    <template #header>
-      <ToolHeader
-        title="URL Inspector"
-        description="Inspect and parse URL parts."
-      />
-    </template>
-
     <UAlert
       color="neutral"
       variant="subtle"

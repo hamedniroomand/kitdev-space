@@ -35,18 +35,10 @@ function handleCopy() {
 function handleClear() {
   input.value = ''
 }
-
-useSeoMeta({
-  title: 'String Escape Tool — KitDev Space',
-  description: 'Escape and unescape strings for JSON, JavaScript, HTML, SQL, and shell.'
-})
 </script>
 
 <template>
-  <ToolPage
-    title="String Escape Tool"
-    description="Escape and unescape special characters for various programming languages."
-  >
+  <ToolPage>
     <div class="space-y-6">
       <!-- Toolbar -->
       <div class="flex flex-wrap items-center justify-between gap-3 p-3 border border-default rounded-xl bg-elevated/40">

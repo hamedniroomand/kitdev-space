@@ -16,7 +16,6 @@ const outputBytes = ref<number | null>(null)
 const outWidth = ref<number | null>(null)
 const outHeight = ref<number | null>(null)
 const { status, error, run, reset } = useTool<Blob>()
-const { track } = useToolAnalytics()
 
 const formatItems = [
   { label: 'WebP', value: 'webp' },
@@ -33,10 +32,6 @@ const rotateItems = [
 ]
 
 useToolSeo('image-transform')
-
-onMounted(() => {
-  track('tool_open', { tool: 'image-transform' })
-})
 
 async function handleTransform() {
   outputBlob.value = null
@@ -68,12 +63,6 @@ async function handleTransform() {
     outputBlob.value = processed.blob
     return processed.blob
   })
-
-  if (status.value === 'success') {
-    track('tool_execute', { tool: 'image-transform' })
-  } else if (status.value === 'error') {
-    track('tool_error', { tool: 'image-transform' })
-  }
 }
 
 function handleClear() {
@@ -102,13 +91,6 @@ defineShortcuts({
 
 <template>
   <ToolPage>
-    <template #header>
-      <ToolHeader
-        title="Orientation & Grayscale"
-        description="Rotate, mirror, and convert images to grayscale."
-      />
-    </template>
-
     <UAlert
       color="info"
       variant="subtle"

@@ -18,7 +18,6 @@ const outputBytes = ref<number | null>(null)
 const outWidth = ref<number | null>(null)
 const outHeight = ref<number | null>(null)
 const { status, error, run, reset } = useTool<Blob>()
-const { track } = useToolAnalytics()
 
 const presetItems = [
   { label: 'Twitter Banner (1500×500)', value: 'twitter-banner' },
@@ -49,10 +48,6 @@ const formatItems = [
 ]
 
 useToolSeo('image-resizer')
-
-onMounted(() => {
-  track('tool_open', { tool: 'image-resizer' })
-})
 
 async function handleResize() {
   outputBlob.value = null
@@ -87,12 +82,6 @@ async function handleResize() {
     outputBlob.value = processed.blob
     return processed.blob
   })
-
-  if (status.value === 'success') {
-    track('tool_execute', { tool: 'image-resizer' })
-  } else if (status.value === 'error') {
-    track('tool_error', { tool: 'image-resizer' })
-  }
 }
 
 function handleClear() {
@@ -117,13 +106,6 @@ defineShortcuts({
 
 <template>
   <ToolPage>
-    <template #header>
-      <ToolHeader
-        title="Smart Resizer"
-        description="Resize images with social presets."
-      />
-    </template>
-
     <UAlert
       color="info"
       variant="subtle"

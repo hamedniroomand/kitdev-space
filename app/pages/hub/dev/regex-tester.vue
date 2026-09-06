@@ -39,13 +39,6 @@ function handleClear() {
 
 <template>
   <ToolPage>
-    <template #header>
-      <ToolHeader
-        title="RegEx Tester and Explainer"
-        description="Test regular expressions, highlight matches, and read plain-text token explanations."
-      />
-    </template>
-
     <UAlert
       color="neutral"
       variant="subtle"

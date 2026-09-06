@@ -49,13 +49,6 @@ async function handleCopy() {
 
 <template>
   <ToolPage>
-    <template #header>
-      <ToolHeader
-        title="HTML & URL Encoder / Decoder"
-        description="Encode and decode HTML entities and URL strings."
-      />
-    </template>
-
     <UAlert
       color="neutral"
       variant="subtle"

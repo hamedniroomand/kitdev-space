@@ -12,7 +12,6 @@ const durationMs = ref<number | null>(null)
 const verified = ref<boolean | null>(null)
 const { status, error, run, reset } = useTool<string>()
 const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
-const { track } = useToolAnalytics()
 
 const algorithmItems = [
   { label: 'Argon2id', value: 'argon2id' },
@@ -20,10 +19,6 @@ const algorithmItems = [
 ]
 
 useToolSeo('password-benchmark')
-
-onMounted(() => {
-  track('tool_open', { tool: 'password-benchmark' })
-})
 
 async function execute() {
   hash.value = ''
@@ -55,12 +50,6 @@ async function execute() {
     verified.value = data.result.verified ?? null
     return data.result.hash
   }, 'The benchmark failed.')
-
-  if (status.value === 'success') {
-    track('tool_execute', { tool: 'password-benchmark' })
-  } else if (status.value === 'error') {
-    track('tool_error', { tool: 'password-benchmark' })
-  }
 }
 
 async function handleCopy() {
@@ -90,13 +79,6 @@ defineShortcuts({
 
 <template>
   <ToolPage>
-    <template #header>
-      <ToolHeader
-        title="Password Benchmarker"
-        description="Compare Argon2id and bcrypt hash timing with safe cost limits."
-      />
-    </template>
-
     <UAlert
       color="warning"
       variant="subtle"

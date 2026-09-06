@@ -10,7 +10,6 @@ const release = ref<SemverRelease>('patch')
 const output = ref('')
 const { status, error, run, reset } = useTool<string>()
 const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
-const { track } = useToolAnalytics()
 
 const actionItems = [
   { label: 'Satisfies range', value: 'satisfies' },
@@ -25,10 +24,6 @@ const releaseItems = [
 ]
 
 useToolSeo('semver')
-
-onMounted(() => {
-  track('tool_open', { tool: 'semver' })
-})
 
 async function execute() {
   output.value = ''
@@ -64,12 +59,6 @@ async function execute() {
     output.value = text
     return text
   }, 'The semver operation failed.')
-
-  if (status.value === 'success') {
-    track('tool_execute', { tool: 'semver' })
-  } else if (status.value === 'error') {
-    track('tool_error', { tool: 'semver' })
-  }
 }
 
 async function handleCopy() {
@@ -96,13 +85,6 @@ defineShortcuts({
 
 <template>
   <ToolPage>
-    <template #header>
-      <ToolHeader
-        title="Semver Calculator"
-        description="Test ranges, sort versions, and bump releases."
-      />
-    </template>
-
     <UAlert
       color="info"
       variant="subtle"

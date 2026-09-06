@@ -47,13 +47,6 @@ defineShortcuts({
 
 <template>
   <ToolPage>
-    <template #header>
-      <ToolHeader
-        title="Hex Encoder"
-        description="Encode and decode hex values."
-      />
-    </template>
-
     <UAlert
       color="neutral"
       variant="subtle"

@@ -16,18 +16,10 @@ function handleClear() {
 function handleLoadSample() {
   input.value = 'Markdown is a lightweight markup language for creating formatted text using a plain-text editor. John Gruber created Markdown in 2004 as a markup language that is appealing to human readers in its source code form.\n\nMarkdown is widely used in blogging, instant messaging, online forums, collaborative software, documentation pages, and readme files.'
 }
-
-useSeoMeta({
-  title: 'Text Statistics — KitDev Space',
-  description: 'Count words, characters, sentences, reading time, and byte size in real-time.'
-})
 </script>
 
 <template>
-  <ToolPage
-    title="Text Statistics"
-    description="Calculate words, characters, sentences, lines, and reading time in real-time."
-  >
+  <ToolPage>
     <div class="space-y-6">
       <!-- Metric Cards Grid -->
       <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">

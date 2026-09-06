@@ -46,13 +46,6 @@ defineShortcuts({
 
 <template>
   <ToolPage>
-    <template #header>
-      <ToolHeader
-        title="Random String Generator"
-        description="Generate random strings."
-      />
-    </template>
-
     <UAlert
       color="neutral"
       variant="subtle"

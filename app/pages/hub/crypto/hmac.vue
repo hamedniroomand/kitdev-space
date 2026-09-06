@@ -59,18 +59,10 @@ function handleClear() {
   secret.value = ''
   signature.value = ''
 }
-
-useSeoMeta({
-  title: 'HMAC Generator — KitDev Space',
-  description: 'Generate Hash-based Message Authentication Codes (HMAC) with SHA-256, SHA-384, SHA-512, or SHA-1.'
-})
 </script>
 
 <template>
-  <ToolPage
-    title="HMAC Generator"
-    description="Sign messages using a secret key and Hash-based Message Authentication Code algorithms."
-  >
+  <ToolPage>
     <div class="space-y-6">
       <!-- Settings Toolbar -->
       <div class="flex flex-wrap items-center justify-between gap-3 p-3 border border-default rounded-xl bg-elevated/40">

@@ -37,18 +37,10 @@ const totalCount = computed(() => evaluatedResults.value.length)
 function applyPreset(pattern: string) {
   globPattern.value = pattern
 }
-
-useSeoMeta({
-  title: 'Glob Tester — KitDev Space',
-  description: 'Test and debug glob matching patterns against file paths in real-time.'
-})
 </script>
 
 <template>
-  <ToolPage
-    title="Glob Tester"
-    description="Test glob patterns against a list of file paths in real-time."
-  >
+  <ToolPage>
     <div class="space-y-6">
       <!-- Top controls -->
       <div class="space-y-3">

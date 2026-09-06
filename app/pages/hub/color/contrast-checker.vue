@@ -40,13 +40,6 @@ onMounted(() => {
 
 <template>
   <ToolPage>
-    <template #header>
-      <ToolHeader
-        title="Contrast Checker"
-        description="Check contrast for accessibility."
-      />
-    </template>
-
     <div class="grid gap-4 sm:grid-cols-2">
       <UFormField label="Text">
         <UInput v-model="foreground" />

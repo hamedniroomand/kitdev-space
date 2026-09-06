@@ -59,13 +59,6 @@ defineShortcuts({
 
 <template>
   <ToolPage>
-    <template #header>
-      <ToolHeader
-        title="ID Generator"
-        description="Generate UUID, ULID, and NanoID values."
-      />
-    </template>
-
     <UAlert
       color="neutral"
       variant="subtle"

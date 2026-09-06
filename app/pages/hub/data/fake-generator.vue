@@ -138,18 +138,10 @@ function handleDownload() {
   const ext = extensions[format.value]
   downloadText(`mock-${tableName.value || 'data'}.${ext}`, outputText.value, mimeTypes[format.value])
 }
-
-useSeoMeta({
-  title: 'Fake Data Generator — KitDev Space',
-  description: 'Generate realistic mock datasets with custom schemas as JSON, CSV, or SQL insert queries.'
-})
 </script>
 
 <template>
-  <ToolPage
-    title="Fake Data Generator"
-    description="Generate realistic mock datasets with custom schema fields in JSON, CSV, or SQL formats."
-  >
+  <ToolPage>
     <div class="space-y-6">
       <!-- Presets & Action Toolbar -->
       <div class="flex flex-wrap items-center justify-between gap-3 p-3 border border-default rounded-xl bg-elevated/40">

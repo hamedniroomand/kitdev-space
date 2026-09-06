@@ -6,7 +6,6 @@ const algorithm = ref<HashAlgorithm>('sha256')
 const output = ref('')
 const { status, error, result, run, reset } = useTool<string>()
 const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
-const { track } = useToolAnalytics()
 
 const algorithmItems = [
   { label: 'SHA-256', value: 'sha256' },
@@ -20,10 +19,6 @@ const algorithmItems = [
 ]
 
 useToolSeo('hash')
-
-onMounted(() => {
-  track('tool_open', { tool: 'hash' })
-})
 
 async function hash() {
   await run(async () => {
@@ -39,9 +34,6 @@ async function hash() {
 
   if (status.value === 'success' && result.value !== null) {
     output.value = result.value
-    track('tool_execute', { tool: 'hash' })
-  } else if (status.value === 'error') {
-    track('tool_error', { tool: 'hash' })
   }
 }
 
@@ -49,10 +41,7 @@ async function handleCopy() {
   if (!output.value) {
     return
   }
-  const ok = await copy(output.value)
-  if (ok) {
-    track('tool_copy', { tool: 'hash' })
-  }
+  await copy(output.value)
 }
 
 function handleClear() {
@@ -73,13 +62,6 @@ defineShortcuts({
 
 <template>
   <ToolPage>
-    <template #header>
-      <ToolHeader
-        title="Hash Generator"
-        description="Generate hashes from text input."
-      />
-    </template>
-
     <UAlert
       color="info"
       variant="subtle"

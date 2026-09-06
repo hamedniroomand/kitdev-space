@@ -66,18 +66,10 @@ useToolShortcuts({
   onCopy: handleCopy,
   onClear: handleClear
 })
-
-useSeoMeta({
-  title: 'AES Encrypt & Decrypt — KitDev Space',
-  description: 'Encrypt and decrypt text with AES-256-GCM and PBKDF2 password derivation in the browser.'
-})
 </script>
 
 <template>
-  <ToolPage
-    title="AES Encrypt & Decrypt"
-    description="Encrypt and decrypt text with AES-256-GCM and PBKDF2 password derivation directly in your browser."
-  >
+  <ToolPage>
     <div class="space-y-6">
       <!-- Toolbar -->
       <div class="flex flex-wrap items-center justify-between gap-3 p-3 border border-default rounded-xl bg-elevated/40">

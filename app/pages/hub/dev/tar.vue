@@ -11,15 +11,10 @@ const file = ref<File | null>(null)
 const entries = ref<TarEntry[]>([])
 const archiveBytes = ref<number | null>(null)
 const { status, error, run, reset } = useTool<string>()
-const { track } = useToolAnalytics()
 const { downloadBlob } = useDownload()
 const toast = useToast()
 
 useToolSeo('tar-explorer')
-
-onMounted(() => {
-  track('tool_open', { tool: 'tar-explorer' })
-})
 
 async function inspect() {
   entries.value = []
@@ -40,12 +35,6 @@ async function inspect() {
     archiveBytes.value = data.result.bytes
     return `${data.result.entries.length} entries`
   }, 'The archive list failed.')
-
-  if (status.value === 'success') {
-    track('tool_execute', { tool: 'tar-explorer' })
-  } else if (status.value === 'error') {
-    track('tool_error', { tool: 'tar-explorer' })
-  }
 }
 
 async function downloadEntry(path: string) {
@@ -92,13 +81,6 @@ defineShortcuts({
 
 <template>
   <ToolPage>
-    <template #header>
-      <ToolHeader
-        title="Tar Explorer"
-        description="Inspect tar and tar.gz archives in memory."
-      />
-    </template>
-
     <UAlert
       color="info"
       variant="subtle"

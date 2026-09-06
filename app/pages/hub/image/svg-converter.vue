@@ -22,7 +22,6 @@ const preview1x = useObjectUrl(result1x)
 const preview2x = useObjectUrl(result2x)
 const preview4x = useObjectUrl(result4x)
 const { status, error, run, reset } = useTool()
-const { track } = useToolAnalytics()
 const { downloadBlob } = useDownload()
 
 const formatItems = [
@@ -37,10 +36,6 @@ const scaleCards = computed(() => [
 ])
 
 useToolSeo('svg-converter')
-
-onMounted(() => {
-  track('tool_open', { tool: 'svg-converter' })
-})
 
 async function convertScale(scale: SvgScale) {
   const formData = new FormData()
@@ -86,11 +81,6 @@ async function handleConvert() {
     await Promise.all(([1, 2, 4] as SvgScale[]).map(scale => convertScale(scale)))
     return 'ok'
   })
-  if (status.value === 'success') {
-    track('tool_execute', { tool: 'svg-converter' })
-  } else if (status.value === 'error') {
-    track('tool_error', { tool: 'svg-converter' })
-  }
 }
 
 function downloadScale(scale: SvgScale, blob: Blob | null) {
@@ -131,13 +121,6 @@ defineShortcuts({
 
 <template>
   <ToolPage>
-    <template #header>
-      <ToolHeader
-        title="SVG to PNG / WebP"
-        description="Convert SVG code or files to PNG or WebP at 1x, 2x, and 4x."
-      />
-    </template>
-
     <UAlert
       color="info"
       variant="subtle"

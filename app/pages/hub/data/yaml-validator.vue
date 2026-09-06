@@ -40,18 +40,10 @@ function handleCopyJson() {
     copy(result.value.formattedJson)
   }
 }
-
-useSeoMeta({
-  title: 'YAML Validator — KitDev Space',
-  description: 'Validate YAML syntax and inspect line errors and parsed JSON structure.'
-})
 </script>
 
 <template>
-  <ToolPage
-    title="YAML Validator"
-    description="Validate YAML documents and find line numbers for syntax errors."
-  >
+  <ToolPage>
     <div class="space-y-6">
       <!-- Toolbar -->
       <div class="flex flex-wrap items-center justify-between gap-3 p-3 border border-default rounded-xl bg-elevated/40">

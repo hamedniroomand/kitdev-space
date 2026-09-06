@@ -1,8 +1,6 @@
 <template>
   <ConverterPage
     tool-id="json-xml"
-    title="JSON ↔ XML"
-    description="Convert between JSON and XML."
     :formats="[
       { label: 'JSON', value: 'json' },
       { label: 'XML', value: 'xml' }

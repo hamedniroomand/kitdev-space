@@ -61,10 +61,7 @@ function handleReset() {
 </script>
 
 <template>
-  <ToolPage
-    title="Favicon Set Generator"
-    description="Convert a source image into standard favicon sizes, multi-resolution ICO, web manifest, and HTML tags in a ZIP download."
-  >
+  <ToolPage>
     <div class="space-y-6">
       <!-- Upload & Options Grid -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">

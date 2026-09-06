@@ -1,8 +1,6 @@
 <template>
   <ConverterPage
     tool-id="json-json5"
-    title="JSON ↔ JSON5"
-    description="Convert between JSON and JSON5."
     :formats="[
       { label: 'JSON', value: 'json' },
       { label: 'JSON5', value: 'json5' }

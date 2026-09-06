@@ -54,13 +54,6 @@ defineShortcuts({
 
 <template>
   <ToolPage>
-    <template #header>
-      <ToolHeader
-        title="JSON → TypeScript"
-        description="Convert JSON into TypeScript interfaces."
-      />
-    </template>
-
     <ToolEditor
       v-model="input"
       label="Input"

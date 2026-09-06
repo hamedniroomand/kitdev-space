@@ -194,13 +194,6 @@ defineShortcuts({
 
 <template>
   <ToolPage>
-    <template #header>
-      <ToolHeader
-        title="Code Minifier and Beautifier"
-        description="Minify and format JavaScript, TypeScript, HTML, CSS, and JSON."
-      />
-    </template>
-
     <UAlert
       color="info"
       variant="subtle"

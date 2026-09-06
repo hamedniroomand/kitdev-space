@@ -40,13 +40,8 @@ const input = ref(sampleMarkdown)
 const toast = useToast()
 const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
 const { downloadText } = useDownload()
-const { track } = useToolAnalytics()
 
 useToolSeo('markdown-studio')
-
-onMounted(() => {
-  track('tool_open', { tool: 'markdown-studio' })
-})
 
 const compiledHtml = computed(() => parseMarkdown(input.value))
 const stats = computed(() => getMarkdownStats(input.value))
@@ -55,20 +50,14 @@ async function handleCopyHtml() {
   if (!compiledHtml.value) {
     return
   }
-  const ok = await copy(compiledHtml.value, 'html')
-  if (ok) {
-    track('tool_copy', { tool: 'markdown-studio' })
-  }
+  await copy(compiledHtml.value, 'html')
 }
 
 async function handleCopyMarkdown() {
   if (!input.value) {
     return
   }
-  const ok = await copy(input.value, 'markdown')
-  if (ok) {
-    track('tool_copy', { tool: 'markdown-studio' })
-  }
+  await copy(input.value, 'markdown')
 }
 
 function handleDownload() {
@@ -77,7 +66,6 @@ function handleDownload() {
   }
   const documentHtml = generateHtmlDocument(compiledHtml.value, 'Markdown Document')
   downloadText('document.html', documentHtml, 'text/html')
-  track('tool_download', { tool: 'markdown-studio' })
   toast.add({
     title: 'Downloaded HTML file',
     color: 'success'
@@ -96,12 +84,6 @@ function handleClear() {
 <template>
   <ToolPage>
     <!-- eslint-disable vue/no-v-html -->
-    <template #header>
-      <ToolHeader
-        title="Markdown Live Studio"
-        description="Write markdown with a real-time HTML preview and text metrics."
-      />
-    </template>
 
     <UAlert
       color="neutral"

@@ -47,13 +47,6 @@ defineShortcuts({
 
 <template>
   <ToolPage>
-    <template #header>
-      <ToolHeader
-        title="Base64 Encoder"
-        description="Encode and decode Base64."
-      />
-    </template>
-
     <UAlert
       color="neutral"
       variant="subtle"

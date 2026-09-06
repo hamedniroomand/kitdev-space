@@ -60,13 +60,6 @@ function handleReset() {
 
 <template>
   <ToolPage>
-    <template #header>
-      <ToolHeader
-        title="CSS Unit Converter"
-        description="Convert values between px, rem, em, vw, and vh units."
-      />
-    </template>
-
     <UAlert
       color="neutral"
       variant="subtle"

@@ -46,13 +46,6 @@ function handleClear() {
 
 <template>
   <ToolPage>
-    <template #header>
-      <ToolHeader
-        title="Case and Slug Converter"
-        description="Convert text into variable naming conventions and URL slugs."
-      />
-    </template>
-
     <UAlert
       color="neutral"
       variant="subtle"

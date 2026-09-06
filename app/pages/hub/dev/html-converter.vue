@@ -86,10 +86,7 @@ function handleDownload() {
 </script>
 
 <template>
-  <ToolPage
-    title="HTML to JSX / Vue Converter"
-    description="Convert standard HTML markup and inline styles into React JSX or Vue template component syntax."
-  >
+  <ToolPage>
     <div class="space-y-6">
       <!-- Toolbar Controls -->
       <div class="flex flex-wrap items-center justify-between gap-3 p-3 border border-default rounded-xl bg-elevated/40">

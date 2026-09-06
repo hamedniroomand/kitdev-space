@@ -48,13 +48,6 @@ onMounted(() => {
 
 <template>
   <ToolPage>
-    <template #header>
-      <ToolHeader
-        title="Color Inspector"
-        description="Inspect color values and details."
-      />
-    </template>
-
     <UFormField label="Color">
       <UInput
         v-model="input"

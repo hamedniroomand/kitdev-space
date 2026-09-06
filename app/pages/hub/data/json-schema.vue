@@ -66,18 +66,10 @@ function handleClear() {
   dataInput.value = ''
   generateError.value = null
 }
-
-useSeoMeta({
-  title: 'JSON Schema Validator — KitDev Space',
-  description: 'Validate JSON documents against JSON Schema definitions and generate schemas from data.'
-})
 </script>
 
 <template>
-  <ToolPage
-    title="JSON Schema Validator"
-    description="Validate JSON data against JSON Schema specifications and find path errors."
-  >
+  <ToolPage>
     <div class="space-y-6">
       <ToolError
         v-if="generateError"

@@ -82,18 +82,10 @@ const jsonOutput = computed(() => {
   if (palette.value.length === 0) return ''
   return JSON.stringify(palette.value.map(c => c.hex), null, 2)
 })
-
-useSeoMeta({
-  title: 'Image Palette Extractor — KitDev Space',
-  description: 'Extract dominant color palettes and hex codes from an image with HTML5 Canvas.'
-})
 </script>
 
 <template>
-  <ToolPage
-    title="Image Palette Extractor"
-    description="Extract dominant colors, color percentages, and hex values from an image."
-  >
+  <ToolPage>
     <div class="space-y-6">
       <!-- Toolbar -->
       <div class="flex flex-wrap items-center justify-between gap-3 p-3 border border-default rounded-xl bg-elevated/40">

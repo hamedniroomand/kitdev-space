@@ -863,7 +863,7 @@ export const tools: Tool[] = [
   {
     id: 'html-url-codec',
     slug: 'html-url-codec',
-    name: 'HTML & URL Codec',
+    name: 'HTML & URL Encoder / Decoder',
     description: 'Encode and decode HTML entities and URL strings.',
     category: 'dev',
     icon: 'i-lucide-file-code',

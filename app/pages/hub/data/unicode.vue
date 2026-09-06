@@ -21,18 +21,10 @@ function handleClear() {
 function copyText(val: string) {
   copy(val)
 }
-
-useSeoMeta({
-  title: 'Unicode Inspector — KitDev Space',
-  description: 'Inspect Unicode code points, UTF-8 bytes, normalization forms, and hidden characters.'
-})
 </script>
 
 <template>
-  <ToolPage
-    title="Unicode Inspector"
-    description="Inspect Unicode characters, code points, byte encodings, and hidden zero-width marks."
-  >
+  <ToolPage>
     <div class="space-y-6">
       <!-- Toolbar -->
       <div class="flex flex-wrap items-center justify-between gap-3 p-3 border border-default rounded-xl bg-elevated/40">

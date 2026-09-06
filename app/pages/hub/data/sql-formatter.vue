@@ -65,13 +65,8 @@ const validateFeedback = useActionFeedback({
 })
 
 const { downloadText } = useDownload()
-const { track } = useToolAnalytics()
 
 useToolSeo('sql-formatter')
-
-onMounted(() => {
-  track('tool_open', { tool: 'sql-formatter' })
-})
 
 const linterExtension = computed(() => createSqlLinter(() => dialect.value))
 
@@ -92,9 +87,6 @@ async function format() {
     output.value = result.value
     statusMessage.value = 'Formatted successfully'
     setStats(output.value)
-    track('tool_execute', { tool: 'sql-formatter' })
-  } else if (status.value === 'error') {
-    track('tool_error', { tool: 'sql-formatter' })
   }
 }
 
@@ -111,10 +103,8 @@ async function validate() {
     statusMessage.value = 'Valid SQL query'
     setStats(input.value)
     validateFeedback.flashSuccess()
-    track('tool_execute', { tool: 'sql-formatter' })
   } else if (status.value === 'error') {
     validateFeedback.flashError()
-    track('tool_error', { tool: 'sql-formatter' })
   }
 }
 
@@ -131,10 +121,7 @@ async function handleCopy() {
   if (!output.value) {
     return
   }
-  const ok = await copy(output.value)
-  if (ok) {
-    track('tool_copy', { tool: 'sql-formatter' })
-  }
+  await copy(output.value)
 }
 
 function handleDownload() {
@@ -142,7 +129,6 @@ function handleDownload() {
     return
   }
   downloadText('query.sql', output.value, 'text/x-sql')
-  track('tool_download', { tool: 'sql-formatter' })
 }
 
 function handleClear() {
@@ -166,13 +152,6 @@ defineShortcuts({
 
 <template>
   <ToolPage>
-    <template #header>
-      <ToolHeader
-        title="SQL Query Formatter"
-        description="Format, indent, and validate SQL queries across multiple dialects."
-      />
-    </template>
-
     <div class="flex flex-wrap items-center gap-4">
       <UFormField label="Dialect">
         <USelect

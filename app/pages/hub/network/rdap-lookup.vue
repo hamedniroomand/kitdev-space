@@ -34,10 +34,7 @@ function handleReset() {
 </script>
 
 <template>
-  <ToolPage
-    title="RDAP / WHOIS Lookup"
-    description="Query domain name and IP address registration data through standard RDAP HTTP endpoints."
-  >
+  <ToolPage>
     <div class="space-y-6">
       <!-- Search Input Section -->
       <div class="p-4 border border-default rounded-xl bg-elevated/40 space-y-4">

@@ -83,18 +83,10 @@ function handleDownloadCsv() {
   const rows = displayedRows.value.map(row => columns.map(column => row[column] ?? ''))
   downloadText('table-export.csv', jsonToCsv([columns, ...rows]), 'text/csv')
 }
-
-useSeoMeta({
-  title: 'Table Viewer — KitDev Space',
-  description: 'View, sort, filter, and export CSV and JSON datasets in an interactive table.'
-})
 </script>
 
 <template>
-  <ToolPage
-    title="Table Viewer"
-    description="Paste CSV or JSON datasets to view, sort, search, and export data in an interactive table."
-  >
+  <ToolPage>
     <div class="space-y-6">
       <!-- Toolbar -->
       <div class="flex flex-wrap items-center justify-between gap-3 p-3 border border-default rounded-xl bg-elevated/40">

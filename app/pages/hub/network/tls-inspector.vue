@@ -46,10 +46,7 @@ function handleReset() {
 </script>
 
 <template>
-  <ToolPage
-    title="TLS Certificate Inspector"
-    description="Connect to a server to inspect its SSL/TLS certificate chain, SANs, cipher suites, and expiration dates."
-  >
+  <ToolPage>
     <div class="space-y-6">
       <!-- Input Controls -->
       <div class="p-4 border border-default rounded-xl bg-elevated/40 space-y-4">

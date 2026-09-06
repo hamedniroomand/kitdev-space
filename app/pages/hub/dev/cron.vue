@@ -4,7 +4,6 @@ const timeZone = ref('UTC')
 const description = ref('')
 const nextRuns = ref<string[]>([])
 const { status, error, run, reset } = useTool<string>()
-const { track } = useToolAnalytics()
 
 const timeZoneItems = [
   { label: 'UTC', value: 'UTC' },
@@ -16,10 +15,6 @@ const timeZoneItems = [
 ]
 
 useToolSeo('cron')
-
-onMounted(() => {
-  track('tool_open', { tool: 'cron' })
-})
 
 function formatRun(iso: string): string {
   try {
@@ -51,12 +46,6 @@ async function execute() {
     nextRuns.value = data.result.nextRuns
     return data.result.description
   }, 'The cron operation failed.')
-
-  if (status.value === 'success') {
-    track('tool_execute', { tool: 'cron' })
-  } else if (status.value === 'error') {
-    track('tool_error', { tool: 'cron' })
-  }
 }
 
 function handleClear() {
@@ -77,13 +66,6 @@ defineShortcuts({
 
 <template>
   <ToolPage>
-    <template #header>
-      <ToolHeader
-        title="Cron Visualizer"
-        description="Validate cron expressions and preview next runs."
-      />
-    </template>
-
     <UAlert
       color="info"
       variant="subtle"

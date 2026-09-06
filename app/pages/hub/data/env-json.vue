@@ -87,18 +87,10 @@ function handleCopy() {
     copy(output.value)
   }
 }
-
-useSeoMeta({
-  title: 'Env to JSON Converter — KitDev Space',
-  description: 'Convert between .env files and JSON with type and quote support.'
-})
 </script>
 
 <template>
-  <ToolPage
-    title="Env to JSON Converter"
-    description="Convert environment files to JSON format and convert JSON to environment files."
-  >
+  <ToolPage>
     <div class="space-y-6">
       <!-- Controls -->
       <div class="flex flex-wrap items-center justify-between gap-3 p-3 border border-default rounded-xl bg-elevated/40">

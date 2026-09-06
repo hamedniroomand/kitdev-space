@@ -29,13 +29,8 @@ const validateFeedback = useActionFeedback({
   }
 })
 const { downloadText } = useDownload()
-const { track } = useToolAnalytics()
 
 useToolSeo('json-formatter')
-
-onMounted(() => {
-  track('tool_open', { tool: 'json-formatter' })
-})
 
 function setStats(text: string) {
   const stats = getTextStats(text)
@@ -49,9 +44,6 @@ async function format() {
     output.value = result.value
     statusMessage.value = 'Valid JSON'
     setStats(output.value)
-    track('tool_execute', { tool: 'json-formatter' })
-  } else if (status.value === 'error') {
-    track('tool_error', { tool: 'json-formatter' })
   }
 }
 
@@ -62,9 +54,6 @@ async function minify() {
     output.value = result.value
     statusMessage.value = 'Valid JSON'
     setStats(output.value)
-    track('tool_execute', { tool: 'json-formatter' })
-  } else if (status.value === 'error') {
-    track('tool_error', { tool: 'json-formatter' })
   }
 }
 
@@ -80,10 +69,8 @@ async function validate() {
     statusMessage.value = 'Valid JSON'
     setStats(input.value)
     validateFeedback.flashSuccess()
-    track('tool_execute', { tool: 'json-formatter' })
   } else if (status.value === 'error') {
     validateFeedback.flashError()
-    track('tool_error', { tool: 'json-formatter' })
   }
 }
 
@@ -91,10 +78,7 @@ async function handleCopy() {
   if (!output.value) {
     return
   }
-  const ok = await copy(output.value)
-  if (ok) {
-    track('tool_copy', { tool: 'json-formatter' })
-  }
+  await copy(output.value)
 }
 
 function handleDownload() {
@@ -102,7 +86,6 @@ function handleDownload() {
     return
   }
   downloadText('formatted.json', output.value)
-  track('tool_download', { tool: 'json-formatter' })
 }
 
 function handleClear() {
@@ -126,13 +109,6 @@ defineShortcuts({
 
 <template>
   <ToolPage>
-    <template #header>
-      <ToolHeader
-        title="JSON Formatter"
-        description="Format, minify, and validate JSON."
-      />
-    </template>
-
     <ToolEditor
       v-model="input"
       label="Input"

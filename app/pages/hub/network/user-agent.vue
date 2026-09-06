@@ -44,18 +44,10 @@ function handlePreset(getter: () => string) {
 function handleClear() {
   input.value = ''
 }
-
-useSeoMeta({
-  title: 'User Agent Parser — KitDev Space',
-  description: 'Parse user agent strings into browser, operating system, rendering engine, and device details.'
-})
 </script>
 
 <template>
-  <ToolPage
-    title="User Agent Parser"
-    description="Analyze User Agent strings to identify browser type, operating system, rendering engine, and device."
-  >
+  <ToolPage>
     <div class="space-y-6">
       <!-- Toolbar with presets -->
       <div class="flex flex-wrap items-center justify-between gap-3 p-3 border border-default rounded-xl bg-elevated/40">

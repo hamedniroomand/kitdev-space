@@ -64,13 +64,6 @@ defineShortcuts({
 
 <template>
   <ToolPage>
-    <template #header>
-      <ToolHeader
-        title="Passphrase Generator"
-        description="Generate Diceware passphrases with the EFF large word list."
-      />
-    </template>
-
     <UAlert
       color="neutral"
       variant="subtle"

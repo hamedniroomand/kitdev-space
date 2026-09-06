@@ -62,18 +62,10 @@ useToolShortcuts({
   onCopy: handleCopy,
   onClear: handleClear
 })
-
-useSeoMeta({
-  title: 'cURL to Code Converter — KitDev Space',
-  description: 'Convert cURL commands to JavaScript Fetch, Axios, Python Requests, and Go HTTP client code.'
-})
 </script>
 
 <template>
-  <ToolPage
-    title="cURL to Code Converter"
-    description="Convert cURL syntax into modern client code for Fetch, Axios, Python Requests, and Go."
-  >
+  <ToolPage>
     <div class="space-y-6">
       <!-- Toolbar -->
       <div class="flex flex-wrap items-center justify-between gap-3 p-3 border border-default rounded-xl bg-elevated/40">

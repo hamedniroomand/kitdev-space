@@ -65,18 +65,10 @@ function downloadPng() {
   }
   image.src = dataUri.value
 }
-
-useSeoMeta({
-  title: 'Placeholder Image Generator — KitDev Space',
-  description: 'Generate customizable SVG and PNG placeholder images with custom dimensions, colors, and labels.'
-})
 </script>
 
 <template>
-  <ToolPage
-    title="Placeholder Image Generator"
-    description="Create customizable solid or gradient placeholder images with custom text and sizes."
-  >
+  <ToolPage>
     <div class="space-y-6">
       <!-- Presets Toolbar -->
       <div class="flex flex-wrap items-center justify-between gap-3 p-3 border border-default rounded-xl bg-elevated/40">

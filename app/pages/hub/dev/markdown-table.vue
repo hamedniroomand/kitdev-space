@@ -50,18 +50,10 @@ function removeRow(rowIndex: number) {
 function handleCopy() {
   copy(markdownOutput.value)
 }
-
-useSeoMeta({
-  title: 'Markdown Table Generator — KitDev Space',
-  description: 'Create, format, and align GitHub-flavored Markdown tables.'
-})
 </script>
 
 <template>
-  <ToolPage
-    title="Markdown Table Generator"
-    description="Build, format, and align Markdown tables with real-time output."
-  >
+  <ToolPage>
     <div class="space-y-6">
       <!-- Toolbar controls -->
       <div class="flex flex-wrap items-center justify-between gap-3 p-3 border border-default rounded-xl bg-elevated/40">

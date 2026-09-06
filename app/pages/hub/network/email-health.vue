@@ -65,13 +65,6 @@ defineShortcuts({
 
 <template>
   <ToolPage>
-    <template #header>
-      <ToolHeader
-        title="Email Health Inspector"
-        description="Inspect SPF, DKIM, DMARC, and MX routing for a domain."
-      />
-    </template>
-
     <UAlert
       color="info"
       variant="subtle"

@@ -79,13 +79,6 @@ defineShortcuts({
 
 <template>
   <ToolPage>
-    <template #header>
-      <ToolHeader
-        title="Lorem Ipsum & Mock Data"
-        description="Generate placeholder paragraphs, words, or fake user profile JSON."
-      />
-    </template>
-
     <UAlert
       color="neutral"
       variant="subtle"

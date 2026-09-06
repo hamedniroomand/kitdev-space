@@ -55,13 +55,6 @@ onMounted(() => {
 
 <template>
   <ToolPage>
-    <template #header>
-      <ToolHeader
-        title="Color Converter"
-        description="Convert colors between formats."
-      />
-    </template>
-
     <div class="flex flex-wrap items-end gap-4">
       <UFormField
         label="Color"

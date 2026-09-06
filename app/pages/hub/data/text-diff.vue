@@ -16,7 +16,6 @@ const diff = ref<DiffResult | null>(null)
 const unified = ref('')
 const { status, error, run, reset } = useTool<DiffResult>()
 const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
-const { track } = useToolAnalytics()
 
 const { workerFn } = useWebWorkerFn(
   (input: { left: string, right: string }) => diffTexts(input.left, input.right),
@@ -29,7 +28,6 @@ const { workerFn } = useWebWorkerFn(
 useToolSeo('text-diff')
 
 onMounted(() => {
-  track('tool_open', { tool: 'text-diff' })
   compare()
 })
 
@@ -51,22 +49,13 @@ async function compare() {
     unified.value = formatUnifiedDiff(next, 'original', 'modified')
     return next
   })
-
-  if (status.value === 'success') {
-    track('tool_execute', { tool: 'text-diff' })
-  } else if (status.value === 'error') {
-    track('tool_error', { tool: 'text-diff' })
-  }
 }
 
 async function handleCopy() {
   if (!unified.value) {
     return
   }
-  const ok = await copy(unified.value)
-  if (ok) {
-    track('tool_copy', { tool: 'text-diff' })
-  }
+  await copy(unified.value)
 }
 
 function handleSwap() {
@@ -95,13 +84,6 @@ defineShortcuts({
 
 <template>
   <ToolPage>
-    <template #header>
-      <ToolHeader
-        title="Text Diff"
-        description="Compare two texts and show line changes."
-      />
-    </template>
-
     <UAlert
       color="neutral"
       variant="subtle"

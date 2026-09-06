@@ -30,18 +30,10 @@ const calculation = computed(() => {
 function handlePreset(val: string) {
   input.value = val
 }
-
-useSeoMeta({
-  title: 'CIDR Subnet Calculator — KitDev Space',
-  description: 'Calculate IPv4 subnet masks, network addresses, broadcast IPs, and usable host counts.'
-})
 </script>
 
 <template>
-  <ToolPage
-    title="CIDR Subnet Calculator"
-    description="Calculate subnet parameters, network ranges, broadcast addresses, and host counts from CIDR notation."
-  >
+  <ToolPage>
     <div class="space-y-6">
       <!-- Controls -->
       <div class="flex flex-wrap items-center justify-between gap-3 p-3 border border-default rounded-xl bg-elevated/40">

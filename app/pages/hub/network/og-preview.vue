@@ -10,13 +10,8 @@ type OgPreviewData = {
 
 const url = ref('')
 const { status, error, result, run, reset } = useTool<OgPreviewData>()
-const { track } = useToolAnalytics()
 
 useToolSeo('og-preview')
-
-onMounted(() => {
-  track('tool_open', { tool: 'og-preview' })
-})
 
 async function inspect() {
   await run(async () => {
@@ -26,12 +21,6 @@ async function inspect() {
     })
     return data.result
   }, 'The OpenGraph preview failed.')
-
-  if (status.value === 'success') {
-    track('tool_execute', { tool: 'og-preview' })
-  } else if (status.value === 'error') {
-    track('tool_error', { tool: 'og-preview' })
-  }
 }
 
 function handleClear() {
@@ -51,13 +40,6 @@ defineShortcuts({
 
 <template>
   <ToolPage>
-    <template #header>
-      <ToolHeader
-        title="OpenGraph Previewer"
-        description="Preview how a page may look when shared on social platforms."
-      />
-    </template>
-
     <UAlert
       color="info"
       variant="subtle"

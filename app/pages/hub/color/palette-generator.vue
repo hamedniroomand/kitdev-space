@@ -41,13 +41,6 @@ onMounted(() => {
 
 <template>
   <ToolPage>
-    <template #header>
-      <ToolHeader
-        title="Palette Generator"
-        description="Generate color palettes."
-      />
-    </template>
-
     <div class="flex flex-wrap gap-4">
       <UFormField label="Base color">
         <UInput

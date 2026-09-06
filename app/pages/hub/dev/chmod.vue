@@ -38,18 +38,10 @@ function applyPreset(octal: string) {
 function handleCopy() {
   copy(chmodCommand.value)
 }
-
-useSeoMeta({
-  title: 'Chmod Calculator — KitDev Space',
-  description: 'Convert between octal and symbolic Linux file permissions.'
-})
 </script>
 
 <template>
-  <ToolPage
-    title="Chmod Calculator"
-    description="Convert between octal numbers and symbolic file permissions."
-  >
+  <ToolPage>
     <div class="space-y-6">
       <!-- Top outputs -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">

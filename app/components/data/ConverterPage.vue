@@ -4,8 +4,6 @@ import { getTextStats } from '#shared/utils/data/stats'
 
 const props = defineProps<{
   toolId: string
-  title: string
-  description: string
   formats: { label: string, value: Exclude<DataFormat, 'typescript'> }[]
   defaultFrom: Exclude<DataFormat, 'typescript'>
   defaultTo: Exclude<DataFormat, 'typescript'>
@@ -84,13 +82,6 @@ defineShortcuts({
 
 <template>
   <ToolPage>
-    <template #header>
-      <ToolHeader
-        :title="title"
-        :description="description"
-      />
-    </template>
-
     <UAlert
       color="info"
       variant="subtle"

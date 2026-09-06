@@ -114,13 +114,6 @@ defineShortcuts({
 
 <template>
   <ToolPage>
-    <template #header>
-      <ToolHeader
-        title="CSS Gradient Studio"
-        description="Create linear and radial CSS gradients. Check text contrast against the stops."
-      />
-    </template>
-
     <UAlert
       color="neutral"
       variant="subtle"

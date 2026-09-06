@@ -50,18 +50,10 @@ function handleDownloadDecoded() {
   if (!decodedDataUri.value) return
   downloadUrl('decoded-image.png', decodedDataUri.value)
 }
-
-useSeoMeta({
-  title: 'Image to Base64 Converter — KitDev Space',
-  description: 'Convert images to Base64 Data URIs, HTML image tags, CSS backgrounds, and decode Base64 back to images.'
-})
 </script>
 
 <template>
-  <ToolPage
-    title="Image to Base64 Converter"
-    description="Convert images to Base64 data strings and decode Base64 strings to image files."
-  >
+  <ToolPage>
     <div class="space-y-6">
       <!-- Mode & Actions Toolbar -->
       <div class="flex flex-wrap items-center justify-between gap-3 p-3 border border-default rounded-xl bg-elevated/40">

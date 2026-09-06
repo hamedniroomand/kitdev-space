@@ -90,13 +90,6 @@ defineShortcuts({
 
 <template>
   <ToolPage>
-    <template #header>
-      <ToolHeader
-        title="QR Code Studio"
-        description="Generate SVG QR codes for URLs, text, and Wi-Fi networks."
-      />
-    </template>
-
     <UAlert
       color="neutral"
       variant="subtle"

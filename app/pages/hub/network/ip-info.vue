@@ -60,18 +60,10 @@ function handlePreset(ip: string) {
 
 // Initial fetch on mount
 fetchInfo()
-
-useSeoMeta({
-  title: 'IP Address Info — KitDev Space',
-  description: 'Inspect public IP addresses, reverse DNS hostnames, IP versions, and network classifications.'
-})
 </script>
 
 <template>
-  <ToolPage
-    title="IP Address Info"
-    description="Inspect public IP addresses, reverse DNS hostnames, byte representations, and network classifications."
-  >
+  <ToolPage>
     <div class="space-y-6">
       <!-- Search & Presets Toolbar -->
       <div class="flex flex-wrap items-center justify-between gap-3 p-3 border border-default rounded-xl bg-elevated/40">

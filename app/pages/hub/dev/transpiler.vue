@@ -12,7 +12,6 @@ const output = ref('')
 const { status, error, run, reset } = useTool<string>()
 const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
 const { downloadText } = useDownload()
-const { track } = useToolAnalytics()
 
 const loaderItems = [
   { label: 'TypeScript (.ts)', value: 'ts' },
@@ -37,10 +36,6 @@ const editorLang = computed(() => {
   }
 })
 
-onMounted(() => {
-  track('tool_open', { tool: 'transpiler' })
-})
-
 async function execute() {
   output.value = ''
   await run(async () => {
@@ -54,12 +49,6 @@ async function execute() {
     output.value = data.result
     return data.result
   }, 'The transpile operation failed.')
-
-  if (status.value === 'success') {
-    track('tool_execute', { tool: 'transpiler' })
-  } else if (status.value === 'error') {
-    track('tool_error', { tool: 'transpiler' })
-  }
 }
 
 async function handleCopy() {
@@ -94,13 +83,6 @@ defineShortcuts({
 
 <template>
   <ToolPage>
-    <template #header>
-      <ToolHeader
-        title="TS / JSX Transpiler"
-        description="Transpile TypeScript and JSX to plain JavaScript with Bun."
-      />
-    </template>
-
     <UAlert
       color="info"
       variant="subtle"

@@ -167,18 +167,9 @@ defineShortcuts({
 
 <template>
   <ToolPage>
-    <template #header>
-      <ToolHeader
-        title="CSV ↔ JSON / SQL"
-        description="Convert CSV to JSON or SQL INSERT statements. Convert JSON arrays back to CSV."
-      />
-    </template>
-
     <UAlert
       color="neutral"
       variant="subtle"
-      title="Processed locally"
-      description="This tool runs in the browser. It can auto-detect comma, semicolon, and tab delimiters."
     />
 
     <div class="flex flex-wrap gap-4">
