@@ -25,14 +25,21 @@ const {
 </script>
 
 <template>
-  <div class="h-[calc(100vh-4rem)] flex flex-col overflow-hidden">
-    <SqliteWelcome
+  <div class="flex h-full flex-col overflow-hidden">
+    <div
       v-if="!isReady"
-      :loading="isExecuting"
-      @load-file="loadDatabaseFile"
-      @create-blank="createBlankDatabase"
-      @load-sample="loadSampleDatabase"
-    />
+      class="flex-1 overflow-y-auto"
+    >
+      <UContainer class="max-w-5xl py-12">
+        <ToolHeader />
+        <SqliteWelcome
+          :loading="isExecuting"
+          @load-file="loadDatabaseFile"
+          @create-blank="createBlankDatabase"
+          @load-sample="loadSampleDatabase"
+        />
+      </UContainer>
+    </div>
 
     <template v-else>
       <SqliteToolbar
