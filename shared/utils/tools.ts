@@ -89,6 +89,19 @@ export const tools: Tool[] = [
     status: 'available'
   },
   {
+    id: 'lorem',
+    slug: 'lorem',
+    name: 'Lorem Ipsum & Mock Data',
+    description: 'Generate placeholder paragraphs, words, or fake user profile JSON.',
+    category: 'data',
+    icon: 'i-lucide-text',
+    keywords: ['lorem', 'ipsum', 'mock', 'fake', 'placeholder', 'users'],
+    route: '/hub/data/lorem',
+    clientOnly: true,
+    serverRequired: false,
+    status: 'available'
+  },
+  {
     id: 'json-json5',
     slug: 'json-json5',
     name: 'JSON ↔ JSON5',
@@ -143,11 +156,11 @@ export const tools: Tool[] = [
   {
     id: 'uuid',
     slug: 'uuid',
-    name: 'UUID Generator',
-    description: 'Generate UUID values.',
+    name: 'UUID & ID Generator',
+    description: 'Generate UUIDv4, UUIDv7, ULID, and NanoID values.',
     category: 'crypto',
     icon: 'i-lucide-fingerprint',
-    keywords: ['uuid', 'guid', 'random', 'id'],
+    keywords: ['uuid', 'guid', 'random', 'id', 'uuidv7', 'ulid', 'nanoid'],
     route: '/hub/crypto/uuid',
     clientOnly: true,
     serverRequired: false,
@@ -177,6 +190,32 @@ export const tools: Tool[] = [
     route: '/hub/crypto/password-benchmark',
     clientOnly: false,
     serverRequired: true,
+    status: 'available'
+  },
+  {
+    id: 'jwt',
+    slug: 'jwt',
+    name: 'JWT Debugger',
+    description: 'Decode JWT header and payload. Verify HS256 signatures in the browser.',
+    category: 'crypto',
+    icon: 'i-lucide-shield-check',
+    keywords: ['jwt', 'token', 'decode', 'hmac', 'hs256', 'exp'],
+    route: '/hub/crypto/jwt',
+    clientOnly: true,
+    serverRequired: false,
+    status: 'available'
+  },
+  {
+    id: 'passphrase',
+    slug: 'passphrase',
+    name: 'Passphrase Generator',
+    description: 'Generate Diceware passphrases with the EFF large word list.',
+    category: 'crypto',
+    icon: 'i-lucide-dices',
+    keywords: ['diceware', 'passphrase', 'password', 'eff', 'words'],
+    route: '/hub/crypto/passphrase',
+    clientOnly: true,
+    serverRequired: false,
     status: 'available'
   },
   {
@@ -349,6 +388,19 @@ export const tools: Tool[] = [
     status: 'available'
   },
   {
+    id: 'svg-converter',
+    slug: 'svg-converter',
+    name: 'SVG to PNG / WebP',
+    description: 'Convert SVG code or files to PNG or WebP at 1x, 2x, and 4x.',
+    category: 'image',
+    icon: 'i-lucide-vector-square',
+    keywords: ['svg', 'png', 'webp', 'rasterize', 'convert', 'scale'],
+    route: '/hub/image/svg-converter',
+    clientOnly: false,
+    serverRequired: true,
+    status: 'available'
+  },
+  {
     id: 'semver',
     slug: 'semver',
     name: 'Semver Calculator',
@@ -398,6 +450,84 @@ export const tools: Tool[] = [
     route: '/hub/dev/transpiler',
     clientOnly: false,
     serverRequired: true,
+    status: 'available'
+  },
+  {
+    id: 'case-converter',
+    slug: 'case-converter',
+    name: 'Case and Slug Converter',
+    description: 'Convert text into camelCase, PascalCase, snake_case, kebab-case, and URL slugs.',
+    category: 'dev',
+    icon: 'i-lucide-case-sensitive',
+    keywords: ['case', 'slug', 'camelcase', 'pascalcase', 'snakecase', 'kebabcase'],
+    route: '/hub/dev/case-converter',
+    clientOnly: true,
+    serverRequired: false,
+    status: 'available'
+  },
+  {
+    id: 'timestamp',
+    slug: 'timestamp',
+    name: 'Timestamp Studio',
+    description: 'Convert Unix timestamps to ISO 8601 strings and relative time descriptions.',
+    category: 'dev',
+    icon: 'i-lucide-clock',
+    keywords: ['timestamp', 'date', 'unix', 'epoch', 'iso8601', 'time'],
+    route: '/hub/dev/timestamp',
+    clientOnly: true,
+    serverRequired: false,
+    status: 'available'
+  },
+  {
+    id: 'css-units',
+    slug: 'css-units',
+    name: 'CSS Unit Converter',
+    description: 'Convert values between px, rem, em, vw, and vh.',
+    category: 'dev',
+    icon: 'i-lucide-ruler',
+    keywords: ['css', 'units', 'px', 'rem', 'em', 'vw', 'vh', 'convert'],
+    route: '/hub/dev/css-units',
+    clientOnly: true,
+    serverRequired: false,
+    status: 'available'
+  },
+  {
+    id: 'html-url-codec',
+    slug: 'html-url-codec',
+    name: 'HTML & URL Codec',
+    description: 'Encode and decode HTML entities and URL strings.',
+    category: 'dev',
+    icon: 'i-lucide-file-code',
+    keywords: ['html', 'url', 'encode', 'decode', 'entities', 'uri'],
+    route: '/hub/dev/html-url-codec',
+    clientOnly: true,
+    serverRequired: false,
+    status: 'available'
+  },
+  {
+    id: 'svg-component',
+    slug: 'svg-component',
+    name: 'SVG to Component',
+    description: 'Convert SVG markup into a React JSX or Vue 3 component.',
+    category: 'dev',
+    icon: 'i-lucide-component',
+    keywords: ['svg', 'react', 'vue', 'jsx', 'component'],
+    route: '/hub/dev/svg-component',
+    clientOnly: true,
+    serverRequired: false,
+    status: 'available'
+  },
+  {
+    id: 'qr-code',
+    slug: 'qr-code',
+    name: 'QR Code Studio',
+    description: 'Generate SVG QR codes for URLs, text, and Wi-Fi networks.',
+    category: 'dev',
+    icon: 'i-lucide-qr-code',
+    keywords: ['qr', 'qrcode', 'wifi', 'svg', 'barcode'],
+    route: '/hub/dev/qr-code',
+    clientOnly: true,
+    serverRequired: false,
     status: 'available'
   }
 ]
