@@ -4,7 +4,7 @@ import {
   formatAsCssBackground,
   formatAsHtmlImg,
   parseDataUri
-} from '../../../../shared/utils/image/base64'
+} from '~~/shared/utils/image/base64'
 import { useCopyFeedback } from '../../../composables/useCopyFeedback'
 
 type ToolMode = 'image-to-base64' | 'base64-to-image'

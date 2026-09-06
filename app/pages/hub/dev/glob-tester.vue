@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { testGlobMatch } from '../../../../shared/utils/dev/glob-matcher'
+import { testGlobMatch } from '~~/shared/utils/dev/glob-matcher'
 
 const globPattern = ref('src/**/*.vue')
 const testPaths = ref<string>(

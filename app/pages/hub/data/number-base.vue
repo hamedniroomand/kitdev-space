@@ -3,7 +3,7 @@ import { ref } from 'vue'
 import {
   convertFromBase,
   type NumberBase
-} from '../../../../shared/utils/data/number-base'
+} from '~~/shared/utils/data/number-base'
 import { useCopyFeedback } from '../../../composables/useCopyFeedback'
 
 const decimalVal = ref('255')

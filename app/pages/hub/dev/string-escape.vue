@@ -4,7 +4,7 @@ import {
   type EscapeMode,
   escapeString,
   unescapeString
-} from '../../../../shared/utils/dev/string-escape'
+} from '~~/shared/utils/dev/string-escape'
 import { useCopyFeedback } from '../../../composables/useCopyFeedback'
 
 const input = ref('Hello "World"\nNew line with \'quotes\' and <tags>')

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { inspectUnicode } from '../../../../shared/utils/data/unicode'
+import { inspectUnicode } from '~~/shared/utils/data/unicode'
 import { useCopyFeedback } from '../../../composables/useCopyFeedback'
 
 const input = ref('Hello 👋 World! \u200B\u00E9')

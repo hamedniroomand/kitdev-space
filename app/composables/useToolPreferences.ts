@@ -1,6 +1,6 @@
 import { computed } from 'vue'
 import { useStorage } from '@vueuse/core'
-import { getToolById } from '../../shared/utils/tools'
+import { getToolById } from '~~/shared/utils/tools'
 import type { Tool } from '../types/tools'
 
 export function useToolPreferences() {

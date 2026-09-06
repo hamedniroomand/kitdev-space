@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { validateYaml } from '../../../../shared/utils/data/yaml-validator'
+import { validateYaml } from '~~/shared/utils/data/yaml-validator'
 import { useCopyFeedback } from '../../../composables/useCopyFeedback'
 
 const sampleValidYaml = `server:

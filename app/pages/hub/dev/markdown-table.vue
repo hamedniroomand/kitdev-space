@@ -3,7 +3,7 @@ import { computed, ref } from 'vue'
 import {
   type ColumnAlign,
   formatMarkdownTable
-} from '../../../../shared/utils/dev/markdown-table'
+} from '~~/shared/utils/dev/markdown-table'
 import { useCopyFeedback } from '../../../composables/useCopyFeedback'
 
 const headers = ref<string[]>(['Feature', 'Status', 'Notes'])

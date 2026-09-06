@@ -54,6 +54,8 @@ export default defineNuxtConfig({
     '@vercel/analytics'
   ],
 
+  components: [{ path: '~/components', pathPrefix: false }],
+
   devtools: {
     enabled: process.env.NUXT_DEVTOOLS !== 'false'
   },

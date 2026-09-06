@@ -6,7 +6,7 @@ import {
   formatAsTailwindV4,
   generateTailwindPalette,
   type TailwindShade
-} from '../../../../shared/utils/color/tailwind'
+} from '~~/shared/utils/color/tailwind'
 import { useCopyFeedback } from '../../../composables/useCopyFeedback'
 import { useToolShortcuts } from '../../../composables/useToolShortcuts'
 

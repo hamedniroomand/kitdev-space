@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { envToJson, jsonToEnv } from '../../../../shared/utils/data/env-parser'
+import { envToJson, jsonToEnv } from '~~/shared/utils/data/env-parser'
 import { useCopyFeedback } from '../../../composables/useCopyFeedback'
 
 type ConversionMode = 'env-to-json' | 'json-to-env'

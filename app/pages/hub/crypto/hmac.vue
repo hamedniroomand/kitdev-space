@@ -5,7 +5,7 @@ import {
   generateRandomSecret,
   type HmacAlgorithm,
   type HmacEncoding
-} from '../../../../shared/utils/crypto/hmac'
+} from '~~/shared/utils/crypto/hmac'
 import { useCopyFeedback } from '../../../composables/useCopyFeedback'
 
 const message = ref('The quick brown fox jumps over the lazy dog')

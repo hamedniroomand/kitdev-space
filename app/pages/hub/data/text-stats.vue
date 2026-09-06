@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { getTextStats } from '../../../../shared/utils/data/stats'
+import { getTextStats } from '~~/shared/utils/data/stats'
 
 const input = ref(
   'KitDev Space is an open-source suite of developer utilities designed for efficiency.\n\nAll tools run directly in the browser or on the Bun runtime with zero tracking, high performance, and complete data privacy.'

@@ -622,6 +622,32 @@ export const tools: Tool[] = [
     status: 'available'
   },
   {
+    id: 'tls-inspector',
+    slug: 'tls-inspector',
+    name: 'TLS Certificate Inspector',
+    description: 'Inspect SSL/TLS certificate chains, SANs, cipher suites, and expiration warnings.',
+    category: 'network',
+    icon: 'i-lucide-shield-check',
+    keywords: ['tls', 'ssl', 'certificate', 'https', 'san', 'chain', 'cipher', 'expire'],
+    route: '/hub/network/tls-inspector',
+    clientOnly: false,
+    serverRequired: true,
+    status: 'available'
+  },
+  {
+    id: 'rdap-lookup',
+    slug: 'rdap-lookup',
+    name: 'RDAP / WHOIS Lookup',
+    description: 'Query domain and IP registration data, registrars, and status over standard RDAP endpoints.',
+    category: 'network',
+    icon: 'i-lucide-globe',
+    keywords: ['rdap', 'whois', 'domain', 'ip', 'registration', 'registrar', 'nameservers'],
+    route: '/hub/network/rdap-lookup',
+    clientOnly: false,
+    serverRequired: true,
+    status: 'available'
+  },
+  {
     id: 'image-converter',
     slug: 'converter',
     name: 'Image Converter',
@@ -721,6 +747,19 @@ export const tools: Tool[] = [
     icon: 'i-lucide-shield-alert',
     keywords: ['image', 'exif', 'metadata', 'privacy', 'gps', 'strip', 'clean'],
     route: '/hub/image/exif-stripper',
+    clientOnly: false,
+    serverRequired: true,
+    status: 'available'
+  },
+  {
+    id: 'favicon-generator',
+    slug: 'favicon-generator',
+    name: 'Favicon Set Generator',
+    description: 'Convert an image into all standard favicon sizes, ICO, site.webmanifest, and HTML tags in a ZIP download.',
+    category: 'image',
+    icon: 'i-lucide-file-image',
+    keywords: ['favicon', 'ico', 'manifest', 'icon', 'apple-touch-icon', 'zip', 'generator'],
+    route: '/hub/image/favicon-generator',
     clientOnly: false,
     serverRequired: true,
     status: 'available'
@@ -968,6 +1007,19 @@ export const tools: Tool[] = [
     icon: 'i-lucide-terminal',
     keywords: ['curl', 'code', 'fetch', 'axios', 'python', 'go', 'convert', 'http'],
     route: '/hub/dev/curl-converter',
+    clientOnly: true,
+    serverRequired: false,
+    status: 'available'
+  },
+  {
+    id: 'html-converter',
+    slug: 'html-converter',
+    name: 'HTML to JSX / Vue Converter',
+    description: 'Convert standard HTML markup and inline styles into JSX or Vue component templates.',
+    category: 'dev',
+    icon: 'i-lucide-code-xml',
+    keywords: ['html', 'jsx', 'react', 'vue', 'converter', 'sfc', 'style', 'svg'],
+    route: '/hub/dev/html-converter',
     clientOnly: true,
     serverRequired: false,
     status: 'available'

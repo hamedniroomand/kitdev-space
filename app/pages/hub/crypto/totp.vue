@@ -6,7 +6,7 @@ import {
   generateTotpSecret,
   parseTotpUri,
   type TotpOptions
-} from '../../../../shared/utils/crypto/totp'
+} from '~~/shared/utils/crypto/totp'
 import { useCopyFeedback } from '../../../composables/useCopyFeedback'
 
 const secretInput = ref('JBSWY3DPEHPK3PXP')

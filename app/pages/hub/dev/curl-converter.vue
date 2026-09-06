@@ -3,10 +3,10 @@ import { computed, ref } from 'vue'
 import {
   convertCurl,
   type CurlTargetLanguage
-} from '../../../../shared/utils/dev/curl-converter'
+} from '~~/shared/utils/dev/curl-converter'
 import { useCopyFeedback } from '../../../composables/useCopyFeedback'
 import { useToolShortcuts } from '../../../composables/useToolShortcuts'
-import type { ToolEditorLang } from '../../../../shared/utils/dev/editor-lang'
+import type { ToolEditorLang } from '~~/shared/utils/dev/editor-lang'
 
 const samplePostCurl = `curl -X POST "https://api.example.com/v1/users" \\
   -H "Content-Type: application/json" \\

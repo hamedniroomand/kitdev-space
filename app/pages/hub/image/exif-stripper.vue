@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import type { ImageEncodeFormat } from '../../../../shared/utils/image/types'
+import type { ImageEncodeFormat } from '~~/shared/utils/image/types'
 
 const file = ref<File | null>(null)
 const format = ref<ImageEncodeFormat>('jpeg')

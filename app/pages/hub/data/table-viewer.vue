@@ -4,7 +4,7 @@ import {
   filterAndSortRows,
   parseToTable,
   type TableRow
-} from '../../../../shared/utils/data/table-viewer'
+} from '~~/shared/utils/data/table-viewer'
 import { useCopyFeedback } from '../../../composables/useCopyFeedback'
 
 const sampleCsv = `id,name,role,department,salary

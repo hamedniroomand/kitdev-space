@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import type { IpInfo } from '../../../../shared/utils/network/ip-info'
+import type { IpInfo } from '~~/shared/utils/network/ip-info'
 import { useCopyFeedback } from '../../../composables/useCopyFeedback'
 
 interface ExtendedIpInfo extends IpInfo {

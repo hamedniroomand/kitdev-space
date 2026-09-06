@@ -3,7 +3,7 @@ import { computed, ref } from 'vue'
 import {
   generatePlaceholderSvg,
   svgToDataUri
-} from '../../../../shared/utils/image/placeholder'
+} from '~~/shared/utils/image/placeholder'
 import { useCopyFeedback } from '../../../composables/useCopyFeedback'
 
 const width = ref(600)

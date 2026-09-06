@@ -5,7 +5,7 @@ import {
   octalToPermissions,
   permissionsToOctal,
   permissionsToSymbolic
-} from '../../../../shared/utils/dev/chmod'
+} from '~~/shared/utils/dev/chmod'
 import { useCopyFeedback } from '../../../composables/useCopyFeedback'
 
 const permissions = ref<ChmodPermissions>(octalToPermissions('755'))
