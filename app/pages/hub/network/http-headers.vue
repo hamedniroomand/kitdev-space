@@ -187,8 +187,8 @@ defineShortcuts({
         <DataRelatedTools
           class="mt-8"
           :items="[
+            { label: 'CORS and Security Header Inspector', to: '/hub/network/security-headers' },
             { label: 'DNS Lookup', to: '/hub/network/dns-lookup' },
-            { label: 'URL Inspector', to: '/hub/network/url-inspector' },
             { label: 'Redirect Checker', to: '/hub/network/redirect' }
           ]"
         />

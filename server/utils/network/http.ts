@@ -58,10 +58,15 @@ function isRedirectStatus(status: number): boolean {
   return REDIRECT_STATUSES.has(status)
 }
 
-async function fetchOnce(url: URL, method: 'HEAD' | 'GET'): Promise<Response> {
+async function fetchOnce(
+  url: URL,
+  method: 'HEAD' | 'GET' | 'OPTIONS',
+  requestHeaders?: Record<string, string>
+): Promise<Response> {
   return Bun.fetch(url, {
     method,
     redirect: 'manual',
+    headers: requestHeaders,
     signal: AbortSignal.timeout(TIMEOUT_MS)
   })
 }
@@ -75,15 +80,31 @@ function toResult(response: Response, fallbackUrl: URL): HeaderInspectResult {
   }
 }
 
-export async function fetchHeaders(input: string): Promise<HeaderInspectResult> {
+export async function fetchHeaders(
+  input: string,
+  options: { origin?: string, method?: 'HEAD' | 'GET' | 'OPTIONS' } = {}
+): Promise<HeaderInspectResult> {
   const url = await assertSafeUrl(input)
+  const requestHeaders = options.origin
+    ? {
+        'Origin': options.origin,
+        'Access-Control-Request-Method': 'GET',
+        'Access-Control-Request-Headers': 'content-type'
+      }
+    : undefined
 
   try {
-    let response = await fetchOnce(url, 'HEAD')
+    if (options.method === 'OPTIONS') {
+      const response = await fetchOnce(url, 'OPTIONS', requestHeaders)
+      discardBody(response)
+      return toResult(response, url)
+    }
+
+    let response = await fetchOnce(url, 'HEAD', requestHeaders)
 
     if (response.status === 405 || response.status === 501) {
       discardBody(response)
-      response = await fetchOnce(url, 'GET')
+      response = await fetchOnce(url, 'GET', requestHeaders)
     }
 
     discardBody(response)

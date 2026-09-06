@@ -349,6 +349,19 @@ export const tools: Tool[] = [
     status: 'available'
   },
   {
+    id: 'security-headers',
+    slug: 'security-headers',
+    name: 'CORS and Security Header Inspector',
+    description: 'Audit CORS and security headers with a health score and fix guidance.',
+    category: 'network',
+    icon: 'i-lucide-shield-check',
+    keywords: ['cors', 'csp', 'hsts', 'security', 'headers', 'x-frame-options'],
+    route: '/hub/network/security-headers',
+    clientOnly: false,
+    serverRequired: true,
+    status: 'available'
+  },
+  {
     id: 'url-inspector',
     slug: 'url-inspector',
     name: 'URL Inspector',
@@ -528,6 +541,19 @@ export const tools: Tool[] = [
     route: '/hub/dev/ast-playground',
     clientOnly: false,
     serverRequired: true,
+    status: 'available'
+  },
+  {
+    id: 'regex-tester',
+    slug: 'regex-tester',
+    name: 'RegEx Tester and Explainer',
+    description: 'Test regular expressions, highlight matches, and explain tokens.',
+    category: 'dev',
+    icon: 'i-lucide-regex',
+    keywords: ['regex', 'regexp', 'regular expression', 'match', 'capture', 'flags'],
+    route: '/hub/dev/regex-tester',
+    clientOnly: true,
+    serverRequired: false,
     status: 'available'
   },
   {
