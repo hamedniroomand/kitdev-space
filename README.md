@@ -68,12 +68,8 @@ bun run preview
 
 ## Contributing
 
-Read `docs/tool-architecture.md` before you add or change a tool. It says where the work runs,
-how the registry drives the page copy, and how analytics is wired. Write prose that follows
-`docs/writing-rules.md`.
-
-Commits follow Conventional Commits, one line, checked by commitlint. The pre-commit hook runs the
-linter on the staged files.
+Read [CONTRIBUTING.md](CONTRIBUTING.md). It says how to report a problem, how to send a change,
+and which rules a tool must follow.
 
 ## License
 
