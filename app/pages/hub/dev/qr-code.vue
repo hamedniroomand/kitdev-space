@@ -22,9 +22,8 @@ const previewUrl = computed(() => {
   }
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg.value)}`
 })
-const toast = useToast()
 const { status, error, run, reset } = useTool<string>()
-const { copy, copied } = useClipboard({ legacy: true })
+const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
 const { downloadText } = useDownload()
 
 const kindItems = [
@@ -65,7 +64,6 @@ async function handleCopy() {
     return
   }
   await copy(svg.value)
-  toast.add({ title: copied.value ? 'Copied' : 'Copy failed', color: copied.value ? 'success' : 'error' })
 }
 
 function handleDownload() {
@@ -161,10 +159,10 @@ defineShortcuts({
         @click="generate"
       />
       <UButton
-        label="Copy SVG"
-        color="neutral"
+        :label="copyLabel('default', 'Copy SVG')"
+        :color="copyColor()"
         variant="subtle"
-        icon="i-lucide-copy"
+        :icon="copyIcon()"
         :disabled="!svg"
         @click="handleCopy"
       />

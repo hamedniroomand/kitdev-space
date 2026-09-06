@@ -38,7 +38,7 @@ You can also use ~~strikethrough~~ and **bold** text.
 
 const input = ref(sampleMarkdown)
 const toast = useToast()
-const { copy, copied } = useClipboard({ legacy: true })
+const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
 const { downloadText } = useDownload()
 const { track } = useToolAnalytics()
 
@@ -55,12 +55,8 @@ async function handleCopyHtml() {
   if (!compiledHtml.value) {
     return
   }
-  await copy(compiledHtml.value)
-  toast.add({
-    title: copied.value ? 'Copied HTML' : 'Copy failed',
-    color: copied.value ? 'success' : 'error'
-  })
-  if (copied.value) {
+  const ok = await copy(compiledHtml.value, 'html')
+  if (ok) {
     track('tool_copy', { tool: 'markdown-studio' })
   }
 }
@@ -69,12 +65,8 @@ async function handleCopyMarkdown() {
   if (!input.value) {
     return
   }
-  await copy(input.value)
-  toast.add({
-    title: copied.value ? 'Copied Markdown' : 'Copy failed',
-    color: copied.value ? 'success' : 'error'
-  })
-  if (copied.value) {
+  const ok = await copy(input.value, 'markdown')
+  if (ok) {
     track('tool_copy', { tool: 'markdown-studio' })
   }
 }
@@ -197,18 +189,18 @@ function handleClear() {
         @click="handleDownload"
       />
       <UButton
-        label="Copy HTML"
-        color="neutral"
+        :label="copyLabel('html', 'Copy HTML')"
+        :color="copyColor('html')"
         variant="subtle"
-        icon="i-lucide-copy"
+        :icon="copyIcon('html')"
         :disabled="!input.trim()"
         @click="handleCopyHtml"
       />
       <UButton
-        label="Copy Markdown"
-        color="neutral"
+        :label="copyLabel('markdown', 'Copy Markdown')"
+        :color="copyColor('markdown')"
         variant="subtle"
-        icon="i-lucide-file-text"
+        :icon="copyIcon('markdown', 'i-lucide-file-text')"
         :disabled="!input.trim()"
         @click="handleCopyMarkdown"
       />

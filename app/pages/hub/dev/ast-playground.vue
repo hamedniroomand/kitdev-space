@@ -68,9 +68,8 @@ const resolveMode = ref<ResolveMode>('esm')
 const resolveDirectory = ref('')
 const manualSpecifier = ref('')
 const resolveRows = ref<ResolveItem[]>([])
-const toast = useToast()
 const { status, error, run, reset } = useTool<string>()
-const { copy, copied } = useClipboard({ legacy: true })
+const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
 
 const languageItems = [
   { label: 'JavaScript', value: 'javascript' },
@@ -207,12 +206,11 @@ function handleSelect(node: AstTreeNode) {
   selected.value = node
 }
 
-async function handleCopy(text: string) {
+async function handleCopy(text: string, key: string) {
   if (!text) {
     return
   }
-  await copy(text)
-  toast.add({ title: copied.value ? 'Copied' : 'Copy failed', color: copied.value ? 'success' : 'error' })
+  await copy(text, key)
 }
 
 function handleClear() {
@@ -372,12 +370,12 @@ defineShortcuts({
     >
       <div class="flex justify-end">
         <UButton
-          label="Copy JSON"
+          :label="copyLabel('json', 'Copy JSON')"
           size="sm"
-          color="neutral"
+          :color="copyColor('json')"
           variant="subtle"
-          icon="i-lucide-copy"
-          @click="handleCopy(programJson)"
+          :icon="copyIcon('json')"
+          @click="handleCopy(programJson, 'json')"
         />
       </div>
       <ToolEditor
@@ -394,13 +392,13 @@ defineShortcuts({
     >
       <div class="flex justify-end">
         <UButton
-          label="Copy"
+          :label="copyLabel('transform')"
           size="sm"
-          color="neutral"
+          :color="copyColor('transform')"
           variant="subtle"
-          icon="i-lucide-copy"
+          :icon="copyIcon('transform')"
           :disabled="!transformed"
-          @click="handleCopy(transformed)"
+          @click="handleCopy(transformed, 'transform')"
         />
       </div>
       <ToolEditor

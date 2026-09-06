@@ -8,8 +8,7 @@ import {
 
 const input = ref('https://example.com/search?q=hello world&category=dev')
 const output = ref('')
-const toast = useToast()
-const { copy, copied } = useClipboard({ legacy: true })
+const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
 
 useToolSeo('html-url-codec')
 
@@ -45,10 +44,6 @@ async function handleCopy() {
     return
   }
   await copy(output.value)
-  toast.add({
-    title: copied.value ? 'Copied' : 'Copy failed',
-    color: copied.value ? 'success' : 'error'
-  })
 }
 </script>
 
@@ -108,10 +103,10 @@ async function handleCopy() {
         @click="handleSwap"
       />
       <UButton
-        label="Copy"
-        color="neutral"
+        :label="copyLabel()"
+        :color="copyColor()"
         variant="subtle"
-        icon="i-lucide-copy"
+        :icon="copyIcon()"
         :disabled="!output"
         @click="handleCopy"
       />

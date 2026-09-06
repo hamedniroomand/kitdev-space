@@ -8,9 +8,8 @@ const range = ref('^1.0.0')
 const versionsText = ref('1.10.0\n1.2.0\n1.9.0')
 const release = ref<SemverRelease>('patch')
 const output = ref('')
-const toast = useToast()
 const { status, error, run, reset } = useTool<string>()
-const { copy, copied } = useClipboard({ legacy: true })
+const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
 const { track } = useToolAnalytics()
 
 const actionItems = [
@@ -86,7 +85,6 @@ async function handleCopy() {
     return
   }
   await copy(output.value)
-  toast.add({ title: copied.value ? 'Copied' : 'Copy failed', color: copied.value ? 'success' : 'error' })
 }
 
 function handleClear() {
@@ -176,13 +174,13 @@ defineShortcuts({
         Run
       </UButton>
       <UButton
-        color="neutral"
+        :label="copyLabel()"
+        :icon="copyIcon()"
+        :color="copyColor()"
         variant="ghost"
         :disabled="!output"
         @click="handleCopy"
-      >
-        Copy
-      </UButton>
+      />
       <UButton
         color="neutral"
         variant="ghost"

@@ -6,8 +6,7 @@ const hex = ref('')
 const rgb = ref('')
 const hsl = ref('')
 const { status, error, run, reset } = useTool<string>()
-const toast = useToast()
-const { copy, copied } = useClipboard({ legacy: true })
+const { copy, icon: copyIcon, color: copyColor } = useCopyFeedback()
 
 useToolSeo('color-converter')
 
@@ -21,9 +20,8 @@ async function convert() {
   })
 }
 
-async function copyValue(value: string) {
-  await copy(value)
-  toast.add({ title: copied.value ? 'Copied' : 'Copy failed', color: copied.value ? 'success' : 'error' })
+async function copyValue(value: string, key: string) {
+  await copy(value, key)
 }
 
 function handleClear() {
@@ -111,11 +109,11 @@ onMounted(() => {
         <span class="flex-1 text-highlighted">{{ item.value }}</span>
         <UButton
           size="xs"
-          color="neutral"
           variant="ghost"
-          icon="i-lucide-copy"
+          :icon="copyIcon(item.label.toLowerCase())"
+          :color="copyColor(item.label.toLowerCase())"
           :aria-label="`Copy ${item.label}`"
-          @click="copyValue(item.value)"
+          @click="copyValue(item.value, item.label.toLowerCase())"
         />
       </div>
     </div>

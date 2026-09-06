@@ -3,9 +3,8 @@ import { decodeBase64, encodeBase64 } from '~~/shared/utils/crypto/base64'
 
 const input = ref('KitDev Space')
 const output = ref('')
-const toast = useToast()
 const { status, error, result, run, reset } = useTool<string>()
-const { copy, copied } = useClipboard({ legacy: true })
+const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
 
 useToolSeo('base64')
 
@@ -28,7 +27,6 @@ async function handleCopy() {
     return
   }
   await copy(output.value)
-  toast.add({ title: copied.value ? 'Copied' : 'Copy failed', color: copied.value ? 'success' : 'error' })
 }
 
 function handleClear() {
@@ -84,10 +82,10 @@ defineShortcuts({
         @click="decode"
       />
       <UButton
-        label="Copy"
-        color="neutral"
+        :label="copyLabel()"
+        :color="copyColor()"
         variant="subtle"
-        icon="i-lucide-copy"
+        :icon="copyIcon()"
         :disabled="!output"
         @click="handleCopy"
       />

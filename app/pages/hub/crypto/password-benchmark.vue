@@ -10,9 +10,8 @@ const verify = ref(true)
 const hash = ref('')
 const durationMs = ref<number | null>(null)
 const verified = ref<boolean | null>(null)
-const toast = useToast()
 const { status, error, run, reset } = useTool<string>()
-const { copy, copied } = useClipboard({ legacy: true })
+const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
 const { track } = useToolAnalytics()
 
 const algorithmItems = [
@@ -77,7 +76,6 @@ async function handleCopy() {
     return
   }
   await copy(hash.value)
-  toast.add({ title: copied.value ? 'Copied' : 'Copy failed', color: copied.value ? 'success' : 'error' })
 }
 
 function handleClear() {
@@ -188,13 +186,13 @@ defineShortcuts({
         Benchmark
       </UButton>
       <UButton
-        color="neutral"
+        :label="copyLabel('default', 'Copy hash')"
+        :icon="copyIcon()"
+        :color="copyColor()"
         variant="ghost"
         :disabled="!hash"
         @click="handleCopy"
-      >
-        Copy hash
-      </UButton>
+      />
       <UButton
         color="neutral"
         variant="ghost"

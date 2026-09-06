@@ -14,9 +14,8 @@ const right = ref(`function greet(name) {
 `)
 const diff = ref<DiffResult | null>(null)
 const unified = ref('')
-const toast = useToast()
 const { status, error, run, reset } = useTool<DiffResult>()
-const { copy, copied } = useClipboard({ legacy: true })
+const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
 const { track } = useToolAnalytics()
 
 const { workerFn } = useWebWorkerFn(
@@ -64,9 +63,8 @@ async function handleCopy() {
   if (!unified.value) {
     return
   }
-  await copy(unified.value)
-  toast.add({ title: copied.value ? 'Copied' : 'Copy failed', color: copied.value ? 'success' : 'error' })
-  if (copied.value) {
+  const ok = await copy(unified.value)
+  if (ok) {
     track('tool_copy', { tool: 'text-diff' })
   }
 }
@@ -139,10 +137,10 @@ defineShortcuts({
         @click="handleSwap"
       />
       <UButton
-        label="Copy unified"
-        color="neutral"
+        :label="copyLabel('default', 'Copy unified')"
+        :color="copyColor()"
         variant="subtle"
-        icon="i-lucide-copy"
+        :icon="copyIcon()"
         :disabled="!unified"
         @click="handleCopy"
       />

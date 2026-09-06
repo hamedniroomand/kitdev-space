@@ -17,7 +17,7 @@ const stops = ref<GradientStop[]>([
 ])
 
 const toast = useToast()
-const { copy, copied } = useClipboard({ legacy: true })
+const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
 
 const typeItems = [
   { label: 'Linear', value: 'linear' },
@@ -90,7 +90,6 @@ async function copyCss() {
     return
   }
   await copy(cssDeclaration.value)
-  toast.add({ title: copied.value ? 'Copied' : 'Copy failed', color: copied.value ? 'success' : 'error' })
 }
 
 function handleReset() {
@@ -245,8 +244,9 @@ defineShortcuts({
 
     <ToolActions>
       <UButton
-        label="Copy CSS"
-        icon="i-lucide-copy"
+        :label="copyLabel('default', 'Copy CSS')"
+        :icon="copyIcon()"
+        :color="copyColor()"
         :disabled="!cssDeclaration"
         @click="copyCss"
       />

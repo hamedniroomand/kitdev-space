@@ -10,9 +10,8 @@ const token = ref('')
 const secret = ref('')
 const decoded = ref<JwtDecodeResult | null>(null)
 const verifyStatus = ref<JwtVerifyStatus | null>(null)
-const toast = useToast()
 const { status, error, run, reset } = useTool()
-const { copy, copied } = useClipboard({ legacy: true })
+const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
 
 useToolSeo('jwt')
 
@@ -56,12 +55,11 @@ async function handleDecode() {
   })
 }
 
-async function handleCopy(text: string) {
+async function handleCopy(text: string, key: 'header' | 'payload') {
   if (!text) {
     return
   }
-  await copy(text)
-  toast.add({ title: copied.value ? 'Copied' : 'Copy failed', color: copied.value ? 'success' : 'error' })
+  await copy(text, key)
 }
 
 function handleClear() {
@@ -181,13 +179,12 @@ defineShortcuts({
           <div class="flex justify-end">
             <UButton
               size="sm"
-              color="neutral"
               variant="ghost"
-              icon="i-lucide-copy"
-              @click="handleCopy(decoded.headerJson)"
-            >
-              Copy header
-            </UButton>
+              :label="copyLabel('header', 'Copy header')"
+              :icon="copyIcon('header')"
+              :color="copyColor('header')"
+              @click="handleCopy(decoded.headerJson, 'header')"
+            />
           </div>
           <ToolEditor
             :model-value="decoded.headerJson"
@@ -200,13 +197,12 @@ defineShortcuts({
           <div class="flex justify-end">
             <UButton
               size="sm"
-              color="neutral"
               variant="ghost"
-              icon="i-lucide-copy"
-              @click="handleCopy(decoded.payloadJson)"
-            >
-              Copy payload
-            </UButton>
+              :label="copyLabel('payload', 'Copy payload')"
+              :icon="copyIcon('payload')"
+              :color="copyColor('payload')"
+              @click="handleCopy(decoded.payloadJson, 'payload')"
+            />
           </div>
           <ToolEditor
             :model-value="decoded.payloadJson"

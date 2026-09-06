@@ -9,8 +9,7 @@ import {
 } from '~~/shared/utils/dev/case'
 
 const input = ref('hello world developer')
-const toast = useToast()
-const { copy } = useClipboard({ legacy: true })
+const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
 
 useToolSeo('case-converter')
 
@@ -26,26 +25,18 @@ const conversions = computed(() => {
   ]
 })
 
-async function copyItem(val: string, label: string) {
+async function copyItem(val: string, id: string) {
   if (!val) {
     return
   }
-  await copy(val)
-  toast.add({
-    title: `Copied ${label}`,
-    color: 'success'
-  })
+  await copy(val, id)
 }
 
 async function copyAll() {
   const summary = conversions.value
     .map(c => `${c.label}: ${c.value}`)
     .join('\n')
-  await copy(summary)
-  toast.add({
-    title: 'Copied all results',
-    color: 'success'
-  })
+  await copy(summary, 'all')
 }
 
 function handleClear() {
@@ -77,10 +68,10 @@ function handleClear() {
 
     <ToolActions>
       <UButton
-        label="Copy All"
-        color="neutral"
+        :label="copyLabel('all', 'Copy All')"
+        :color="copyColor('all')"
         variant="subtle"
-        icon="i-lucide-copy"
+        :icon="copyIcon('all')"
         :disabled="!input"
         @click="copyAll"
       />
@@ -108,13 +99,13 @@ function handleClear() {
           </p>
         </div>
         <UButton
-          label="Copy"
+          :label="copyLabel(item.id)"
           size="xs"
-          color="neutral"
+          :color="copyColor(item.id)"
           variant="subtle"
-          icon="i-lucide-copy"
+          :icon="copyIcon(item.id)"
           :disabled="!item.value"
-          @click="copyItem(item.value, item.label)"
+          @click="copyItem(item.value, item.id)"
         />
       </div>
     </div>

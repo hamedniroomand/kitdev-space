@@ -7,9 +7,8 @@ type HeaderInspectResult = {
 }
 
 const url = ref('')
-const toast = useToast()
 const { status, error, result, run, reset } = useTool<HeaderInspectResult>()
-const { copy, copied } = useClipboard({ legacy: true })
+const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
 
 const headerRows = computed(() => {
   if (!result.value) {
@@ -49,7 +48,6 @@ async function handleCopy() {
     return
   }
   await copy(JSON.stringify(result.value, null, 2))
-  toast.add({ title: copied.value ? 'Copied' : 'Copy failed', color: copied.value ? 'success' : 'error' })
 }
 
 function handleClear() {
@@ -104,10 +102,10 @@ defineShortcuts({
         @click="inspect"
       />
       <UButton
-        label="Copy JSON"
-        color="neutral"
+        :label="copyLabel('default', 'Copy JSON')"
+        :color="copyColor()"
         variant="subtle"
-        icon="i-lucide-copy"
+        :icon="copyIcon()"
         :disabled="status !== 'success' || !result"
         @click="handleCopy"
       />

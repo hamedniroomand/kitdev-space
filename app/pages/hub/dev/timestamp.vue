@@ -2,8 +2,7 @@
 import { formatRelativeTime, parseTimestamp } from '~~/shared/utils/dev/timestamp'
 
 const input = ref(String(Math.floor(Date.now() / 1000)))
-const toast = useToast()
-const { copy } = useClipboard({ legacy: true })
+const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
 
 useToolSeo('timestamp')
 
@@ -44,15 +43,11 @@ function handleClear() {
   input.value = ''
 }
 
-async function copyValue(val: string, label: string) {
+async function copyValue(val: string, key: string) {
   if (!val) {
     return
   }
-  await copy(val)
-  toast.add({
-    title: `Copied ${label}`,
-    color: 'success'
-  })
+  await copy(val, key)
 }
 </script>
 
@@ -123,12 +118,12 @@ async function copyValue(val: string, label: string) {
           </p>
         </div>
         <UButton
-          label="Copy"
+          :label="copyLabel(item.id)"
           size="xs"
-          color="neutral"
+          :color="copyColor(item.id)"
           variant="subtle"
-          icon="i-lucide-copy"
-          @click="copyValue(item.value, item.label)"
+          :icon="copyIcon(item.id)"
+          @click="copyValue(item.value, item.id)"
         />
       </div>
     </div>

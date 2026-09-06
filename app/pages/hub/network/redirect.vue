@@ -6,9 +6,8 @@ type RedirectHop = {
 }
 
 const url = ref('')
-const toast = useToast()
 const { status, error, result, run, reset } = useTool<RedirectHop[]>()
-const { copy, copied } = useClipboard({ legacy: true })
+const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
 
 useToolSeo('redirect-checker')
 
@@ -37,7 +36,6 @@ async function handleCopy() {
     return
   }
   await copy(JSON.stringify(result.value, null, 2))
-  toast.add({ title: copied.value ? 'Copied' : 'Copy failed', color: copied.value ? 'success' : 'error' })
 }
 
 function handleClear() {
@@ -92,10 +90,10 @@ defineShortcuts({
         @click="check"
       />
       <UButton
-        label="Copy JSON"
-        color="neutral"
+        :label="copyLabel('default', 'Copy JSON')"
+        :color="copyColor()"
         variant="subtle"
-        icon="i-lucide-copy"
+        :icon="copyIcon()"
         :disabled="status !== 'success' || !result"
         @click="handleCopy"
       />

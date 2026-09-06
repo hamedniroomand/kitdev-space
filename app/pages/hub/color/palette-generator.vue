@@ -4,9 +4,8 @@ import { createPalette } from '~~/shared/utils/color/palette'
 const base = ref('#7c3aed')
 const count = ref(5)
 const palette = ref<string[]>([])
-const toast = useToast()
 const { status, error, run, reset } = useTool<string>()
-const { copy, copied } = useClipboard({ legacy: true })
+const { copy, label: copyLabel, color: copyColor } = useCopyFeedback()
 
 useToolSeo('palette')
 
@@ -18,8 +17,7 @@ async function generate() {
 }
 
 async function copyValue(value: string) {
-  await copy(value)
-  toast.add({ title: copied.value ? 'Copied' : 'Copy failed', color: copied.value ? 'success' : 'error' })
+  await copy(value, value)
 }
 
 function handleClear() {
@@ -104,8 +102,11 @@ onMounted(() => {
           class="h-20"
           :style="{ backgroundColor: color }"
         />
-        <p class="px-2 py-1 font-mono text-xs text-muted">
-          {{ color }}
+        <p
+          class="px-2 py-1 font-mono text-xs"
+          :class="copyColor(color) === 'success' ? 'text-success' : copyColor(color) === 'error' ? 'text-error' : 'text-muted'"
+        >
+          {{ copyLabel(color, color) }}
         </p>
       </button>
     </div>

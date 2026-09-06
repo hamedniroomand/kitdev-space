@@ -9,9 +9,8 @@ export function greet(user: User) {
 `)
 const loader = ref<TranspileLoader>('ts')
 const output = ref('')
-const toast = useToast()
 const { status, error, run, reset } = useTool<string>()
-const { copy, copied } = useClipboard({ legacy: true })
+const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
 const { downloadText } = useDownload()
 const { track } = useToolAnalytics()
 
@@ -76,7 +75,6 @@ async function handleCopy() {
     return
   }
   await copy(output.value)
-  toast.add({ title: copied.value ? 'Copied' : 'Copy failed', color: copied.value ? 'success' : 'error' })
 }
 
 function handleDownload() {
@@ -143,13 +141,13 @@ defineShortcuts({
         Transpile
       </UButton>
       <UButton
-        color="neutral"
+        :label="copyLabel()"
+        :icon="copyIcon()"
+        :color="copyColor()"
         variant="ghost"
         :disabled="!output"
         @click="handleCopy"
-      >
-        Copy
-      </UButton>
+      />
       <UButton
         color="neutral"
         variant="ghost"

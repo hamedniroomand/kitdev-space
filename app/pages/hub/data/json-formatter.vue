@@ -6,9 +6,28 @@ const input = ref('{\n  "name": "KitDev",\n  "ready": true\n}')
 const output = ref('')
 const statusMessage = ref('')
 const statusMeta = ref('')
-const toast = useToast()
 const { status, error, result, run, reset } = useTool<string>()
-const { copy, copied } = useClipboard({ legacy: true })
+const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
+const validateFeedback = useActionFeedback({
+  idle: {
+    label: 'Validate',
+    icon: 'i-lucide-circle-check',
+    color: 'neutral',
+    variant: 'subtle'
+  },
+  success: {
+    label: 'Valid',
+    icon: 'i-lucide-check',
+    color: 'success',
+    variant: 'subtle'
+  },
+  error: {
+    label: 'Invalid',
+    icon: 'i-lucide-x',
+    color: 'error',
+    variant: 'subtle'
+  }
+})
 const { downloadText } = useDownload()
 const { track } = useToolAnalytics()
 
@@ -24,6 +43,7 @@ function setStats(text: string) {
 }
 
 async function format() {
+  validateFeedback.reset()
   await run(() => formatJson(input.value))
   if (status.value === 'success' && result.value !== null) {
     output.value = result.value
@@ -36,6 +56,7 @@ async function format() {
 }
 
 async function minify() {
+  validateFeedback.reset()
   await run(() => minifyJson(input.value))
   if (status.value === 'success' && result.value !== null) {
     output.value = result.value
@@ -58,8 +79,10 @@ async function validate() {
   if (status.value === 'success') {
     statusMessage.value = 'Valid JSON'
     setStats(input.value)
+    validateFeedback.flashSuccess()
     track('tool_execute', { tool: 'json-formatter' })
   } else if (status.value === 'error') {
+    validateFeedback.flashError()
     track('tool_error', { tool: 'json-formatter' })
   }
 }
@@ -68,9 +91,8 @@ async function handleCopy() {
   if (!output.value) {
     return
   }
-  await copy(output.value)
-  toast.add({ title: copied.value ? 'Copied' : 'Copy failed', color: copied.value ? 'success' : 'error' })
-  if (copied.value) {
+  const ok = await copy(output.value)
+  if (ok) {
     track('tool_copy', { tool: 'json-formatter' })
   }
 }
@@ -88,6 +110,7 @@ function handleClear() {
   output.value = ''
   statusMessage.value = ''
   statusMeta.value = ''
+  validateFeedback.reset()
   reset()
 }
 
@@ -132,17 +155,17 @@ defineShortcuts({
         @click="minify"
       />
       <UButton
-        label="Validate"
-        color="neutral"
-        variant="subtle"
-        icon="i-lucide-circle-check"
+        :label="validateFeedback.label"
+        :color="validateFeedback.color"
+        :variant="validateFeedback.variant"
+        :icon="validateFeedback.icon"
         @click="validate"
       />
       <UButton
-        label="Copy"
-        color="neutral"
+        :label="copyLabel()"
+        :color="copyColor()"
         variant="subtle"
-        icon="i-lucide-copy"
+        :icon="copyIcon()"
         :disabled="!output"
         @click="handleCopy"
       />

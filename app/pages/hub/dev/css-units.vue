@@ -10,8 +10,7 @@ const rootFontSize = ref(16)
 const viewportWidth = ref(1920)
 const viewportHeight = ref(1080)
 
-const toast = useToast()
-const { copy } = useClipboard({ legacy: true })
+const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
 
 useToolSeo('css-units')
 
@@ -46,12 +45,8 @@ const conversions = computed(() => {
   ]
 })
 
-async function handleCopy(val: string, label: string) {
-  await copy(val)
-  toast.add({
-    title: `Copied ${label}`,
-    color: 'success'
-  })
+async function handleCopy(val: string, key: string) {
+  await copy(val, key)
 }
 
 function handleReset() {
@@ -162,12 +157,12 @@ function handleReset() {
           </p>
         </div>
         <UButton
-          label="Copy"
+          :label="copyLabel(item.unit)"
           size="xs"
-          color="neutral"
+          :color="copyColor(item.unit)"
           variant="subtle"
-          icon="i-lucide-copy"
-          @click="handleCopy(item.value, item.label)"
+          :icon="copyIcon(item.unit)"
+          @click="handleCopy(item.value, item.unit)"
         />
       </div>
     </div>

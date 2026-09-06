@@ -2,9 +2,8 @@
 import { inspectUrl, type UrlParts } from '~~/shared/utils/network/url'
 
 const input = ref('https://user:pass@example.com:8443/path?q=1#top')
-const toast = useToast()
 const { status, error, result, run, reset } = useTool<UrlParts>()
-const { copy, copied } = useClipboard({ legacy: true })
+const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
 
 const fieldRows = computed(() => {
   if (!result.value) {
@@ -38,7 +37,6 @@ async function handleCopy() {
     return
   }
   await copy(JSON.stringify(result.value, null, 2))
-  toast.add({ title: copied.value ? 'Copied' : 'Copy failed', color: copied.value ? 'success' : 'error' })
 }
 
 function handleClear() {
@@ -92,10 +90,10 @@ defineShortcuts({
         @click="inspect"
       />
       <UButton
-        label="Copy"
-        color="neutral"
+        :label="copyLabel()"
+        :color="copyColor()"
         variant="subtle"
-        icon="i-lucide-copy"
+        :icon="copyIcon()"
         :disabled="status !== 'success' || !result"
         @click="handleCopy"
       />

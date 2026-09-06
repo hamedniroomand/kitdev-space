@@ -6,9 +6,8 @@ type DnsRecordType = 'A' | 'AAAA' | 'CNAME' | 'MX' | 'NS' | 'TXT' | 'CAA'
 const domain = ref('')
 const recordType = ref<DnsRecordType>('A')
 const rows = ref<string[]>([])
-const toast = useToast()
 const { status, error, result, run, reset } = useTool<string[] | object[]>()
-const { copy, copied } = useClipboard({ legacy: true })
+const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
 
 const recordTypeItems = [
   { label: 'A', value: 'A' },
@@ -52,7 +51,6 @@ async function handleCopy() {
     return
   }
   await copy(rows.value.join('\n'))
-  toast.add({ title: copied.value ? 'Copied' : 'Copy failed', color: copied.value ? 'success' : 'error' })
 }
 
 function handleClear() {
@@ -117,10 +115,10 @@ defineShortcuts({
         @click="lookup"
       />
       <UButton
-        label="Copy"
-        color="neutral"
+        :label="copyLabel()"
+        :color="copyColor()"
         variant="subtle"
-        icon="i-lucide-copy"
+        :icon="copyIcon()"
         :disabled="!rows.length"
         @click="handleCopy"
       />

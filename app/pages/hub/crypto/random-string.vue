@@ -4,9 +4,8 @@ import { createRandomString, type RandomCharset } from '~~/shared/utils/crypto/r
 const length = ref(32)
 const charset = ref<RandomCharset>('alnum')
 const output = ref('')
-const toast = useToast()
 const { status, error, result, run, reset } = useTool<string>()
-const { copy, copied } = useClipboard({ legacy: true })
+const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
 
 const charsetItems = [
   { label: 'Alphanumeric', value: 'alnum' },
@@ -29,7 +28,6 @@ async function handleCopy() {
     return
   }
   await copy(output.value)
-  toast.add({ title: copied.value ? 'Copied' : 'Copy failed', color: copied.value ? 'success' : 'error' })
 }
 
 function handleClear() {
@@ -89,10 +87,10 @@ defineShortcuts({
         @click="generate"
       />
       <UButton
-        label="Copy"
-        color="neutral"
+        :label="copyLabel()"
+        :color="copyColor()"
         variant="subtle"
-        icon="i-lucide-copy"
+        :icon="copyIcon()"
         :disabled="!output"
         @click="handleCopy"
       />
