@@ -91,9 +91,9 @@ defineShortcuts({
     <UAlert
       color="info"
       variant="subtle"
-      icon="i-lucide-server"
-      title="Processed with Bun"
-      description="This tool uses Bun.semver on the server."
+      icon="i-lucide-shield-check"
+      title="Where the work runs"
+      description="A bump runs in your browser. Satisfies and sort go to the server, because they read the full range grammar."
     />
 
     <UFormField label="Action">

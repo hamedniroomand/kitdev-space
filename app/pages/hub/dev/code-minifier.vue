@@ -203,9 +203,9 @@ defineShortcuts({
     <UAlert
       color="info"
       variant="subtle"
-      icon="i-lucide-server"
-      title="Processed on the server"
-      description="JavaScript and TypeScript minify use the OXC minifier. Beautify uses Prettier. CSS minify uses CSSO."
+      icon="i-lucide-shield-check"
+      title="Where the work runs"
+      description="JSON, HTML minify, and CSS minify run in your browser. JavaScript minify, TypeScript minify, and beautify go to the server, because they use the OXC minifier and Prettier."
     />
 
     <div class="flex flex-wrap gap-4">
