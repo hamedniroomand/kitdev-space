@@ -138,6 +138,10 @@ export default defineNuxtConfig({
     '/dev/**': { redirect: { to: '/hub/dev/**', statusCode: 301 } }
   },
 
+  experimental: {
+    payloadExtraction: 'client'
+  },
+
   compatibilityDate: '2026-06-30',
 
   nitro: {
