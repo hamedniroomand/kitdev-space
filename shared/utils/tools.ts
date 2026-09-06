@@ -646,6 +646,19 @@ export const tools: Tool[] = [
     clientOnly: true,
     serverRequired: false,
     status: 'available'
+  },
+  {
+    id: 'sqlite-studio',
+    slug: 'sqlite-studio',
+    name: 'SQLite Studio',
+    description: 'Inspect, query, and edit SQLite databases in memory.',
+    category: 'data',
+    icon: 'i-lucide-database',
+    keywords: ['sqlite', 'database', 'sql', 'query', 'table', 'editor'],
+    route: '/hub/data/sqlite-studio',
+    clientOnly: true,
+    serverRequired: false,
+    status: 'available'
   }
 ]
 

@@ -21,17 +21,19 @@ export interface QueryResult {
   durationMs: number
 }
 
+export type SqlValue = number | string | Uint8Array | null
+
 export type WorkerMessage
   = | { type: 'INIT_DB', bytes?: Uint8Array }
     | { type: 'EXECUTE_QUERY', sql: string }
-    | { type: 'UPDATE_CELL', table: string, rowid: number, column: string, value: unknown }
+    | { type: 'UPDATE_CELL', table: string, rowid: number, column: string, value: SqlValue }
     | { type: 'LOAD_SAMPLE' }
     | { type: 'EXPORT_DB' }
 
 export type WorkerResponse
   = | { type: 'DB_READY', tables: TableInfo[], sizeBytes: number }
     | { type: 'QUERY_RESULT', result: QueryResult }
-    | { type: 'UPDATE_SUCCESS', table: string, rowid: number, column: string, value: unknown }
+    | { type: 'UPDATE_SUCCESS', table: string, rowid: number, column: string, value: SqlValue }
     | { type: 'EXPORT_RESULT', bytes: Uint8Array }
     | { type: 'ERROR', message: string }
 

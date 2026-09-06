@@ -1,5 +1,5 @@
 import { ref, shallowRef } from 'vue'
-import type { QueryResult, TableInfo, WorkerResponse } from '../types/sqlite'
+import type { QueryResult, SqlValue, TableInfo, WorkerResponse } from '../types/sqlite'
 import { rowsToCsv, rowsToJson } from '../utils/sqlite/export'
 
 export function useSqliteStudio() {
@@ -51,7 +51,7 @@ export function useSqliteStudio() {
           break
 
         case 'EXPORT_RESULT': {
-          const blob = new Blob([response.bytes], { type: 'application/x-sqlite3' })
+          const blob = new Blob([response.bytes.slice().buffer], { type: 'application/x-sqlite3' })
           const url = URL.createObjectURL(blob)
           const link = document.createElement('a')
           link.href = url
@@ -116,7 +116,7 @@ export function useSqliteStudio() {
     executeQuery(query)
   }
 
-  function updateCell(table: string, rowid: number, column: string, value: unknown) {
+  function updateCell(table: string, rowid: number, column: string, value: SqlValue) {
     if (!worker) {
       return
     }

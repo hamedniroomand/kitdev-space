@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import type { QueryResult } from '../../../types/sqlite'
+import type { QueryResult, SqlValue } from '../../../types/sqlite'
 
 const props = defineProps<{
   result: QueryResult | null
@@ -9,7 +9,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  updateCell: [payload: { table: string, rowid: number, column: string, value: unknown }]
+  updateCell: [payload: { table: string, rowid: number, column: string, value: SqlValue }]
 }>()
 
 const page = ref(1)
