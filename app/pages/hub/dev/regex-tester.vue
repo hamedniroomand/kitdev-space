@@ -217,7 +217,7 @@ function handleClear() {
           class="mt-8"
           :items="[
             { label: 'Text Diff', to: '/hub/data/text-diff' },
-            { label: 'HTML and URL Codec', to: '/hub/dev/html-url-codec' },
+            { label: 'Encoder & Escaper', to: '/hub/dev/encoder' },
             { label: 'Case and Slug Converter', to: '/hub/dev/case-converter' }
           ]"
         />

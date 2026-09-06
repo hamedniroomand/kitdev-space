@@ -39,8 +39,14 @@ export const legacyRedirects: Record<string, string> = {
 
   // Crypto tools
   '/crypto/uuid': '/hub/crypto/uuid',
-  '/crypto/base64': '/hub/crypto/base64',
-  '/crypto/hex': '/hub/crypto/hex',
+  '/hub/crypto/base64': '/hub/dev/encoder',
+  '/hub/crypto/hex': '/hub/dev/encoder',
+  '/hub/dev/html-url-codec': '/hub/dev/encoder',
+  '/hub/dev/string-escape': '/hub/dev/encoder',
+  '/crypto/base64': '/hub/dev/encoder',
+  '/crypto/hex': '/hub/dev/encoder',
+  '/dev/html-url-codec': '/hub/dev/encoder',
+  '/dev/string-escape': '/hub/dev/encoder',
   '/crypto/random-string': '/hub/crypto/random-string',
   '/crypto/password-benchmark': '/hub/crypto/password-benchmark',
 

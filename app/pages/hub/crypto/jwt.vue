@@ -220,7 +220,7 @@ defineShortcuts({
         <RelatedTools
           class="mt-8"
           :items="[
-            { label: 'Base64 Encoder', to: '/hub/crypto/base64' },
+            { label: 'Encoder & Escaper', to: '/hub/dev/encoder' },
             { label: 'Hash Generator', to: '/hub/crypto/hash-generator' }
           ]"
         />

@@ -273,27 +273,17 @@ export const tools: Tool[] = [
     status: 'available'
   },
   {
-    id: 'base64',
-    slug: 'base64',
-    name: 'Base64 Encoder',
-    description: 'Encode and decode Base64.',
-    category: 'crypto',
+    id: 'encoder',
+    slug: 'encoder',
+    name: 'Encoder & Escaper',
+    description: 'Encode and decode Base64, hex, URL, HTML entities, and language escapes.',
+    category: 'dev',
     icon: 'i-lucide-binary',
-    keywords: ['base64', 'encode', 'decode'],
-    route: '/hub/crypto/base64',
-    clientOnly: true,
-    serverRequired: false,
-    status: 'available'
-  },
-  {
-    id: 'hex',
-    slug: 'hex',
-    name: 'Hex Encoder',
-    description: 'Encode and decode hex values.',
-    category: 'crypto',
-    icon: 'i-lucide-hexagon',
-    keywords: ['hex', 'encode', 'decode'],
-    route: '/hub/crypto/hex',
+    keywords: [
+      'base64', 'base64url', 'encode', 'decode', 'hex', 'hexadecimal', 'url', 'urlencode',
+      'percent', 'html', 'entities', 'escape', 'unescape', 'json', 'sql', 'shell', 'codec'
+    ],
+    route: '/hub/dev/encoder',
     clientOnly: true,
     serverRequired: false,
     status: 'available'
@@ -838,19 +828,6 @@ export const tools: Tool[] = [
     status: 'available'
   },
   {
-    id: 'html-url-codec',
-    slug: 'html-url-codec',
-    name: 'HTML & URL Encoder / Decoder',
-    description: 'Encode and decode HTML entities and URL strings.',
-    category: 'dev',
-    icon: 'i-lucide-file-code',
-    keywords: ['html', 'url', 'encode', 'decode', 'entities', 'uri'],
-    route: '/hub/dev/html-url-codec',
-    clientOnly: true,
-    serverRequired: false,
-    status: 'available'
-  },
-  {
     id: 'svg-component',
     slug: 'svg-component',
     name: 'SVG to Component',
@@ -911,19 +888,6 @@ export const tools: Tool[] = [
     icon: 'i-lucide-table',
     keywords: ['markdown', 'table', 'generator', 'grid', 'columns', 'align'],
     route: '/hub/dev/markdown-table',
-    clientOnly: true,
-    serverRequired: false,
-    status: 'available'
-  },
-  {
-    id: 'string-escape',
-    slug: 'string-escape',
-    name: 'String Escape Tool',
-    description: 'Escape and unescape special characters for various languages.',
-    category: 'dev',
-    icon: 'i-lucide-quote',
-    keywords: ['escape', 'unescape', 'string', 'json', 'javascript', 'sql', 'shell', 'html'],
-    route: '/hub/dev/string-escape',
     clientOnly: true,
     serverRequired: false,
     status: 'available'
