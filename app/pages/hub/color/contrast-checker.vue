@@ -4,23 +4,32 @@ import { contrastRatio, wcagLevel } from '#shared/utils/color/contrast'
 const foreground = ref('#ffffff')
 const background = ref('#7c3aed')
 const ratio = ref<number | null>(null)
-const levels = ref<{ aa: boolean, aaa: boolean } | null>(null)
 const { status, error, run, reset } = useTool<string>()
 
 useToolSeo('contrast')
+
+// WCAG uses a lower bar for large text: 18.66px bold, or 24px and larger.
+const results = computed(() => {
+  if (ratio.value === null) {
+    return null
+  }
+
+  return [
+    { label: 'Normal text', hint: 'Below 24px', ...wcagLevel(ratio.value, false) },
+    { label: 'Large text', hint: '24px, or 18.66px bold', ...wcagLevel(ratio.value, true) }
+  ]
+})
 
 async function check() {
   await run(() => {
     const next = contrastRatio(foreground.value, background.value)
     ratio.value = next
-    levels.value = wcagLevel(next)
     return String(next)
   })
 }
 
 function handleClear() {
   ratio.value = null
-  levels.value = null
   reset()
 }
 
@@ -78,18 +87,61 @@ onMounted(() => {
     />
 
     <div
-      v-if="ratio !== null && levels"
-      class="flex flex-wrap items-center gap-3"
+      v-if="ratio !== null && results"
+      class="space-y-4"
     >
-      <p class="font-mono text-highlighted">
-        {{ ratio.toFixed(2) }}:1
+      <p class="text-2xl font-medium text-highlighted">
+        <span class="font-mono">{{ ratio.toFixed(2) }}:1</span>
       </p>
-      <UBadge :color="levels.aa ? 'success' : 'error'">
-        AA {{ levels.aa ? 'Pass' : 'Fail' }}
-      </UBadge>
-      <UBadge :color="levels.aaa ? 'success' : 'error'">
-        AAA {{ levels.aaa ? 'Pass' : 'Fail' }}
-      </UBadge>
+
+      <div class="overflow-x-auto rounded-md border border-default">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-default">
+              <th class="px-3 py-2 text-left font-medium text-highlighted">
+                Text size
+              </th>
+              <th class="px-3 py-2 text-left font-medium text-highlighted">
+                AA
+              </th>
+              <th class="px-3 py-2 text-left font-medium text-highlighted">
+                AAA
+              </th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-default">
+            <tr
+              v-for="row in results"
+              :key="row.label"
+            >
+              <td class="px-3 py-2">
+                <p class="text-highlighted">
+                  {{ row.label }}
+                </p>
+                <p class="text-xs text-muted">
+                  {{ row.hint }}
+                </p>
+              </td>
+              <td class="px-3 py-2">
+                <UBadge
+                  :color="row.aa ? 'success' : 'error'"
+                  variant="subtle"
+                >
+                  {{ row.aa ? 'Pass' : 'Fail' }}
+                </UBadge>
+              </td>
+              <td class="px-3 py-2">
+                <UBadge
+                  :color="row.aaa ? 'success' : 'error'"
+                  variant="subtle"
+                >
+                  {{ row.aaa ? 'Pass' : 'Fail' }}
+                </UBadge>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <template #docs>
@@ -99,7 +151,11 @@ onMounted(() => {
             Contrast ratio helps people read text on a background.
           </p>
           <p>
-            WCAG AA for normal text needs a ratio of at least 4.5:1.
+            WCAG AA for normal text needs a ratio of at least 4.5:1. AAA needs 7:1.
+          </p>
+          <p>
+            Large text has a lower bar. Text of 24px, or 18.66px in bold, needs 3:1 for AA and 4.5:1
+            for AAA. The table shows both results, so you can see where a color pair is usable.
           </p>
         </div>
         <RelatedTools
