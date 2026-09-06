@@ -56,10 +56,31 @@ export interface DkimReport {
   issues: HealthIssue[]
 }
 
+export type DmarcPolicy = 'none' | 'quarantine' | 'reject'
+
+export interface DmarcTag {
+  name: string
+  value: string
+}
+
+export interface DmarcReport {
+  present: boolean
+  raw: string[]
+  version: string | null
+  policy: DmarcPolicy | null
+  subdomainPolicy: DmarcPolicy | null
+  percent: number
+  aggregateReportUris: string[]
+  forensicReportUris: string[]
+  tags: DmarcTag[]
+  issues: HealthIssue[]
+}
+
 export interface EmailHealthResult {
   domain: string
   spf: SpfReport
   dkim: DkimReport
+  dmarc: DmarcReport
   mx: MxReport
 }
 
@@ -220,6 +241,207 @@ export function parseSpf(txtRecords: string[]): SpfReport {
   }
 }
 
+const DMARC_POLICIES = new Set<DmarcPolicy>(['none', 'quarantine', 'reject'])
+
+// RFC 7489 tags, plus np from RFC 9091.
+const DMARC_TAGS = new Set([
+  'v', 'p', 'sp', 'np', 'rua', 'ruf', 'adkim', 'aspf', 'ri', 'fo', 'rf', 'pct'
+])
+
+function isDmarcPolicy(value: string): value is DmarcPolicy {
+  return DMARC_POLICIES.has(value as DmarcPolicy)
+}
+
+function parseReportUris(value: string | undefined): string[] {
+  if (!value) {
+    return []
+  }
+
+  return value.split(',').map(item => item.trim()).filter(Boolean)
+}
+
+export function findDmarcRecords(txtRecords: string[]): string[] {
+  return txtRecords
+    .map(record => record.trim())
+    .filter(record => record.toLowerCase().startsWith('v=dmarc1'))
+}
+
+/**
+ * Parses the TXT records of _dmarc.<domain>.
+ * DMARC tells the mailbox provider what to do when SPF and DKIM fail.
+ */
+export function parseDmarc(txtRecords: string[]): DmarcReport {
+  const raw = findDmarcRecords(txtRecords)
+  const issues: HealthIssue[] = []
+
+  const empty: DmarcReport = {
+    present: false,
+    raw: [],
+    version: null,
+    policy: null,
+    subdomainPolicy: null,
+    // No record means that no policy applies to any mail.
+    percent: 0,
+    aggregateReportUris: [],
+    forensicReportUris: [],
+    tags: [],
+    issues
+  }
+
+  if (raw.length === 0) {
+    issues.push(issue(
+      'error',
+      'dmarc-missing',
+      'No DMARC record found. Mailbox providers apply no policy when SPF or DKIM fails.'
+    ))
+    return empty
+  }
+
+  if (raw.length > 1) {
+    issues.push(issue('error', 'dmarc-multiple', 'Multiple DMARC records found. Keep one DMARC TXT record.'))
+  }
+
+  const record = raw[0]!
+  const tags: DmarcTag[] = []
+  const values = new Map<string, string>()
+
+  for (const part of record.split(';')) {
+    const token = part.trim()
+    if (!token) {
+      continue
+    }
+
+    const equals = token.indexOf('=')
+    if (equals < 0) {
+      issues.push(issue('warning', 'dmarc-bad-tag', `DMARC tag has no value: ${token}`))
+      continue
+    }
+
+    const name = token.slice(0, equals).trim().toLowerCase()
+    const value = token.slice(equals + 1).trim()
+    tags.push({ name, value })
+
+    if (!DMARC_TAGS.has(name)) {
+      issues.push(issue('warning', 'dmarc-unknown-tag', `DMARC has an unknown tag: ${name}`))
+      continue
+    }
+
+    if (values.has(name)) {
+      issues.push(issue('warning', 'dmarc-duplicate-tag', `DMARC tag ${name} appears more than once.`))
+      continue
+    }
+
+    values.set(name, value)
+  }
+
+  const version = values.get('v') ?? null
+  if (tags[0]?.name !== 'v') {
+    issues.push(issue('error', 'dmarc-version-position', 'DMARC record must start with v=DMARC1.'))
+  }
+
+  const policyValue = (values.get('p') ?? '').toLowerCase()
+  let policy: DmarcPolicy | null = null
+
+  if (!policyValue) {
+    issues.push(issue('error', 'dmarc-no-policy', 'DMARC has no p tag. The p tag is required.'))
+  } else if (!isDmarcPolicy(policyValue)) {
+    issues.push(issue('error', 'dmarc-bad-policy', `DMARC p tag is not valid: ${policyValue}`))
+  } else {
+    policy = policyValue
+    if (policy === 'none') {
+      issues.push(issue(
+        'warning',
+        'dmarc-policy-none',
+        'DMARC uses p=none. This monitors only. Move to quarantine, then to reject.'
+      ))
+    } else if (policy === 'quarantine') {
+      issues.push(issue(
+        'info',
+        'dmarc-policy-quarantine',
+        'DMARC uses p=quarantine. Failed mail goes to the spam folder. Move to reject when the reports are clean.'
+      ))
+    }
+  }
+
+  const subdomainValue = (values.get('sp') ?? '').toLowerCase()
+  let subdomainPolicy: DmarcPolicy | null = null
+
+  if (subdomainValue) {
+    if (isDmarcPolicy(subdomainValue)) {
+      subdomainPolicy = subdomainValue
+      if (subdomainValue === 'none' && policy && policy !== 'none') {
+        issues.push(issue(
+          'warning',
+          'dmarc-subdomain-none',
+          'DMARC uses sp=none. Subdomains have no policy.'
+        ))
+      }
+    } else {
+      issues.push(issue('error', 'dmarc-bad-subdomain-policy', `DMARC sp tag is not valid: ${subdomainValue}`))
+    }
+  }
+
+  const percentValue = values.get('pct')
+  let percent = 100
+
+  if (percentValue !== undefined) {
+    const parsed = Number(percentValue)
+    if (!Number.isInteger(parsed) || parsed < 0 || parsed > 100) {
+      issues.push(issue('error', 'dmarc-bad-pct', `DMARC pct tag must be a number from 0 to 100: ${percentValue}`))
+    } else {
+      percent = parsed
+      if (parsed < 100) {
+        issues.push(issue(
+          'warning',
+          'dmarc-partial-pct',
+          `DMARC applies the policy to ${parsed}% of mail. Set pct=100 for full coverage.`
+        ))
+      }
+    }
+  }
+
+  const aggregateReportUris = parseReportUris(values.get('rua'))
+  const forensicReportUris = parseReportUris(values.get('ruf'))
+
+  if (aggregateReportUris.length === 0) {
+    issues.push(issue(
+      'warning',
+      'dmarc-no-rua',
+      'DMARC has no rua tag. You get no aggregate reports, so you cannot see who sends mail for the domain.'
+    ))
+  }
+
+  for (const uri of [...aggregateReportUris, ...forensicReportUris]) {
+    if (!uri.toLowerCase().startsWith('mailto:')) {
+      issues.push(issue('warning', 'dmarc-bad-report-uri', `DMARC report address must start with mailto: ${uri}`))
+    }
+  }
+
+  for (const name of ['adkim', 'aspf'] as const) {
+    const value = (values.get(name) ?? '').toLowerCase()
+    if (value && value !== 'r' && value !== 's') {
+      issues.push(issue('warning', `dmarc-bad-${name}`, `DMARC ${name} tag must be r or s: ${value}`))
+    }
+  }
+
+  if (issues.length === 0) {
+    issues.push(issue('ok', 'dmarc-ok', 'DMARC record looks valid.'))
+  }
+
+  return {
+    present: true,
+    raw,
+    version,
+    policy,
+    subdomainPolicy,
+    percent,
+    aggregateReportUris,
+    forensicReportUris,
+    tags,
+    issues
+  }
+}
+
 export function analyzeMx(records: MxRecordInput[]): MxReport {
   const issues: HealthIssue[] = []
 
@@ -366,6 +588,7 @@ export function normalizeDkimSelectors(input?: string[] | string): string[] {
 export function buildEmailHealthResult(input: {
   domain: string
   txtRecords: string[]
+  dmarcRecords: string[]
   mxRecords: MxRecordInput[]
   dkim: DkimSelectorInput[]
 }): EmailHealthResult {
@@ -373,6 +596,7 @@ export function buildEmailHealthResult(input: {
     domain: input.domain,
     spf: parseSpf(input.txtRecords),
     mx: analyzeMx(input.mxRecords),
-    dkim: analyzeDkim(input.dkim)
+    dkim: analyzeDkim(input.dkim),
+    dmarc: parseDmarc(input.dmarcRecords)
   }
 }

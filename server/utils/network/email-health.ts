@@ -14,9 +14,11 @@ export async function inspectEmailHealth(
   const host = normalizeDomain(domain)
   const selectors = normalizeDkimSelectors(dkimSelectors)
 
-  const [txtRecords, mxRecords] = await Promise.all([
+  const [txtRecords, mxRecords, dmarcRecords] = await Promise.all([
     lookupDns(host, 'TXT') as Promise<string[]>,
-    lookupDns(host, 'MX') as Promise<MxRecord[]>
+    lookupDns(host, 'MX') as Promise<MxRecord[]>,
+    // A failed _dmarc lookup must not stop the rest of the report.
+    (lookupDns(`_dmarc.${host}`, 'TXT') as Promise<string[]>).catch(() => [])
   ])
 
   const dkim = await Promise.all(selectors.map(async (selector) => {
@@ -27,6 +29,7 @@ export async function inspectEmailHealth(
   return buildEmailHealthResult({
     domain: host,
     txtRecords,
+    dmarcRecords,
     mxRecords,
     dkim
   })

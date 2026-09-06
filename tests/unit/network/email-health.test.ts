@@ -4,6 +4,7 @@ import {
   analyzeMx,
   buildEmailHealthResult,
   normalizeDkimSelectors,
+  parseDmarc,
   parseSpf
 } from '#shared/utils/network/email-health'
 
@@ -87,11 +88,74 @@ describe('normalizeDkimSelectors', () => {
   })
 })
 
+describe('parseDmarc', () => {
+  function codes(records: string[]) {
+    return parseDmarc(records).issues.map(item => item.code)
+  }
+
+  it('reports a missing record', () => {
+    const report = parseDmarc(['v=spf1 mx -all'])
+    expect(report.present).toBe(false)
+    expect(report.policy).toBeNull()
+    expect(report.percent).toBe(0)
+    expect(report.issues.map(item => item.code)).toContain('dmarc-missing')
+    expect(report.issues[0]?.level).toBe('error')
+  })
+
+  it('accepts a strict record', () => {
+    const report = parseDmarc(['v=DMARC1; p=reject; rua=mailto:reports@example.com'])
+    expect(report.present).toBe(true)
+    expect(report.policy).toBe('reject')
+    expect(report.percent).toBe(100)
+    expect(report.aggregateReportUris).toEqual(['mailto:reports@example.com'])
+    expect(report.issues.map(item => item.code)).toEqual(['dmarc-ok'])
+  })
+
+  it('warns about a monitor-only policy', () => {
+    expect(codes(['v=DMARC1; p=none; rua=mailto:r@example.com'])).toContain('dmarc-policy-none')
+  })
+
+  it('warns when no aggregate report address is set', () => {
+    expect(codes(['v=DMARC1; p=reject'])).toContain('dmarc-no-rua')
+  })
+
+  it('warns about partial coverage', () => {
+    const report = parseDmarc(['v=DMARC1; p=reject; pct=50; rua=mailto:r@example.com'])
+    expect(report.percent).toBe(50)
+    expect(report.issues.map(item => item.code)).toContain('dmarc-partial-pct')
+  })
+
+  it('rejects a record with no p tag', () => {
+    expect(codes(['v=DMARC1; rua=mailto:r@example.com'])).toContain('dmarc-no-policy')
+  })
+
+  it('rejects a bad policy value', () => {
+    expect(codes(['v=DMARC1; p=block; rua=mailto:r@example.com'])).toContain('dmarc-bad-policy')
+  })
+
+  it('reads the subdomain policy', () => {
+    const report = parseDmarc(['v=DMARC1; p=reject; sp=none; rua=mailto:r@example.com'])
+    expect(report.subdomainPolicy).toBe('none')
+    expect(report.issues.map(item => item.code)).toContain('dmarc-subdomain-none')
+  })
+
+  it('reports more than one record', () => {
+    expect(codes(['v=DMARC1; p=reject', 'v=DMARC1; p=none'])).toContain('dmarc-multiple')
+  })
+
+  it('warns about an unknown tag and a bad report address', () => {
+    const found = codes(['v=DMARC1; p=reject; rua=reports@example.com; zz=1'])
+    expect(found).toContain('dmarc-unknown-tag')
+    expect(found).toContain('dmarc-bad-report-uri')
+  })
+})
+
 describe('buildEmailHealthResult', () => {
   it('builds a combined report', () => {
     const result = buildEmailHealthResult({
       domain: 'example.com',
       txtRecords: ['v=spf1 mx -all'],
+      dmarcRecords: ['v=DMARC1; p=reject; rua=mailto:r@example.com'],
       mxRecords: [{ priority: 10, exchange: 'mail.example.com' }],
       dkim: [{ selector: 'default', records: ['v=DKIM1; p=abc'] }]
     })
@@ -100,5 +164,6 @@ describe('buildEmailHealthResult', () => {
     expect(result.spf.present).toBe(true)
     expect(result.mx.records).toHaveLength(1)
     expect(result.dkim.selectors[0]?.present).toBe(true)
+    expect(result.dmarc.policy).toBe('reject')
   })
 })

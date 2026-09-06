@@ -68,7 +68,7 @@ defineShortcuts({
     <template #header>
       <ToolHeader
         title="Email Health Inspector"
-        description="Inspect SPF, DKIM selectors, and MX routing for a domain."
+        description="Inspect SPF, DKIM, DMARC, and MX routing for a domain."
       />
     </template>
 
@@ -250,6 +250,85 @@ defineShortcuts({
       <section class="space-y-3">
         <div class="flex flex-wrap items-center gap-2">
           <h2 class="text-sm font-medium text-highlighted">
+            DMARC
+          </h2>
+          <UBadge
+            v-for="issue in result.dmarc.issues"
+            :key="`dmarc-${issue.code}`"
+            :color="badgeColor(issue.level)"
+            variant="subtle"
+            class="capitalize"
+          >
+            {{ badgeLabel(issue) }}
+          </UBadge>
+        </div>
+        <p
+          v-for="issue in result.dmarc.issues"
+          :key="`dmarc-msg-${issue.code}`"
+          class="text-sm text-muted"
+        >
+          {{ issue.message }}
+        </p>
+        <ul
+          v-if="result.dmarc.raw.length"
+          class="divide-y divide-default rounded-md border border-default"
+        >
+          <li
+            v-for="(row, index) in result.dmarc.raw"
+            :key="`dmarc-raw-${index}`"
+            class="break-all px-3 py-2 font-mono text-sm text-highlighted"
+          >
+            {{ row }}
+          </li>
+        </ul>
+        <p
+          v-else
+          class="font-mono text-sm text-muted"
+        >
+          _dmarc.{{ result.domain }}
+        </p>
+        <dl
+          v-if="result.dmarc.present"
+          class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
+        >
+          <div class="rounded-md border border-default px-3 py-2">
+            <dt class="text-xs text-muted">
+              Policy
+            </dt>
+            <dd class="font-mono text-sm text-highlighted">
+              {{ result.dmarc.policy ?? '—' }}
+            </dd>
+          </div>
+          <div class="rounded-md border border-default px-3 py-2">
+            <dt class="text-xs text-muted">
+              Subdomain policy
+            </dt>
+            <dd class="font-mono text-sm text-highlighted">
+              {{ result.dmarc.subdomainPolicy ?? 'inherits' }}
+            </dd>
+          </div>
+          <div class="rounded-md border border-default px-3 py-2">
+            <dt class="text-xs text-muted">
+              Coverage
+            </dt>
+            <dd class="font-mono text-sm text-highlighted">
+              {{ result.dmarc.percent }}%
+            </dd>
+          </div>
+          <div class="rounded-md border border-default px-3 py-2">
+            <dt class="text-xs text-muted">
+              Aggregate reports
+            </dt>
+            <dd class="break-all font-mono text-sm text-highlighted">
+              {{ result.dmarc.aggregateReportUris.join(', ') || '—' }}
+            </dd>
+          </div>
+        </dl>
+      </section>
+
+      <section class="space-y-3">
+        <div class="flex flex-wrap items-center gap-2">
+          <h2 class="text-sm font-medium text-highlighted">
             MX
           </h2>
           <UBadge
@@ -338,7 +417,12 @@ defineShortcuts({
             This tool inspects email DNS records for a domain.
           </p>
           <p>
-            It parses SPF permissions, checks DKIM selector records, and sorts MX hosts by priority.
+            It parses SPF permissions, checks DKIM selector records, reads the DMARC policy, and sorts MX
+            hosts by priority.
+          </p>
+          <p>
+            DMARC is the record that mailbox providers use. It tells them what to do when SPF and DKIM
+            fail. A domain with p=none gets no protection.
           </p>
           <p>
             Enter a domain. Optionally set DKIM selectors. Then select Inspect.
