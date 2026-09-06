@@ -159,8 +159,7 @@ defineShortcuts({
           class="mt-8"
           :items="[
             { label: 'DNS Lookup', to: '/hub/network/dns-lookup' },
-            { label: 'HTTP Headers', to: '/hub/network/http-headers' },
-            { label: 'Redirect Checker', to: '/hub/network/redirect' }
+            { label: 'HTTP Inspector', to: '/hub/network/http-inspector' }
           ]"
         />
       </ToolDocs>

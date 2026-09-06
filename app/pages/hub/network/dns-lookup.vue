@@ -172,7 +172,7 @@ defineShortcuts({
           class="mt-8"
           :items="[
             { label: 'Email Health Inspector', to: '/hub/network/email-health' },
-            { label: 'HTTP Headers', to: '/hub/network/http-headers' },
+            { label: 'HTTP Inspector', to: '/hub/network/http-inspector' },
             { label: 'URL Inspector', to: '/hub/network/url-inspector' }
           ]"
         />

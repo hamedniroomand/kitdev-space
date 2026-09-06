@@ -9,7 +9,7 @@ export const legacyRedirects: Record<string, string> = {
 
   // Renamed tool slugs
   '/network/dns': '/hub/network/dns-lookup',
-  '/network/headers': '/hub/network/http-headers',
+  '/network/headers': '/hub/network/http-inspector',
   '/network/url': '/hub/network/url-inspector',
   '/crypto/hash': '/hub/crypto/hash-generator',
   '/color/contrast': '/hub/color/contrast-checker',
@@ -32,7 +32,10 @@ export const legacyRedirects: Record<string, string> = {
 
   // Network tools
   '/network/og-preview': '/hub/network/og-preview',
-  '/network/redirect': '/hub/network/redirect',
+  '/hub/network/http-headers': '/hub/network/http-inspector',
+  '/hub/network/security-headers': '/hub/network/http-inspector',
+  '/hub/network/redirect': '/hub/network/http-inspector',
+  '/network/redirect': '/hub/network/http-inspector',
 
   // Crypto tools
   '/crypto/uuid': '/hub/crypto/uuid',

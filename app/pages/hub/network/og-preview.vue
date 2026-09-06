@@ -198,8 +198,7 @@ defineShortcuts({
         </p>
         <RelatedTools
           :items="[
-            { label: 'HTTP Headers', to: '/hub/network/http-headers' },
-            { label: 'Redirect Checker', to: '/hub/network/redirect' }
+            { label: 'HTTP Inspector', to: '/hub/network/http-inspector' }
           ]"
         />
       </ToolDocs>

@@ -520,27 +520,17 @@ export const tools: Tool[] = [
     status: 'available'
   },
   {
-    id: 'headers',
-    slug: 'http-headers',
-    name: 'HTTP Headers',
-    description: 'Inspect HTTP response headers.',
+    id: 'http-inspector',
+    slug: 'http-inspector',
+    name: 'HTTP Inspector',
+    description: 'Read the response headers, the security report, and the redirect chain of a URL.',
     category: 'network',
     icon: 'i-lucide-list-tree',
-    keywords: ['http', 'headers', 'response'],
-    route: '/hub/network/http-headers',
-    clientOnly: false,
-    serverRequired: true,
-    status: 'available'
-  },
-  {
-    id: 'security-headers',
-    slug: 'security-headers',
-    name: 'CORS and Security Header Inspector',
-    description: 'Audit CORS and security headers with a health score and fix guidance.',
-    category: 'network',
-    icon: 'i-lucide-shield-check',
-    keywords: ['cors', 'csp', 'hsts', 'security', 'headers', 'x-frame-options'],
-    route: '/hub/network/security-headers',
+    keywords: [
+      'http', 'headers', 'response', 'redirect', 'location', 'cors', 'csp', 'hsts',
+      'security', 'x-frame-options', 'preflight'
+    ],
+    route: '/hub/network/http-inspector',
     clientOnly: false,
     serverRequired: true,
     status: 'available'
@@ -556,19 +546,6 @@ export const tools: Tool[] = [
     route: '/hub/network/url-inspector',
     clientOnly: true,
     serverRequired: false,
-    status: 'available'
-  },
-  {
-    id: 'redirect-checker',
-    slug: 'redirect',
-    name: 'Redirect Checker',
-    description: 'Follow and inspect URL redirects.',
-    category: 'network',
-    icon: 'i-lucide-route',
-    keywords: ['redirect', 'http', 'location'],
-    route: '/hub/network/redirect',
-    clientOnly: false,
-    serverRequired: true,
     status: 'available'
   },
   {
