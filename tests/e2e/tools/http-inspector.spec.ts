@@ -3,7 +3,7 @@ import httpInspectorFixture from '../fixtures/http-inspector.json' with { type: 
 import { gotoHydrated } from '../utils'
 
 test.describe('HTTP Inspector tool', () => {
-  test('inspects headers and security policy with mock response', async ({ page }) => {
+  test('inspects headers and security policy with mock response', { tag: '@smoke' }, async ({ page }) => {
     // Mock the HTTP inspect API endpoint
     await page.route('/api/network/headers', async (route) => {
       await route.fulfill({

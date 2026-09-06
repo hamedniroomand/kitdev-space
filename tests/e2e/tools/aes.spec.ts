@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { fillCodeMirror, gotoHydrated } from '../utils'
 
-test('encrypts text using AES-GCM', async ({ page }) => {
+test('encrypts text using AES-GCM', { tag: '@smoke' }, async ({ page }) => {
   await gotoHydrated(page, '/hub/crypto/aes')
 
   await fillCodeMirror(page, 'Plaintext Input', 'Secret payload message')

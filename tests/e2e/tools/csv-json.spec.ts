@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { fillCodeMirror, gotoHydrated } from '../utils'
 
-test('converts CSV to JSON', async ({ page }) => {
+test('converts CSV to JSON', { tag: '@smoke' }, async ({ page }) => {
   await gotoHydrated(page, '/hub/data/converters/csv-json')
 
   await fillCodeMirror(page, 'CSV', 'name,age\nAda,36\nGrace,45')

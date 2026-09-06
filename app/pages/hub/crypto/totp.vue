@@ -207,7 +207,10 @@ function handleClear() {
           Current One-Time Password
         </div>
 
-        <div class="text-4xl sm:text-5xl font-extrabold font-mono tracking-widest text-primary flex items-center justify-center gap-3">
+        <div
+          aria-label="One-time password"
+          class="text-4xl sm:text-5xl font-extrabold font-mono tracking-widest text-primary flex items-center justify-center gap-3"
+        >
           <span>{{ code.slice(0, Math.ceil(code.length / 2)) }}</span>
           <span>{{ code.slice(Math.ceil(code.length / 2)) }}</span>
         </div>

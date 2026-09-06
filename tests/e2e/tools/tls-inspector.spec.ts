@@ -3,7 +3,7 @@ import tlsFixture from '../fixtures/tls.json' with { type: 'json' }
 import { gotoHydrated } from '../utils'
 
 test.describe('TLS Certificate Inspector tool', () => {
-  test('inspects TLS certificate details with mock response', async ({ page }) => {
+  test('inspects TLS certificate details with mock response', { tag: '@smoke' }, async ({ page }) => {
     await page.route('/api/network/tls', async (route) => {
       await route.fulfill({
         status: 200,

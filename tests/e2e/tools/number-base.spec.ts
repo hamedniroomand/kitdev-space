@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { gotoHydrated } from '../utils'
 
-test('converts numbers across bases', async ({ page }) => {
+test('converts numbers across bases', { tag: '@smoke' }, async ({ page }) => {
   await gotoHydrated(page, '/hub/data/number-base')
 
   await page.getByRole('button', { name: '255 (8-bit max)' }).click()

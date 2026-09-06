@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test'
 import dnsFixture from '../fixtures/dns.json' with { type: 'json' }
 import { gotoHydrated } from '../utils'
 
-test('looks up DNS A records for example.com with mock response', async ({ page }) => {
+test('looks up DNS A records for example.com with mock response', { tag: '@smoke' }, async ({ page }) => {
   await page.route('/api/network/dns', async (route) => {
     await route.fulfill({
       status: 200,

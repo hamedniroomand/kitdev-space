@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { gotoHydrated } from '../utils'
 
-test('converts color formats', async ({ page }) => {
+test('converts color formats', { tag: '@smoke' }, async ({ page }) => {
   await gotoHydrated(page, '/hub/color/converter')
 
   await expect(page.getByText('HEX', { exact: true })).toBeVisible()

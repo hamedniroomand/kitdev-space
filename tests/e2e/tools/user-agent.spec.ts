@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test'
 import { gotoHydrated } from '../utils'
 
 test.describe('User Agent Parser tool', () => {
-  test('parses browser user agent string and handles presets', async ({ page }) => {
+  test('parses browser user agent string and handles presets', { tag: '@smoke' }, async ({ page }) => {
     await gotoHydrated(page, '/hub/network/user-agent')
 
     const textarea = page.locator('main').getByPlaceholder('Paste user agent string here...')

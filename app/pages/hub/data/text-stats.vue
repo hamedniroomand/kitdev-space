@@ -23,7 +23,7 @@ function handleLoadSample() {
     <div class="space-y-6">
       <!-- Metric Cards Grid -->
       <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-        <div class="p-3.5 rounded-xl border border-default bg-elevated/40 text-center">
+        <div aria-label="Word count" class="p-3.5 rounded-xl border border-default bg-elevated/40 text-center">
           <span class="text-xs text-muted font-medium block">Words</span>
           <span class="text-2xl font-bold font-mono text-highlighted mt-1 block">{{ stats.words.toLocaleString() }}</span>
         </div>
@@ -96,6 +96,7 @@ function handleLoadSample() {
       <!-- Editor -->
       <textarea
         v-model="input"
+        aria-label="Text input"
         rows="12"
         placeholder="Type or paste text here to see statistics..."
         class="w-full p-4 font-mono text-xs bg-default border border-default rounded-xl text-highlighted resize-y focus:outline-none focus:border-primary leading-relaxed"

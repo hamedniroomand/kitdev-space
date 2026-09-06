@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test'
 import { gotoHydrated } from '../utils'
 
 test.describe('EXIF & Metadata Inspector tool', () => {
-  test('inspects image metadata from dropped file', async ({ page }) => {
+  test('inspects image metadata from dropped file', { tag: '@smoke' }, async ({ page }) => {
     await gotoHydrated(page, '/hub/image/metadata')
 
     await expect(page.getByRole('heading', { name: /Metadata Inspector|EXIF Viewer/, level: 1 })).toBeVisible()

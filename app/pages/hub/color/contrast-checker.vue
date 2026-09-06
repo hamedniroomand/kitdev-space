@@ -90,7 +90,10 @@ onMounted(() => {
       v-if="ratio !== null && results"
       class="space-y-4"
     >
-      <p class="text-2xl font-medium text-highlighted">
+      <p
+        aria-label="Contrast ratio"
+        class="text-2xl font-medium text-highlighted"
+      >
         <span class="font-mono">{{ ratio.toFixed(2) }}:1</span>
       </p>
 

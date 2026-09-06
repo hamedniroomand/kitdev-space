@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { fillCodeMirror, gotoHydrated } from '../utils'
 
-test('compares texts and displays diff summary', async ({ page }) => {
+test('compares texts and displays diff summary', { tag: '@smoke' }, async ({ page }) => {
   await gotoHydrated(page, '/hub/data/text-diff')
 
   await fillCodeMirror(page, 'Original', 'Hello world\nSecond line')

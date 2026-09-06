@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test'
 import { gotoHydrated } from '../utils'
 
 test.describe('Favicon Set Generator tool', () => {
-  test('loads sample logo and generates favicon package with mock response', async ({ page }) => {
+  test('loads sample logo and generates favicon package with mock response', { tag: '@smoke' }, async ({ page }) => {
     await page.route('**/api/image/favicon-generator', async (route) => {
       await route.fulfill({
         status: 200,

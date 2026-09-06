@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { gotoHydrated } from '../utils'
 
-test('generates color palette', async ({ page }) => {
+test('generates color palette', { tag: '@smoke' }, async ({ page }) => {
   await gotoHydrated(page, '/hub/color/palette-generator')
 
   await page.getByRole('button', { name: 'Generate' }).click()

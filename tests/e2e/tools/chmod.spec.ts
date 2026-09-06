@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test'
 import { gotoHydrated } from '../utils'
 
 test.describe('Chmod Calculator tool', () => {
-  test('calculates permissions, symbolic notation, and preset commands', async ({ page }) => {
+  test('calculates permissions, symbolic notation, and preset commands', { tag: '@smoke' }, async ({ page }) => {
     await gotoHydrated(page, '/hub/dev/chmod')
 
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()

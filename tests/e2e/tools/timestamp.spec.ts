@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test'
 import { gotoHydrated } from '../utils'
 
 test.describe('Timestamp Studio tool', () => {
-  test('parses timestamps and converts between ISO and Unix epoch', async ({ page }) => {
+  test('parses timestamps and converts between ISO and Unix epoch', { tag: '@smoke' }, async ({ page }) => {
     await gotoHydrated(page, '/hub/dev/timestamp')
 
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()

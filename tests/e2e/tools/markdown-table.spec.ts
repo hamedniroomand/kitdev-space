@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test'
 import { gotoHydrated } from '../utils'
 
 test.describe('Markdown Table Generator tool', () => {
-  test('generates formatted markdown table and supports row additions', async ({ page }) => {
+  test('generates formatted markdown table and supports row additions', { tag: '@smoke' }, async ({ page }) => {
     await gotoHydrated(page, '/hub/dev/markdown-table')
 
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()

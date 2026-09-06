@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test'
 import { gotoHydrated } from '../utils'
 
 test.describe('Glob Tester tool', () => {
-  test('tests glob patterns against sample paths and updates matches', async ({ page }) => {
+  test('tests glob patterns against sample paths and updates matches', { tag: '@smoke' }, async ({ page }) => {
     await gotoHydrated(page, '/hub/dev/glob-tester')
 
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()

@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { gotoHydrated } from '../utils'
 
-test('computes HMAC signature', async ({ page }) => {
+test('computes HMAC signature', { tag: '@smoke' }, async ({ page }) => {
   await gotoHydrated(page, '/hub/crypto/hmac')
 
   const signature = page.locator('main div.font-mono.select-all span')

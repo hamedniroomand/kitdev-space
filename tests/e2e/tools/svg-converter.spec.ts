@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test'
 import { gotoHydrated } from '../utils'
 
 test.describe('SVG to PNG / WebP converter tool', () => {
-  test('converts SVG markup to raster images and supports clear', async ({ page }) => {
+  test('converts SVG markup to raster images and supports clear', { tag: '@smoke' }, async ({ page }) => {
     const pngBuffer = Buffer.from(
       'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
       'base64',

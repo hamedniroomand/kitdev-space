@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { fillCodeMirror, gotoHydrated } from '../utils'
 
-test('generates cryptographic hash', async ({ page }) => {
+test('generates cryptographic hash', { tag: '@smoke' }, async ({ page }) => {
   await gotoHydrated(page, '/hub/crypto/hash-generator')
 
   await fillCodeMirror(page, 'Input', 'hello')

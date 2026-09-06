@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { gotoHydrated } from '../utils'
 
-test('formats JSON on the JSON Formatter page', async ({ page }) => {
+test('formats JSON on the JSON Formatter page', { tag: '@smoke' }, async ({ page }) => {
   await gotoHydrated(page, '/hub/data/json-formatter')
 
   const input = page.getByRole('textbox', { name: 'Input' })

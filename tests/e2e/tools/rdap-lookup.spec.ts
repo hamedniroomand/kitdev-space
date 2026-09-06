@@ -3,7 +3,7 @@ import rdapFixture from '../fixtures/rdap.json' with { type: 'json' }
 import { gotoHydrated } from '../utils'
 
 test.describe('RDAP Lookup tool', () => {
-  test('looks up domain registration info with mock response', async ({ page }) => {
+  test('looks up domain registration info with mock response', { tag: '@smoke' }, async ({ page }) => {
     await page.route('/api/network/rdap', async (route) => {
       await route.fulfill({
         status: 200,

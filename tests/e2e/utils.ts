@@ -9,7 +9,7 @@ import type { Page } from '@playwright/test'
  */
 export async function gotoHydrated(page: Page, path: string) {
   await page.goto(path)
-  await page.waitForSelector('html[data-hydrated]', { state: 'attached', timeout: 15_000 })
+  await page.waitForSelector('html[data-hydrated]', { state: 'attached', timeout: 10_000 })
 }
 
 /**

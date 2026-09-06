@@ -3,7 +3,7 @@ import emailHealthFixture from '../fixtures/email-health.json' with { type: 'jso
 import { gotoHydrated } from '../utils'
 
 test.describe('Email Health Inspector tool', () => {
-  test('inspects SPF, DKIM, DMARC, and MX records with mock response', async ({ page }) => {
+  test('inspects SPF, DKIM, DMARC, and MX records with mock response', { tag: '@smoke' }, async ({ page }) => {
     // Mock the DNS email-health endpoint
     await page.route('/api/network/dns', async (route) => {
       await route.fulfill({

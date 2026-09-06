@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { fillCodeMirror, gotoHydrated } from '../utils'
 
-test('converts JSON to YAML', async ({ page }) => {
+test('converts JSON to YAML', { tag: '@smoke' }, async ({ page }) => {
   await gotoHydrated(page, '/hub/data/converters/json-yaml')
 
   await fillCodeMirror(page, 'Input', '{"name": "KitDev", "ready": true}')

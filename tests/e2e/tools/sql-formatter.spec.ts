@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { fillCodeMirror, gotoHydrated } from '../utils'
 
-test('formats SQL queries', async ({ page }) => {
+test('formats SQL queries', { tag: '@smoke' }, async ({ page }) => {
   await gotoHydrated(page, '/hub/data/sql-formatter')
 
   await fillCodeMirror(page, 'Input', 'select id, name from users where active = 1;')

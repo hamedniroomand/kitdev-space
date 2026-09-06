@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test'
 import { gotoHydrated } from '../utils'
 
 test.describe('Placeholder Image Generator tool', () => {
-  test('generates placeholder SVG and handles dimension presets', async ({ page }) => {
+  test('generates placeholder SVG and handles dimension presets', { tag: '@smoke' }, async ({ page }) => {
     await gotoHydrated(page, '/hub/image/placeholder')
 
     await expect(page.getByRole('heading', { name: 'Placeholder Image Generator', level: 1 })).toBeVisible()

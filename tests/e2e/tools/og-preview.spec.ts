@@ -3,7 +3,7 @@ import ogPreviewFixture from '../fixtures/og-preview.json' with { type: 'json' }
 import { gotoHydrated } from '../utils'
 
 test.describe('Open Graph Preview tool', () => {
-  test('previews Open Graph cards with mock response', async ({ page }) => {
+  test('previews Open Graph cards with mock response', { tag: '@smoke' }, async ({ page }) => {
     await page.route('/api/network/og-preview', async (route) => {
       await route.fulfill({
         status: 200,

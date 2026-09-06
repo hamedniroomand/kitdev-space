@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test'
 import { gotoHydrated } from '../utils'
 
 test.describe('Image to Base64 tool', () => {
-  test('converts sample image to data URI and switches modes', async ({ page }) => {
+  test('converts sample image to data URI and switches modes', { tag: '@smoke' }, async ({ page }) => {
     await gotoHydrated(page, '/hub/image/base64')
 
     await expect(page.getByRole('heading', { name: 'Image to Base64', level: 1 })).toBeVisible()

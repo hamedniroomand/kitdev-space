@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { gotoHydrated } from '../utils'
 
-test('designs CSS gradients and shows code declaration', async ({ page }) => {
+test('designs CSS gradients and shows code declaration', { tag: '@smoke' }, async ({ page }) => {
   await gotoHydrated(page, '/hub/color/gradient-studio')
 
   const pre = page.locator('main pre')

@@ -68,53 +68,51 @@ test('redirects legacy URLs to new hub tool URLs', async ({ page }) => {
   await expect(page).toHaveURL(/\/hub\/data\/converters\/json-yaml/)
 })
 
-test('scrolling content area does not scroll the fixed sidebar', async ({ page }) => {
-  await page.goto('/hub/data/json-formatter')
-
-  const sidebar = page.locator('aside')
-  await expect(sidebar).toBeVisible()
-
-  // Scroll the main content area
-  const main = page.locator('main')
-  await main.evaluate((el) => {
-    el.scrollTop = 500
-  })
-
-  // Window scroll remains 0
-  const windowScrollY = await page.evaluate(() => window.scrollY)
-  expect(windowScrollY).toBe(0)
-
-  // Sidebar remains anchored right below the top navigation bar (56px)
-  const sidebarBox = await sidebar.boundingBox()
-  expect(sidebarBox?.y).toBe(56)
-})
-
-test('clicking on a page from the sidebar scrolls content area to top', async ({ page }) => {
+test('hub layout scrolling and navigation behavior', async ({ page }) => {
   await gotoHydrated(page, '/hub/data/json-formatter')
 
-  const main = page.locator('main')
-  // Scroll down
-  await main.evaluate((el) => {
-    el.scrollTop = 500
+  await test.step('scrolling content area does not scroll the fixed sidebar', async () => {
+    const sidebar = page.locator('aside')
+    await expect(sidebar).toBeVisible()
+
+    // Scroll the main content area
+    const main = page.locator('main')
+    await main.evaluate((el) => {
+      el.scrollTop = 500
+    })
+
+    // Window scroll remains 0
+    const windowScrollY = await page.evaluate(() => window.scrollY)
+    expect(windowScrollY).toBe(0)
+
+    // Sidebar remains anchored right below the top navigation bar (56px)
+    const sidebarBox = await sidebar.boundingBox()
+    expect(sidebarBox?.y).toBe(56)
   })
 
-  const scrolledTop = await main.evaluate(el => el.scrollTop)
-  expect(scrolledTop).toBeGreaterThan(0)
+  await test.step('clicking on a page from the sidebar scrolls content area to top', async () => {
+    const main = page.locator('main')
+    // Scroll down
+    await main.evaluate((el) => {
+      el.scrollTop = 500
+    })
 
-  // Click on another tool from the sidebar
-  await page.getByRole('link', { name: /ID & Secret Generator/ }).first().click()
-  await expect(page).toHaveURL(/\/hub\/crypto\/generator/)
+    const scrolledTop = await main.evaluate(el => el.scrollTop)
+    expect(scrolledTop).toBeGreaterThan(0)
 
-  // Content area must be scrolled back to top
-  const resetTop = await main.evaluate(el => el.scrollTop)
-  expect(resetTop).toBe(0)
-})
+    // Click on another tool from the sidebar
+    await page.getByRole('link', { name: /ID & Secret Generator/ }).first().click()
+    await expect(page).toHaveURL(/\/hub\/crypto\/generator/)
 
-test('clicking KitDev Space in the hub header navigates to the home page', async ({ page }) => {
-  await page.goto('/hub/data/json-formatter')
+    // Content area must be scrolled back to top
+    const resetTop = await main.evaluate(el => el.scrollTop)
+    expect(resetTop).toBe(0)
+  })
 
-  // Exact, because the sidebar has a link named "KitDev Space source on GitHub".
-  await page.getByRole('link', { name: 'KitDev Space', exact: true }).click()
-  await expect(page).toHaveURL('/')
-  await expect(page.getByRole('heading', { name: 'Tools for people who build.' })).toBeVisible()
+  await test.step('clicking KitDev Space in the hub header navigates to the home page', async () => {
+    // Exact, because the sidebar has a link named "KitDev Space source on GitHub".
+    await page.getByRole('link', { name: 'KitDev Space', exact: true }).click()
+    await expect(page).toHaveURL('/')
+    await expect(page.getByRole('heading', { name: 'Tools for people who build.' })).toBeVisible()
+  })
 })

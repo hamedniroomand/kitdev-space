@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test'
 import { gotoHydrated } from '../utils'
 
 test.describe('Image Cropper tool', () => {
-  test('displays Image Cropper interface and dropzone', async ({ page }) => {
+  test('displays Image Cropper interface and dropzone', { tag: '@smoke' }, async ({ page }) => {
     await gotoHydrated(page, '/hub/image/cropper')
 
     await expect(page.getByRole('heading', { name: 'Image Cropper', level: 1 })).toBeVisible()

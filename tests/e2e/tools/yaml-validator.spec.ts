@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { fillCodeMirror, gotoHydrated } from '../utils'
 
-test('validates YAML content', async ({ page }) => {
+test('validates YAML content', { tag: '@smoke' }, async ({ page }) => {
   await gotoHydrated(page, '/hub/data/yaml-validator')
 
   await expect(page.getByText('Valid YAML')).toBeVisible()

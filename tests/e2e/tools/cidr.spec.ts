@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test'
 import { gotoHydrated } from '../utils'
 
 test.describe('CIDR Calculator tool', () => {
-  test('calculates subnet details and handles presets', async ({ page }) => {
+  test('calculates subnet details and handles presets', { tag: '@smoke' }, async ({ page }) => {
     await gotoHydrated(page, '/hub/network/cidr')
 
     // Initial value is 192.168.1.0/24

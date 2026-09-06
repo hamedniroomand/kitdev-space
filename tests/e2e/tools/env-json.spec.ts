@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { fillCodeMirror, gotoHydrated } from '../utils'
 
-test('converts .env format to JSON', async ({ page }) => {
+test('converts .env format to JSON', { tag: '@smoke' }, async ({ page }) => {
   await gotoHydrated(page, '/hub/data/env-json')
 
   await fillCodeMirror(page, 'Input (.env format)', 'PORT=8080\nHOST=localhost')

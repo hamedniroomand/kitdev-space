@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test'
 import { fillCodeMirror, gotoHydrated } from '../utils'
 
 test.describe('Case and Slug Converter tool', () => {
-  test('converts input text into multiple case conventions', async ({ page }) => {
+  test('converts input text into multiple case conventions', { tag: '@smoke' }, async ({ page }) => {
     await gotoHydrated(page, '/hub/dev/case-converter')
 
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()

@@ -2,10 +2,10 @@ import { expect, test } from '@playwright/test'
 import { gotoHydrated } from '../utils'
 
 test.describe('SVG to React Component Tool', () => {
-  test('converts default SVG icon sample and toggles spread props', async ({ page }) => {
+  test('converts default SVG icon sample and toggles spread props', { tag: '@smoke' }, async ({ page }) => {
     await gotoHydrated(page, '/hub/dev/svg-component')
 
-    const outputEditor = page.locator('.cm-editor').nth(1)
+    const outputEditor = page.getByRole('textbox', { name: 'Output (JSX)' })
 
     await test.step('converts default SVG icon sample with props spread', async () => {
       await expect(page.getByRole('heading', { level: 1 })).toBeVisible()

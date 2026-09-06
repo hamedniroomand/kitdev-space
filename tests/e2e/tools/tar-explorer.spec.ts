@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test'
 import { gotoHydrated } from '../utils'
 
 test.describe('Tar Explorer Tool', () => {
-  test('displays dropzone and validates file requirement', async ({ page }) => {
+  test('displays dropzone and validates file requirement', { tag: '@smoke' }, async ({ page }) => {
     await gotoHydrated(page, '/hub/dev/tar')
 
     await test.step('displays upload dropzone and action buttons', async () => {

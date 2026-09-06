@@ -3,7 +3,7 @@ import ipInfoFixture from '../fixtures/ip-info.json' with { type: 'json' }
 import { gotoHydrated } from '../utils'
 
 test.describe('IP Address Info tool', () => {
-  test('looks up IP information with mock response', async ({ page }) => {
+  test('looks up IP information with mock response', { tag: '@smoke' }, async ({ page }) => {
     await page.route('/api/network/ip-info*', async (route) => {
       await route.fulfill({
         status: 200,

@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { fillCodeMirror, gotoHydrated } from '../utils'
 
-test('converts JSON to XML in the browser', async ({ page }) => {
+test('converts JSON and XML in both directions in the browser', { tag: '@smoke' }, async ({ page }) => {
   const requests: string[] = []
   page.on('request', (request) => {
     // Only the data route matters. Nuxt Icon loads icons through its own api route.
@@ -11,25 +11,23 @@ test('converts JSON to XML in the browser', async ({ page }) => {
   })
 
   await gotoHydrated(page, '/hub/data/converters/json-xml')
-  await expect(page.getByText('The data stays in your browser')).toBeVisible()
-
-  await fillCodeMirror(page, 'Input', '{"name": "KitDev"}')
-  await page.getByRole('button', { name: 'Convert' }).click()
 
   const output = page.getByRole('textbox', { name: 'Output' })
-  await expect(output).toContainText('<name>KitDev</name>')
-  expect(requests).toEqual([])
-})
 
-test('converts XML with attributes and CDATA to JSON', async ({ page }) => {
-  await gotoHydrated(page, '/hub/data/converters/json-xml')
-  await page.getByRole('button', { name: 'Swap formats' }).click()
+  await test.step('converts JSON to XML in the browser', async () => {
+    await expect(page.getByText('The data stays in your browser')).toBeVisible()
+    await fillCodeMirror(page, 'Input', '{"name": "KitDev"}')
+    await page.getByRole('button', { name: 'Convert' }).click()
+    await expect(output).toContainText('<name>KitDev</name>')
+    expect(requests).toEqual([])
+  })
 
-  await fillCodeMirror(page, 'Input', '<doc><note lang="en"><![CDATA[a < b]]></note><tag>x</tag><tag>y</tag></doc>')
-  await page.getByRole('button', { name: 'Convert' }).click()
-
-  const output = page.getByRole('textbox', { name: 'Output' })
-  await expect(output).toContainText('"@lang": "en"')
-  await expect(output).toContainText('"#text": "a < b"')
-  await expect(output).toContainText('"tag": [')
+  await test.step('converts XML with attributes and CDATA to JSON', async () => {
+    await page.getByRole('button', { name: 'Swap formats' }).click()
+    await fillCodeMirror(page, 'Input', '<doc><note lang="en"><![CDATA[a < b]]></note><tag>x</tag><tag>y</tag></doc>')
+    await page.getByRole('button', { name: 'Convert' }).click()
+    await expect(output).toContainText('"@lang": "en"')
+    await expect(output).toContainText('"#text": "a < b"')
+    await expect(output).toContainText('"tag": [')
+  })
 })

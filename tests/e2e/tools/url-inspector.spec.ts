@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test'
 import { gotoHydrated } from '../utils'
 
 test.describe('URL Inspector tool', () => {
-  test('inspects URL components and handles clear', async ({ page }) => {
+  test('inspects URL components and handles clear', { tag: '@smoke' }, async ({ page }) => {
     await gotoHydrated(page, '/hub/network/url-inspector')
 
     // Initial input is pre-filled: https://user:pass@example.com:8443/path?q=1#top

@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test'
 import { gotoHydrated } from '../utils'
 
 test.describe('CSS Unit Converter tool', () => {
-  test('converts CSS units and updates on input change', async ({ page }) => {
+  test('converts CSS units and updates on input change', { tag: '@smoke' }, async ({ page }) => {
     await gotoHydrated(page, '/hub/dev/css-units')
 
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()

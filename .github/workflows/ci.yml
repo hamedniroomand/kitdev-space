@@ -52,7 +52,12 @@ jobs:
       - name: Install Chromium system libraries
         if: steps.playwright-cache.outputs.cache-hit == 'true'
         run: bunx playwright install-deps chromium
-      - run: bun run test:e2e:run
+      - name: Run Playwright smoke tests on pull request
+        if: github.event_name == 'pull_request'
+        run: bun run test:e2e:run --grep @smoke
+      - name: Run full Playwright suite on main
+        if: github.event_name != 'pull_request'
+        run: bun run test:e2e:run
       - uses: actions/upload-artifact@v4
         if: failure()
         with:

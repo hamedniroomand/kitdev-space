@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test'
 import { fillCodeMirror, getCodeMirrorValue, gotoHydrated } from '../utils'
 
 test.describe('URL Encoder / Decoder tool', () => {
-  test('encodes and decodes URL components', async ({ page }) => {
+  test('encodes and decodes URL components', { tag: '@smoke' }, async ({ page }) => {
     await gotoHydrated(page, '/hub/dev/url-encoder')
 
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()

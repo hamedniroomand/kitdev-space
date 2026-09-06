@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { gotoHydrated } from '../utils'
 
-test('generates random IDs and tokens', async ({ page }) => {
+test('generates random IDs and tokens', { tag: '@smoke' }, async ({ page }) => {
   await gotoHydrated(page, '/hub/crypto/generator')
 
   await page.getByRole('button', { name: 'Generate' }).click()
