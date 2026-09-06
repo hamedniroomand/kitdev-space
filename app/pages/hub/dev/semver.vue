@@ -1,6 +1,6 @@
 <script setup lang="ts">
-type SemverAction = 'satisfies' | 'sort' | 'bump'
-type SemverRelease = 'major' | 'minor' | 'patch'
+import type { SemverAction, SemverRelease } from '#shared/utils/dev/semver'
+import { canSemverInBrowser, semverBump } from '#shared/utils/dev/semver'
 
 const action = ref<SemverAction>('satisfies')
 const version = ref('1.2.3')
@@ -28,15 +28,18 @@ useToolSeo('semver')
 async function execute() {
   output.value = ''
   await run(async () => {
+    if (canSemverInBrowser(action.value)) {
+      const text = semverBump(version.value, release.value)
+      output.value = text
+      return text
+    }
+
     const body: Record<string, unknown> = { action: action.value }
     if (action.value === 'satisfies') {
       body.version = version.value
       body.range = range.value
-    } else if (action.value === 'sort') {
-      body.versions = versionsText.value
     } else {
-      body.version = version.value
-      body.release = release.value
+      body.versions = versionsText.value
     }
 
     const data = await $fetch<{

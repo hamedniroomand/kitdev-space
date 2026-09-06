@@ -25,9 +25,17 @@ A server route is not correct when a platform API covers the work:
 | JPEG, PNG, and WebP encode    | `OffscreenCanvas.convertToBlob`    |
 | Gzip and deflate              | `fflate`, an installed dependency  |
 | Read image metadata           | `DataView` over the file bytes     |
+| YAML parse and write          | `yaml`, an installed dependency    |
+| CSS minify                    | `csso`, an installed dependency    |
+| JSON format and minify        | `shared/utils/data/json.ts`        |
 
 Web Crypto has no MD5, no CRC32, and no xxHash. A tool that offers those keeps a server path for
 them.
+
+A tool with a browser path and a server path keeps one source. Put the browser code in
+`shared/utils/`, export a `can*InBrowser()` guard next to it, and let the server route import the
+same module. `shared/utils/crypto/hash.ts`, `shared/utils/data/convert.ts`,
+`shared/utils/dev/code-format.ts`, and `shared/utils/dev/semver.ts` show the pattern.
 
 ## Why this rule exists
 
@@ -52,6 +60,12 @@ The badge follows the registry flags in `shared/utils/tools.ts`:
 - the title tag and the meta description, through `useToolSeo`,
 - the OpenGraph image,
 - the sidebar row and the search index.
+
+`seoTitle` is optional. When a name has a symbol or misses the query noun, such as "JSON ↔ YAML",
+give a `seoTitle` such as "JSON to YAML Converter". The title tag, the `h1`, the OpenGraph image,
+and the schema name use `seoTitle` when it exists. The sidebar, the command palette, and the
+breadcrumbs keep the short `name`. Keep a `seoTitle` under 45 characters, so the full title tag
+with the site name stays under 60.
 
 Do not repeat the name or the description in the page. Do not call `useSeoMeta` in a tool page.
 Give `title` or `description` to `ToolPage` only to override the registry.

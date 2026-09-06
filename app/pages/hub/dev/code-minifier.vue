@@ -1,8 +1,7 @@
 <script setup lang="ts">
+import type { CodeAction, CodeLanguage } from '#shared/utils/dev/code-format'
 import { getTextStats } from '#shared/utils/data/stats'
-
-type CodeLanguage = 'javascript' | 'typescript' | 'html' | 'css' | 'json'
-type CodeAction = 'minify' | 'beautify'
+import { canFormatInBrowser, formatInBrowser } from '#shared/utils/dev/code-format'
 
 const SAMPLES: Record<CodeLanguage, string> = {
   javascript: `function greet(name) {
@@ -131,6 +130,13 @@ watch(language, (next) => {
 
 async function execute() {
   await run(async () => {
+    if (canFormatInBrowser(language.value, action.value)) {
+      const local = await formatInBrowser(input.value, language.value, action.value)
+      output.value = local.code
+      engine.value = local.engine
+      return local.code
+    }
+
     const data = await $fetch<{ result: string, engine: string }>('/api/dev/code-format', {
       method: 'POST',
       body: {

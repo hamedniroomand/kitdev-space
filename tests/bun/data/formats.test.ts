@@ -9,6 +9,8 @@ describe('bun format engine', () => {
     expect(JSON.parse(jsonText)).toEqual({ name: 'KitDev', ready: true })
   })
 
+  // The json-yaml tool uses shared/utils/data/convert.ts. This test pins the
+  // Bun engine, which the TOML and XML tools still use.
   it('writes indented block yaml for nested json', () => {
     const yamlText = transformWithBun(
       '{"name":"KitDev","labs":["data","crypto"],"meta":{"version":1}}',

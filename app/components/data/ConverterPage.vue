@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { DataFormat } from '#shared/utils/data/types'
+import { canConvertInBrowser, convertInBrowser } from '#shared/utils/data/convert'
 import { getTextStats } from '#shared/utils/data/stats'
 
 const props = defineProps<{
@@ -31,6 +32,10 @@ const outputLang = computed(() => (to.value === 'json' || to.value === 'json5' ?
 
 async function convert() {
   await run(async () => {
+    if (canConvertInBrowser(from.value, to.value)) {
+      return convertInBrowser(input.value, from.value, to.value)
+    }
+
     const data = await $fetch<{ result: string }>('/api/data/transform', {
       method: 'POST',
       body: {

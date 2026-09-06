@@ -48,8 +48,8 @@ export const tools: Tool[] = [
     icon: 'i-lucide-arrow-left-right',
     keywords: ['json', 'yaml', 'yml', 'convert'],
     route: '/hub/data/converters/json-yaml',
-    clientOnly: false,
-    serverRequired: true,
+    clientOnly: true,
+    serverRequired: false,
     status: 'available',
     seoTitle: 'JSON to YAML Converter'
   },
@@ -702,7 +702,7 @@ export const tools: Tool[] = [
     keywords: ['semver', 'version', 'npm', 'range', 'bump'],
     route: '/hub/dev/semver',
     clientOnly: false,
-    serverRequired: true,
+    serverRequired: false,
     status: 'available'
   },
   {
@@ -757,7 +757,7 @@ export const tools: Tool[] = [
     keywords: ['minify', 'beautify', 'format', 'oxc', 'prettier', 'javascript', 'typescript', 'html', 'css', 'json'],
     route: '/hub/dev/code-minifier',
     clientOnly: false,
-    serverRequired: true,
+    serverRequired: false,
     status: 'available'
   },
   {
