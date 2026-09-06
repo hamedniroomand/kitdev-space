@@ -113,7 +113,8 @@ onMounted(() => {
           class="mt-8"
           :items="[
             { label: 'Color Converter', to: '/hub/color/converter' },
-            { label: 'Palette Generator', to: '/hub/color/palette-generator' }
+            { label: 'Palette Generator', to: '/hub/color/palette-generator' },
+            { label: 'CSS Gradient Studio', to: '/hub/color/gradient-studio' }
           ]"
         />
       </DataToolDocs>

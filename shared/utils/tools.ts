@@ -297,6 +297,19 @@ export const tools: Tool[] = [
     status: 'available'
   },
   {
+    id: 'gradient-studio',
+    slug: 'gradient-studio',
+    name: 'CSS Gradient Studio',
+    description: 'Create linear and radial CSS gradients with contrast checks.',
+    category: 'color',
+    icon: 'i-lucide-blend',
+    keywords: ['css', 'gradient', 'linear', 'radial', 'color', 'stops', 'contrast'],
+    route: '/hub/color/gradient-studio',
+    clientOnly: true,
+    serverRequired: false,
+    status: 'available'
+  },
+  {
     id: 'dns',
     slug: 'dns-lookup',
     name: 'DNS Lookup',
