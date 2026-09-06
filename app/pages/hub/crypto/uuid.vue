@@ -1,22 +1,40 @@
 <script setup lang="ts">
-import { createUuid } from '~~/shared/utils/crypto/uuid'
+import { createId, type IdType } from '~~/shared/utils/crypto/uuid'
 
+const idType = ref<IdType>('uuidv4')
 const count = ref(1)
+const nanoIdLength = ref(21)
 const output = ref('')
 const toast = useToast()
 const { status, error, result, run, reset } = useTool<string>()
 const { copy, copied } = useClipboard({ legacy: true })
 
+const typeOptions = [
+  { label: 'UUID v4 (Random)', value: 'uuidv4' },
+  { label: 'UUID v7 (Time-ordered)', value: 'uuidv7' },
+  { label: 'ULID (Crockford Base32)', value: 'ulid' },
+  { label: 'NanoID (URL-friendly)', value: 'nanoid' }
+]
+
+const quantityPresets = [1, 5, 10, 25, 50]
+
 useToolSeo('uuid')
 
 async function generate() {
   await run(() => {
-    const size = Math.min(20, Math.max(1, Math.floor(count.value)))
-    return Array.from({ length: size }, () => createUuid()).join('\n')
+    const size = Math.min(100, Math.max(1, Math.floor(count.value)))
+    return Array.from({ length: size }, () =>
+      createId(idType.value, { nanoIdLength: nanoIdLength.value })
+    ).join('\n')
   })
   if (status.value === 'success' && result.value !== null) {
     output.value = result.value
   }
+}
+
+function setPresetQuantity(preset: number) {
+  count.value = preset
+  generate()
 }
 
 async function handleCopy() {
@@ -24,7 +42,10 @@ async function handleCopy() {
     return
   }
   await copy(output.value)
-  toast.add({ title: copied.value ? 'Copied' : 'Copy failed', color: copied.value ? 'success' : 'error' })
+  toast.add({
+    title: copied.value ? 'Copied' : 'Copy failed',
+    color: copied.value ? 'success' : 'error'
+  })
 }
 
 function handleClear() {
@@ -45,8 +66,8 @@ defineShortcuts({
   <ToolPage>
     <template #header>
       <ToolHeader
-        title="UUID Generator"
-        description="Generate UUID values."
+        title="ID Generator"
+        description="Generate UUID, ULID, and NanoID values."
       />
     </template>
 
@@ -57,15 +78,51 @@ defineShortcuts({
       description="This tool runs in the browser."
     />
 
-    <UFormField label="Count">
-      <UInput
-        v-model.number="count"
-        type="number"
-        :min="1"
-        :max="20"
-        class="w-32"
-      />
-    </UFormField>
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <UFormField label="Identifier Type">
+        <USelect
+          v-model="idType"
+          :items="typeOptions"
+          class="w-full"
+        />
+      </UFormField>
+
+      <UFormField label="Quantity (1-100)">
+        <div class="flex items-center gap-2">
+          <UInput
+            v-model.number="count"
+            type="number"
+            :min="1"
+            :max="100"
+            class="w-28"
+          />
+          <div class="flex flex-wrap gap-1">
+            <UButton
+              v-for="preset in quantityPresets"
+              :key="preset"
+              :label="String(preset)"
+              size="xs"
+              color="neutral"
+              :variant="count === preset ? 'solid' : 'subtle'"
+              @click="setPresetQuantity(preset)"
+            />
+          </div>
+        </div>
+      </UFormField>
+
+      <UFormField
+        v-if="idType === 'nanoid'"
+        label="NanoID Length (6-64)"
+      >
+        <UInput
+          v-model.number="nanoIdLength"
+          type="number"
+          :min="6"
+          :max="64"
+          class="w-28"
+        />
+      </UFormField>
+    </div>
 
     <ToolActions>
       <UButton
@@ -100,14 +157,23 @@ defineShortcuts({
       v-model="output"
       label="Output"
       readonly
-      placeholder="UUIDs appear here"
+      placeholder="Generated identifiers appear here"
     />
 
     <template #docs>
-      <DataToolDocs title="About UUIDs">
+      <DataToolDocs title="About Identifier Types">
         <div class="space-y-4 text-muted">
           <p>
-            This tool creates UUID version 4 values with the browser random API.
+            UUID version 4 uses random values from the Web Crypto API.
+          </p>
+          <p>
+            UUID version 7 encodes a millisecond timestamp followed by random bits. This format sorts chronologically.
+          </p>
+          <p>
+            ULID encodes a 48-bit timestamp and 80 random bits with Crockford Base32. It provides 26 URL-safe characters.
+          </p>
+          <p>
+            NanoID creates compact, URL-safe identifiers with customizable length.
           </p>
         </div>
         <DataRelatedTools
