@@ -39,12 +39,14 @@ const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeed
 const { downloadText } = useDownload()
 
 useToolSeo(props.toolId)
+const { reportInput } = useToolInput()
 
 if (props.sample === 'svg') {
   loadSample('svg')
 }
 
 function loadSample(type: 'card' | 'svg') {
+  reportInput('sample')
   htmlInput.value = type === 'card' ? sampleHtml : sampleSvg
   // An icon component takes props, so turn the spread on with the SVG sample.
   if (type === 'svg') {

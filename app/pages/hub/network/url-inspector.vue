@@ -28,8 +28,10 @@ const fieldRows = computed(() => {
 })
 
 useToolSeo('url-inspector')
+const { reportInput } = useToolInput()
 
 async function inspect() {
+  reportInput('url')
   await run(() => inspectUrl(input.value))
 }
 

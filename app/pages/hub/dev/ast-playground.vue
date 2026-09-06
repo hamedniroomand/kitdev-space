@@ -33,6 +33,7 @@ const { status, error, run, reset } = useTool<string>()
 const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
 
 useToolSeo('ast-playground')
+const { reportInput } = useToolInput()
 
 const selectedSnippet = computed(() => {
   if (!selected.value) {
@@ -115,6 +116,7 @@ function handleClear() {
 }
 
 function handleSample() {
+  reportInput('sample')
   applySample(language.value)
 }
 

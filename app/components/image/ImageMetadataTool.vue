@@ -114,7 +114,7 @@ async function handleStrip() {
       name: `clean-${file.value!.name}`,
     }
     return 'cleaned'
-  }, 'The metadata could not be removed.')
+  }, 'The metadata could not be removed.', { runLocation: 'browser' })
 }
 
 async function handleServerClean() {
@@ -145,7 +145,7 @@ async function handleServerClean() {
       name: `clean-${baseName.value}.${extension}`,
     }
     return 'cleaned'
-  }, 'The server could not clean the image.')
+  }, 'The server could not clean the image.', { runLocation: 'server' })
 }
 
 function handleDownload() {

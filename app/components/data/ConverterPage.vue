@@ -31,7 +31,7 @@ const inputLang = computed(() => (from.value === 'json' || from.value === 'json5
 const outputLang = computed(() => (to.value === 'json' || to.value === 'json5' ? 'json' : 'text'))
 
 async function convert() {
-  await run(() => convertInBrowser(input.value, from.value, to.value), 'The convert operation failed.')
+  await run(() => convertInBrowser(input.value, from.value, to.value), 'The convert operation failed.', { option: `${from.value}_to_${to.value}` })
 
   if (status.value === 'success' && result.value !== null) {
     output.value = result.value

@@ -1,3 +1,7 @@
+<script setup lang="ts">
+const { track } = useToolAnalytics()
+</script>
+
 <template>
   <UFooter class="border-t border-default">
     <template #left>
@@ -42,6 +46,7 @@
         icon="i-simple-icons-github"
         label="GitHub"
         aria-label="KitDev Space source on GitHub"
+        @click="track('cta_click', { cta: 'github' })"
       />
     </template>
   </UFooter>

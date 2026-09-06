@@ -2,6 +2,7 @@
 import type { ToolCategory } from '#shared/types/tools'
 
 const { categoryLabels, getPrimaryTools, getToolsByCategory } = useTools()
+const { track } = useToolAnalytics()
 const openSearch = inject<() => void>('openSearch', () => {})
 
 const categories: ToolCategory[] = ['data', 'network', 'crypto', 'color', 'image', 'dev']
@@ -162,6 +163,7 @@ useKitDevOgImage({
                     v-if="tool.status === 'available'"
                     :to="tool.route"
                     class="group flex items-center justify-between gap-3 py-1 text-sm text-highlighted hover:text-primary"
+                    @click="track('tool_select', { tool: tool.id, source: 'home' })"
                   >
                     <span class="truncate">{{ tool.name }}</span>
                     <UIcon

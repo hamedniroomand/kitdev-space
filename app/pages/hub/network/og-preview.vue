@@ -12,8 +12,10 @@ const url = ref('')
 const { status, error, result, run, reset } = useTool<OgPreviewData>()
 
 useToolSeo('og-preview')
+const { reportInput } = useToolInput()
 
 async function inspect() {
+  reportInput('url')
   await run(async () => {
     const data = await $fetch<{ result: OgPreviewData }>('/api/network/og-preview', {
       method: 'POST',

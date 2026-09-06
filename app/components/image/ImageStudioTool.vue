@@ -196,7 +196,7 @@ async function process() {
     outHeight.value = result.height
     outputBlob.value = result.blob
     return result.blob
-  })
+  }, 'The image operation failed.', { option: format.value })
 }
 
 function handleClear() {

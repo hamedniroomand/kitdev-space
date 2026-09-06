@@ -33,6 +33,7 @@ const { status, error, result, run, reset } = useTool<HttpInspectResult>()
 const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
 
 useToolSeo('http-inspector')
+const { reportInput } = useToolInput()
 
 const headerRows = computed(() =>
   Object.entries(result.value?.headers ?? {}).map(([name, value]) => ({ name, value })),
@@ -59,6 +60,7 @@ function levelColor(level: FindingLevel) {
 }
 
 async function inspect() {
+  reportInput('url')
   await run(async () => {
     const data = await $fetch<{ result: HttpInspectResult }>('/api/network/headers', {
       method: 'POST',

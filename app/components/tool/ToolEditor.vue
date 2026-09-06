@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Extension } from '@codemirror/state'
 import type { ToolEditorLang } from '#shared/utils/dev/editor-lang'
+import { textBytes } from '#shared/utils/analytics/buckets'
 
 const props = withDefaults(defineProps<{
   label: string
@@ -26,6 +27,37 @@ const model = defineModel<string>({ default: '' })
 
 const [expanded, toggleExpanded] = useToggle(false)
 
+// Input analytics. A paste or a key press marks the next change with its
+// method. A change with no mark came from code, such as a sample, and only
+// updates the size. Output editors are read only and report nothing.
+const { reportInput, reportBytes, clearBytes } = useToolInput()
+const sourceId = useId()
+let pendingMethod: 'paste' | 'type' | null = null
+
+function onPaste() {
+  pendingMethod = 'paste'
+}
+
+function onKeydown(event: KeyboardEvent) {
+  if (event.metaKey || event.ctrlKey || event.altKey) {
+    return
+  }
+  if (event.key.length === 1 || event.key === 'Enter' || event.key === 'Backspace' || event.key === 'Delete') {
+    pendingMethod ??= 'type'
+  }
+}
+
+if (!props.readonly) {
+  watchDebounced(model, (value) => {
+    reportBytes(sourceId, textBytes(value))
+    if (pendingMethod) {
+      reportInput(pendingMethod)
+      pendingMethod = null
+    }
+  }, { debounce: 400 })
+  onUnmounted(() => clearBytes(sourceId))
+}
+
 const lineCount = computed(() => (
   expanded.value
     ? Math.max(props.rows * 2, 24)
@@ -41,6 +73,8 @@ const editorHeight = computed(() => `${Math.max(lineCount.value * 1.35, 12)}rem`
       <div
         class="tool-editor relative overflow-hidden rounded-md bg-default ring ring-inset ring-accented"
         :style="{ height: editorHeight }"
+        @paste.capture="onPaste"
+        @keydown.capture="onKeydown"
       >
         <LazyToolCodeMirror
           v-model="model"

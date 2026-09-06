@@ -1,3 +1,5 @@
+import { fileFormat } from '#shared/utils/analytics/file-format'
+
 export function useDownload() {
   const { track } = useToolAnalytics()
 
@@ -6,7 +8,8 @@ export function useDownload() {
     anchor.href = url
     anchor.download = filename
     anchor.click()
-    track('tool_download')
+    // The extension comes from a fixed list. The file name never leaves the page.
+    track('tool_download', { file_format: fileFormat(filename) })
   }
 
   function downloadBlob(filename: string, blob: Blob) {

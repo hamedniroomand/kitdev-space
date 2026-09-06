@@ -12,6 +12,11 @@ const emit = defineEmits<{
   'update:modelValue': [file: File | null]
 }>()
 
+const { reportInput, reportBytes, clearBytes } = useToolInput()
+const sourceId = useId()
+watch(() => props.modelValue, file => reportBytes(sourceId, file?.size ?? 0), { immediate: true })
+onUnmounted(() => clearBytes(sourceId))
+
 const inputRef = ref<HTMLInputElement | null>(null)
 const dropZoneRef = ref<HTMLDivElement | null>(null)
 const previewUrl = useObjectUrl(() => props.modelValue)
@@ -21,6 +26,7 @@ const { isOverDropZone } = useDropZone(dropZoneRef, {
   onDrop(files) {
     const file = files?.[0] ?? null
     if (file) {
+      reportInput('drop')
       emit('update:modelValue', file)
     }
   },
@@ -29,6 +35,9 @@ const { isOverDropZone } = useDropZone(dropZoneRef, {
 function onPick(event: Event) {
   const input = event.target as HTMLInputElement
   const file = input.files?.[0] ?? null
+  if (file) {
+    reportInput('file')
+  }
   emit('update:modelValue', file)
 }
 

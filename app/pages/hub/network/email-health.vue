@@ -8,6 +8,7 @@ const { status, error, result, run, reset } = useTool<EmailHealthResult>()
 const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
 
 useToolSeo('email-health')
+const { reportInput } = useToolInput()
 
 function badgeColor(level: HealthLevel) {
   switch (level) {
@@ -27,6 +28,7 @@ function badgeLabel(issue: HealthIssue) {
 }
 
 async function inspect() {
+  reportInput('url')
   await run(async () => {
     const data = await $fetch<{ result: EmailHealthResult }>('/api/network/dns', {
       method: 'POST',

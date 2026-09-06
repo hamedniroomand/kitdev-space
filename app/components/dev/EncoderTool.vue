@@ -26,6 +26,7 @@ const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeed
 const { downloadText } = useDownload()
 
 useToolSeo(props.toolId)
+const { reportInput } = useToolInput()
 
 const activeOption = computed(
   () => CODEC_OPTIONS.find(option => option.value === format.value) ?? CODEC_OPTIONS[0]!,
@@ -75,6 +76,7 @@ function handleDownload() {
 }
 
 function handleSample() {
+  reportInput('sample')
   input.value = SAMPLE
   direction.value = 'encode'
 }

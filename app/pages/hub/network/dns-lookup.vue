@@ -20,8 +20,10 @@ const recordTypeItems = [
 ]
 
 useToolSeo('dns')
+const { reportInput } = useToolInput()
 
 async function lookup() {
+  reportInput('url')
   await run(async () => {
     const data = await $fetch<{ result: string[] | object[] }>('/api/network/dns', {
       method: 'POST',

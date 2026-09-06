@@ -7,6 +7,7 @@ const HISTORY_LIMIT = 20
 
 export function useSqliteStudio() {
   const { downloadBlob, downloadText } = useDownload()
+  const { reportInput } = useToolInput()
   const isReady = ref(false)
   const isExecuting = ref(false)
   const error = ref<string | null>(null)
@@ -130,6 +131,7 @@ export function useSqliteStudio() {
   }
 
   function loadSampleDatabase() {
+    reportInput('sample')
     initWorker()
     databaseName.value = 'ecommerce-sample.sqlite'
     post({ type: 'LOAD_SAMPLE' })

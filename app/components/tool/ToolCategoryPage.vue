@@ -7,6 +7,7 @@ const props = defineProps<{
 }>()
 
 const { categoryLabels, getToolsByCategory } = useTools()
+const { track } = useToolAnalytics()
 
 const label = computed(() => categoryLabels[props.category])
 const categoryTools = computed(() => getToolsByCategory(props.category))
@@ -61,6 +62,7 @@ useSchemaOrg([
           v-if="tool.status === 'available'"
           :to="tool.route"
           class="group flex items-start justify-between gap-4"
+          @click="track('tool_select', { tool: tool.id, source: 'category_page' })"
         >
           <div>
             <p class="font-medium text-highlighted group-hover:text-primary">

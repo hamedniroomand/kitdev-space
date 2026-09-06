@@ -23,6 +23,7 @@ useSchemaOrg([
 ])
 
 const { categoryLabels, getToolsByCategory } = useTools()
+const { track } = useToolAnalytics()
 const { pinnedTools, recentTools, togglePin, isPinned, clearRecents } = useToolPreferences()
 
 const categories = [
@@ -79,6 +80,7 @@ const categories = [
             <NuxtLink
               :to="t.route"
               class="flex items-center gap-2.5 min-w-0 flex-1"
+              @click="track('tool_select', { tool: t.id, source: 'hub_card' })"
             >
               <UIcon
                 :name="t.icon"
@@ -132,6 +134,7 @@ const categories = [
             <NuxtLink
               :to="t.route"
               class="flex items-center gap-2.5 min-w-0 flex-1"
+              @click="track('tool_select', { tool: t.id, source: 'hub_card' })"
             >
               <UIcon
                 :name="t.icon"

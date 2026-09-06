@@ -78,17 +78,45 @@ Give `title` or `description` to `ToolPage` only to override the registry.
 
 ## Analytics
 
-Do not call `useToolAnalytics` in a page. The shared composables send every event:
+Do not call `useToolAnalytics` in a page for the standard events. The shared composables send them:
 
-| Event           | Sent by            |
-| --------------- | ------------------ |
-| `tool_open`     | `useToolSeo`       |
-| `tool_execute`  | `useTool`          |
-| `tool_error`    | `useTool`          |
-| `tool_copy`     | `useCopyFeedback`  |
-| `tool_download` | `useDownload`      |
+| Event | Sent by | Parameters |
+| --- | --- | --- |
+| `tool_open` | `useToolSeo` | defaults only |
+| `tool_select` | sidebar, palette, hub cards, category pages, `RelatedTools`, home | `source` |
+| `tool_execute` | `useTool.run` | `duration_ms`, `input_bytes_bucket`, `run_location` for a mixed tool, `option` |
+| `tool_error` | `useTool.run`, `useCopyFeedback` | `error_kind` |
+| `tool_copy` | `useCopyFeedback` | `target` |
+| `tool_download` | `useDownload` | `file_format` |
+| `tool_search` | palette open | defaults only |
+| `search_result` | palette pick | `query_length` |
+| `tool_input` | `ToolEditor`, `ImageDropzone`, `useSampleInput`, URL tools | `method`, once per method per page |
+| `cta_click` | footer and hub GitHub links, landing links | `cta`, no tool |
 
-An event carries the tool id only. Never send the input or the output of a user.
+Every tool event carries `tool_id`, `tool_category`, `run_location`, and `tool_variant_of` when the
+tool is a variant. The values come from the registry.
+
+Every parameter value comes from a fixed list in code or is a size bucket. An event never carries
+the input, the output, a file name, a URL, a search query, or an error message. `error_kind` comes
+from the error shape, such as the HTTP status or the error name. `option` is the enumerated choice
+of a tool, such as the hash algorithm; pass it to `useTool.run` in its third argument, together with
+`runLocation` for a tool that has a browser path and a server path.
+
+`useToolInput` records the size of each input control and the method the user used, so
+`useTool.run` can send a size bucket without a caller passing the input. A tool that reads a URL
+from a plain input calls `reportInput('url')` in its run handler.
+
+The event names live in the `ToolAnalyticsEvent` union in `useToolAnalytics.ts`, and the
+parameters of each event in `ToolAnalyticsParams`. Add an event in both places.
+
+GA4 needs each parameter registered once as a custom dimension or metric. Event-scoped dimensions:
+`tool_id`, `tool_category`, `run_location`, `tool_variant_of`, `error_kind`, `source`, `method`,
+`file_format`, `option`, `input_bytes_bucket`, `query_length`, `target`, `cta`. Event-scoped metric:
+`duration_ms`. User-scoped dimension: `color_mode`.
+
+Internal traffic: open `/?internal=1` once in a browser to mark it. Every event from that browser
+then carries `traffic_type: internal`, which the GA4 internal traffic filter drops. `/?internal=0`
+clears the mark.
 
 ## Page structure
 

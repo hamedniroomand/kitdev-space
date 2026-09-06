@@ -7,8 +7,10 @@ const { status, error, result, run, reset } = useTool<RdapResult>()
 const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
 
 useToolSeo('rdap-lookup')
+const { reportInput } = useToolInput()
 
 async function lookup() {
+  reportInput('url')
   if (!query.value.trim())
     return
 

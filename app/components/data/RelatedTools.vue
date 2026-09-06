@@ -13,7 +13,16 @@ const currentTool = inject<ComputedRef<Tool | undefined> | undefined>(
   undefined,
 )
 
-const { getToolsByCategory } = useTools()
+const { getToolsByCategory, tools: allTools } = useTools()
+const { track } = useToolAnalytics()
+
+/** A related link may point at a tool page. Then the click is a tool selection. */
+function onSelect(to: string) {
+  const target = allTools.find(tool => tool.route === to)
+  if (target) {
+    track('tool_select', { tool: target.id, source: 'related' })
+  }
+}
 
 const links = computed(() => {
   if (props.items?.length) {
@@ -45,6 +54,7 @@ const links = computed(() => {
         <NuxtLink
           :to="item.to"
           class="text-sm text-primary hover:underline"
+          @click="onSelect(item.to)"
         >
           {{ item.label }}
         </NuxtLink>

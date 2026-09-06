@@ -8,6 +8,7 @@ const { status, error, result, run, reset } = useTool<TlsInspectionResult>()
 const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
 
 useToolSeo('tls-inspector')
+const { reportInput } = useToolInput()
 
 function statusBadgeColor(st: 'valid' | 'expiring_soon' | 'expired') {
   switch (st) {
@@ -21,6 +22,7 @@ function statusBadgeColor(st: 'valid' | 'expiring_soon' | 'expired') {
 }
 
 async function inspect() {
+  reportInput('url')
   await run(async () => {
     const data = await $fetch<{ result: TlsInspectionResult }>('/api/network/tls', {
       method: 'POST',

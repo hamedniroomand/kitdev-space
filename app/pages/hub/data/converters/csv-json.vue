@@ -30,6 +30,7 @@ const modeItems = [
 ]
 
 useToolSeo('csv-json')
+const { reportInput } = useToolInput()
 
 const inputLabel = computed(() => {
   if (mode.value === 'json-csv') {
@@ -150,6 +151,7 @@ function handleClear() {
 }
 
 function handleSample() {
+  reportInput('sample')
   input.value = SAMPLE
 }
 

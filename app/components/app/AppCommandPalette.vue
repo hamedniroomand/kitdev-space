@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import type { CommandPaletteGroup, CommandPaletteItem } from '@nuxt/ui'
 import type { ToolCategory } from '#shared/types/tools'
+import { queryLengthBucket } from '#shared/utils/analytics/buckets'
 import { categoryLabels, tools } from '#shared/utils/tools'
 
 const open = defineModel<boolean>('open', { default: false })
+const searchTerm = ref('')
+const { track } = useToolAnalytics()
 
 const categories: ToolCategory[] = ['data', 'crypto', 'color', 'network', 'image', 'dev']
 
@@ -24,6 +27,9 @@ const groups = computed<CommandPaletteGroup[]>(() => {
             return
           }
 
+          // The length range of the query is sent. The query itself is not.
+          track('search_result', { tool: tool.id, query_length: queryLengthBucket(searchTerm.value.trim().length) })
+          track('tool_select', { tool: tool.id, source: 'palette' })
           open.value = false
         },
       }))
@@ -47,6 +53,7 @@ function onSelect(item: CommandPaletteItem) {
   <UModal v-model:open="open">
     <template #content>
       <LazyUCommandPalette
+        v-model:search-term="searchTerm"
         close
         placeholder="Search tools..."
         :groups="groups"

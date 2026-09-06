@@ -10,6 +10,7 @@ export function useSampleInput<TKey extends string>(
   samples: Record<TKey, string>,
 ) {
   const values = Object.values(samples) as string[]
+  const { reportInput } = useToolInput()
 
   function holdsSample() {
     const current = input.value.trim()
@@ -18,6 +19,7 @@ export function useSampleInput<TKey extends string>(
 
   function applySample(key: TKey) {
     input.value = samples[key]
+    reportInput('sample')
   }
 
   /**

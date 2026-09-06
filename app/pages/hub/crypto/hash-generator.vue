@@ -82,7 +82,7 @@ async function hash() {
       },
     })
     return data.result
-  }, 'The hash operation failed.')
+  }, 'The hash operation failed.', { option: algorithm.value, runLocation: inBrowser.value ? 'browser' : 'server' })
 
   if (status.value === 'success' && result.value !== null) {
     output.value = result.value

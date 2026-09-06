@@ -12,6 +12,7 @@ const { copy: copyManifest, label: manifestCopyLabel, icon: manifestCopyIcon, co
 const { downloadBlob } = useDownload()
 
 useToolSeo('favicon-generator')
+const { reportInput } = useToolInput()
 
 // Sample SVG icon for quick testing
 const sampleSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
@@ -21,6 +22,7 @@ const sampleSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"
 </svg>`
 
 function loadSample() {
+  reportInput('sample')
   file.value = new File([sampleSvg], 'sample-logo.svg', { type: 'image/svg+xml' })
 }
 

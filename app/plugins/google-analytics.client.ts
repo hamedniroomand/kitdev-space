@@ -11,6 +11,24 @@ export default defineNuxtPlugin(() => {
   }
 
   const { proxy } = useScriptGoogleAnalytics()
+
+  // Internal traffic. `/?internal=1` marks this browser, `/?internal=0` clears
+  // the mark. A marked browser sends `traffic_type: internal` on every event,
+  // which the GA4 internal traffic filter drops.
+  const params = useUrlSearchParams('history')
+  const internal = useLocalStorage('kitdev:internal', '0')
+  if (params.internal === '1' || params.internal === '0') {
+    internal.value = String(params.internal)
+  }
+  if (internal.value === '1') {
+    proxy.gtag('set', { traffic_type: 'internal' })
+  }
+
+  // One user property: the color mode preference, from a fixed list.
+  const colorMode = useColorMode()
+  const preference = ['light', 'dark', 'system'].includes(colorMode.preference) ? colorMode.preference : 'system'
+  proxy.gtag('set', { user_properties: { color_mode: preference } })
+
   const initialPath = useRoute().fullPath
   let initialPageSeen = false
   let previousLocation: string | undefined

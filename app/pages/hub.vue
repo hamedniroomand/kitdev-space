@@ -76,6 +76,12 @@ function revealActiveTool() {
   })
 }
 
+/** A click on a tool in the sidebar. The analytics event says the sidebar was the source. */
+function selectTool(toolId: string) {
+  track('tool_select', { tool: toolId, source: 'sidebar' })
+  scrollToTop()
+}
+
 watch(() => route.path, () => {
   scrollToTop()
   revealActiveTool()
@@ -203,7 +209,7 @@ onMounted(revealActiveTool)
                   :class="route.path === tool.route
                     ? 'bg-primary/10 text-primary font-medium'
                     : 'text-default/80 hover:bg-elevated hover:text-highlighted'"
-                  @click="scrollToTop"
+                  @click="selectTool(tool.id)"
                 >
                   <div class="flex items-center gap-2 truncate">
                     <UIcon
@@ -249,6 +255,7 @@ onMounted(revealActiveTool)
           <NuxtLink
             to="/"
             class="flex items-center gap-1 hover:text-highlighted transition-colors"
+            @click="track('cta_click', { cta: 'landing' })"
           >
             <UIcon
               name="i-lucide-arrow-left"
@@ -262,6 +269,7 @@ onMounted(revealActiveTool)
             rel="noopener noreferrer"
             class="flex items-center gap-1 hover:text-highlighted transition-colors"
             aria-label="KitDev Space source on GitHub"
+            @click="track('cta_click', { cta: 'github' })"
           >
             <UIcon
               name="i-simple-icons-github"
@@ -320,7 +328,7 @@ onMounted(revealActiveTool)
                       :class="route.path === tool.route
                         ? 'bg-primary/10 text-primary font-medium'
                         : 'text-default/80 hover:bg-elevated hover:text-highlighted'"
-                      @click="() => { closeMobile(); scrollToTop(); }"
+                      @click="() => { closeMobile(); selectTool(tool.id); }"
                     >
                       <div class="flex items-center gap-2 truncate">
                         <UIcon

@@ -61,6 +61,7 @@ const validateFeedback = useActionFeedback({
 const { downloadText } = useDownload()
 
 useToolSeo('sql-formatter')
+const { reportInput } = useToolInput()
 
 const linterExtension = computed(() => createSqlLinter(() => dialect.value))
 
@@ -104,6 +105,7 @@ async function validate() {
 }
 
 function handleSample() {
+  reportInput('sample')
   input.value = SAMPLE_QUERY
   output.value = ''
   statusMessage.value = ''

@@ -3,6 +3,7 @@ import { useImage as useImageElement } from '@vueuse/core'
 import { formatAsCssBackground, formatAsHtmlImg, parseDataUri } from '#shared/utils/image/base64'
 
 useToolSeo('image-base64')
+const { reportInput } = useToolInput()
 
 type ToolMode = 'image-to-base64' | 'base64-to-image'
 
@@ -29,6 +30,7 @@ const imageWidth = computed(() => previewImage.value?.naturalWidth ?? 0)
 const imageHeight = computed(() => previewImage.value?.naturalHeight ?? 0)
 
 function loadSample() {
+  reportInput('sample')
   file.value = new File([SAMPLE_SVG], 'sample.svg', { type: 'image/svg+xml' })
 }
 

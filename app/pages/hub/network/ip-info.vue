@@ -2,6 +2,7 @@
 import type { IpInfo } from '#shared/utils/network/ip-info'
 
 useToolSeo('ip-info')
+const { reportInput } = useToolInput()
 
 interface ExtendedIpInfo extends IpInfo {
   clientIp?: string
@@ -22,6 +23,7 @@ const presets = [
 ]
 
 async function fetchInfo(targetIp?: string) {
+  reportInput('url')
   loading.value = true
   errorMsg.value = null
 

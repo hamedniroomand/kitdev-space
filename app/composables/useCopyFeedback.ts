@@ -1,3 +1,5 @@
+import type { CopyTarget } from './useToolAnalytics'
+
 export type ActionFeedbackTone = 'idle' | 'success' | 'error'
 
 export type FeedbackColor = 'error' | 'primary' | 'secondary' | 'success' | 'info' | 'warning' | 'neutral'
@@ -87,7 +89,8 @@ export function useCopyFeedback(durationMs = DEFAULT_DURATION_MS) {
     failed.value = false
   }, durationMs, { immediate: false })
 
-  async function copy(text: MaybeRefOrGetter<string>, key = 'default') {
+  /** `target` says what was copied: the result, a code snippet, or one field. */
+  async function copy(text: MaybeRefOrGetter<string>, key = 'default', target: CopyTarget = 'result') {
     const value = toValue(text)
     if (!value) {
       return false
@@ -98,7 +101,12 @@ export function useCopyFeedback(durationMs = DEFAULT_DURATION_MS) {
     failed.value = !copied.value
     stop()
     start()
-    track(copied.value ? 'tool_copy' : 'tool_error')
+    if (copied.value) {
+      track('tool_copy', { target })
+    }
+    else {
+      track('tool_error', { error_kind: 'clipboard' })
+    }
     return copied.value
   }
 

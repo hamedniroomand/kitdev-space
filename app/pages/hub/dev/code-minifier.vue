@@ -72,6 +72,7 @@ const actionItems = [
 ]
 
 useToolSeo('code-minifier')
+const { reportInput } = useToolInput()
 
 const editorLang = computed(() => language.value)
 
@@ -185,6 +186,7 @@ function handleClear() {
 }
 
 function handleSample() {
+  reportInput('sample')
   applySample(language.value)
 }
 
