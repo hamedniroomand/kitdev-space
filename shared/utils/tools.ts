@@ -76,8 +76,8 @@ export const tools: Tool[] = [
     icon: 'i-lucide-arrow-left-right',
     keywords: ['json', 'xml', 'convert'],
     route: '/hub/data/converters/json-xml',
-    clientOnly: false,
-    serverRequired: true,
+    clientOnly: true,
+    serverRequired: false,
     status: 'available',
     seoTitle: 'JSON to XML Converter'
   },

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { DataFormat } from '#shared/utils/data/types'
-import { canConvertInBrowser, convertInBrowser } from '#shared/utils/data/convert'
+import { convertInBrowser } from '#shared/utils/data/convert'
 import { getTextStats } from '#shared/utils/data/stats'
 
 const props = defineProps<{
@@ -27,27 +27,11 @@ const { downloadText } = useDownload()
 
 useToolSeo(props.toolId)
 
-const runsInBrowser = computed(() => canConvertInBrowser(from.value, to.value))
-
 const inputLang = computed(() => (from.value === 'json' || from.value === 'json5' ? 'json' : 'text'))
 const outputLang = computed(() => (to.value === 'json' || to.value === 'json5' ? 'json' : 'text'))
 
 async function convert() {
-  await run(async () => {
-    if (canConvertInBrowser(from.value, to.value)) {
-      return convertInBrowser(input.value, from.value, to.value)
-    }
-
-    const data = await $fetch<{ result: string }>('/api/data/transform', {
-      method: 'POST',
-      body: {
-        input: input.value,
-        from: from.value,
-        to: to.value
-      }
-    })
-    return data.result
-  }, 'The convert operation failed.')
+  await run(() => convertInBrowser(input.value, from.value, to.value), 'The convert operation failed.')
 
   if (status.value === 'success' && result.value !== null) {
     output.value = result.value
@@ -90,13 +74,11 @@ defineShortcuts({
 <template>
   <ToolPage>
     <UAlert
-      color="info"
+      color="success"
       variant="subtle"
-      :icon="runsInBrowser ? 'i-lucide-shield-check' : 'i-lucide-server'"
-      title="Where the work runs"
-      :description="runsInBrowser
-        ? 'This conversion runs in your browser. Your data stays on the page.'
-        : 'This conversion runs on the server, because XML needs a Bun parser.'"
+      icon="i-lucide-shield-check"
+      title="The data stays in your browser"
+      description="Every conversion runs on the page. Nothing is uploaded."
       class="mb-2"
     />
 
@@ -176,8 +158,8 @@ defineShortcuts({
             {{ paragraph }}
           </p>
           <p>
-            JSON, YAML, TOML, and JSON5 convert in your browser. XML goes to the server,
-            because it needs a Bun parser.
+            JSON, YAML, TOML, JSON5, and XML all convert in your browser. The XML parser is the one
+            that the browser ships, so no library is loaded and nothing is uploaded.
           </p>
         </div>
         <RelatedTools

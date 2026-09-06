@@ -3,17 +3,12 @@ import { canConvertInBrowser, convertInBrowser } from '#shared/utils/data/conver
 import { DataError } from '#shared/utils/data/errors'
 
 describe('canConvertInBrowser', () => {
-  it('accepts json, yaml, toml, and json5 in both directions', () => {
-    for (const from of ['json', 'yaml', 'toml', 'json5'] as const) {
-      for (const to of ['json', 'yaml', 'toml', 'json5', 'typescript'] as const) {
+  it('accepts json, yaml, toml, json5, and xml in both directions', () => {
+    for (const from of ['json', 'yaml', 'toml', 'json5', 'xml'] as const) {
+      for (const to of ['json', 'yaml', 'toml', 'json5', 'xml', 'typescript'] as const) {
         expect(canConvertInBrowser(from, to), `${from} to ${to}`).toBe(true)
       }
     }
-  })
-
-  it('rejects xml, which needs Bun on the server', () => {
-    expect(canConvertInBrowser('json', 'xml')).toBe(false)
-    expect(canConvertInBrowser('xml', 'json')).toBe(false)
   })
 
   it('rejects typescript as an input', () => {
@@ -89,7 +84,7 @@ describe('convertInBrowser', () => {
     expect(() => convertInBrowser('[1,2]', 'json', 'toml')).toThrow(/object root/)
   })
 
-  it('refuses xml, which needs the server', () => {
-    expect(() => convertInBrowser('{"a":1}', 'json', 'xml')).toThrow(/server/)
+  it('refuses typescript as an input', () => {
+    expect(() => convertInBrowser('interface A {}', 'typescript', 'json')).toThrow(/output format/)
   })
 })

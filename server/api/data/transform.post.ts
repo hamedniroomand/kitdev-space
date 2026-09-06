@@ -6,7 +6,8 @@ import { enforceRateLimit } from '#server/utils/network/rate-limit'
 
 const MAX_INPUT_CHARS = 500_000
 
-const formats = new Set<DataFormat>(['json', 'yaml', 'toml', 'xml', 'json5', 'typescript'])
+// XML converts in the browser with DOMParser, so the route does not accept it.
+const formats = new Set<DataFormat>(['json', 'yaml', 'toml', 'json5', 'typescript'])
 
 interface TransformBody {
   input?: string

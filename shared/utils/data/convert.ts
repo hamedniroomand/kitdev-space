@@ -10,17 +10,19 @@ import {
   stringifyYamlText
 } from './text-formats'
 import { jsonToTypeScript } from './typescript'
+import { parseXml, stringifyXml } from './xml'
 
 /**
  * Data conversion in the browser.
  *
  * JSON, YAML, TOML, and JSON5 need no server, because `confbox` reads and
- * writes all of them. XML still needs `Bun.XML`, so `/api/data/transform`
- * keeps that one. `canConvertInBrowser` says which path a tool must take.
+ * writes all of them. XML uses the `DOMParser` of the browser. Every format
+ * converts on the page, and `canConvertInBrowser` only rejects TypeScript as
+ * an input, because it is an output format.
  */
 
-const READ_FORMATS = new Set<DataFormat>(['json', 'yaml', 'toml', 'json5'])
-const WRITE_FORMATS = new Set<DataFormat>(['json', 'yaml', 'toml', 'json5', 'typescript'])
+const READ_FORMATS = new Set<DataFormat>(['json', 'yaml', 'toml', 'json5', 'xml'])
+const WRITE_FORMATS = new Set<DataFormat>(['json', 'yaml', 'toml', 'json5', 'xml', 'typescript'])
 
 export function canConvertInBrowser(from: DataFormat, to: DataFormat): boolean {
   return READ_FORMATS.has(from) && WRITE_FORMATS.has(to)
@@ -36,8 +38,10 @@ function parseInBrowser(text: string, from: DataFormat): unknown {
       return parseTomlText(text)
     case 'json5':
       return parseJson5Text(text)
+    case 'xml':
+      return parseXml(text)
     default:
-      throw new DataError('This format needs the server.')
+      throw new DataError('This format is an output format only.')
   }
 }
 
@@ -51,16 +55,18 @@ function serializeInBrowser(value: unknown, to: DataFormat): string {
       return stringifyTomlText(value)
     case 'json5':
       return stringifyJson5Text(value)
+    case 'xml':
+      return stringifyXml(value)
     case 'typescript':
       return jsonToTypeScript(value)
     default:
-      throw new DataError('This format needs the server.')
+      throw new DataError('Unsupported format.')
   }
 }
 
 export function convertInBrowser(input: string, from: DataFormat, to: DataFormat): string {
   if (!canConvertInBrowser(from, to)) {
-    throw new DataError('This format needs the server.')
+    throw new DataError('TypeScript is an output format only.')
   }
 
   const text = input.trim()
