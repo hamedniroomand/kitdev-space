@@ -15,6 +15,10 @@ describe('legacy redirects', () => {
 
   it('resolves exact legacy paths', () => {
     expect(resolveLegacyRedirect('/data/json-formatter')).toBe('/hub/data/json-formatter')
+    expect(resolveLegacyRedirect('/data/json-validator')).toBe('/hub/data/json-formatter')
+    expect(resolveLegacyRedirect('/data/json-minifier')).toBe('/hub/data/json-formatter')
+    expect(resolveLegacyRedirect('/hub/data/json-validator')).toBe('/hub/data/json-formatter')
+    expect(resolveLegacyRedirect('/hub/data/json-minifier')).toBe('/hub/data/json-formatter')
     expect(resolveLegacyRedirect('/crypto/uuid')).toBe('/hub/crypto/uuid')
     expect(resolveLegacyRedirect('/image/converter')).toBe('/hub/image/converter')
     expect(resolveLegacyRedirect('/dev/cron')).toBe('/hub/dev/cron')

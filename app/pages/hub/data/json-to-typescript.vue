@@ -133,7 +133,7 @@ defineShortcuts({
           class="mt-8"
           :items="[
             { label: 'JSON Formatter', to: '/hub/data/json-formatter' },
-            { label: 'JSON Validator', to: '/hub/data/json-validator' }
+            { label: 'JSON ↔ YAML', to: '/hub/data/converters/json-yaml' }
           ]"
         />
       </DataToolDocs>

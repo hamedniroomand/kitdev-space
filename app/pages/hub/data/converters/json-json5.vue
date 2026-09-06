@@ -19,7 +19,7 @@
     ]"
     :related="[
       { label: 'JSON Formatter', to: '/hub/data/json-formatter' },
-      { label: 'JSON Validator', to: '/hub/data/json-validator' }
+      { label: 'JSON → TypeScript', to: '/hub/data/json-to-typescript' }
     ]"
   />
 </template>

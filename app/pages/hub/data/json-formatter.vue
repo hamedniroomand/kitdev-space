@@ -196,9 +196,9 @@ defineShortcuts({
         <DataRelatedTools
           class="mt-8"
           :items="[
-            { label: 'JSON Validator', to: '/hub/data/json-validator' },
-            { label: 'JSON Minifier', to: '/hub/data/json-minifier' },
-            { label: 'JSON → TypeScript', to: '/hub/data/json-to-typescript' }
+            { label: 'JSON → TypeScript', to: '/hub/data/json-to-typescript' },
+            { label: 'JSON ↔ YAML', to: '/hub/data/converters/json-yaml' },
+            { label: 'Text Diff', to: '/hub/data/text-diff' }
           ]"
         />
       </DataToolDocs>

@@ -17,8 +17,10 @@ export const legacyRedirects: Record<string, string> = {
 
   // Data tools
   '/data/json-formatter': '/hub/data/json-formatter',
-  '/data/json-validator': '/hub/data/json-validator',
-  '/data/json-minifier': '/hub/data/json-minifier',
+  '/data/json-validator': '/hub/data/json-formatter',
+  '/data/json-minifier': '/hub/data/json-formatter',
+  '/hub/data/json-validator': '/hub/data/json-formatter',
+  '/hub/data/json-minifier': '/hub/data/json-formatter',
   '/data/json-to-typescript': '/hub/data/json-to-typescript',
   '/data/converters/json-yaml': '/hub/data/converters/json-yaml',
   '/data/converters/json-toml': '/hub/data/converters/json-toml',
