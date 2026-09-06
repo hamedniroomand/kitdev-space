@@ -51,6 +51,7 @@ export function greet(user: User): string {
 const language = ref<CodeLanguage>('javascript')
 const action = ref<CodeAction>('minify')
 const input = ref(SAMPLES.javascript)
+const { applySample, syncSample } = useSampleInput(input, SAMPLES)
 const output = ref('')
 const engine = ref('')
 const statusMeta = ref('')
@@ -120,7 +121,8 @@ const downloadMime = computed(() => {
 })
 
 watch(language, (next) => {
-  input.value = SAMPLES[next]
+  // The result belongs to the old language, so clear it. Keep pasted code.
+  syncSample(next)
   output.value = ''
   engine.value = ''
   statusMeta.value = ''
@@ -177,7 +179,7 @@ function handleClear() {
 }
 
 function handleSample() {
-  input.value = SAMPLES[language.value]
+  applySample(language.value)
 }
 
 defineShortcuts({

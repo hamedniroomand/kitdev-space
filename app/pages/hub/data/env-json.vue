@@ -5,11 +5,6 @@ useToolSeo('env-json')
 
 type ConversionMode = 'env-to-json' | 'json-to-env'
 
-const mode = ref<ConversionMode>('env-to-json')
-const input = ref('PORT=3000\nNODE_ENV=production\n# Database connection\nDB_HOST=localhost\nDB_PORT=5432\nAPI_KEY="secret-key-value"')
-
-const { copy, label, color, icon } = useCopyFeedback()
-
 const sampleEnv = `PORT=3000
 NODE_ENV=production
 # Application settings
@@ -28,6 +23,17 @@ const sampleJson = JSON.stringify(
   null,
   2
 )
+
+const SAMPLES: Record<ConversionMode, string> = {
+  'env-to-json': sampleEnv,
+  'json-to-env': sampleJson
+}
+
+const mode = ref<ConversionMode>('env-to-json')
+const input = ref(sampleEnv)
+
+const { copy, label, color, icon } = useCopyFeedback()
+const { holdsSample, applySample } = useSampleInput(input, SAMPLES)
 
 const conversion = computed(() => {
   if (!input.value.trim()) return { output: '', error: null }
@@ -51,20 +57,25 @@ const output = computed(() => conversion.value.output)
 const parseError = computed(() => conversion.value.error)
 
 function handleModeChange(newMode: ConversionMode) {
-  mode.value = newMode
-  if (newMode === 'env-to-json') {
-    input.value = sampleEnv
-  } else {
-    input.value = sampleJson
+  if (newMode === mode.value) {
+    return
   }
+
+  // Keep the work of the user. Move the result into the input, and load the
+  // sample only when the input still holds a sample.
+  const carried = holdsSample() ? '' : output.value
+  mode.value = newMode
+
+  if (carried) {
+    input.value = carried
+    return
+  }
+
+  applySample(newMode)
 }
 
 function handleLoadSample() {
-  if (mode.value === 'env-to-json') {
-    input.value = sampleEnv
-  } else {
-    input.value = sampleJson
-  }
+  applySample(mode.value)
 }
 
 function handleClear() {

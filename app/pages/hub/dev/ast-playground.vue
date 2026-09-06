@@ -23,6 +23,7 @@ const PANEL_ITEMS: { label: string, value: Panel }[] = [
 
 const language = ref<AstLanguage>('tsx')
 const input = ref(AST_SAMPLES.tsx)
+const { applySample, syncSample } = useSampleInput(input, AST_SAMPLES)
 const panel = ref<Panel>('ast')
 const parseResult = ref<ParseResult | null>(null)
 const selected = ref<AstTreeNode | null>(null)
@@ -56,7 +57,8 @@ function clearResults() {
 }
 
 watch(language, (next) => {
-  input.value = AST_SAMPLES[next]
+  // The tree belongs to the old language, so clear it. Keep pasted code.
+  syncSample(next)
   clearResults()
 })
 
@@ -113,7 +115,7 @@ function handleClear() {
 }
 
 function handleSample() {
-  input.value = AST_SAMPLES[language.value]
+  applySample(language.value)
 }
 
 defineShortcuts({
