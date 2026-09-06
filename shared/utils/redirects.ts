@@ -27,6 +27,8 @@ export const legacyRedirects: Record<string, string> = {
   '/data/converters/json-xml': '/hub/data/converters/json-xml',
   '/data/text-diff': '/hub/data/text-diff',
   '/data/converters/json-json5': '/hub/data/converters/json-json5',
+  '/data/sql-formatter': '/hub/data/sql-formatter',
+  '/hub/dev/sql-formatter': '/hub/data/sql-formatter',
 
   // Network tools
   '/network/og-preview': '/hub/network/og-preview',

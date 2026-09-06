@@ -60,4 +60,12 @@ describe('tool registry', () => {
     expect(tool?.clientOnly).toBe(true)
     expect(tool?.status).toBe('available')
   })
+
+  it('finds sql-formatter in data category', () => {
+    const tool = getToolById('sql-formatter')
+    expect(tool?.route).toBe('/hub/data/sql-formatter')
+    expect(tool?.category).toBe('data')
+    expect(tool?.clientOnly).toBe(true)
+    expect(tool?.status).toBe('available')
+  })
 })

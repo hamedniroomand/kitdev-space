@@ -115,6 +115,19 @@ export const tools: Tool[] = [
     status: 'available'
   },
   {
+    id: 'sql-formatter',
+    slug: 'sql-formatter',
+    name: 'SQL Query Formatter',
+    description: 'Format, indent, and validate SQL queries across multiple dialects.',
+    category: 'data',
+    icon: 'i-lucide-database',
+    keywords: ['sql', 'query', 'format', 'beautify', 'indent', 'validate', 'database', 'postgres', 'mysql', 'sqlite'],
+    route: '/hub/data/sql-formatter',
+    clientOnly: true,
+    serverRequired: false,
+    status: 'available'
+  },
+  {
     id: 'json-json5',
     slug: 'json-json5',
     name: 'JSON ↔ JSON5',
