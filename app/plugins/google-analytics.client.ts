@@ -27,7 +27,10 @@ export default defineNuxtPlugin(() => {
   // One user property: the color mode preference, from a fixed list.
   const colorMode = useColorMode()
   const preference = ['light', 'dark', 'system'].includes(colorMode.preference) ? colorMode.preference : 'system'
-  proxy.gtag('set', { user_properties: { color_mode: preference } })
+  // GA4 reads user properties only from the three-argument form of `set`.
+  // The Nuxt Scripts type declares only the object form, so widen it here.
+  type SetUserProperties = (command: 'set', field: 'user_properties', value: Record<string, string>) => void
+  ;(proxy.gtag as unknown as SetUserProperties)('set', 'user_properties', { color_mode: preference })
 
   const initialPath = useRoute().fullPath
   let initialPageSeen = false
