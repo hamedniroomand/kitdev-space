@@ -34,4 +34,25 @@ test.describe('RegEx Tester Tool', () => {
       expect(sampleText.replace('Paste text to test against the pattern', '').trim()).toBe('')
     })
   })
+  test('shows timeout error for catastrophic backtracking and preserves input', async ({ page }) => {
+    await gotoHydrated(page, '/hub/dev/regex-tester')
+
+    const patternInput = page.getByPlaceholder('Enter a regular expression')
+    const sampleEditor = page.getByRole('textbox', { name: 'Sample text' })
+
+    // Enter a pattern that causes catastrophic backtracking
+    await patternInput.fill('(a+)+$')
+    await sampleEditor.fill(`${'a'.repeat(30)}!`)
+
+    // The Stop button should appear while the worker is running
+    await expect(page.getByRole('button', { name: 'Stop' })).toBeVisible({ timeout: 2_000 })
+
+    // The timeout error should appear within 4 s (2 s timeout + margin)
+    await expect(page.getByText('Execution timed out')).toBeVisible({ timeout: 4_000 })
+
+    // Input is preserved after the timeout
+    await expect(patternInput).toHaveValue('(a+)+$')
+    const sampleText = await sampleEditor.textContent()
+    expect(sampleText).toContain('a'.repeat(30))
+  })
 })
