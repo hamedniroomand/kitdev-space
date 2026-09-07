@@ -17,6 +17,7 @@ Sentry.init({
   environment,
   sendDefaultPii: false,
   tracesSampleRate: 0,
+  tunnel: '/tunnel',
   ignoreErrors: [
     'ResizeObserver loop',
     'Failed to fetch',
