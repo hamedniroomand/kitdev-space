@@ -1,0 +1,43 @@
+{
+  "data": {
+    "active_projects": [
+      {
+        "category": { "id": 1, "label": "Backend", "display_label": "Backend™", "rank": 2, "enabled": true },
+        "projects": [
+          {
+            "id": 11,
+            "name": "Billing Service",
+            "key": "billing-service",
+            "state": "live",
+            "kind": "service",
+            "position": 40,
+            "completion": 0,
+            "is_default": true,
+            "is_pinned": true,
+            "can_schedule": false,
+            "membership_id": 9001,
+            "has_open_tasks": false,
+            "homepage": "https://example.test/billing-service",
+            "created_at": "2025-01-10 08:00:00",
+            "updated_at": "2026-02-20 12:30:00"
+          }
+        ]
+      }
+    ],
+    "all_projects": [
+      {
+        "category": { "id": 1, "label": "Backend", "display_label": "Backend™", "rank": 2, "enabled": true },
+        "projects": [
+          { "id": 12, "name": "Search Indexer", "key": "search-indexer", "state": "live", "kind": "service", "position": 28, "homepage": "https://example.test/search-indexer", "created_at": "2025-01-11 09:00:00", "updated_at": "2026-02-01 10:00:00" },
+          { "id": 13, "name": "Mail Relay", "key": "mail-relay", "state": "live", "kind": "service", "position": 12, "homepage": "https://example.test/mail-relay", "created_at": "2025-01-12 09:00:00", "updated_at": "2026-02-02 10:00:00" }
+        ]
+      },
+      {
+        "category": { "id": 3, "label": "Frontend", "display_label": "Frontend", "rank": 3, "enabled": true },
+        "projects": [
+          { "id": 21, "name": "Design System", "key": "design-system", "state": "live", "kind": "library", "position": 46, "homepage": "https://example.test/design-system", "created_at": "2024-06-05 14:00:00", "updated_at": "2026-02-03 10:00:00" }
+        ]
+      }
+    ]
+  }
+}
