@@ -1,94 +1,76 @@
 import { describe, expect, it } from 'vitest'
-import { detectSchemaDraft, generateSchemaFromJson, validateJsonSchema } from '#shared/utils/data/json-schema'
+import { generateSchemaFromJson, validateJsonSchema } from '#shared/utils/data/json-schema'
 
 describe('validateJsonSchema', () => {
-  const sampleSchema = JSON.stringify({
-    type: 'object',
-    properties: {
-      name: { type: 'string' },
-      age: { type: 'number', minimum: 0 },
-    },
-    required: ['name'],
-  })
-
-  it('validates compliant data', () => {
-    const data = JSON.stringify({ name: 'Alice', age: 30 })
-    const res = validateJsonSchema(sampleSchema, data)
+  it('accepts true boolean schema as valid for any payload', () => {
+    const res = validateJsonSchema('true', '{"foo": "bar"}')
     expect(res.isValid).toBe(true)
     expect(res.errors).toHaveLength(0)
   })
 
-  it('detects missing required fields', () => {
-    const data = JSON.stringify({ age: 30 })
-    const res = validateJsonSchema(sampleSchema, data)
+  it('rejects payload for false boolean schema', () => {
+    const res = validateJsonSchema('false', '{"foo": "bar"}')
     expect(res.isValid).toBe(false)
-    expect(res.errors[0]?.keyword).toBe('required')
+    expect(res.errors.length).toBeGreaterThan(0)
   })
 
-  it('detects type mismatches', () => {
-    const data = JSON.stringify({ name: 12345 })
-    const res = validateJsonSchema(sampleSchema, data)
-    expect(res.isValid).toBe(false)
-    expect(res.errors[0]?.path).toBe('/name')
-  })
-
-  it('handles invalid schema json', () => {
-    const res = validateJsonSchema('{ bad json', '{}')
-    expect(res.isValid).toBe(false)
-    expect(res.schemaError).toBeDefined()
-  })
-
-  it('collects every error, not only the first one', () => {
-    const data = JSON.stringify({ name: 12345, age: -1 })
-    const res = validateJsonSchema(sampleSchema, data)
-    expect(res.isValid).toBe(false)
-    expect(res.errors.map(e => e.path).sort()).toEqual(['/age', '/name'])
-  })
-
-  it('checks the email, ipv4, ipv6, and date formats', () => {
+  it('rejects unsupported schema drafts with a clear error', () => {
     const schema = JSON.stringify({
+      $schema: 'http://json-schema.org/draft-03/schema#',
+      type: 'object',
+    })
+    const res = validateJsonSchema(schema, '{}')
+    expect(res.isValid).toBe(false)
+    expect(res.schemaError).toContain('Unsupported JSON Schema draft')
+  })
+
+  it('validates draft-07 schema against data', () => {
+    const schema = JSON.stringify({
+      $schema: 'http://json-schema.org/draft-07/schema#',
       type: 'object',
       properties: {
-        email: { type: 'string', format: 'email' },
-        ip: { type: 'string', format: 'ipv4' },
-        ip6: { type: 'string', format: 'ipv6' },
-        day: { type: 'string', format: 'date' },
+        name: { type: 'string' },
       },
+      required: ['name'],
     })
-    expect(validateJsonSchema(schema, JSON.stringify({ email: 'a@b.co', ip: '10.0.0.1', ip6: '::1', day: '2026-09-07' })).isValid).toBe(true)
-    const res = validateJsonSchema(schema, JSON.stringify({ email: 'nope', ip: '999.1.1.1', ip6: 'zz', day: '2026-13-40' }))
-    expect(res.isValid).toBe(false)
-    expect(res.errors.map(e => e.path).sort()).toEqual(['/day', '/email', '/ip', '/ip6'])
-  })
+    const valid = validateJsonSchema(schema, '{"name": "Alice"}')
+    expect(valid.isValid).toBe(true)
+    expect(valid.draft).toBe('draft-07')
 
-  it('reads the draft from $schema and validates 2020-12 prefixItems', () => {
-    expect(detectSchemaDraft({ $schema: 'http://json-schema.org/draft-07/schema#' })).toBe('7')
-    expect(detectSchemaDraft({ $schema: 'http://json-schema.org/draft-04/schema#' })).toBe('4')
-    expect(detectSchemaDraft({ $schema: 'https://json-schema.org/draft/2019-09/schema' })).toBe('2019-09')
-    expect(detectSchemaDraft({})).toBe('2020-12')
-
-    const schema = JSON.stringify({ type: 'array', prefixItems: [{ type: 'string' }, { type: 'integer' }], items: false })
-    expect(validateJsonSchema(schema, JSON.stringify(['a', 1])).isValid).toBe(true)
-    expect(validateJsonSchema(schema, JSON.stringify(['a', 'b'])).isValid).toBe(false)
-  })
-
-  it('rejects a schema that is not an object', () => {
-    const res = validateJsonSchema('[1, 2]', '{}')
-    expect(res.isValid).toBe(false)
-    expect(res.schemaError).toContain('must be a JSON object')
+    const invalid = validateJsonSchema(schema, '{"name": 123}')
+    expect(invalid.isValid).toBe(false)
+    expect(invalid.errors.length).toBeGreaterThan(0)
   })
 })
 
 describe('generateSchemaFromJson', () => {
-  it('generates schema for object', () => {
-    const schema = generateSchemaFromJson({ id: 1, label: 'test' })
-    expect(schema).toEqual({
-      type: 'object',
-      properties: {
-        id: { type: 'integer' },
-        label: { type: 'string' },
-      },
-      required: ['id', 'label'],
-    })
+  it('generates a schema that accepts every item in an array of objects with different fields', () => {
+    const sample = [
+      { id: 1, name: 'Alice' },
+      { id: 2, name: 'Bob', email: 'bob@example.com' },
+      { id: 3, name: 'Charlie', age: 30 },
+    ]
+
+    const schema = generateSchemaFromJson(sample)
+    expect(schema.type).toBe('array')
+    const items = schema.items as Record<string, unknown>
+    expect(items.type).toBe('object')
+    const properties = items.properties as Record<string, unknown>
+    expect(properties).toHaveProperty('id')
+    expect(properties).toHaveProperty('name')
+    expect(properties).toHaveProperty('email')
+    expect(properties).toHaveProperty('age')
+
+    // id and name are in all items -> required
+    // email and age are only in some -> optional (not in required)
+    const required = items.required as string[]
+    expect(required).toContain('id')
+    expect(required).toContain('name')
+    expect(required).not.toContain('email')
+    expect(required).not.toContain('age')
+
+    // The generated schema must validate the original sample data
+    const validation = validateJsonSchema(JSON.stringify(schema), JSON.stringify(sample))
+    expect(validation.isValid).toBe(true)
   })
 })

@@ -1,7 +1,7 @@
 import { parseCsv } from './csv'
 
 export interface TableRow {
-  [key: string]: string | number | boolean | null
+  [key: string]: string | number | boolean | null | undefined
 }
 
 export interface TableData {
@@ -36,15 +36,24 @@ export function parseToTable(input: string): TableData {
         const rows: TableRow[] = list.map((item) => {
           const row: TableRow = {}
           for (const col of columns) {
-            const val = item && typeof item === 'object' ? (item as Record<string, unknown>)[col] : undefined
-            if (val === null || val === undefined) {
-              row[col] = ''
-            }
-            else if (typeof val === 'object') {
-              row[col] = JSON.stringify(val)
+            const hasProp = item && typeof item === 'object' && Object.hasOwn(item, col)
+            if (!hasProp) {
+              row[col] = undefined
             }
             else {
-              row[col] = val as string | number | boolean
+              const val = (item as Record<string, unknown>)[col]
+              if (val === null) {
+                row[col] = null
+              }
+              else if (val === undefined) {
+                row[col] = undefined
+              }
+              else if (typeof val === 'object') {
+                row[col] = JSON.stringify(val)
+              }
+              else {
+                row[col] = val as string | number | boolean
+              }
             }
           }
           return row
@@ -92,14 +101,21 @@ export function filterAndSortRows(
   if (query.trim()) {
     const q = query.toLowerCase()
     result = result.filter(row =>
-      Object.values(row).some(val => String(val ?? '').toLowerCase().includes(q)),
+      Object.values(row).some(val => val !== undefined && val !== null && String(val).toLowerCase().includes(q)),
     )
   }
 
   if (sortCol) {
     result.sort((a, b) => {
-      const valA = a[sortCol] ?? ''
-      const valB = b[sortCol] ?? ''
+      const valA = a[sortCol]
+      const valB = b[sortCol]
+
+      if (valA === valB)
+        return 0
+      if (valA === undefined || valA === null)
+        return sortAsc ? 1 : -1
+      if (valB === undefined || valB === null)
+        return sortAsc ? -1 : 1
 
       if (typeof valA === 'number' && typeof valB === 'number') {
         return sortAsc ? valA - valB : valB - valA

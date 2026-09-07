@@ -98,6 +98,15 @@ function handleClear() {
 
         <div class="flex items-center gap-2">
           <UBadge
+            v-if="result.draft && schemaInput.trim()"
+            color="neutral"
+            variant="subtle"
+            size="md"
+          >
+            Draft: {{ result.draft }}
+          </UBadge>
+
+          <UBadge
             v-if="schemaInput.trim() && dataInput.trim()"
             :color="result.isValid ? 'success' : 'error'"
             variant="subtle"

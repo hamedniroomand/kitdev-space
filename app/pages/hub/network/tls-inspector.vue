@@ -367,7 +367,10 @@ function handleReset() {
       <ToolDocs title="About TLS certificates">
         <div class="space-y-4 text-muted">
           <p>
-            This tool connects to a host and reads its TLS certificate. It shows the subject, the issuer, the validity dates, the alternative names, and the cipher suite.
+            This tool connects to a host and reads its TLS certificate. It shows the subject, the issuer, the validity dates, the alternative names, and the single cipher suite negotiated during the connection.
+          </p>
+          <p>
+            The tool performs one TLS handshake and returns the negotiated cipher. It does not run a complete cipher scan or audit every protocol and cipher supported by the server.
           </p>
           <p>
             The most common failure is an expired certificate. The second is a missing name: the certificate must list the exact host name in its subject alternative names, so a certificate for example.com does not cover www.example.com.

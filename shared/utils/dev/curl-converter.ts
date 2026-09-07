@@ -207,19 +207,55 @@ axios({
   });`
 }
 
+export function toPythonLiteral(value: unknown, indent = 0): string {
+  if (value === null || value === undefined) {
+    return 'None'
+  }
+  if (typeof value === 'boolean') {
+    return value ? 'True' : 'False'
+  }
+  if (typeof value === 'number') {
+    return String(value)
+  }
+  if (typeof value === 'string') {
+    return JSON.stringify(value)
+  }
+  const spaces = ' '.repeat(indent)
+  const nextSpaces = ' '.repeat(indent + 4)
+
+  if (Array.isArray(value)) {
+    if (value.length === 0) {
+      return '[]'
+    }
+    const items = value.map(item => `${nextSpaces}${toPythonLiteral(item, indent + 4)}`)
+    return `[\n${items.join(',\n')}\n${spaces}]`
+  }
+
+  if (typeof value === 'object') {
+    const entries = Object.entries(value as Record<string, unknown>)
+    if (entries.length === 0) {
+      return '{}'
+    }
+    const lines = entries.map(([k, v]) => `${nextSpaces}${JSON.stringify(k)}: ${toPythonLiteral(v, indent + 4)}`)
+    return `{\n${lines.join(',\n')}\n${spaces}}`
+  }
+
+  return JSON.stringify(value)
+}
+
 export function toPythonRequests(parsed: ParsedCurl): string {
   const lines: string[] = ['import requests\n']
   lines.push(`url = "${parsed.url}"\n`)
 
   if (Object.keys(parsed.headers).length > 0) {
-    lines.push(`headers = ${JSON.stringify(parsed.headers, null, 4)}\n`)
+    lines.push(`headers = ${toPythonLiteral(parsed.headers)}\n`)
   }
 
   let dataArg = ''
   if (parsed.data) {
     try {
       const json = JSON.parse(parsed.data)
-      lines.push(`json_data = ${JSON.stringify(json, null, 4)}\n`)
+      lines.push(`json_data = ${toPythonLiteral(json)}\n`)
       dataArg = ', json=json_data'
     }
     catch {

@@ -6,6 +6,7 @@ import { readImageMetadata } from '#shared/utils/image/exif'
 import { imageExtensionFor } from '#shared/utils/image/format'
 import { readImageResponse } from '#shared/utils/image/response'
 import { cropImageFile } from '~/utils/image/crop-file'
+import { canProcessInBrowser, processImageInBrowser } from '~/utils/image/process-browser'
 
 type SizeMode = ImagePresetId | 'original' | 'custom'
 
@@ -151,12 +152,39 @@ watch(sizeMode, (mode) => {
 async function process() {
   outputBlob.value = null
 
+  const isBrowser = canProcessInBrowser(format.value)
+  const runLocation = isBrowser ? 'browser' : 'server'
+
   await run(async () => {
     if (!file.value) {
       throw new Error('Choose an image file before you run the tool.')
     }
 
-    // The crop runs in the browser, so only the chosen pixels leave the device.
+    if (isBrowser) {
+      const result = await processImageInBrowser(file.value, {
+        cropRect: cropEnabled.value ? cropRect.value : null,
+        resizes: resizes.value,
+        width: width.value,
+        height: height.value,
+        fit: fit.value,
+        withoutEnlargement: withoutEnlargement.value,
+        rotate: rotate.value,
+        flip: flip.value,
+        flop: flop.value,
+        grayscale: grayscale.value,
+        format: format.value,
+        quality: quality.value,
+      })
+
+      inputBytes.value = file.value.size
+      outputBytes.value = result.outputBytes
+      outWidth.value = result.width
+      outHeight.value = result.height
+      outputBlob.value = result.blob
+      return result.blob
+    }
+
+    // Server path (e.g. for AVIF format)
     const upload = cropEnabled.value && cropRect.value
       ? await cropImageFile(file.value, cropRect.value)
       : file.value
@@ -196,7 +224,7 @@ async function process() {
     outHeight.value = result.height
     outputBlob.value = result.blob
     return result.blob
-  }, 'The image operation failed.', { option: format.value })
+  }, 'The image operation failed.', { runLocation, option: format.value })
 }
 
 function handleClear() {
@@ -215,11 +243,20 @@ function handleClear() {
 <template>
   <ToolPage>
     <UAlert
+      v-if="format === 'avif'"
       color="info"
       variant="subtle"
       icon="i-lucide-server"
       title="Processed with Bun"
-      description="Every setting runs in one pass, so the image is encoded once. The file is processed in memory and is not stored."
+      description="AVIF encoding runs on the server with Bun. The file is processed in memory and is not stored."
+    />
+    <UAlert
+      v-else
+      color="neutral"
+      variant="subtle"
+      icon="i-lucide-shield-check"
+      title="Processed locally"
+      description="WebP, JPEG, and PNG operations run locally in your browser. No image data leaves your device."
     />
 
     <ImageDropzone v-model="file" />

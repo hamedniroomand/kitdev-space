@@ -223,6 +223,20 @@ function handleDownloadCsv() {
                     >
                       {{ row[col] ? 'true' : 'false' }}
                     </UBadge>
+                    <span
+                      v-else-if="row[col] === null"
+                      class="text-muted/60 italic select-none"
+                    >null</span>
+                    <span
+                      v-else-if="row[col] === undefined"
+                      class="text-muted/40 select-none"
+                      title="Field is missing"
+                    >—</span>
+                    <span
+                      v-else-if="row[col] === ''"
+                      class="text-muted/40 text-[10px] select-none"
+                      title="Empty string"
+                    >(empty)</span>
                     <span v-else>{{ row[col] }}</span>
                   </td>
                 </tr>
@@ -248,7 +262,7 @@ function handleDownloadCsv() {
             This tool shows a CSV or a JSON data set as a table. You can sort a column, search the rows, and filter the data without a spreadsheet program.
           </p>
           <p>
-            Use it to look at an export before you load it. You can see the column names, find an empty field, and check that the row count is correct.
+            The table shows the difference between null, missing, and empty values. JSON exports preserve null values and omit missing fields. CSV downloads export empty text cells for null, missing, and empty values.
           </p>
           <p>
             The file is read in your browser. The data is not uploaded, so you can open a customer export or a log file safely.

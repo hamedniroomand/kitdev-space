@@ -95,7 +95,7 @@ async function validate() {
   })
 
   if (status.value === 'success') {
-    statusMessage.value = 'Valid SQL query'
+    statusMessage.value = 'Valid SQL syntax'
     setStats(input.value)
     validateFeedback.flashSuccess()
   }
@@ -263,7 +263,9 @@ defineShortcuts({
             You can also transform keywords to UPPERCASE or lowercase.
           </p>
           <p>
-            Live syntax checking highlights syntax errors directly in the editor as you type.
+            Syntax checking validates statement structure against the grammar rules of the selected SQL dialect. It checks syntax only and does not validate against a live database, schema, or table catalog.
+          </p>
+          <p>
             Select Format or press <UKbd value="meta" /> + <UKbd value="enter" /> to run the formatter.
           </p>
         </div>

@@ -134,13 +134,19 @@ defineShortcuts({
     />
 
     <template #docs>
-      <ToolDocs title="About mock data">
+      <ToolDocs title="About Lorem Ipsum">
         <div class="space-y-4 text-muted">
           <p>
-            Use this tool for layout drafts and demo UI data.
+            Use this tool to generate placeholder text in paragraphs or words for layout drafts.
           </p>
           <p>
-            Generated profiles are fake. Do not treat them as real people.
+            For structured test records, mock users, or database fixtures, use the
+            <NuxtLink
+              to="/hub/data/fake-generator"
+              class="text-primary hover:underline"
+            >
+              Fake Data Generator
+            </NuxtLink>.
           </p>
         </div>
         <RelatedTools

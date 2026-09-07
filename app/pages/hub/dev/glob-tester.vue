@@ -82,7 +82,7 @@ function applyPreset(pattern: string) {
             variant="soft"
             color="neutral"
             label="**/*.{json,md} (Configs and Docs)"
-            @click="applyPreset('**/*.json')"
+            @click="applyPreset('**/*.{json,md}')"
           />
         </div>
       </div>
@@ -147,8 +147,15 @@ function applyPreset(pattern: string) {
             A glob pattern selects files by name. This tool tests a pattern against a list of paths and shows which paths match, so you can correct the pattern before you use it.
           </p>
           <p>
-            One star matches inside a single path segment. Two stars match across segments, so src/**/*.ts finds a file at any depth and src/*.ts finds one only at the top. This is the most common mistake.
+            Supported rules:
           </p>
+          <ul class="list-disc pl-5 space-y-1">
+            <li><code>*</code> matches any characters in one folder segment.</li>
+            <li><code>**</code> matches across folders at any depth.</li>
+            <li><code>?</code> matches one character.</li>
+            <li><code>{a,b}</code> matches any of the comma-separated options.</li>
+            <li><code>!pattern</code> negates the match to exclude paths.</li>
+          </ul>
           <p>
             Use it to check a .gitignore rule, a test file pattern, a build include list, or a CI path filter.
           </p>

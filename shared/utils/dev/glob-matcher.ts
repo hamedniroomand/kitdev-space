@@ -5,6 +5,15 @@ export function globToRegex(glob: string): RegExp {
     pattern = pattern.slice(1)
   }
 
+  // Handle brace expansion {a,b,c}
+  pattern = pattern.replace(/\{([^{}]+)\}/g, (_match, group: string) => {
+    if (group.includes(',')) {
+      const parts = group.split(',').map(part => part.trim())
+      return `§§BRACE_START§§${parts.join('§§BRACE_PIPE§§')}§§BRACE_END§§`
+    }
+    return _match
+  })
+
   // Replace placeholders before regex escaping
   pattern = pattern.replace(/\/\*\*\//g, '/§§GLOBSTAR_SLASH§§/')
   pattern = pattern.replace(/\*\*/g, '§§GLOBSTAR§§')
@@ -16,9 +25,13 @@ export function globToRegex(glob: string): RegExp {
 
   // Replace back placeholders
   pattern = pattern.replace(/\/§§GLOBSTAR_SLASH§§\//g, '(?:\\/|\\/.*\\/)')
+  pattern = pattern.replace(/^§§GLOBSTAR§§\//g, '(?:.*\\/)?')
   pattern = pattern.replace(/§§GLOBSTAR§§/g, '.*')
   pattern = pattern.replace(/§§STAR§§/g, '[^/]*')
   pattern = pattern.replace(/§§QMARK§§/g, '[^/]')
+  pattern = pattern.replace(/§§BRACE_START§§/g, '(?:')
+  pattern = pattern.replace(/§§BRACE_PIPE§§/g, '|')
+  pattern = pattern.replace(/§§BRACE_END§§/g, ')')
 
   const regexStr = pattern.startsWith('/')
     ? `^${pattern.slice(1)}$`

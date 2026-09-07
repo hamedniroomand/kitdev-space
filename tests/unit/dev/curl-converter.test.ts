@@ -50,6 +50,18 @@ describe('converters', () => {
     expect(code).toContain('method: "post"')
   })
 
+  it('converts to Python requests with booleans and nulls', () => {
+    const complexParsed = parseCurl('curl -X POST https://httpbin.org/post -H "Content-Type: application/json" -d \'{"active": true, "deleted": false, "notes": null, "count": 42}\'')
+    const code = toPythonRequests(complexParsed)
+    expect(code).toContain('"active": True')
+    expect(code).toContain('"deleted": False')
+    expect(code).toContain('"notes": None')
+    expect(code).toContain('"count": 42')
+    expect(code).not.toContain('true')
+    expect(code).not.toContain('false')
+    expect(code).not.toContain('null')
+  })
+
   it('converts to Python requests', () => {
     const code = toPythonRequests(parsed)
     expect(code).toContain('import requests')

@@ -119,7 +119,7 @@ defineShortcuts({
       color="neutral"
       variant="subtle"
       title="Processed locally"
-      description="This tool runs in the browser. Contrast uses the same WCAG checks as the Contrast Checker."
+      description="This tool runs in the browser. Contrast is sampled at each color stop and the average stop color, not across every rendered gradient pixel."
     />
 
     <div class="flex flex-wrap gap-4">
@@ -270,7 +270,7 @@ defineShortcuts({
     >
       <div class="flex flex-wrap items-center gap-3">
         <p class="text-sm font-medium text-highlighted">
-          Text contrast
+          Sampled text contrast
         </p>
         <p class="font-mono text-sm text-highlighted">
           worst {{ contrast.worstRatio.toFixed(2) }}:1
@@ -306,7 +306,7 @@ defineShortcuts({
             Use the angle control for linear gradients. Move each stop to set its position.
           </p>
           <p>
-            Contrast checks the text color against each stop and against the average stop color.
+            Contrast is sampled at each explicit color stop and their average color. It estimates readability at those points, but does not test every interpolated point across the rendered gradient canvas.
           </p>
           <p>
             This tool does not store your input.

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { RegexTestResult } from '#shared/utils/dev/regex'
+import type { RegexWorkerResponse } from '~/workers/regex.worker'
 import { testRegex } from '#shared/utils/dev/regex'
 
 const pattern = ref('\\b(?<word>[A-Z][a-z]+)\\b')
@@ -21,7 +22,119 @@ const flagString = computed(() => {
     .join('')
 })
 
-const result = computed<RegexTestResult>(() => testRegex(pattern.value, sample.value, flagString.value))
+const result = ref<RegexTestResult>(testRegex(pattern.value, sample.value, flagString.value))
+const isExecuting = ref(false)
+
+let worker: Worker | null = null
+let currentRunId = 0
+let timeoutHandle: ReturnType<typeof setTimeout> | null = null
+
+function initWorker() {
+  if (!import.meta.client)
+    return
+  if (worker) {
+    worker.terminate()
+  }
+  worker = new Worker(new URL('../../../workers/regex.worker.ts', import.meta.url), {
+    type: 'module',
+  })
+  worker.onmessage = (event: MessageEvent<RegexWorkerResponse>) => {
+    if (event.data.id === currentRunId) {
+      if (timeoutHandle) {
+        clearTimeout(timeoutHandle)
+        timeoutHandle = null
+      }
+      isExecuting.value = false
+      result.value = event.data.result
+    }
+  }
+}
+
+function handleStop() {
+  if (timeoutHandle) {
+    clearTimeout(timeoutHandle)
+    timeoutHandle = null
+  }
+  if (isExecuting.value) {
+    isExecuting.value = false
+    initWorker()
+    result.value = {
+      pattern: pattern.value,
+      flags: flagString.value,
+      valid: false,
+      error: 'Execution stopped by user.',
+      matches: [],
+      highlights: sample.value ? [{ text: sample.value, matched: false, matchIndex: null }] : [],
+      explanations: [],
+    }
+  }
+}
+
+function handleTimeout() {
+  if (isExecuting.value) {
+    isExecuting.value = false
+    initWorker()
+    result.value = {
+      pattern: pattern.value,
+      flags: flagString.value,
+      valid: false,
+      error: 'Execution timed out after 2 seconds. The pattern may contain catastrophic backtracking.',
+      matches: [],
+      highlights: sample.value ? [{ text: sample.value, matched: false, matchIndex: null }] : [],
+      explanations: [],
+    }
+  }
+}
+
+const runTest = useDebounceFn(() => {
+  if (!import.meta.client || typeof Worker === 'undefined') {
+    result.value = testRegex(pattern.value, sample.value, flagString.value)
+    return
+  }
+
+  if (!worker) {
+    initWorker()
+  }
+
+  if (timeoutHandle) {
+    clearTimeout(timeoutHandle)
+  }
+
+  currentRunId += 1
+  const runId = currentRunId
+  isExecuting.value = true
+
+  timeoutHandle = setTimeout(() => {
+    if (currentRunId === runId) {
+      handleTimeout()
+    }
+  }, 2000)
+
+  worker?.postMessage({
+    id: runId,
+    pattern: pattern.value,
+    sample: sample.value,
+    flags: flagString.value,
+  })
+}, 100)
+
+watch([pattern, sample, flagString], () => {
+  runTest()
+})
+
+onMounted(() => {
+  initWorker()
+})
+
+onUnmounted(() => {
+  if (timeoutHandle) {
+    clearTimeout(timeoutHandle)
+  }
+  if (worker) {
+    worker.terminate()
+    worker = null
+  }
+})
 
 const flagItems = [
   { key: 'g' as const, label: 'g', hint: 'Global' },
@@ -44,7 +157,7 @@ function handleClear() {
       color="neutral"
       variant="subtle"
       title="Processed locally"
-      description="This tool runs in the browser with the JavaScript RegExp engine."
+      description="This tool runs in a Web Worker with a 2-second timeout to protect against catastrophic backtracking."
     />
 
     <UFormField label="Pattern">
@@ -76,6 +189,14 @@ function handleClear() {
     />
 
     <ToolActions>
+      <UButton
+        v-if="isExecuting"
+        label="Stop"
+        color="error"
+        variant="subtle"
+        icon="i-lucide-square"
+        @click="handleStop"
+      />
       <UButton
         label="Clear"
         color="neutral"
