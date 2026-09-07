@@ -10,7 +10,7 @@ permissions:
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   check:
@@ -27,6 +27,7 @@ jobs:
       - run: bun run test
 
   e2e:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -52,12 +53,8 @@ jobs:
       - name: Install Chromium system libraries
         if: steps.playwright-cache.outputs.cache-hit == 'true'
         run: bunx playwright install-deps chromium
-      - name: Run Playwright smoke tests on pull request
-        if: github.event_name == 'pull_request'
+      - name: Run the smoke tests
         run: bun run test:e2e:run --grep @smoke
-      - name: Run full Playwright suite on main
-        if: github.event_name != 'pull_request'
-        run: bun run test:e2e:run
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
@@ -67,3 +64,67 @@ jobs:
             test-results
           if-no-files-found: ignore
           retention-days: 7
+
+  deploy:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    concurrency:
+      group: production-deploy
+      cancel-in-progress: false
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      SENTRY_NO_PROGRESS_BAR: '1'
+      SENTRY_LOG_LEVEL: error
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+      - run: bun ci
+      - name: Install the Vercel CLI
+        run: bun i -g vercel@59
+      - name: Pull the production settings and environment
+        run: vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
+      - name: Build
+        run: vercel build --prod --token="$VERCEL_TOKEN"
+      - name: Deploy without the domain
+        id: deploy
+        run: |
+          url=$(vercel deploy --prebuilt --prod --skip-domain --token="$VERCEL_TOKEN")
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "Deployment: $url"
+      - name: Playwright version
+        id: playwright
+        run: echo "version=$(bun -e 'console.log(require("@playwright/test/package.json").version)')" >> "$GITHUB_OUTPUT"
+      - name: Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
+      - name: Install Chromium
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: bunx playwright install --with-deps chromium
+      - name: Install Chromium system libraries
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: bunx playwright install-deps chromium
+      - name: Test the deployment
+        env:
+          PLAYWRIGHT_BASE_URL: ${{ steps.deploy.outputs.url }}
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+        run: bun run test:e2e:run
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report-deploy
+          path: |
+            playwright-report
+            test-results
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Promote the deployment to the domain
+        run: vercel promote "${{ steps.deploy.outputs.url }}" --token="$VERCEL_TOKEN"
