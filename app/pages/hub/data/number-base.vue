@@ -111,7 +111,7 @@ function handleCopy(text: string, key: string) {
             placeholder="0"
             size="lg"
             class="font-mono text-sm"
-            @input="updateFrom(decimalVal, 10)"
+            @update:model-value="updateFrom(decimalVal, 10)"
           />
         </div>
 
@@ -137,7 +137,7 @@ function handleCopy(text: string, key: string) {
             placeholder="0"
             size="lg"
             class="font-mono text-sm"
-            @input="updateFrom(hexVal, 16)"
+            @update:model-value="updateFrom(hexVal, 16)"
           />
         </div>
 
@@ -163,7 +163,7 @@ function handleCopy(text: string, key: string) {
             placeholder="0"
             size="lg"
             class="font-mono text-sm"
-            @input="updateFrom(binaryVal, 2)"
+            @update:model-value="updateFrom(binaryVal, 2)"
           />
         </div>
 
@@ -189,7 +189,7 @@ function handleCopy(text: string, key: string) {
             placeholder="0"
             size="lg"
             class="font-mono text-sm"
-            @input="updateFrom(octalVal, 8)"
+            @update:model-value="updateFrom(octalVal, 8)"
           />
         </div>
       </div>

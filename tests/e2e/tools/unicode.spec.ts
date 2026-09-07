@@ -4,9 +4,24 @@ import { gotoHydrated } from '../utils'
 test('inspects Unicode characters and detects hidden marks', { tag: '@smoke' }, async ({ page }) => {
   await gotoHydrated(page, '/hub/data/unicode')
 
-  await expect(page.getByText('Hidden Characters Detected')).toBeVisible()
-  await expect(page.getByText('Code Points', { exact: true })).toBeVisible()
+  const textarea = page.getByPlaceholder('Paste or type text to inspect Unicode characters...')
 
-  await page.getByRole('button', { name: 'Clear' }).click()
-  await expect(page.getByText('Hidden Characters Detected')).not.toBeVisible()
+  await test.step('inspects default text with hidden zero-width marks', async () => {
+    await expect(page.getByText('Hidden Characters Detected')).toBeVisible()
+    await expect(page.getByText('Code Points', { exact: true })).toBeVisible()
+  })
+
+  await test.step('updates inspection when typing standard text', async () => {
+    await textarea.fill('ABC')
+    await expect(page.getByText('Hidden Characters Detected')).not.toBeVisible()
+    await expect(page.getByText('U+0041')).toBeVisible()
+    await expect(page.getByText('U+0042')).toBeVisible()
+    await expect(page.getByText('U+0043')).toBeVisible()
+  })
+
+  await test.step('clears input and results', async () => {
+    await page.getByRole('button', { name: 'Clear' }).click()
+    await expect(textarea).toHaveValue('')
+    await expect(page.getByText('U+0041')).not.toBeVisible()
+  })
 })

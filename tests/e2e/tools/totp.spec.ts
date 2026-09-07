@@ -4,9 +4,27 @@ import { gotoHydrated } from '../utils'
 test('generates time-based one-time passwords', { tag: '@smoke' }, async ({ page }) => {
   await gotoHydrated(page, '/hub/crypto/totp')
 
-  await expect(page.getByText('Current One-Time Password', { exact: true })).toBeVisible()
   const codeContainer = page.locator('div[aria-label="One-time password"]')
-  await expect(codeContainer).toBeVisible()
-  const digits = await codeContainer.textContent()
-  expect(digits?.replace(/\s+/g, '')).toMatch(/^\d{6}$/)
+
+  await test.step('generates default 6-digit passcode', async () => {
+    await expect(page.getByText('Current One-Time Password', { exact: true })).toBeVisible()
+    await expect(codeContainer).toBeVisible()
+    const digits = (await codeContainer.textContent()) ?? ''
+    expect(digits.replace(/\s+/g, '')).toMatch(/^\d{6}$/)
+  })
+
+  await test.step('switches to 8-digit passcode', async () => {
+    await page.getByRole('button', { name: '8 Digits' }).click()
+    const digits = (await codeContainer.textContent()) ?? ''
+    expect(digits.replace(/\s+/g, '')).toMatch(/^\d{8}$/)
+  })
+
+  await test.step('generates random secret and clears', async () => {
+    await page.getByRole('button', { name: 'Generate Random Secret' }).click()
+    const digits = (await codeContainer.textContent()) ?? ''
+    expect(digits.replace(/\s+/g, '')).toMatch(/^\d{8}$/)
+
+    await page.getByRole('button', { name: 'Clear' }).click()
+    await expect(codeContainer).not.toBeVisible()
+  })
 })
