@@ -22,10 +22,10 @@ export function generatePlaceholderSvg(options: PlaceholderOptions): string {
   const width = Math.max(1, Math.min(options.width || 600, 4000))
   const height = Math.max(1, Math.min(options.height || 400, 4000))
   const bgType = options.bgType || 'solid'
-  const bgColor1 = options.bgColor1 || '#3b82f6'
-  const bgColor2 = options.bgColor2 || '#8b5cf6'
+  const bgColor1 = escapeXml(options.bgColor1 || '#3b82f6')
+  const bgColor2 = escapeXml(options.bgColor2 || '#8b5cf6')
   const text = options.text !== undefined ? options.text : `${width} × ${height}`
-  const textColor = options.textColor || '#ffffff'
+  const textColor = escapeXml(options.textColor || '#ffffff')
   const fontSize = options.fontSize || Math.max(12, Math.min(Math.round(Math.min(width, height) / 8), 72))
 
   let defs = ''

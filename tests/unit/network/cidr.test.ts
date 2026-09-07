@@ -45,5 +45,13 @@ describe('parseCidr', () => {
   it('throws on invalid IP or prefix', () => {
     expect(() => parseCidr('999.1.1.1/24')).toThrow()
     expect(() => parseCidr('192.168.1.1/35')).toThrow()
+    expect(() => parseCidr('192.168.1.1abc/24')).toThrow()
+    expect(() => parseCidr('01.1.1.1/24')).toThrow()
+  })
+
+  it('detects Link-Local addresses correctly', () => {
+    const res = parseCidr('169.254.1.1/16')
+    expect(res.isLinkLocal).toBe(true)
+    expect(res.isPrivate).toBe(false)
   })
 })

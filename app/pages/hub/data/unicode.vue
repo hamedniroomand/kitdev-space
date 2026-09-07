@@ -246,7 +246,7 @@ function copyText(val: string) {
       <ToolDocs title="About Unicode">
         <div class="space-y-4 text-muted">
           <p>
-            This tool shows each code point of a text with its name, its UTF-8 bytes, and its escape forms. Use it when a character does not show correctly, or when a string comparison fails.
+            This tool shows each code point of a text with its category, decimal value, UTF-8 bytes, and UTF-16 code units. Use it when a character does not show correctly, or when a string comparison fails.
           </p>
           <p>
             A zero-width character has no width on the screen but is present in the data. It comes from a copy out of a web page or a document, and it breaks a search, a login, and a key comparison. The tool marks each one.

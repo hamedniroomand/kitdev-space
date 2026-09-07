@@ -10,6 +10,7 @@ const algorithm = ref<HmacAlgorithm>('SHA-256')
 const encoding = ref<HmacEncoding>('hex')
 const uppercase = ref(false)
 const signature = ref('')
+const errorMessage = ref<string | null>(null)
 
 const { copy, label, color, icon } = useCopyFeedback()
 
@@ -22,6 +23,7 @@ const encodings: { label: string, value: HmacEncoding }[] = [
 async function computeSignature() {
   if (!message.value || !secret.value) {
     signature.value = ''
+    errorMessage.value = null
     return
   }
 
@@ -31,9 +33,11 @@ async function computeSignature() {
       sig = sig.toUpperCase()
     }
     signature.value = sig
+    errorMessage.value = null
   }
-  catch {
+  catch (err) {
     signature.value = ''
+    errorMessage.value = err instanceof Error ? err.message : 'Failed to compute HMAC signature.'
   }
 }
 
@@ -55,6 +59,7 @@ function handleClear() {
   message.value = ''
   secret.value = ''
   signature.value = ''
+  errorMessage.value = null
 }
 </script>
 
@@ -179,6 +184,11 @@ function handleClear() {
           >Enter a secret key and a message to compute HMAC...</span>
         </div>
       </div>
+
+      <ToolError
+        v-if="errorMessage"
+        :message="errorMessage"
+      />
     </div>
 
     <template #docs>

@@ -43,11 +43,11 @@ async function convertScale(scale: SvgScale) {
   formData.append('format', format.value)
   formData.append('quality', String(quality.value))
 
-  if (file.value) {
-    formData.append('file', file.value)
+  if (svgText.value.trim()) {
+    formData.append('svg', svgText.value.trim())
   }
-  else if (svgText.value.trim()) {
-    formData.append('svg', svgText.value)
+  else if (file.value) {
+    formData.append('file', file.value)
   }
   else {
     throw new Error('Paste SVG code or upload an SVG file.')

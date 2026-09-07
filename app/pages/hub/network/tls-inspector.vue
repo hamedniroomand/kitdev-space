@@ -139,7 +139,7 @@ function handleReset() {
         class="space-y-6"
       >
         <!-- Top Status Summary -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           <div class="p-4 rounded-xl border border-default bg-elevated/20 space-y-1">
             <div class="text-xs text-muted font-medium">
               Certificate Status
@@ -161,6 +161,22 @@ function handleReset() {
               >
                 Self-Signed
               </UBadge>
+            </div>
+          </div>
+
+          <div class="p-4 rounded-xl border border-default bg-elevated/20 space-y-1">
+            <div class="text-xs text-muted font-medium">
+              Certificate Trust
+            </div>
+            <div class="flex items-center gap-1.5 pt-1">
+              <UIcon
+                :name="result.authorized ? 'i-lucide-shield-check' : 'i-lucide-shield-alert'"
+                :class="result.authorized ? 'text-success' : 'text-error'"
+                class="w-5 h-5"
+              />
+              <span class="text-sm font-medium text-default">
+                {{ result.authorized ? 'Trusted CA' : (result.authorizationError || 'Untrusted') }}
+              </span>
             </div>
           </div>
 

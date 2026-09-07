@@ -4,15 +4,10 @@ import { gotoHydrated } from '../utils'
 test('converts numbers across bases', { tag: '@smoke' }, async ({ page }) => {
   await gotoHydrated(page, '/hub/data/number-base')
 
-  const decCard = page.locator('div.rounded-xl').filter({ has: page.getByText('Decimal (Base 10)') })
-  const hexCard = page.locator('div.rounded-xl').filter({ has: page.getByText('Hexadecimal (Base 16)') })
-  const binCard = page.locator('div.rounded-xl').filter({ has: page.getByText('Binary (Base 2)') })
-  const octCard = page.locator('div.rounded-xl').filter({ has: page.getByText('Octal (Base 8)') })
-
-  const decInput = decCard.getByRole('textbox')
-  const hexInput = hexCard.getByRole('textbox')
-  const binInput = binCard.getByRole('textbox')
-  const octInput = octCard.getByRole('textbox')
+  const decInput = page.locator('.p-4.rounded-xl').filter({ hasText: 'Decimal (Base 10)' }).getByRole('textbox')
+  const hexInput = page.locator('.p-4.rounded-xl').filter({ hasText: 'Hexadecimal (Base 16)' }).getByRole('textbox')
+  const binInput = page.locator('.p-4.rounded-xl').filter({ hasText: 'Binary (Base 2)' }).getByRole('textbox')
+  const octInput = page.locator('.p-4.rounded-xl').filter({ hasText: 'Octal (Base 8)' }).getByRole('textbox')
 
   await test.step('applies preset value', async () => {
     await page.getByRole('button', { name: '255 (8-bit max)' }).click()

@@ -35,14 +35,31 @@ export function unescapeString(text: string, mode: EscapeMode): string {
       catch {
         return text
       }
-    case 'javascript':
-      return text
-        .replace(/\\n/g, '\n')
-        .replace(/\\r/g, '\r')
-        .replace(/\\t/g, '\t')
-        .replace(/\\'/g, '\'')
-        .replace(/\\"/g, '"')
-        .replace(/\\\\/g, '\\')
+    case 'javascript': {
+      const escapeLookup: Record<string, string> = {
+        '\\\\': '\\',
+        '\\\'': '\'',
+        '\\"': '"',
+        '\\n': '\n',
+        '\\r': '\r',
+        '\\t': '\t',
+        '\\b': '\b',
+        '\\f': '\f',
+        '\\v': '\v',
+        '\\0': '\0',
+      }
+      return text.replace(/\\(?:([\\'nrtbfv0"])|x([0-9a-fA-F]{2})|u\{([0-9a-fA-F]+)\}|u([0-9a-fA-F]{4}))/g, (match, ch, hex, ucode, u4) => {
+        if (ch)
+          return escapeLookup[`\\${ch}`] ?? ch
+        if (hex)
+          return String.fromCharCode(Number.parseInt(hex, 16))
+        if (ucode)
+          return String.fromCodePoint(Number.parseInt(ucode, 16))
+        if (u4)
+          return String.fromCharCode(Number.parseInt(u4, 16))
+        return match
+      })
+    }
     case 'html':
       return text
         .replace(/&quot;/g, '"')

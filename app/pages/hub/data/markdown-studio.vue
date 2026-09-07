@@ -20,7 +20,7 @@ This tool supports tables, task lists, strikethrough, and code blocks.
 | :--- | :---: | :--- |
 | Tables | Yes | Standard GFM pipe tables |
 | Checklists | Yes | Interactive style task lists |
-| Code Highlighting | Yes | Inline and fenced code blocks |
+| Code Blocks | Yes | Inline and fenced code blocks |
 
 ### Code and Quotes
 > Markdown is a lightweight markup language for plain text formatting.

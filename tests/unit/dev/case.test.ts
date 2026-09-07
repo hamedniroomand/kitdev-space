@@ -53,4 +53,17 @@ describe('case utilities', () => {
     expect(toSlug('   ---Multiple---hyphens and spaces---  ')).toBe('multiple-hyphens-and-spaces')
     expect(toSlug('')).toBe('')
   })
+
+  it('splits unicode letters across non-Latin scripts', () => {
+    expect(splitIntoWords('приветМир')).toEqual(['привет', 'Мир'])
+    expect(splitIntoWords('مرحبا بالعالم')).toEqual(['مرحبا', 'بالعالم'])
+  })
+
+  it('transliterates special characters in toSlug', () => {
+    expect(toSlug('Groß')).toBe('gross')
+    expect(toSlug('København')).toBe('kobenhavn')
+    expect(toSlug('Ægir')).toBe('aegir')
+    expect(toSlug('Đorđe')).toBe('dorde')
+    expect(toSlug('Łódź')).toBe('lodz')
+  })
 })

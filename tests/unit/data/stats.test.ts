@@ -18,6 +18,21 @@ describe('getTextStats', () => {
     expect(stats.words).toBe(0)
     expect(stats.lines).toBe(0)
   })
+
+  it('counts sentences correctly when trailing sentence lacks terminal punctuation', () => {
+    const stats = getTextStats('Hello. World')
+    expect(stats.sentences).toBe(2)
+  })
+
+  it('counts 0 paragraphs for whitespace-only strings', () => {
+    const stats = getTextStats('   ')
+    expect(stats.paragraphs).toBe(0)
+  })
+
+  it('counts a\\n as one line', () => {
+    const stats = getTextStats('a\n')
+    expect(stats.lines).toBe(1)
+  })
 })
 
 describe('formatReadingTime', () => {

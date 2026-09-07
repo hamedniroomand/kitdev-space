@@ -109,8 +109,7 @@ async function hmacSha256(secret: string, data: string): Promise<Uint8Array> {
 }
 
 export async function verifyJwtHs256(token: string, secret: string): Promise<JwtVerifyStatus> {
-  const trimmedSecret = secret.trim()
-  if (!trimmedSecret) {
+  if (!secret) {
     return 'missing-secret'
   }
 
@@ -125,7 +124,7 @@ export async function verifyJwtHs256(token: string, secret: string): Promise<Jwt
   }
 
   const signingInput = `${parts[0]}.${parts[1]}`
-  const expected = await hmacSha256(trimmedSecret, signingInput)
+  const expected = await hmacSha256(secret, signingInput)
   const actual = decodeBase64Url(parts[2])
   return timingSafeEqual(expected, actual) ? 'valid' : 'invalid'
 }

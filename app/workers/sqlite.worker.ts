@@ -149,10 +149,14 @@ globalThis.onmessage = async (event: MessageEvent<WorkerMessage>) => {
         const results = db.exec(message.sql)
         const durationMs = Math.round(performance.now() - start)
 
+        const isDdl = /\b(?:create|drop|alter)\b/i.test(message.sql)
+        const tables = isDdl ? introspectSchema(db) : undefined
+
         if (results.length === 0) {
           const response: WorkerResponse = {
             type: 'QUERY_RESULT',
             result: { columns: [], rows: [], rowCount: 0, durationMs },
+            tables,
           }
           globalThis.postMessage(response)
           break
@@ -172,6 +176,7 @@ globalThis.onmessage = async (event: MessageEvent<WorkerMessage>) => {
           type: 'QUERY_RESULT',
           result: { columns, rows: slicedRows, rowCount: totalRows, durationMs },
           total,
+          tables,
         }
         globalThis.postMessage(response)
         break

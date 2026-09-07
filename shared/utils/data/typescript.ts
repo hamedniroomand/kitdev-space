@@ -1,7 +1,7 @@
 // ponytail: mixed arrays and deep nesting use a simple heuristic; upgrade to a schema library if users need richer types.
 export function jsonToTypeScript(value: unknown, rootName = 'Root'): string {
   const interfaces: string[] = []
-  const usedNames = new Set<string>([rootName])
+  const usedNames = new Set<string>()
 
   function uniqueName(base: string): string {
     if (!usedNames.has(base)) {
@@ -25,6 +25,32 @@ export function jsonToTypeScript(value: unknown, rootName = 'Root'): string {
       if (node.length === 0) {
         return 'unknown[]'
       }
+
+      const allObjects = node.every(item => item !== null && typeof item === 'object' && !Array.isArray(item))
+      if (allObjects) {
+        const itemInterfaceName = uniqueName(`${name}Item`)
+        const allKeys = new Set<string>()
+        for (const item of node) {
+          for (const key of Object.keys(item as Record<string, unknown>)) {
+            allKeys.add(key)
+          }
+        }
+
+        const fields: string[] = []
+        for (const key of allKeys) {
+          const presentItems = node.filter(item => Object.hasOwn(item as Record<string, unknown>, key))
+          const isOptional = presentItems.length < node.length
+          const childName = `${itemInterfaceName}${capitalize(key)}`
+          const keyTypes = [...new Set(presentItems.map(item => typeOf((item as Record<string, unknown>)[key], childName)))]
+          const fieldType = keyTypes.length === 1 ? keyTypes[0]! : `(${keyTypes.join(' | ')})`
+          const fieldName = /^[A-Z_]\w*$/i.test(key) ? key : `'${key}'`
+          fields.push(`  ${fieldName}${isOptional ? '?' : ''}: ${fieldType}`)
+        }
+
+        interfaces.push(`interface ${itemInterfaceName} {\n${fields.join('\n')}\n}`)
+        return `${itemInterfaceName}[]`
+      }
+
       const itemTypes = [...new Set(node.map((item, index) =>
         typeOf(item, `${name}Item${index === 0 ? '' : index + 1}`),
       ))]
@@ -62,7 +88,7 @@ export function jsonToTypeScript(value: unknown, rootName = 'Root'): string {
     return `type ${rootName} = ${rootType}\n`
   }
 
-  if (rootType !== rootName && !interfaces.some(block => block.startsWith(`interface ${rootName}`))) {
+  if (rootType !== rootName && !interfaces.some(block => block.startsWith(`interface ${rootName} `) || block.startsWith(`interface ${rootName}{`))) {
     return `${interfaces.join('\n\n')}\n\ntype ${rootName} = ${rootType}\n`
   }
 

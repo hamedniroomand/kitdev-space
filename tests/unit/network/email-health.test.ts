@@ -86,6 +86,14 @@ describe('normalizeDkimSelectors', () => {
   it('parses a comma-separated list', () => {
     expect(normalizeDkimSelectors('Google, selector1')).toEqual(['google', 'selector1'])
   })
+
+  it('filters out invalid selectors and caps at 10', () => {
+    const list = 'sel1, sel2, invalid!selector, sel3, sel4, sel5, sel6, sel7, sel8, sel9, sel10, sel11'
+    const res = normalizeDkimSelectors(list)
+    expect(res).not.toContain('invalid!selector')
+    expect(res.length).toBe(10)
+    expect(res).not.toContain('sel11')
+  })
 })
 
 describe('parseDmarc', () => {

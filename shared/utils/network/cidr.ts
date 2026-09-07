@@ -17,7 +17,12 @@ export interface CidrCalculation {
   maskBinary: string
 }
 
+const IPV4_STRICT_RE = /^(?:0|[1-9]\d{0,2})\.(?:0|[1-9]\d{0,2})\.(?:0|[1-9]\d{0,2})\.(?:0|[1-9]\d{0,2})$/
+
 function ipToInt(ip: string): number {
+  if (!IPV4_STRICT_RE.test(ip)) {
+    throw new Error(`Invalid IPv4 address: "${ip}"`)
+  }
   const octets = ip.split('.').map(Number)
   if (octets.length !== 4 || octets.some(o => Number.isNaN(o) || o < 0 || o > 255)) {
     throw new Error(`Invalid IPv4 address: "${ip}"`)

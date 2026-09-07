@@ -36,14 +36,27 @@ export function requireCodeInput(code: string): string {
   return text
 }
 
-// ponytail: Simple HTML minify strips comments and collapses tag whitespace.
-// A later phase can use a dedicated HTML minifier for attribute-safe output.
 export function minifyHtml(code: string): string {
-  return code
-    .replace(/<!--[\s\S]*?-->/g, '')
+  const blocks: string[] = []
+  const token = (i: number) => `<!--__BLOCK_${i}__-->`
+
+  // Preserve contents of pre, textarea, script, and style blocks
+  const preserved = code.replace(/<(pre|textarea|script|style)\b[^>]*>[\s\S]*?<\/\1>/gi, (match) => {
+    blocks.push(match)
+    return token(blocks.length - 1)
+  })
+
+  let minified = preserved
+    .replace(/<!--(?!__BLOCK_\d+__--)[\s\S]*?-->/g, '')
     .replace(/>\s+</g, '><')
     .replace(/\s{2,}/g, ' ')
     .trim()
+
+  for (let i = 0; i < blocks.length; i++) {
+    minified = minified.replace(token(i), blocks[i]!)
+  }
+
+  return minified
 }
 
 /** Loads csso only when the user asks for CSS minify. It adds about 150 KB. */

@@ -60,8 +60,56 @@ const JSX_ATTR_MAP: Record<string, string> = {
   'viewbox': 'viewBox',
 }
 
+export function splitCssDeclarations(styleStr: string): string[] {
+  const declarations: string[] = []
+  let current = ''
+  let inSingle = false
+  let inDouble = false
+  let parenDepth = 0
+
+  for (let i = 0; i < styleStr.length; i++) {
+    const char = styleStr[i]!
+
+    if (char === '\'' && !inDouble) {
+      inSingle = !inSingle
+      current += char
+      continue
+    }
+
+    if (char === '"' && !inSingle) {
+      inDouble = !inDouble
+      current += char
+      continue
+    }
+
+    if (!inSingle && !inDouble) {
+      if (char === '(') {
+        parenDepth++
+      }
+      else if (char === ')' && parenDepth > 0) {
+        parenDepth--
+      }
+      else if (char === ';' && parenDepth === 0) {
+        if (current.trim()) {
+          declarations.push(current.trim())
+        }
+        current = ''
+        continue
+      }
+    }
+
+    current += char
+  }
+
+  if (current.trim()) {
+    declarations.push(current.trim())
+  }
+
+  return declarations
+}
+
 export function parseCssToJsxStyle(styleStr: string): string {
-  const parts = styleStr.split(';').map(s => s.trim()).filter(Boolean)
+  const parts = splitCssDeclarations(styleStr)
   const entries: string[] = []
 
   for (const part of parts) {
@@ -79,7 +127,7 @@ export function parseCssToJsxStyle(styleStr: string): string {
       key = key.replace(/-([a-z])/g, (_, char: string) => char.toUpperCase())
     }
 
-    const cleanVal = val.replace(/'/g, '\'')
+    const cleanVal = val.replace(/'/g, '\\\'')
     entries.push(`${key}: '${cleanVal}'`)
   }
 
@@ -118,13 +166,13 @@ export function convertHtmlToJsx(html: string, options: JsxConvertOptions = {}):
     let newAttrs = attrs
 
     // Convert inline styles: style="..." or style='...'
-    newAttrs = newAttrs.replace(/\bstyle=(["'])([\s\S]*?)\1/g, (__, ___, styleContent: string) => {
+    newAttrs = newAttrs.replace(/(?<![\w-])style=(["'])([\s\S]*?)\1/g, (__, ___, styleContent: string) => {
       return parseCssToJsxStyle(styleContent)
     })
 
     // Convert attributes according to JSX_ATTR_MAP
     for (const [htmlAttr, jsxAttr] of Object.entries(JSX_ATTR_MAP)) {
-      const attrRegex = new RegExp(`\\b${htmlAttr}=`, 'g')
+      const attrRegex = new RegExp(`(?<![\\w-])${htmlAttr}=`, 'g')
       newAttrs = newAttrs.replace(attrRegex, `${jsxAttr}=`)
     }
 
@@ -161,7 +209,7 @@ export function convertHtmlToVue(html: string, options: VueConvertOptions = {}):
   let output = selfCloseVoidTags(input)
 
   // 2. Convert standard HTML inline events if any: onclick="foo()" -> @click="foo()"
-  output = output.replace(/\bon([a-z]+)=/g, (_, ev: string) => `@${ev}=`)
+  output = output.replace(/(?<![\w-])on([a-z]+)=/g, (_, ev: string) => `@${ev}=`)
 
   if (options.wrapSfc) {
     const indented = output

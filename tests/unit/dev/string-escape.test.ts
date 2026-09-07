@@ -22,4 +22,14 @@ describe('string escape utility', () => {
     expect(escaped).toBe('&lt;script&gt;alert(&quot;XSS&quot;)&lt;/script&gt;')
     expect(unescapeString(escaped, 'html')).toBe(raw)
   })
+
+  it('escapes and unescapes JavaScript strings including escaped backslashes', () => {
+    const raw = 'a\\nb' // literal 'a', '\', 'n', 'b'
+    const escaped = escapeString(raw, 'javascript')
+    expect(escaped).toBe('a\\\\nb')
+    expect(unescapeString(escaped, 'javascript')).toBe(raw)
+
+    const withNewline = 'a\nb'
+    expect(unescapeString(escapeString(withNewline, 'javascript'), 'javascript')).toBe(withNewline)
+  })
 })

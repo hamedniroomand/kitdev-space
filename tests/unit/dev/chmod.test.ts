@@ -20,8 +20,11 @@ describe('chmod utilities', () => {
     expect(permissionsToSymbolic(perms)).toBe('-rw-r--r--')
   })
 
-  it('rejects invalid octal strings', () => {
+  it('rejects invalid octal strings and special mode bits', () => {
     expect(() => octalToPermissions('888')).toThrow()
     expect(() => octalToPermissions('abc')).toThrow()
+    expect(() => octalToPermissions('4755')).toThrow(/Special mode bits/)
+    expect(() => octalToPermissions('1755')).toThrow(/Special mode bits/)
+    expect(octalToPermissions('0755')).toEqual(octalToPermissions('755'))
   })
 })

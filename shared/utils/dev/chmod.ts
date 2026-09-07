@@ -39,7 +39,10 @@ export function permissionsToOctal(perms: ChmodPermissions): string {
 export function octalToPermissions(octal: string): ChmodPermissions {
   const clean = octal.trim()
   if (!/^[0-7]{3,4}$/.test(clean)) {
-    throw new Error('Enter a valid 3 or 4-digit octal number from 000 to 777.')
+    throw new Error('Enter a valid 3-digit octal number from 000 to 777.')
+  }
+  if (clean.length === 4 && clean[0] !== '0') {
+    throw new Error('Special mode bits (setuid, setgid, sticky bit) in 4-digit octals are not supported.')
   }
   const digits = clean.length === 4 ? clean.slice(1) : clean
   return {

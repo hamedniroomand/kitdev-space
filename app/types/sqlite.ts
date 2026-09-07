@@ -37,7 +37,7 @@ export type WorkerMessage
 
 export type WorkerResponse
   = | { type: 'DB_READY', tables: TableInfo[], sizeBytes: number }
-    | { type: 'QUERY_RESULT', result: QueryResult, total?: number }
+    | { type: 'QUERY_RESULT', result: QueryResult, total?: number, tables?: TableInfo[] }
     | { type: 'UPDATE_SUCCESS', table: string, rowid: number, column: string, value: SqlValue }
     /** A row was added, copied, or deleted. `rowCount` is the new count of the table. */
     | { type: 'MUTATION_SUCCESS', table: string, rowCount: number }
@@ -49,9 +49,10 @@ export function isValidIdentifier(name: string): boolean {
   return /^[a-z_]\w*$/i.test(name)
 }
 
+export function quoteIdentifier(name: string): string {
+  return `"${name.replace(/"/g, '""')}"`
+}
+
 export function buildUpdateQuery(table: string, column: string): string {
-  if (!isValidIdentifier(table) || !isValidIdentifier(column)) {
-    throw new Error('Invalid SQL identifier.')
-  }
-  return `UPDATE "${table}" SET "${column}" = :val WHERE rowid = :rowid;`
+  return `UPDATE ${quoteIdentifier(table)} SET ${quoteIdentifier(column)} = :val WHERE rowid = :rowid;`
 }

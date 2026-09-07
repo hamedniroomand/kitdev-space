@@ -14,6 +14,16 @@ export function globToRegex(glob: string): RegExp {
     return _match
   })
 
+  // Preserve character classes [abc] and [!abc]
+  const charClasses: string[] = []
+  pattern = pattern.replace(/\[(!|\^)?([^\]\n\r]+)\]/g, (_match, neg, chars) => {
+    const isNeg = neg === '!' || neg === '^'
+    const regexClass = isNeg ? `[^/${chars}]` : `[${chars}]`
+    const placeholder = `§§CCLASS_${charClasses.length}§§`
+    charClasses.push(regexClass)
+    return placeholder
+  })
+
   // Replace placeholders before regex escaping
   pattern = pattern.replace(/\/\*\*\//g, '/§§GLOBSTAR_SLASH§§/')
   pattern = pattern.replace(/\*\*/g, '§§GLOBSTAR§§')
@@ -22,6 +32,9 @@ export function globToRegex(glob: string): RegExp {
 
   // Escape special regex characters
   pattern = pattern.replace(/[.+^${}()|[\]\\]/g, '\\$&')
+
+  // Restore character classes
+  pattern = pattern.replace(/§§CCLASS_(\d+)§§/g, (_m, idx) => charClasses[Number(idx)] ?? '')
 
   // Replace back placeholders
   pattern = pattern.replace(/\/§§GLOBSTAR_SLASH§§\//g, '(?:\\/|\\/.*\\/)')

@@ -42,6 +42,12 @@ describe('csvToJson', () => {
     ])
   })
 
+  it('keeps numbers with leading zeros and integers with >15 digits as strings', () => {
+    expect(csvToJson('zip,card\n02134,1234567890123456')).toEqual([
+      { zip: '02134', card: '1234567890123456' },
+    ])
+  })
+
   it('returns arrays when header is disabled', () => {
     expect(csvToJson('Ada,36\nGrace,45', { header: false })).toEqual([
       ['Ada', 36],

@@ -147,7 +147,7 @@ function handleCopyJson() {
             Most YAML errors come from the indentation. YAML uses spaces and never a tab. A tab character gives an error that is hard to see, because the two look the same on the screen.
           </p>
           <p>
-            Another common error is an unquoted value that YAML reads as a different type. The words yes, no, on, and off become true or false. A version such as 1.10 becomes the number 1.1. Put quotes around a value to keep it as text.
+            Another common error is an unquoted value that YAML reads as a number or boolean. The words true and false become booleans. A version such as 1.10 becomes the number 1.1. Put quotes around a value to keep it as text.
           </p>
         </div>
         <RelatedTools

@@ -1,6 +1,7 @@
 import { Buffer } from 'node:buffer'
 import { strToU8, zipSync } from 'fflate'
-import { processImage } from './pipeline'
+import { getImageMetadata, processImage } from './pipeline'
+import { rasterizeSvg } from './svg'
 
 export interface FaviconOptions {
   appName?: string
@@ -104,10 +105,37 @@ export function buildHtmlSnippet(options: FaviconOptions): string {
   ].join('\n')
 }
 
+async function makeSquareInput(input: Uint8Array): Promise<Uint8Array> {
+  const meta = await getImageMetadata(input)
+  if (meta.width === meta.height) {
+    return input
+  }
+
+  const maxDim = Math.max(meta.width, meta.height)
+  const x = Math.round((maxDim - meta.width) / 2)
+  const y = Math.round((maxDim - meta.height) / 2)
+
+  let mime = `image/${meta.format}`
+  if (meta.format === 'jpeg' || meta.format === 'jpg') {
+    mime = 'image/jpeg'
+  }
+  else if (meta.format === 'svg') {
+    mime = 'image/svg+xml'
+  }
+
+  const base64 = Buffer.from(input.buffer, input.byteOffset, input.byteLength).toString('base64')
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${maxDim}" height="${maxDim}" viewBox="0 0 ${maxDim} ${maxDim}">
+  <image href="data:${mime};base64,${base64}" x="${x}" y="${y}" width="${meta.width}" height="${meta.height}" />
+</svg>`
+
+  return rasterizeSvg(Buffer.from(svg))
+}
+
 export async function generateFaviconPackage(
   input: Uint8Array,
   options: FaviconOptions = {},
 ): Promise<FaviconPackageResult> {
+  const squareInput = await makeSquareInput(input)
   const sizes = [
     { name: 'favicon-16x16.png', size: 16 },
     { name: 'favicon-32x32.png', size: 32 },
@@ -125,7 +153,7 @@ export async function generateFaviconPackage(
   // time. Promise.all keeps the order of `sizes`, which the previews rely on.
   const rendered = await Promise.all(
     sizes.map(async ({ name, size }) => {
-      const res = await processImage(input, {
+      const res = await processImage(squareInput, {
         width: size,
         height: size,
         fit: 'inside',

@@ -126,10 +126,10 @@ function handleReset() {
             class="w-8 h-8 text-info mx-auto"
           />
           <div class="text-base font-semibold text-default">
-            {{ result.query }} is Available
+            {{ result.type === 'ip' ? `${result.query} is Not Allocated` : `${result.query} is Available` }}
           </div>
           <div class="text-xs text-muted">
-            No active RDAP registration records exist for this query.
+            {{ result.type === 'ip' ? 'No active RDAP allocation records exist for this IP address.' : 'No active RDAP registration records exist for this query.' }}
           </div>
         </div>
 

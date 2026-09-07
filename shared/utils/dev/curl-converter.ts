@@ -67,6 +67,7 @@ export function parseCurl(curlCommand: string): ParsedCurl {
   const headers: Record<string, string> = {}
   let data: string | undefined
   let auth: { username: string, password?: string } | undefined
+  let isGetFlag = false
 
   for (let i = 0; i < tokens.length; i++) {
     const token = tokens[i]!
@@ -75,11 +76,26 @@ export function parseCurl(curlCommand: string): ParsedCurl {
       continue
     }
 
-    if (token === '-X' || token === '--request') {
+    if (token === '-G' || token === '--get') {
+      isGetFlag = true
+    }
+    else if (token === '-X' || token === '--request') {
       method = (tokens[++i] || '').toUpperCase()
+    }
+    else if (token.startsWith('-X') && token.length > 2) {
+      method = token.slice(2).toUpperCase()
     }
     else if (token === '-H' || token === '--header') {
       const headerLine = tokens[++i] || ''
+      const colonIndex = headerLine.indexOf(':')
+      if (colonIndex !== -1) {
+        const key = headerLine.slice(0, colonIndex).trim()
+        const value = headerLine.slice(colonIndex + 1).trim()
+        headers[key] = value
+      }
+    }
+    else if (token.startsWith('-H') && token.length > 2) {
+      const headerLine = token.slice(2)
       const colonIndex = headerLine.indexOf(':')
       if (colonIndex !== -1) {
         const key = headerLine.slice(0, colonIndex).trim()
@@ -97,8 +113,25 @@ export function parseCurl(curlCommand: string): ParsedCurl {
       const val = tokens[++i] || ''
       data = data ? `${data}&${val}` : val
     }
+    else if (token.startsWith('-d') && token.length > 2) {
+      const val = token.slice(2)
+      data = data ? `${data}&${val}` : val
+    }
     else if (token === '-u' || token === '--user') {
       const userpass = tokens[++i] || ''
+      const colonIdx = userpass.indexOf(':')
+      if (colonIdx !== -1) {
+        auth = {
+          username: userpass.slice(0, colonIdx),
+          password: userpass.slice(colonIdx + 1),
+        }
+      }
+      else {
+        auth = { username: userpass }
+      }
+    }
+    else if (token.startsWith('-u') && token.length > 2) {
+      const userpass = token.slice(2)
       const colonIdx = userpass.indexOf(':')
       if (colonIdx !== -1) {
         auth = {
@@ -115,6 +148,15 @@ export function parseCurl(curlCommand: string): ParsedCurl {
     }
     else if (!token.startsWith('-') && !url) {
       url = token
+    }
+  }
+
+  if (isGetFlag) {
+    method = method || 'GET'
+    if (data) {
+      const sep = url.includes('?') ? (url.endsWith('?') || url.endsWith('&') ? '' : '&') : '?'
+      url = `${url}${sep}${data}`
+      data = undefined
     }
   }
 
@@ -298,11 +340,11 @@ export function toGoHttp(parsed: ParsedCurl): string {
 
   let headersCode = ''
   for (const [k, v] of Object.entries(parsed.headers)) {
-    headersCode += `\treq.Header.Set("${k}", "${v}")\n`
+    headersCode += `\treq.Header.Set(${JSON.stringify(k)}, ${JSON.stringify(v)})\n`
   }
 
   if (parsed.auth) {
-    headersCode += `\treq.SetBasicAuth("${parsed.auth.username}", "${parsed.auth.password || ''}")\n`
+    headersCode += `\treq.SetBasicAuth(${JSON.stringify(parsed.auth.username)}, ${JSON.stringify(parsed.auth.password || '')})\n`
   }
 
   return `package main
@@ -311,7 +353,7 @@ ${imports}
 
 func main() {
 \tclient := &http.Client{}
-\treq, err := http.NewRequest("${parsed.method}", "${parsed.url}", ${bodyCode})
+\treq, err := http.NewRequest(${JSON.stringify(parsed.method)}, ${JSON.stringify(parsed.url)}, ${bodyCode})
 \tif err != nil {
 \t\tpanic(err)
 \t}

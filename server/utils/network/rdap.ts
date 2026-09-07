@@ -107,16 +107,22 @@ export function parseRdapData(data: Record<string, unknown>, query: string, type
       if (!dateStr)
         continue
 
+      const parsedTime = new Date(dateStr).getTime()
+      if (Number.isNaN(parsedTime))
+        continue
+
+      const iso = new Date(parsedTime).toISOString()
+
       if (action === 'registration') {
-        registrationDate = new Date(dateStr).toISOString()
+        registrationDate = iso
       }
       else if (action === 'expiration') {
-        expirationDate = new Date(dateStr).toISOString()
-        const diffMs = new Date(dateStr).getTime() - Date.now()
+        expirationDate = iso
+        const diffMs = parsedTime - Date.now()
         daysUntilExpiration = Math.floor(diffMs / (1000 * 60 * 60 * 24))
       }
       else if (action === 'last changed' || action === 'last update of rdap database') {
-        updatedDate = new Date(dateStr).toISOString()
+        updatedDate = iso
       }
     }
   }

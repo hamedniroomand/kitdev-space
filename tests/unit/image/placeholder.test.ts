@@ -29,4 +29,18 @@ describe('generatePlaceholderSvg', () => {
     const uri = svgToDataUri(svg)
     expect(uri.startsWith('data:image/svg+xml;base64,')).toBe(true)
   })
+
+  it('escapes XML special characters in colors and text', () => {
+    const svg = generatePlaceholderSvg({
+      width: 100,
+      height: 100,
+      bgColor1: 'red" onload="alert(1)',
+      textColor: 'blue<test>',
+      text: 'Hello <World> & "Friends"',
+    })
+    expect(svg).not.toContain('onload="alert(1)')
+    expect(svg).toContain('&quot;')
+    expect(svg).toContain('&lt;World&gt;')
+    expect(svg).toContain('&amp;')
+  })
 })

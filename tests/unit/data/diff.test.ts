@@ -20,6 +20,13 @@ describe('diffTexts', () => {
     expect(result.lines.every(line => line.type === 'equal')).toBe(true)
   })
 
+  it('normalizes CRLF and LF line endings before diffing', () => {
+    const result = diffTexts('a\r\nb', 'a\nb')
+    expect(result.added).toBe(0)
+    expect(result.removed).toBe(0)
+    expect(result.unchanged).toBe(2)
+  })
+
   it('detects inserts and deletes', () => {
     const result = diffTexts('a\nb\nc', 'a\nx\nc')
     expect(result.removed).toBe(1)

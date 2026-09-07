@@ -2,10 +2,6 @@
 import type { QrPayloadKind } from '#shared/utils/dev/qrcode'
 import { buildQrPayload, generateQrSvg } from '#shared/utils/dev/qrcode'
 
-definePageMeta({
-  ssr: false,
-})
-
 const kind = ref<QrPayloadKind>('url')
 const text = ref('https://kitdev.space')
 const ssid = ref('HomeNet')

@@ -15,20 +15,28 @@ const { copy, label, color, icon } = useCopyFeedback()
 function updateFrom(val: string, base: NumberBase) {
   if (!val.trim()) {
     error.value = null
-    decimalVal.value = ''
-    hexVal.value = ''
-    binaryVal.value = ''
-    octalVal.value = ''
+    if (base !== 10)
+      decimalVal.value = ''
+    if (base !== 16)
+      hexVal.value = ''
+    if (base !== 2)
+      binaryVal.value = ''
+    if (base !== 8)
+      octalVal.value = ''
     return
   }
 
   try {
     const res = convertFromBase(val, base)
     error.value = null
-    decimalVal.value = res.decimal
-    hexVal.value = res.hex
-    binaryVal.value = res.binary
-    octalVal.value = res.octal
+    if (base !== 10)
+      decimalVal.value = res.decimal
+    if (base !== 16)
+      hexVal.value = res.hex
+    if (base !== 2)
+      binaryVal.value = res.binary
+    if (base !== 8)
+      octalVal.value = res.octal
   }
   catch (err) {
     error.value = err instanceof Error ? err.message : 'Invalid number.'

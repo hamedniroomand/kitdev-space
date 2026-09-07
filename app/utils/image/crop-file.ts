@@ -16,5 +16,10 @@ export async function cropImageFile(file: Blob, rect: CropRect): Promise<Blob> {
   const canvas = new OffscreenCanvas(bitmap.width, bitmap.height)
   canvas.getContext('2d')!.drawImage(bitmap, 0, 0)
   bitmap.close()
-  return canvas.convertToBlob({ type: 'image/png' })
+
+  const isLossy = file.type === 'image/jpeg' || file.type === 'image/webp'
+  const mimeType = isLossy ? file.type : 'image/png'
+  const options = isLossy ? { type: mimeType, quality: 0.92 } : { type: mimeType }
+
+  return canvas.convertToBlob(options)
 }

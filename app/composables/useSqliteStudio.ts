@@ -73,6 +73,12 @@ export function useSqliteStudio() {
         case 'QUERY_RESULT':
           queryResult.value = response.result
           tableTotal.value = response.total ?? null
+          if (response.tables) {
+            tables.value = response.tables
+            if (activeTable.value && !response.tables.some(t => t.name === activeTable.value)) {
+              activeTable.value = response.tables[0]?.name ?? null
+            }
+          }
           error.value = null
           break
 

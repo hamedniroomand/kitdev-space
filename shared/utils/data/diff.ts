@@ -26,7 +26,7 @@ export function diffTexts(left: string, right: string): DiffResult {
     if (text.length === 0) {
       return []
     }
-    return text.split('\n')
+    return text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n')
   }
 
   function backtrack(

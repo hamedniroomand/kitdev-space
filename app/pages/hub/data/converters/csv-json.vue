@@ -6,14 +6,27 @@ import { getTextStats } from '#shared/utils/data/stats'
 
 type Mode = 'csv-json' | 'json-csv' | 'csv-sql'
 
-const SAMPLE = `name,age,active,city
+const CSV_SAMPLE = `name,age,active,city
 Ada,36,true,"London, UK"
 Grace,45,false,New York
 Alan,null,true,Manchester`
 
-const input = ref(SAMPLE)
-const output = ref('')
+const JSON_SAMPLE = `[
+  { "name": "Ada", "age": 36, "active": true, "city": "London, UK" },
+  { "name": "Grace", "age": 45, "active": false, "city": "New York" },
+  { "name": "Alan", "age": null, "active": true, "city": "Manchester" }
+]`
+
+const SAMPLES: Record<Mode, string> = {
+  'csv-json': CSV_SAMPLE,
+  'json-csv': JSON_SAMPLE,
+  'csv-sql': CSV_SAMPLE,
+}
+
 const mode = ref<Mode>('csv-json')
+const input = ref(CSV_SAMPLE)
+const { applySample, syncSample } = useSampleInput(input, SAMPLES)
+const output = ref('')
 const delimiter = ref<CsvDelimiter | 'auto'>('auto')
 const tableName = ref('users')
 const header = ref(true)
@@ -150,9 +163,13 @@ function handleClear() {
   reset()
 }
 
+watch(mode, (newMode) => {
+  syncSample(newMode)
+})
+
 function handleSample() {
   reportInput('sample')
-  input.value = SAMPLE
+  applySample(mode.value)
 }
 
 defineShortcuts({
@@ -167,11 +184,6 @@ defineShortcuts({
 
 <template>
   <ToolPage>
-    <UAlert
-      color="neutral"
-      variant="subtle"
-    />
-
     <div class="flex flex-wrap gap-4">
       <UFormField label="Mode">
         <USelect

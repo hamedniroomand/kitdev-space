@@ -13,21 +13,25 @@ const { copy, label, color, icon } = useCopyFeedback()
 const symbolicOutput = computed(() => permissionsToSymbolic(permissions.value))
 const octalOutput = computed(() => permissionsToOctal(permissions.value))
 const chmodCommand = computed(() => `chmod ${octalOutput.value} ${fileName.value.trim() || 'file.txt'}`)
+const errorMessage = ref<string | null>(null)
 
 watch(octalInput, (val) => {
   try {
     permissions.value = octalToPermissions(val)
+    errorMessage.value = null
   }
-  catch {
-    // Ignore partial edits
+  catch (err) {
+    errorMessage.value = err instanceof Error ? err.message : 'Invalid octal input.'
   }
 })
 
 function onPermChange() {
+  errorMessage.value = null
   octalInput.value = permissionsToOctal(permissions.value)
 }
 
 function applyPreset(octal: string) {
+  errorMessage.value = null
   octalInput.value = octal
   permissions.value = octalToPermissions(octal)
 }
@@ -42,7 +46,10 @@ function handleCopy() {
     <div class="space-y-6">
       <!-- Top outputs -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <UFormField label="Octal Value">
+        <UFormField
+          label="Octal Value"
+          :error="errorMessage ?? undefined"
+        >
           <UInput
             v-model="octalInput"
             placeholder="755"

@@ -44,6 +44,10 @@ export function quoteIdentifier(name: string): string {
   return `"${name.replace(/"/g, '""')}"`
 }
 
+export function buildUpdateQuery(table: string, column: string): string {
+  return `UPDATE ${quoteIdentifier(table)} SET ${quoteIdentifier(column)} = :val WHERE rowid = :rowid;`
+}
+
 /** A number stays a number, so `price > 30` compares numbers. Any other text is a quoted string. */
 export function sqlLiteral(value: string): string {
   const trimmed = value.trim()

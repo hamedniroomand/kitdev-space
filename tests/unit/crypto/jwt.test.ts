@@ -51,6 +51,18 @@ describe('jwt', () => {
     await expect(verifyJwtHs256(token, '')).resolves.toBe('missing-secret')
   })
 
+  it('preserves leading and trailing whitespace in secrets without trimming', async () => {
+    const secretWithSpaces = '  secret-with-spaces  '
+    const header = encodeJson({ alg: 'HS256', typ: 'JWT' })
+    const payload = encodeJson({ sub: 'user-2' })
+    const signingInput = `${header}.${payload}`
+    const signature = await signHs256(secretWithSpaces, signingInput)
+    const token = `${signingInput}.${signature}`
+
+    await expect(verifyJwtHs256(token, secretWithSpaces)).resolves.toBe('valid')
+    await expect(verifyJwtHs256(token, secretWithSpaces.trim())).resolves.toBe('invalid')
+  })
+
   it('rejects non-HS256 algorithms for verify', async () => {
     const header = encodeJson({ alg: 'RS256', typ: 'JWT' })
     const payload = encodeJson({ sub: 'user-1' })

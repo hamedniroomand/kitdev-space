@@ -46,6 +46,40 @@ describe('stripImageMetadata with a JPEG', () => {
     expect(result.bytes.length).toBeLessThan(input.length)
     expect(result.mime).toBe('image/jpeg')
   })
+
+  it('preserves APP14 Adobe marker', () => {
+    const adobeMarker = new Uint8Array([
+      0xFF,
+      0xD8, // SOI
+      0xFF,
+      0xEE,
+      0x00,
+      0x0E, // APP14 length 14
+      0x41,
+      0x64,
+      0x6F,
+      0x62,
+      0x65, // "Adobe"
+      0x00,
+      0x64,
+      0x00,
+      0x00,
+      0x00,
+      0x02, // CMYK transform flag
+      0xFF,
+      0xDA,
+      0x00,
+      0x02, // SOS
+      0x12,
+      0x34, // scan
+      0xFF,
+      0xD9, // EOI
+    ])
+    const stripped = stripImageMetadata(adobeMarker)
+    expect(stripped).not.toBeNull()
+    const hasApp14 = stripped!.bytes.some((b, i) => b === 0xFF && stripped!.bytes[i + 1] === 0xEE)
+    expect(hasApp14).toBe(true)
+  })
 })
 
 describe('stripImageMetadata with a PNG', () => {

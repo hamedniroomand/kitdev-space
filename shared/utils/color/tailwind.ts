@@ -65,11 +65,12 @@ export function generateTailwindPalette(colorInput: string): TailwindShade[] {
     { key: '950', t: 0.88 },
   ]
 
+  const isAchromatic = s === 0
   const shades: TailwindShade[] = []
 
   for (const item of lighter) {
     const curL = l + (97 - l) * item.t
-    const curS = Math.max(15, s - 10 * item.t)
+    const curS = isAchromatic ? 0 : Math.max(15, s - 10 * item.t)
     shades.push({
       shade: item.key,
       hex: hslToHex(h, curS, curL),
@@ -84,8 +85,16 @@ export function generateTailwindPalette(colorInput: string): TailwindShade[] {
   })
 
   for (const item of darker) {
-    const curL = Math.max(8, l - (l - 8) * item.t)
-    const curS = Math.min(100, Math.max(20, s + (item.t > 0.5 ? -15 * item.t : 5 * item.t)))
+    let curL: number
+    if (l <= 15) {
+      curL = Math.max(0.5, l * (1 - item.t * 0.9))
+    }
+    else {
+      curL = Math.max(4, l - (l - 4) * item.t)
+    }
+    const curS = isAchromatic
+      ? 0
+      : Math.min(100, Math.max(20, s + (item.t > 0.5 ? -15 * item.t : 5 * item.t)))
     shades.push({
       shade: item.key,
       hex: hslToHex(h, curS, curL),

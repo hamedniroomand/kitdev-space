@@ -62,4 +62,20 @@ describe('generateFaviconPackage', () => {
     const result = await generateFaviconPackage(fixture, { appName: 'KitDev' })
     expect(JSON.parse(result.webmanifest).name).toBe('KitDev')
   })
+
+  it('letterboxes non-square inputs to square favicons', async () => {
+    const { rasterizeSvg } = await import('#server/utils/image/svg')
+    const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="50" viewBox="0 0 100 50"><rect width="100" height="50" fill="blue"/></svg>'
+    const nonSquarePng = rasterizeSvg(Buffer.from(svg))
+    const result = await generateFaviconPackage(nonSquarePng)
+
+    // Inspect preview image dimensions
+    for (const preview of result.previews) {
+      const b64 = preview.dataUrl.split(',')[1]!
+      const img = new Bun.Image(Buffer.from(b64, 'base64'))
+      const meta = await img.metadata()
+      expect(meta.width).toBe(preview.size)
+      expect(meta.height).toBe(preview.size)
+    }
+  })
 })

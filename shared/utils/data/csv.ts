@@ -175,6 +175,9 @@ function coerceCell(value: string): string | number | boolean | null {
     return false
   }
   if (/^[+-]?\d+(?:\.\d+)?(?:e[+-]?\d+)?$/i.test(trimmed)) {
+    if (/^[+-]?0\d+/.test(trimmed) || trimmed.replace(/\D/g, '').length > 15) {
+      return value
+    }
     const number = Number(trimmed)
     if (Number.isFinite(number)) {
       return number

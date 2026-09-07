@@ -3,6 +3,7 @@ import {
   formatAsCsv,
   formatAsSqlInserts,
   generateFakeRows,
+  mapValuesToRows,
 } from '#shared/utils/data/fake-generator'
 
 describe('generateFakeRows', () => {
@@ -40,5 +41,18 @@ describe('generateFakeRows', () => {
     expect(csv).toContain('id,name,role')
     expect(csv).toContain('1,Alice,Dev')
     expect(csv).toContain('2,Bob,QA')
+  })
+
+  it('keeps generated values intact when renaming fields via mapValuesToRows', () => {
+    const values = [
+      [1, true],
+      [2, false],
+    ]
+    const before = mapValuesToRows(values, ['old_id', 'old_active'])
+    const after = mapValuesToRows(values, ['new_id', 'new_active'])
+
+    expect(before[0]?.old_id).toBe(1)
+    expect(after[0]?.new_id).toBe(1)
+    expect(after[1]?.new_active).toBe(false)
   })
 })

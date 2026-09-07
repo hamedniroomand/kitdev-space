@@ -81,4 +81,19 @@ describe('convertHtmlToJsx with an SVG', () => {
     expect(out).toContain('export default function SvgIcon()')
     expect(out).not.toContain('{...props}')
   })
+
+  it('does not match data-class as class', () => {
+    const html = '<div data-class="custom" class="active">Hello</div>'
+    const jsx = convertHtmlToJsx(html)
+    expect(jsx).toContain('data-class="custom"')
+    expect(jsx).toContain('className="active"')
+    expect(jsx).not.toContain('data-className')
+  })
+
+  it('parses styles without splitting on semicolons inside url() or quotes', () => {
+    const style = 'background: url(\'data:image/svg+xml;utf8,<svg></svg>\'); color: red'
+    const jsxStyle = parseCssToJsxStyle(style)
+    expect(jsxStyle).toContain('background: \'url(\\\'data:image/svg+xml;utf8,<svg></svg>\\\')\'')
+    expect(jsxStyle).toContain('color: \'red\'')
+  })
 })

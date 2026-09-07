@@ -9,9 +9,7 @@ interface ExtendedIpInfo extends IpInfo {
 }
 
 const inputIp = ref('')
-const errorMsg = ref<string | null>(null)
-const loading = ref(false)
-const info = ref<ExtendedIpInfo | null>(null)
+const { status, error, result: info, run } = useTool<ExtendedIpInfo>()
 
 const { copy } = useCopyFeedback()
 
@@ -24,24 +22,14 @@ const presets = [
 
 async function fetchInfo(targetIp?: string) {
   reportInput('url')
-  loading.value = true
-  errorMsg.value = null
-
-  try {
+  await run(async () => {
     const url = targetIp ? `/api/network/ip-info?ip=${encodeURIComponent(targetIp)}` : '/api/network/ip-info'
     const res = await $fetch<ExtendedIpInfo>(url)
-    info.value = res
     if (!targetIp && res.ip) {
       inputIp.value = res.ip
     }
-  }
-  catch (err: unknown) {
-    const fetchErr = err as { data?: { message?: string }, message?: string }
-    errorMsg.value = fetchErr.data?.message || fetchErr.message || 'Failed to fetch IP details.'
-  }
-  finally {
-    loading.value = false
-  }
+    return res
+  }, 'Failed to fetch IP details.')
 }
 
 function handleLookup() {
@@ -63,8 +51,9 @@ function handlePreset(ip: string) {
   fetchInfo(ip)
 }
 
-// Initial fetch on mount
-fetchInfo()
+onMounted(() => {
+  fetchInfo()
+})
 </script>
 
 <template>
@@ -109,19 +98,19 @@ fetchInfo()
           color="neutral"
           variant="solid"
           icon="i-lucide-search"
-          :loading="loading"
+          :loading="status === 'processing'"
           @click="handleLookup"
         />
       </div>
 
       <!-- Error Alert -->
       <UAlert
-        v-if="errorMsg"
+        v-if="error"
         color="error"
         variant="subtle"
         icon="i-lucide-alert-triangle"
         title="Lookup Error"
-        :description="errorMsg"
+        :description="error"
       />
 
       <!-- Results Grid -->

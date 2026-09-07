@@ -10,11 +10,15 @@ export function parseJson(input: string): unknown {
     return JSON.parse(input)
   }
   catch (cause) {
+    let strict: string | null = null
     try {
-      return JSON.parse(toStrictJson(input))
+      strict = toStrictJson(input)
+      return JSON.parse(strict)
     }
-    catch {
-      // Report the error of the strict parse, because it names the true position.
+    catch (strictCause) {
+      if (strict !== null) {
+        throw formatJsonError(strictCause, strict)
+      }
       throw formatJsonError(cause, input)
     }
   }

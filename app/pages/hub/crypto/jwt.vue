@@ -40,7 +40,7 @@ async function handleDecode() {
   verifyStatus.value = null
   await run(async () => {
     decoded.value = decodeJwt(token.value)
-    if (secret.value.trim()) {
+    if (secret.value) {
       verifyStatus.value = await verifyJwtHs256(token.value, secret.value)
     }
     else if (decoded.value.algorithm === 'HS256') {

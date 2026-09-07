@@ -7,6 +7,15 @@ export interface MarkdownTableOptions {
   pretty?: boolean
 }
 
+export function escapeTableCell(cell: string): string {
+  return cell.replace(/(\\*)(\|)/g, (match, backslashes, pipe) => {
+    if (backslashes.length % 2 === 1) {
+      return match
+    }
+    return `${backslashes}\\${pipe}`
+  })
+}
+
 export function formatMarkdownTable(options: MarkdownTableOptions): string {
   const { headers, alignments = [], rows, pretty = true } = options
 
@@ -17,11 +26,16 @@ export function formatMarkdownTable(options: MarkdownTableOptions): string {
   const colCount = headers.length
   const normalizedAlignments: ColumnAlign[] = Array.from({ length: colCount }, (_, i) => alignments[i] || 'left')
 
-  // Calculate max widths for pretty formatting
-  const colWidths: number[] = headers.map((h, i) => {
-    let max = Math.max(3, h.trim().length)
-    for (const row of rows) {
-      const cell = (row[i] || '').trim()
+  const sanitizedHeaders = headers.map(h => escapeTableCell(h.trim()))
+  const sanitizedRows = rows.map(row =>
+    Array.from({ length: colCount }, (_, i) => escapeTableCell((row[i] || '').trim())),
+  )
+
+  // Calculate max widths for pretty formatting using escaped cells
+  const colWidths: number[] = sanitizedHeaders.map((h, i) => {
+    let max = Math.max(3, h.length)
+    for (const row of sanitizedRows) {
+      const cell = row[i] || ''
       max = Math.max(max, cell.length)
     }
     return max
@@ -30,21 +44,20 @@ export function formatMarkdownTable(options: MarkdownTableOptions): string {
   const pad = (text: string, width: number, align: ColumnAlign): string => {
     if (!pretty)
       return text
-    const trimmed = text.trim()
-    const diff = Math.max(0, width - trimmed.length)
+    const diff = Math.max(0, width - text.length)
     if (align === 'right') {
-      return ' '.repeat(diff) + trimmed
+      return ' '.repeat(diff) + text
     }
     if (align === 'center') {
       const left = Math.floor(diff / 2)
       const right = diff - left
-      return ' '.repeat(left) + trimmed + ' '.repeat(right)
+      return ' '.repeat(left) + text + ' '.repeat(right)
     }
-    return trimmed + ' '.repeat(diff)
+    return text + ' '.repeat(diff)
   }
 
   // Header line
-  const headerLine = `| ${headers.map((h, i) => pad(h, colWidths[i]!, normalizedAlignments[i]!)).join(' | ')} |`
+  const headerLine = `| ${sanitizedHeaders.map((h, i) => pad(h, colWidths[i]!, normalizedAlignments[i]!)).join(' | ')} |`
 
   // Separator line
   const separatorLine = `| ${colWidths
@@ -60,8 +73,8 @@ export function formatMarkdownTable(options: MarkdownTableOptions): string {
     .join(' | ')} |`
 
   // Row lines
-  const rowLines = rows.map(
-    row => `| ${Array.from({ length: colCount }, (_, i) => pad(row[i] || '', colWidths[i]!, normalizedAlignments[i]!)).join(' | ')} |`,
+  const rowLines = sanitizedRows.map(
+    row => `| ${row.map((cell, i) => pad(cell, colWidths[i]!, normalizedAlignments[i]!)).join(' | ')} |`,
   )
 
   return [headerLine, separatorLine, ...rowLines].join('\n')

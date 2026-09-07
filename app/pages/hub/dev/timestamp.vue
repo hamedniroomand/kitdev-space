@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { formatRelativeTime, parseTimestamp } from '#shared/utils/dev/timestamp'
+import { formatRelativeTime, formatUtcDate, parseTimestamp } from '#shared/utils/dev/timestamp'
 
 const input = ref(String(Math.floor(Date.now() / 1000)))
 const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
@@ -12,7 +12,7 @@ const formattedUtc = computed(() => {
   if (!parsedDate.value) {
     return ''
   }
-  return useDateFormat(parsedDate.value, 'YYYY-MM-DD HH:mm:ss [UTC]').value
+  return formatUtcDate(parsedDate.value)
 })
 
 const items = computed(() => {

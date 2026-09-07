@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useImage as useImageElement } from '@vueuse/core'
-import { formatAsCssBackground, formatAsHtmlImg, parseDataUri } from '#shared/utils/image/base64'
+import { formatAsCssBackground, formatAsHtmlImg, mimeToExtension, parseDataUri } from '#shared/utils/image/base64'
 
 useToolSeo('image-base64')
 const { reportInput } = useToolInput()
@@ -54,9 +54,10 @@ const decodedDataUri = computed(() => {
 })
 
 function handleDownloadDecoded() {
-  if (!decodedDataUri.value)
+  if (!decodedDataUri.value || !parsedInput.value)
     return
-  downloadUrl('decoded-image.png', decodedDataUri.value)
+  const ext = mimeToExtension(parsedInput.value.mimeType)
+  downloadUrl(`decoded-image.${ext}`, decodedDataUri.value)
 }
 </script>
 

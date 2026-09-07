@@ -79,4 +79,23 @@ describe('converters', () => {
     const code = convertCurl('curl https://api.example.com', 'fetch')
     expect(code).toContain('fetch("https://api.example.com"')
   })
+
+  it('parses joined short flags such as -XPOST and -d', () => {
+    const res = parseCurl('curl -XPOST https://api.example.com/item -dfoo=bar')
+    expect(res.method).toBe('POST')
+    expect(res.data).toBe('foo=bar')
+  })
+
+  it('converts curl -G with -d to GET with query params', () => {
+    const res = parseCurl('curl -G https://api.example.com/search -d q=hello -d page=1')
+    expect(res.method).toBe('GET')
+    expect(res.url).toBe('https://api.example.com/search?q=hello&page=1')
+    expect(res.data).toBeUndefined()
+  })
+
+  it('escapes quotes in headers during Go code generation', () => {
+    const parsedWithQuotes = parseCurl('curl https://api.example.com -H "Content-Disposition: attachment; filename=\\"report.pdf\\""')
+    const code = toGoHttp(parsedWithQuotes)
+    expect(code).toContain('req.Header.Set("Content-Disposition", "attachment; filename=\\"report.pdf\\"")')
+  })
 })

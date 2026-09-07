@@ -114,9 +114,9 @@ function handlePreset(val: string) {
             </div>
             <div
               class="text-2xl font-bold font-mono mt-1"
-              :class="calculation.data.isPrivate ? 'text-warning' : 'text-success'"
+              :class="calculation.data.isPrivate || calculation.data.isLinkLocal ? 'text-warning' : 'text-success'"
             >
-              {{ calculation.data.isPrivate ? 'Private (RFC 1918)' : calculation.data.isLoopback ? 'Loopback' : 'Public' }}
+              {{ calculation.data.isPrivate ? 'Private (RFC 1918)' : calculation.data.isLinkLocal ? 'Link-Local' : calculation.data.isLoopback ? 'Loopback' : 'Public' }}
             </div>
           </div>
         </div>

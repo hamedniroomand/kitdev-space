@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatRelativeTime, parseTimestamp } from '#shared/utils/dev/timestamp'
+import { formatRelativeTime, formatUtcDate, parseTimestamp } from '#shared/utils/dev/timestamp'
 
 describe('timestamp utilities', () => {
   it('parses timestamps in seconds', () => {
@@ -38,5 +38,10 @@ describe('timestamp utilities', () => {
 
     const futureHours = new Date('2024-01-01T14:00:00Z')
     expect(formatRelativeTime(futureHours, now)).toBe('in 2 hours')
+  })
+
+  it('formats dates in UTC explicitly without timezone drift', () => {
+    const date = new Date('2024-01-01T12:30:45.000Z')
+    expect(formatUtcDate(date)).toBe('2024-01-01 12:30:45 UTC')
   })
 })

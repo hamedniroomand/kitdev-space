@@ -28,23 +28,6 @@ async function updateTotp() {
   }
 
   try {
-    const uriMatch = parseTotpUri(trimmed)
-    if (uriMatch) {
-      parsedUriDetails.value = {
-        issuer: uriMatch.issuer,
-        label: uriMatch.label,
-      }
-      if (uriMatch.digits)
-        digits.value = uriMatch.digits
-      if (uriMatch.period)
-        period.value = uriMatch.period
-      if (uriMatch.algorithm)
-        algorithm.value = uriMatch.algorithm
-    }
-    else {
-      parsedUriDetails.value = null
-    }
-
     const options: TotpOptions = {
       digits: digits.value,
       period: period.value,
@@ -62,6 +45,30 @@ async function updateTotp() {
     code.value = ''
   }
 }
+
+watch(secretInput, (newVal) => {
+  const trimmed = newVal.trim()
+  if (!trimmed) {
+    parsedUriDetails.value = null
+    return
+  }
+  const uriMatch = parseTotpUri(trimmed)
+  if (uriMatch) {
+    parsedUriDetails.value = {
+      issuer: uriMatch.issuer,
+      label: uriMatch.label,
+    }
+    if (uriMatch.digits)
+      digits.value = uriMatch.digits
+    if (uriMatch.period)
+      period.value = uriMatch.period
+    if (uriMatch.algorithm)
+      algorithm.value = uriMatch.algorithm
+  }
+  else {
+    parsedUriDetails.value = null
+  }
+}, { immediate: true })
 
 // VueUse useIntervalFn to update every 1 second
 useIntervalFn(() => {

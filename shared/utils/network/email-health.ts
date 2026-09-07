@@ -589,6 +589,9 @@ export function analyzeDkim(inputs: DkimSelectorInput[]): DkimReport {
   return { selectors, issues }
 }
 
+const DKIM_SELECTOR_RE = /^[a-z0-9](?:[\w-]{0,61}[a-z0-9])?$/i
+const MAX_DKIM_SELECTORS = 10
+
 export function normalizeDkimSelectors(input?: string[] | string): string[] {
   const values = Array.isArray(input)
     ? input
@@ -599,8 +602,11 @@ export function normalizeDkimSelectors(input?: string[] | string): string[] {
   const unique = new Set<string>()
   for (const value of values) {
     const selector = value.trim().toLowerCase().replace(/\.$/, '')
-    if (selector) {
+    if (selector && DKIM_SELECTOR_RE.test(selector)) {
       unique.add(selector)
+      if (unique.size >= MAX_DKIM_SELECTORS) {
+        break
+      }
     }
   }
 

@@ -13,4 +13,9 @@ describe('sQLite Utilities', () => {
     const query = buildUpdateQuery('users', 'email')
     expect(query).toBe('UPDATE "users" SET "email" = :val WHERE rowid = :rowid;')
   })
+
+  it('supports tables and columns with spaces and dashes', () => {
+    const query = buildUpdateQuery('user orders', 'first-name')
+    expect(query).toBe('UPDATE "user orders" SET "first-name" = :val WHERE rowid = :rowid;')
+  })
 })

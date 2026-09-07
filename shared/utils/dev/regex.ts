@@ -248,9 +248,53 @@ export function explainRegex(pattern: string): RegexTokenExplanation[] {
   return explanations
 }
 
-function collectMatches(regex: RegExp, sample: string): RegexMatchResult[] {
+export function extractGroupNames(pattern: string): (string | null)[] {
+  const names: (string | null)[] = []
+  let i = 0
+  while (i < pattern.length) {
+    const char = pattern[i]
+    if (char === '\\') {
+      i += 2
+      continue
+    }
+    if (char === '[') {
+      i = readClass(pattern, i).end
+      continue
+    }
+    if (char === '(') {
+      const rest = pattern.slice(i)
+      if (
+        rest.startsWith('(?:')
+        || rest.startsWith('(?=')
+        || rest.startsWith('(?!')
+        || rest.startsWith('(?<=')
+        || rest.startsWith('(?<!')
+      ) {
+        i += rest.startsWith('(?<=') || rest.startsWith('(?<!') ? 4 : 3
+        continue
+      }
+      if (rest.startsWith('(?<')) {
+        const close = pattern.indexOf('>', i + 3)
+        if (close > i) {
+          const name = pattern.slice(i + 3, close)
+          names.push(name)
+          i = close + 1
+          continue
+        }
+      }
+      names.push(null)
+      i += 1
+      continue
+    }
+    i += 1
+  }
+  return names
+}
+
+function collectMatches(regex: RegExp, sample: string, pattern = ''): RegexMatchResult[] {
   const matches: RegexMatchResult[] = []
   const global = regex.global
+  const groupNames = pattern ? extractGroupNames(pattern) : []
   regex.lastIndex = 0
 
   let guard = 0
@@ -268,7 +312,7 @@ function collectMatches(regex: RegExp, sample: string): RegexMatchResult[] {
     for (let i = 1; i < result.length; i += 1) {
       const indices = result.indices?.[i]
       groups.push({
-        name: null,
+        name: groupNames[i - 1] ?? null,
         index: i,
         value: result[i],
         start: indices ? indices[0] : null,
@@ -276,20 +320,15 @@ function collectMatches(regex: RegExp, sample: string): RegexMatchResult[] {
       })
     }
 
-    if (result.groups) {
-      for (const [name, value] of Object.entries(result.groups)) {
-        const existing = groups.find(group => group.value === value && group.name === null)
-        if (existing) {
-          existing.name = name
-        }
-        else {
-          groups.push({
-            name,
-            index: groups.length + 1,
-            value,
-            start: null,
-            end: null,
-          })
+    // If indices.groups exists, backfill any group names if needed
+    const namedIndices = (result.indices as { groups?: Record<string, [number, number]> } | undefined)?.groups
+    if (namedIndices) {
+      for (const [name, range] of Object.entries(namedIndices)) {
+        if (range) {
+          const matchingGroup = groups.find(g => g.start === range[0] && g.end === range[1] && g.name === null)
+          if (matchingGroup) {
+            matchingGroup.name = name
+          }
         }
       }
     }
@@ -364,7 +403,7 @@ export function testRegex(pattern: string, sample: string, flagsInput = 'g'): Re
     }
   }
 
-  const matches = collectMatches(regex, sample)
+  const matches = collectMatches(regex, sample, pattern)
   return {
     pattern,
     flags,

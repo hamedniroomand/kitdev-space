@@ -27,14 +27,34 @@ export function positionToLineColumn(input: string, position: number): { line: n
 
 export function formatJsonError(cause: unknown, input: string): DataError {
   if (cause instanceof SyntaxError) {
+    const err = cause as SyntaxError & { line?: number, column?: number, position?: number }
     const match = /position\s+(\d+)/i.exec(cause.message)
-    const position = match ? Number(match[1]) : undefined
+    const position = match ? Number(match[1]) : (typeof err.position === 'number' ? err.position : undefined)
     if (position !== undefined && !Number.isNaN(position)) {
       const { line, column } = positionToLineColumn(input, position)
       return new DataError(
         `Invalid JSON.\n\nCheck the syntax near this point.\n\nLine ${line}, column ${column}.`,
         { line, column, position, cause },
       )
+    }
+    if (typeof err.line === 'number' && typeof err.column === 'number') {
+      return new DataError(
+        `Invalid JSON.\n\nCheck the syntax near this point.\n\nLine ${err.line}, column ${err.column}.`,
+        { line: err.line, column: err.column, cause },
+      )
+    }
+    const snippetMatch = /Unexpected token (?:'[^']*'|.+?), \.\.\."(.*?)" is not valid JSON/s.exec(cause.message)
+    if (snippetMatch && snippetMatch[1]) {
+      const snippet = snippetMatch[1]
+      const idx = input.indexOf(snippet)
+      if (idx !== -1) {
+        const snippetPos = idx + snippet.length - 1
+        const { line, column } = positionToLineColumn(input, snippetPos)
+        return new DataError(
+          `Invalid JSON.\n\nCheck the syntax near this point.\n\nLine ${line}, column ${column}.`,
+          { line, column, position: snippetPos, cause },
+        )
+      }
     }
   }
 

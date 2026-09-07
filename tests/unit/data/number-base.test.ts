@@ -16,6 +16,12 @@ describe('number Base Converter', () => {
     expect(res.binary).toBe('11010')
   })
 
+  it('converts negative hex numbers such as -ff', () => {
+    const res = convertFromBase('-ff', 16)
+    expect(res.decimal).toBe('-255')
+    expect(res.hex).toBe('-FF')
+  })
+
   it('supports large BigInt numbers', () => {
     const large = '9007199254740993'
     const res = convertFromBase(large, 10)

@@ -63,6 +63,19 @@ describe('rdap parser', () => {
     expect(result.status).toContain('clientDeleteProhibited')
   })
 
+  it('safely skips invalid event dates without throwing', () => {
+    const payload = {
+      events: [
+        { eventAction: 'registration', eventDate: 'not-a-date' },
+        { eventAction: 'expiration', eventDate: '' },
+      ],
+    }
+    const result = parseRdapData(payload, 'example.com', 'domain')
+    expect(result.registrationDate).toBeUndefined()
+    expect(result.expirationDate).toBeUndefined()
+    expect(result.daysUntilExpiration).toBeUndefined()
+  })
+
   const bootstrap: RdapBootstrapService[] = [
     [['dev', 'app', 'page'], ['https://pubapi.registry.google/rdap/']],
     [['com', 'net'], ['http://rdap.verisign.com/com/v1/', 'https://rdap.verisign.com/com/v1/']],

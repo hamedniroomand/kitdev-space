@@ -22,6 +22,12 @@ describe('minifyHtml', () => {
     expect(minifyHtml('<div>  <!-- note -->  <span>Hi</span>  </div>'))
       .toBe('<div><span>Hi</span></div>')
   })
+
+  it('preserves formatting inside pre, textarea, script, and style blocks', () => {
+    const raw = '<div> <pre>  line 1 \n   line 2  </pre>  <textarea>  preserve   spaces  </textarea> </div>'
+    const expected = '<div><pre>  line 1 \n   line 2  </pre><textarea>  preserve   spaces  </textarea></div>'
+    expect(minifyHtml(raw)).toBe(expected)
+  })
 })
 
 describe('formatInBrowser', () => {

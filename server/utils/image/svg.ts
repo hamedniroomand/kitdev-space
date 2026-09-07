@@ -16,7 +16,7 @@ const EXTERNAL_MESSAGE
   = 'This SVG uses an external resource.\n\nRemove remote links, fonts, and images, then try again.'
 
 function resvgFontOpts() {
-  return { loadSystemFonts: false as const }
+  return { loadSystemFonts: true as const }
 }
 
 function fitInside(srcW: number, srcH: number, maxW: number, maxH: number): { mode: 'zoom', value: number } {
@@ -72,18 +72,25 @@ export function rasterizeSvg(
       fitTo = { mode: 'zoom', value: zoom }
     }
 
+    let targetW = srcW
+    let targetH = srcH
+    if (fitTo.mode === 'zoom') {
+      targetW = Math.round(srcW * fitTo.value)
+      targetH = Math.round(srcH * fitTo.value)
+    }
+
+    if (targetW * targetH > MAX_PIXELS) {
+      throw new ImageError(
+        'The image is too large.\n\nThe server supports images up to 16 megapixels (4096 × 4096).',
+      )
+    }
+
     const renderer
       = fitTo.mode === 'original'
         ? base
         : new Resvg(buf, { font: resvgFontOpts(), fitTo })
 
     const pngData = renderer.render()
-    if (pngData.width * pngData.height > MAX_PIXELS) {
-      throw new ImageError(
-        'The image is too large.\n\nUse a smaller SVG or lower dimensions.',
-      )
-    }
-
     return new Uint8Array(pngData.asPng())
   }
   catch (cause) {

@@ -26,4 +26,10 @@ describe('extractOgFromHtml', () => {
     )
     expect(data.title).toBe('Page Title')
   })
+
+  it('resolves relative og:image against pageUrl', async () => {
+    const relativeHtml = '<html><head><meta property="og:image" content="/images/banner.jpg" /></head></html>'
+    const data = await extractOgFromHtml(relativeHtml, 'https://example.com/blog/article')
+    expect(data.image).toBe('https://example.com/images/banner.jpg')
+  })
 })

@@ -33,4 +33,17 @@ describe('json core', () => {
   it('parseJson throws DataError', () => {
     expect(() => parseJson('{')).toThrow(DataError)
   })
+
+  it('reports error position in strict JSON for JSONC with leading comments', () => {
+    const jsonc = '// leading comment\n{\n  "valid": 1,\n  "broken": \n}'
+    try {
+      parseJson(jsonc)
+      expect.unreachable()
+    }
+    catch (err) {
+      expect(err).toBeInstanceOf(DataError)
+      const dataErr = err as DataError
+      expect(dataErr.line !== undefined || dataErr.position !== undefined).toBe(true)
+    }
+  })
 })

@@ -98,8 +98,10 @@ function stripJpeg(bytes: Uint8Array): StripResult {
       drop = 'Comment'
     }
     else if (marker >= 0xE2 && marker <= 0xEF) {
-      // Keep the ICC color profile. Drop every other application segment.
-      drop = matches(bytes, payload, 'ICC_PROFILE\0') ? null : 'Application data'
+      // Keep the ICC color profile and Adobe APP14 marker. Drop every other application segment.
+      const isIcc = matches(bytes, payload, 'ICC_PROFILE\0')
+      const isAdobeApp14 = marker === 0xEE && matches(bytes, payload, 'Adobe')
+      drop = isIcc || isAdobeApp14 ? null : 'Application data'
     }
 
     if (drop) {

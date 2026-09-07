@@ -284,6 +284,15 @@ function handleClear() {
       </UAlert>
 
       <UAlert
+        v-else-if="meta.container === 'gif' || meta.container === 'avif'"
+        color="neutral"
+        variant="subtle"
+        icon="i-lucide-info"
+        title="Format metadata not parsed in browser"
+        description="GIF and AVIF metadata parsing is not supported in the browser. You can still use the server option to clean this image."
+      />
+
+      <UAlert
         v-else-if="meta.tags.length === 0"
         color="success"
         variant="subtle"

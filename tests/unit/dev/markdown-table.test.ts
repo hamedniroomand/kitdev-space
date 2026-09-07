@@ -25,4 +25,16 @@ describe('formatMarkdownTable', () => {
     })
     expect(table).toContain('| Col A | Col B |')
   })
+
+  it('escapes pipes in cells and pads correctly according to visual width', () => {
+    const table = formatMarkdownTable({
+      headers: ['Type', 'Formula'],
+      rows: [
+        ['Bitwise', 'a | b'],
+        ['Escaped', 'a \\| b'],
+      ],
+    })
+    expect(table).toContain('| Bitwise | a \\| b  |')
+    expect(table).toContain('| Escaped | a \\| b  |')
+  })
 })

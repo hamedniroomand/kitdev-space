@@ -63,23 +63,43 @@ export function generateFieldValue(type: FieldType, index: number): string | num
   }
 }
 
-export function generateFakeRows(options: GenerateOptions): Record<string, string | number | boolean>[] {
-  if (options.seed !== undefined) {
-    faker.seed(options.seed)
+export function generateRowValues(
+  types: FieldType[],
+  count: number,
+  seed?: number,
+): (string | number | boolean)[][] {
+  if (seed !== undefined) {
+    faker.seed(seed)
   }
 
-  const rows: Record<string, string | number | boolean>[] = []
-  const count = Math.max(1, Math.min(options.count, 500))
+  const rows: (string | number | boolean)[][] = []
+  const safeCount = Math.max(1, Math.min(count, 500))
 
-  for (let i = 0; i < count; i++) {
-    const row: Record<string, string | number | boolean> = {}
-    for (const field of options.fields) {
-      row[field.name] = generateFieldValue(field.type, i)
-    }
-    rows.push(row)
+  for (let i = 0; i < safeCount; i++) {
+    rows.push(types.map(type => generateFieldValue(type, i)))
   }
 
   return rows
+}
+
+export function mapValuesToRows(
+  values: (string | number | boolean)[][],
+  fieldNames: string[],
+): Record<string, string | number | boolean>[] {
+  return values.map((row) => {
+    const record: Record<string, string | number | boolean> = {}
+    fieldNames.forEach((name, idx) => {
+      record[name] = row[idx] ?? ''
+    })
+    return record
+  })
+}
+
+export function generateFakeRows(options: GenerateOptions): Record<string, string | number | boolean>[] {
+  const types = options.fields.map(f => f.type)
+  const names = options.fields.map(f => f.name)
+  const values = generateRowValues(types, options.count, options.seed)
+  return mapValuesToRows(values, names)
 }
 
 export function formatAsSqlInserts(

@@ -31,10 +31,23 @@ export function getTextStats(text: string): TextStatistics {
   const wordsArray = text.trim().split(/\s+/).filter(Boolean)
   const words = text.trim() === '' ? 0 : wordsArray.length
 
-  const lines = text.split('\n').length
-  const paragraphs = text.split(/\n\s*\n/).filter(p => p.trim().length > 0).length || 1
+  const normalizedLines = text.endsWith('\n') ? text.slice(0, -1) : text
+  const lines = normalizedLines.split('\n').length
+  const paragraphs = text.split(/\n\s*\n/).filter(p => p.trim().length > 0).length
 
-  const sentences = (text.match(/[^.!?]+[.!?]+(\s|$)/g) || []).length || (words > 0 ? 1 : 0)
+  const matches = text.match(/[^.!?]+[.!?]+(?:\s|$)/g) || []
+  let sentences = matches.length
+  const lastPunctuation = Math.max(text.lastIndexOf('.'), text.lastIndexOf('!'), text.lastIndexOf('?'))
+  if (lastPunctuation !== -1) {
+    const remainder = text.slice(lastPunctuation + 1).trim()
+    if (remainder.length > 0 && /\S+/.test(remainder)) {
+      sentences += 1
+    }
+  }
+  else if (words > 0) {
+    sentences = 1
+  }
+
   const bytes = new TextEncoder().encode(text).length
 
   const readingTimeMinutes = Math.ceil(words / 200)

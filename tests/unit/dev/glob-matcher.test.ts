@@ -32,4 +32,14 @@ describe('testGlobMatch', () => {
     expect(testGlobMatch('file?.txt', 'file1.txt')).toBe(true)
     expect(testGlobMatch('file?.txt', 'file12.txt')).toBe(false)
   })
+
+  it('matches character class ranges [a-z] and negated classes [!0-9]', () => {
+    expect(testGlobMatch('file[0-9].txt', 'file3.txt')).toBe(true)
+    expect(testGlobMatch('file[0-9].txt', 'filea.txt')).toBe(false)
+    expect(testGlobMatch('file[!0-9].txt', 'filea.txt')).toBe(true)
+    expect(testGlobMatch('file[!0-9].txt', 'file3.txt')).toBe(false)
+    expect(testGlobMatch('*.test.[jt]s', 'app.test.js')).toBe(true)
+    expect(testGlobMatch('*.test.[jt]s', 'app.test.ts')).toBe(true)
+    expect(testGlobMatch('*.test.[jt]s', 'app.test.css')).toBe(false)
+  })
 })

@@ -14,12 +14,22 @@ export function createRandomString(options: { length: number, charset: RandomCha
   }
 
   const alphabet = CHARSETS[options.charset]
-  const bytes = new Uint8Array(length)
-  crypto.getRandomValues(bytes)
+  const charsCount = alphabet.length
+  const maxValid = 256 - (256 % charsCount)
 
   let result = ''
-  for (const byte of bytes) {
-    result += alphabet[byte % alphabet.length]
+  const batchSize = Math.max(length, 16)
+  const buffer = new Uint8Array(batchSize)
+
+  while (result.length < length) {
+    crypto.getRandomValues(buffer)
+    for (let i = 0; i < buffer.length && result.length < length; i++) {
+      const byte = buffer[i]!
+      if (byte < maxValid) {
+        result += alphabet[byte % charsCount]
+      }
+    }
   }
+
   return result
 }

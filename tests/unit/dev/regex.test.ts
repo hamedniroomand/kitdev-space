@@ -29,6 +29,18 @@ describe('testRegex', () => {
     expect(result.highlights.some(segment => segment.matched && segment.text === 'Hello')).toBe(true)
   })
 
+  it('correctly maps named groups when matched text is identical to anonymous group', () => {
+    const result = testRegex('(x)(?<a>x)', 'xx', 'g')
+    expect(result.valid).toBe(true)
+    expect(result.matches).toHaveLength(1)
+    const groups = result.matches[0]?.groups
+    expect(groups).toBeDefined()
+    expect(groups?.[0]?.name).toBeNull()
+    expect(groups?.[0]?.value).toBe('x')
+    expect(groups?.[1]?.name).toBe('a')
+    expect(groups?.[1]?.value).toBe('x')
+  })
+
   it('returns a clear error for invalid syntax', () => {
     const result = testRegex('(', 'abc', 'g')
     expect(result.valid).toBe(false)

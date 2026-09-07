@@ -36,9 +36,9 @@ test('hub persistent sidebar allows searching and switching tools', async ({ pag
   await expect(page.getByRole('heading', { name: 'Random ID and Secret Generator', level: 1 })).toBeVisible()
 
   // Return to landing page
-  await page.getByRole('link', { name: 'Landing Page' }).first().click()
+  await page.getByRole('link', { name: 'Home' }).first().click()
   await expect(page).toHaveURL('/')
-  await expect(page.getByRole('heading', { name: 'Tools for people who build.' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: /Small tasks\.\s*Useful tools\./ })).toBeVisible()
 })
 
 test('redirects legacy URLs to new hub tool URLs', async ({ page }) => {
@@ -113,6 +113,6 @@ test('hub layout scrolling and navigation behavior', async ({ page }) => {
     // Exact, because the sidebar has a link named "KitDev Space source on GitHub".
     await page.getByRole('link', { name: 'KitDev Space', exact: true }).click()
     await expect(page).toHaveURL('/')
-    await expect(page.getByRole('heading', { name: 'Tools for people who build.' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: /Small tasks\.\s*Useful tools\./ })).toBeVisible()
   })
 })

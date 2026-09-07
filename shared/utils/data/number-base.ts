@@ -13,8 +13,11 @@ export function parseNumberToBigInt(value: string, base: NumberBase): bigint {
     throw new Error('Enter a number.')
   }
 
+  const isNegative = clean.startsWith('-')
+  const unsigned = isNegative ? clean.slice(1) : clean
+
   // Strip prefixes if present
-  let normalized = clean
+  let normalized = unsigned
   if (base === 2 && normalized.startsWith('0b'))
     normalized = normalized.slice(2)
   if (base === 8 && normalized.startsWith('0o'))
@@ -30,7 +33,7 @@ export function parseNumberToBigInt(value: string, base: NumberBase): bigint {
   const validChars: Record<NumberBase, RegExp> = {
     2: /^[01]+$/,
     8: /^[0-7]+$/,
-    10: /^-?\d+$/,
+    10: /^\d+$/,
     16: /^[0-9a-f]+$/,
   }
 
@@ -39,20 +42,24 @@ export function parseNumberToBigInt(value: string, base: NumberBase): bigint {
   }
 
   // Parse based on base
+  let n: bigint
   if (base === 10) {
-    return BigInt(normalized)
+    n = BigInt(normalized)
   }
-  if (base === 16) {
-    return BigInt(`0x${normalized}`)
+  else if (base === 16) {
+    n = BigInt(`0x${normalized}`)
   }
-  if (base === 2) {
-    return BigInt(`0b${normalized}`)
+  else if (base === 2) {
+    n = BigInt(`0b${normalized}`)
   }
-  if (base === 8) {
-    return BigInt(`0o${normalized}`)
+  else if (base === 8) {
+    n = BigInt(`0o${normalized}`)
+  }
+  else {
+    throw new Error('Unsupported base.')
   }
 
-  throw new Error('Unsupported base.')
+  return isNegative ? -n : n
 }
 
 export function convertFromBase(value: string, base: NumberBase): NumberBases {

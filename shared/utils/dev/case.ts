@@ -5,11 +5,11 @@ export function splitIntoWords(input: string): string[] {
 
   // Insert space between lower/digit and upper, and between acronym and capitalized word
   const expanded = input
-    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
-    .replace(/([A-Z]+)([A-Z][a-z0-9])/g, '$1 $2')
+    .replace(/([\p{Ll}\p{N}])(\p{Lu})/gu, '$1 $2')
+    .replace(/(\p{Lu}+)(\p{Lu}[\p{Ll}\p{N}])/gu, '$1 $2')
 
   return expanded
-    .split(/[^a-z0-9]+/i)
+    .split(/[^\p{L}\p{N}]+/u)
     .filter(Boolean)
 }
 
@@ -55,12 +55,29 @@ export function toConstantCase(input: string): string {
   return words.map(word => word.toUpperCase()).join('_')
 }
 
+const TRANSLITERATION_MAP: Record<string, string> = {
+  ß: 'ss',
+  ø: 'o',
+  Ø: 'o',
+  æ: 'ae',
+  Æ: 'ae',
+  đ: 'd',
+  Đ: 'd',
+  ł: 'l',
+  Ł: 'l',
+}
+
 export function toSlug(input: string): string {
   if (!input) {
     return ''
   }
 
-  return input
+  let text = input
+  for (const [char, replacement] of Object.entries(TRANSLITERATION_MAP)) {
+    text = text.replaceAll(char, replacement)
+  }
+
+  return text
     .normalize('NFKD')
     .replace(/[\u0300-\u036F]/g, '')
     .toLowerCase()

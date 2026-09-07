@@ -49,4 +49,27 @@ describe('generateTailwindPalette', () => {
     expect(css).toContain(':root {')
     expect(css).toContain('--brand-500: #3b82f6;')
   })
+
+  it('keeps saturation zero for pure gray inputs', () => {
+    const shades = generateTailwindPalette('#808080')
+    for (const shade of shades) {
+      // In pure gray, hex is #rrggbb where rr === gg === bb
+      const hex = shade.hex.replace('#', '')
+      const r = hex.slice(0, 2)
+      const g = hex.slice(2, 4)
+      const b = hex.slice(4, 6)
+      expect(r).toBe(g)
+      expect(g).toBe(b)
+    }
+  })
+
+  it('redistributes darker shades when anchor lightness is near zero', () => {
+    const shades = generateTailwindPalette('#101010')
+    const darkShades = ['600', '700', '800', '900', '950'].map(
+      key => shades.find(s => s.shade === key)?.hex,
+    )
+    // Darker shades should not all be identical
+    const unique = new Set(darkShades)
+    expect(unique.size).toBeGreaterThan(1)
+  })
 })

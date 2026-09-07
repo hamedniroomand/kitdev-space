@@ -80,8 +80,14 @@ const entropyBits = computed(() => {
   if (idType.value === 'nanoid') {
     return Math.round(nanoIdLength.value * Math.log2(64))
   }
-  // A UUID v4 holds 122 random bits. A v7 and a ULID hold fewer, plus a timestamp.
-  return idType.value === 'uuidv4' ? 122 : 80
+  // A UUID v4 holds 122 random bits. A UUID v7 holds 74 bits (12+62). A ULID holds 80 bits.
+  if (idType.value === 'uuidv4') {
+    return 122
+  }
+  if (idType.value === 'uuidv7') {
+    return 74
+  }
+  return 80
 })
 
 const entropyColor = computed(() => {

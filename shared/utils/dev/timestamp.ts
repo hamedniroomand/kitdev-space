@@ -66,3 +66,14 @@ export function formatRelativeTime(date: Date, baseDate: Date = new Date()): str
   const diffInYears = Math.round(diffInDays / 365)
   return rtf.format(diffInYears, 'year')
 }
+
+export function formatUtcDate(date: Date): string {
+  const pad = (n: number) => String(n).padStart(2, '0')
+  const year = date.getUTCFullYear()
+  const month = pad(date.getUTCMonth() + 1)
+  const day = pad(date.getUTCDate())
+  const hours = pad(date.getUTCHours())
+  const minutes = pad(date.getUTCMinutes())
+  const seconds = pad(date.getUTCSeconds())
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds} UTC`
+}

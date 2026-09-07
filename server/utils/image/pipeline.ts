@@ -41,6 +41,12 @@ export function mapImageCause(cause: unknown, fallback: string): ImageError {
   }
 
   const code = (cause as { code?: string })?.code
+  if (code === 'ERR_IMAGE_TOO_MANY_PIXELS') {
+    return new ImageError(
+      'The image is too large.\n\nThe server supports images up to 16 megapixels (4096 × 4096).',
+      { cause },
+    )
+  }
   if (code === 'ERR_IMAGE_UNKNOWN_FORMAT') {
     return new ImageError(
       'This file type is not supported.\n\nUse JPEG, PNG, WebP, GIF, BMP, TIFF, HEIC, AVIF, or SVG.',

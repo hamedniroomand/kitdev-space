@@ -70,5 +70,15 @@ export async function extractOgFromHtml(html: string, pageUrl: string): Promise<
   }
   data.title = data.title.trim()
   data.description = data.description.trim()
+
+  if (data.image) {
+    try {
+      data.image = new URL(data.image, pageUrl).href
+    }
+    catch {
+      // Keep data.image as-is if URL resolution fails
+    }
+  }
+
   return data
 }

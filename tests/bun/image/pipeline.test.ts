@@ -4,6 +4,7 @@ import { describe, expect, it } from 'bun:test'
 import {
   convertSvgAtScale,
   getImageMetadata,
+  mapImageCause,
   processImage,
 } from '#server/utils/image/pipeline'
 
@@ -130,5 +131,11 @@ describe('image pipeline', () => {
     expect(processImage(fixture, { width: 10, height: 99999, format: 'png' }))
       .rejects
       .toThrow(/Height must be/)
+  })
+
+  it('reports 16 megapixels cap when ERR_IMAGE_TOO_MANY_PIXELS occurs', () => {
+    const error = mapImageCause({ code: 'ERR_IMAGE_TOO_MANY_PIXELS' }, 'Fallback')
+    expect(error.message).toContain('16 megapixels')
+    expect(error.message).toContain('4096 × 4096')
   })
 })

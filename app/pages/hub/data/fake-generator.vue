@@ -1,7 +1,12 @@
 <script setup lang="ts">
 import type { FakeFieldConfig, FieldType } from '#shared/utils/data/fake-generator'
 import type { ToolEditorLang } from '#shared/utils/dev/editor-lang'
-import { formatAsCsv, formatAsSqlInserts, generateFakeRows } from '#shared/utils/data/fake-generator'
+import {
+  formatAsCsv,
+  formatAsSqlInserts,
+  generateRowValues,
+  mapValuesToRows,
+} from '#shared/utils/data/fake-generator'
 
 useToolSeo('fake-data')
 
@@ -10,7 +15,7 @@ type OutputFormat = 'json' | 'csv' | 'sql'
 const format = ref<OutputFormat>('json')
 const rowCount = ref(10)
 const tableName = ref('users')
-const refreshKey = ref(0)
+const generatedValues = ref<(string | number | boolean)[][]>([])
 
 const availableTypes: { label: string, value: FieldType }[] = [
   { label: 'UUID', value: 'uuid' },
@@ -40,6 +45,21 @@ const fields = ref<FakeFieldConfig[]>([
 
 const { copy, label, color, icon } = useCopyFeedback()
 const { downloadText } = useDownload()
+
+function regenerate() {
+  generatedValues.value = generateRowValues(
+    fields.value.map(f => f.type),
+    rowCount.value,
+  )
+}
+
+watch(
+  [rowCount, () => fields.value.map(f => f.type).join(',')],
+  () => {
+    regenerate()
+  },
+  { immediate: true },
+)
 
 function applyPreset(preset: 'users' | 'products' | 'contacts') {
   if (preset === 'users') {
@@ -89,17 +109,11 @@ function removeField(index: number) {
   }
 }
 
-function regenerate() {
-  refreshKey.value++
-}
-
 const rows = computed(() => {
-  // eslint-disable-next-line ts/no-unused-expressions -- read the key so the rows recompute on refresh
-  refreshKey.value
-  return generateFakeRows({
-    count: rowCount.value,
-    fields: fields.value,
-  })
+  return mapValuesToRows(
+    generatedValues.value,
+    fields.value.map((f, idx) => f.name || `field_${idx + 1}`),
+  )
 })
 
 const outputText = computed(() => {
