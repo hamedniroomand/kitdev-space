@@ -158,3 +158,70 @@
     transform: none;
   }
 }
+
+/* Shared surfaces. Decoration stays behind the work area. */
+.home-surface {
+  position: relative;
+  isolation: isolate;
+}
+
+.home-surface::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: 0 calc(50% - 50vw) auto;
+  height: 760px;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 78% 12%, color-mix(in srgb, var(--ui-primary) 10%, transparent), transparent 55%),
+    linear-gradient(var(--ui-border-muted) 1px, transparent 1px),
+    linear-gradient(90deg, var(--ui-border-muted) 1px, transparent 1px);
+  background-size: auto, 56px 56px, 56px 56px;
+  mask-image: linear-gradient(to bottom, #000, #000 35%, transparent 95%);
+}
+
+.workspace-content {
+  background: var(--ui-bg-muted);
+  scrollbar-gutter: stable;
+}
+
+.work-surface {
+  background: var(--ui-bg);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--ui-text-highlighted) 3%, transparent);
+}
+
+.tool-nav-link {
+  position: relative;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+.tool-nav-link[aria-current='page']::before {
+  content: '';
+  position: absolute;
+  inset: 8px auto 8px 0;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--ui-primary);
+}
+
+.directory-card {
+  background: var(--ui-bg);
+  transition: border-color 160ms ease, background-color 160ms ease;
+}
+
+.directory-card:hover {
+  border-color: var(--ui-border-accented);
+  background: var(--ui-bg-elevated);
+}
+
+.directory-card:focus-visible {
+  outline: 2px solid var(--ui-primary);
+  outline-offset: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .directory-card,
+  .tool-nav-link {
+    transition: none;
+  }
+}

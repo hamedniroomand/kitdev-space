@@ -1,88 +1,67 @@
 <script setup lang="ts">
-withDefaults(defineProps<{
+const props = withDefaults(defineProps<{
   title?: string
   description?: string
   eyebrow?: string
   siteName?: string
 }>(), {
-  title: 'KitDev Space',
-  description: 'Developer tools for people who build things.',
-  eyebrow: 'KitDev Space',
+  title: 'Small tasks. Useful tools.',
+  description: 'Inspect, convert, and prepare data for your next step.',
+  eyebrow: 'Developer tools',
   siteName: 'kitdev.space',
 })
+
+const titleSize = computed(() => props.title.length > 48 ? 56 : 72)
 </script>
 
 <template>
   <div
-    class="w-full h-full flex flex-col justify-between relative overflow-hidden"
-    style="background-color: #0a0a0e; color: #ffffff; padding: 48px;"
+    class="relative flex h-full w-full flex-col overflow-hidden"
+    style="background-color: #0a0a0e; color: #fafafa; padding: 56px 64px;"
   >
-    <!-- Forge ambient glow background -->
     <div
-      class="absolute inset-0"
-      style="background-image: radial-gradient(at 100% 0%, rgba(129, 140, 248, 0.20), transparent 45%), radial-gradient(at 0% 100%, rgba(6, 182, 212, 0.14), transparent 50%);"
+      v-for="line in 9"
+      :key="`v${line}`"
+      class="absolute"
+      :style="{ left: `${640 + line * 64}px`, top: '0px', width: '1px', height: '630px', backgroundColor: '#202027' }"
     />
-
-    <!-- Forge Surface Card container -->
     <div
-      class="relative flex flex-col justify-between h-full w-full"
-      style="background-color: #18181b; border: 1px solid #27272a; border-radius: 20px; padding: 52px 56px;"
-    >
-      <div class="flex flex-col gap-5">
-        <!-- Forge Label Badge -->
-        <div class="flex items-center">
-          <span
-            class="font-mono uppercase"
-            style="font-size: 15px; font-weight: 600; letter-spacing: 0.12em; color: #818cf8; background-color: rgba(129, 140, 248, 0.10); border: 1px solid rgba(129, 140, 248, 0.28); border-radius: 9999px; padding: 6px 16px;"
-          >
-            {{ eyebrow }}
-          </span>
-        </div>
+      v-for="line in 10"
+      :key="`h${line}`"
+      class="absolute"
+      :style="{ left: '704px', top: `${line * 64}px`, width: '496px', height: '1px', backgroundColor: '#202027' }"
+    />
+    <div class="absolute" style="right: 112px; top: 128px; width: 128px; height: 128px; border: 1px solid #818cf8; background-color: #141421;" />
+    <div class="absolute" style="right: 176px; top: 192px; width: 128px; height: 128px; border: 1px solid #3f3f52; background-color: #111116;" />
 
-        <!-- Forge Display Heading -->
-        <h1
-          class="m-0"
-          style="font-size: 60px; font-weight: 500; line-height: 1.06; letter-spacing: -0.02em; color: #ffffff; max-width: 950px;"
-        >
-          {{ title }}
-        </h1>
-
-        <!-- Forge Body Description -->
-        <p
-          v-if="description"
-          class="m-0"
-          style="font-size: 24px; font-weight: 400; line-height: 1.5; color: #a1a1aa; max-width: 900px;"
-        >
-          {{ description }}
-        </p>
+    <div class="relative flex items-center justify-between" style="border-bottom: 1px solid #303038; padding-bottom: 24px;">
+      <div style="font-size: 26px; font-weight: 600; letter-spacing: -0.8px;">
+        KitDev <span style="color: #818cf8;">Space</span>
       </div>
+      <span style="font-size: 17px; color: #a1a1aa;">{{ siteName }}</span>
+    </div>
 
-      <!-- Forge Footer -->
-      <div
-        class="flex items-center justify-between"
-        style="border-top: 1px solid #27272a; padding-top: 28px; margin-top: 24px;"
+    <div class="relative flex flex-1 flex-col justify-center" style="max-width: 960px; padding: 28px 0;">
+      <p class="m-0" style="font-size: 17px; color: #a5a5b5; margin-bottom: 20px;">
+        {{ eyebrow }}
+      </p>
+      <h1
+        class="m-0"
+        :style="{ fontSize: `${titleSize}px`, fontWeight: 500, lineHeight: 1.08, letterSpacing: '-2px', maxWidth: '930px' }"
       >
-        <p
-          class="m-0"
-          style="font-size: 26px; font-weight: 600; color: #ffffff;"
-        >
-          KitDev <span style="color: #818cf8;">Space</span>
-        </p>
+        {{ title }}
+      </h1>
+      <p v-if="description" class="m-0" style="font-size: 24px; line-height: 1.45; color: #b0b0ba; max-width: 860px; margin-top: 24px;">
+        {{ description }}
+      </p>
+    </div>
 
-        <div class="flex items-center gap-3">
-          <span
-            class="font-mono"
-            style="font-size: 14px; font-weight: 500; color: #a1a1aa; background-color: #0a0a0e; border: 1px solid #27272a; border-radius: 9999px; padding: 4px 12px;"
-          >
-            Sub-10ms Native Speed
-          </span>
-          <span
-            class="font-mono"
-            style="font-size: 18px; font-weight: 600; letter-spacing: 0.05em; color: #a1a1aa;"
-          >
-            {{ siteName }}
-          </span>
-        </div>
+    <div class="relative flex items-center justify-between" style="border-top: 1px solid #303038; padding-top: 22px;">
+      <span style="font-size: 17px; color: #a1a1aa;">Free developer tools</span>
+      <div class="flex" style="gap: 8px;">
+        <div style="width: 28px; height: 4px; background-color: #818cf8;" />
+        <div style="width: 28px; height: 4px; background-color: #3f3f52;" />
+        <div style="width: 28px; height: 4px; background-color: #3f3f52;" />
       </div>
     </div>
   </div>

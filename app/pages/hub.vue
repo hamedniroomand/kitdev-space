@@ -93,7 +93,7 @@ onMounted(revealActiveTool)
 <template>
   <div class="h-dvh flex flex-col overflow-hidden bg-default text-default">
     <!-- Top Bar -->
-    <header class="shrink-0 z-30 flex h-14 items-center justify-between border-b border-default bg-default/90 px-4 backdrop-blur">
+    <header class="shrink-0 z-30 flex h-14 items-center justify-between border-b border-default bg-default px-4">
       <div class="flex items-center gap-3">
         <UButton
           color="neutral"
@@ -127,7 +127,7 @@ onMounted(revealActiveTool)
           size="sm"
           icon="i-lucide-arrow-left"
         >
-          <span class="hidden sm:inline">Landing Page</span>
+          <span class="hidden sm:inline">Home</span>
         </UButton>
         <UTooltip
           text="Search tools"
@@ -148,7 +148,7 @@ onMounted(revealActiveTool)
     <!-- App Body: Sidebar + Content -->
     <div class="flex flex-1 min-h-0 overflow-hidden">
       <!-- Desktop Sidebar -->
-      <aside class="hidden w-72 shrink-0 border-r border-default bg-elevated/20 lg:flex lg:flex-col h-full overflow-hidden">
+      <aside class="hidden w-72 shrink-0 border-r border-default bg-default lg:flex lg:flex-col h-full overflow-hidden">
         <div class="shrink-0 p-3 border-b border-default">
           <UButton
             color="neutral"
@@ -174,14 +174,14 @@ onMounted(revealActiveTool)
 
         <nav
           ref="sidebarNav"
-          class="flex-1 overflow-y-auto p-3 space-y-6"
+          class="flex-1 overflow-y-auto p-3 space-y-7"
         >
           <div
             v-for="group in categorizedTools"
             :key="group.category"
             class="space-y-1.5"
           >
-            <div class="flex items-center justify-between px-2 py-1 text-xs font-mono font-semibold tracking-wider text-muted uppercase">
+            <div class="flex items-center justify-between px-2 py-1 text-xs font-medium text-muted">
               <NuxtLink
                 :to="`/hub/${group.category}`"
                 class="hover:text-highlighted transition-colors"
@@ -205,9 +205,9 @@ onMounted(revealActiveTool)
               >
                 <NuxtLink
                   :to="tool.route"
-                  class="group flex items-center justify-between gap-2 rounded-control px-2.5 py-1.5 text-sm transition-colors"
+                  class="tool-nav-link group flex items-center justify-between gap-2 rounded-md px-3 py-2 text-sm"
                   :class="route.path === tool.route
-                    ? 'bg-primary/10 text-primary font-medium'
+                    ? 'bg-primary/8 text-primary font-medium'
                     : 'text-default/80 hover:bg-elevated hover:text-highlighted'"
                   @click="selectTool(tool.id)"
                 >
@@ -261,7 +261,7 @@ onMounted(revealActiveTool)
               name="i-lucide-arrow-left"
               class="size-3.5"
             />
-            <span>Landing Page</span>
+            <span>Home</span>
           </NuxtLink>
           <a
             href="https://github.com/hamedniroomand/kitdev-space"
@@ -300,7 +300,7 @@ onMounted(revealActiveTool)
                 :key="group.category"
                 class="space-y-1.5"
               >
-                <div class="flex items-center justify-between px-2 py-1 text-xs font-mono font-semibold tracking-wider text-muted uppercase">
+                <div class="flex items-center justify-between px-2 py-1 text-xs font-medium text-muted">
                   <NuxtLink
                     :to="`/hub/${group.category}`"
                     class="hover:text-highlighted transition-colors"
@@ -324,9 +324,9 @@ onMounted(revealActiveTool)
                   >
                     <NuxtLink
                       :to="tool.route"
-                      class="flex items-center justify-between gap-2 rounded-control px-2.5 py-2 text-sm"
+                      class="tool-nav-link flex items-center justify-between gap-2 rounded-md px-3 py-2 text-sm"
                       :class="route.path === tool.route
-                        ? 'bg-primary/10 text-primary font-medium'
+                        ? 'bg-primary/8 text-primary font-medium'
                         : 'text-default/80 hover:bg-elevated hover:text-highlighted'"
                       @click="() => { closeMobile(); selectTool(tool.id); }"
                     >
@@ -366,7 +366,7 @@ onMounted(revealActiveTool)
       <!-- Main Hub Content Area -->
       <main
         ref="contentArea"
-        class="flex-1 min-h-0 overflow-y-auto"
+        class="workspace-content flex-1 min-h-0 overflow-y-auto"
       >
         <NuxtPage />
       </main>

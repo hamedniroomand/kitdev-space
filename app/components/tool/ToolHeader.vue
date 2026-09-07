@@ -33,13 +33,13 @@ const summary = computed(() => props.description ?? tool?.value?.description ?? 
     />
     <h1
       v-if="heading"
-      class="text-3xl font-medium tracking-tight text-highlighted"
+      class="text-2xl sm:text-3xl font-medium tracking-tight text-highlighted"
     >
       {{ heading }}
     </h1>
     <p
       v-if="summary"
-      class="mt-2 text-base leading-[1.6] text-muted"
+      class="mt-3 max-w-2xl text-sm sm:text-base leading-[1.6] text-muted"
     >
       {{ summary }}
     </p>

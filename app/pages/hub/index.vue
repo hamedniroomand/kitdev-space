@@ -26,6 +26,15 @@ const { categoryLabels, getToolsByCategory } = useTools()
 const { track } = useToolAnalytics()
 const { pinnedTools, recentTools, togglePin, isPinned, clearRecents } = useToolPreferences()
 
+const categoryDescriptions: Record<string, string> = {
+  data: 'Inspect, validate, and convert structured data.',
+  network: 'Check domains, headers, and certificates.',
+  crypto: 'Work with hashes, tokens, and random values.',
+  color: 'Build color scales and check contrast.',
+  image: 'Prepare images and inspect photo metadata.',
+  dev: 'Format code, test patterns, and convert values.',
+}
+
 const categories = [
   'data',
   'network',
@@ -52,7 +61,7 @@ const categories = [
       Tools Hub
     </h1>
     <p class="mt-2 text-base leading-[1.6] text-muted">
-      Choose a category to open tools in the workspace.
+      Open a tool, or return to one you used before.
     </p>
 
     <!-- Client-Only Pinned & Recent Tools -->
@@ -94,7 +103,7 @@ const categories = [
               color="primary"
               icon="i-lucide-pin-off"
               aria-label="Unpin tool"
-              class="opacity-0 group-hover:opacity-100 transition-opacity"
+              class="opacity-100 sm:opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity"
               @click.stop="togglePin(t.id)"
             />
           </div>
@@ -148,7 +157,7 @@ const categories = [
               :color="isPinned(t.id) ? 'primary' : 'neutral'"
               :icon="isPinned(t.id) ? 'i-lucide-pin-off' : 'i-lucide-pin'"
               :aria-label="isPinned(t.id) ? 'Unpin tool' : 'Pin tool'"
-              class="opacity-0 group-hover:opacity-100 transition-opacity"
+              class="opacity-100 sm:opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity"
               @click.stop="togglePin(t.id)"
             />
           </div>
@@ -157,27 +166,27 @@ const categories = [
     </ClientOnly>
 
     <!-- Category Cards -->
-    <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <UPageGrid class="mt-10 gap-4 sm:grid-cols-2 lg:grid-cols-3">
       <NuxtLink
         v-for="category in categories"
         :key="category"
         :to="`/hub/${category}`"
-        class="forge-reveal forge-lift rounded-card border border-default bg-elevated p-5 shadow-xs hover:border-primary/50 hover:shadow-sm"
+        class="directory-card group rounded-xl border border-default p-6"
       >
-        <p class="font-mono text-xs font-semibold tracking-widest text-muted uppercase">
+        <p class="text-lg font-medium tracking-tight text-highlighted">
           {{ categoryLabels[category] }}
         </p>
         <p class="mt-2 text-sm text-highlighted">
-          {{ getToolsByCategory(category).length }} tools
+          {{ categoryDescriptions[category] }}
         </p>
         <p class="mt-3 inline-flex items-center gap-1 text-xs font-medium text-primary">
-          Open category
+          {{ getToolsByCategory(category).length }} tools
           <UIcon
             name="i-lucide-chevron-right"
             class="size-3"
           />
         </p>
       </NuxtLink>
-    </div>
+    </UPageGrid>
   </UContainer>
 </template>

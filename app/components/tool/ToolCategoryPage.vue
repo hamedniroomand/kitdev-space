@@ -52,11 +52,11 @@ useSchemaOrg([
       Choose a tool to start.
     </p>
 
-    <ul class="mt-10 divide-y divide-default overflow-hidden rounded-card border border-default bg-elevated shadow-xs">
+    <ul class="mt-10 divide-y divide-default overflow-hidden rounded-card border border-default bg-default shadow-xs">
       <li
         v-for="tool in categoryTools"
         :key="tool.id"
-        class="px-4 py-4 sm:px-6"
+        class="px-4 py-5 sm:px-6 transition-colors hover:bg-elevated focus-within:bg-elevated"
       >
         <NuxtLink
           v-if="tool.status === 'available'"

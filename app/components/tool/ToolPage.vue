@@ -16,7 +16,7 @@ defineProps<{
 </script>
 
 <template>
-  <UContainer class="py-12 sm:py-20 max-w-5xl">
+  <UContainer class="py-8 sm:py-12 max-w-5xl">
     <slot name="header">
       <ToolHeader
         :title="title"
@@ -24,11 +24,11 @@ defineProps<{
       />
     </slot>
 
-    <div class="space-y-6 rounded-card border border-default bg-elevated p-6 shadow-xs">
+    <UCard class="work-surface rounded-xl" :ui="{ body: 'space-y-6 p-4 sm:p-6' }">
       <slot />
-    </div>
+    </UCard>
 
-    <div class="mt-16 border-t border-default pt-10">
+    <div class="mt-12 border-t border-default pt-8">
       <LazyToolDocsBoundary hydrate-on-visible>
         <slot name="docs">
           <RelatedTools />
