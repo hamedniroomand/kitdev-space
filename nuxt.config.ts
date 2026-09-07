@@ -152,6 +152,8 @@ export default defineNuxtConfig({
   routeRules: {
     '/**': { prerender: true, headers: securityHeaders },
     '/api/**': { prerender: false, robots: false, headers: apiSecurityHeaders },
+    // The Sentry tunnel is a POST-only relay, not a page.
+    '/tunnel': { prerender: false, robots: false, headers: apiSecurityHeaders },
     ...legacyRouteRules,
     '/data/**': { redirect: { to: '/hub/data/**', statusCode: 301 } },
     '/network/**': { redirect: { to: '/hub/network/**', statusCode: 301 } },
@@ -285,6 +287,7 @@ export default defineNuxtConfig({
   sitemap: {
     exclude: [
       '/api/**',
+      '/tunnel',
       ...Object.keys(legacyRedirects),
       ...Object.keys(legacyRedirects).map(path => `${path}/`),
       '/data/**',
