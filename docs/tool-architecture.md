@@ -36,7 +36,7 @@ them.
 `confbox` reads and writes YAML, TOML, JSONC, and JSON5. It has no dependency of its own and it
 tree-shakes, so the formats together cost about the bundle bytes of a YAML-only library. Use it for
 a converter. Use `yaml` only when a tool must show the line and the column of each error, because
-`confbox` stops at the first one. XML has no browser equal, so `/api/data/transform` keeps it.
+`confbox` stops at the first one. XML converts in the browser with `DOMParser` and `XMLSerializer`.
 
 A tool with a browser path and a server path keeps one source. Put the browser code in
 `shared/utils/`, export a `can*InBrowser()` guard next to it, and let the server route import the
