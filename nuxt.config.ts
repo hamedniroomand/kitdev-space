@@ -105,7 +105,7 @@ export default defineNuxtConfig({
   ],
 
   sentry: {
-    enabled: Boolean(process.env.SENTRY_AUTH_TOKEN),
+    enabled: Boolean(sentryDsn),
     org: process.env.SENTRY_ORG,
     project: process.env.SENTRY_PROJECT,
     authToken: process.env.SENTRY_AUTH_TOKEN,
