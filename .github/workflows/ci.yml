@@ -8,36 +8,49 @@ on:
 permissions:
   contents: read
 
+# A pull request cancels its older runs. A push to main never does, so a
+# deployment in progress is not cut off halfway.
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: ci-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
+env:
+  # sentry-cli dies when it prints a lot to a slow pipe. Keep it quiet.
+  SENTRY_NO_PROGRESS_BAR: '1'
+  SENTRY_LOG_LEVEL: error
+
 jobs:
-  check:
+  # One job, in order: install, lint and check, build, test, deploy.
+  # The first build is a local server that the browser tests run against.
+  # On main a second build makes the Vercel output from the same code, and
+  # that output is deployed. A failed test never reaches the deploy.
+  pipeline:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
+    env:
+      IS_MAIN: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
     steps:
+      # 1. Install
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version-file: package.json
       - run: bun ci
+
+      # 2. Lint and check
       - run: bun lint
       - run: bun typecheck
       - run: bun run test
 
-  e2e:
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version-file: package.json
-      - run: bun ci
-      - name: Build
+      # 3. Build the local server. No Vercel environment here, so analytics
+      #    and Sentry stay off and the tests see a plain build.
+      - name: Build for the browser tests
         run: bun run build
+
+      # 4. Browser tests against that build
       - name: Playwright version
         id: playwright
         run: echo "version=$(bun -e 'console.log(require("@playwright/test/package.json").version)')" >> "$GITHUB_OUTPUT"
@@ -53,8 +66,8 @@ jobs:
       - name: Install Chromium system libraries
         if: steps.playwright-cache.outputs.cache-hit == 'true'
         run: bunx playwright install-deps chromium
-      - name: Run the smoke tests
-        run: bun run test:e2e:run --grep @smoke
+      - name: Test the build
+        run: bun run test:e2e:run
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
@@ -65,66 +78,25 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
-  deploy:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: check
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    concurrency:
-      group: production-deploy
-      cancel-in-progress: false
-    env:
-      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-      SENTRY_NO_PROGRESS_BAR: '1'
-      SENTRY_LOG_LEVEL: error
-    steps:
-      - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version-file: package.json
-      - run: bun ci
+      # 5. Deploy, main only. The Vercel CLI runs on the Node that the runner
+      #    ships. The production environment comes from Vercel, so the build
+      #    below gets the analytics id, the Sentry DSN, and the source map token.
       - name: Install the Vercel CLI
+        if: env.IS_MAIN == 'true'
         run: bun i -g vercel@59
       - name: Pull the production settings and environment
+        if: env.IS_MAIN == 'true'
         run: vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
-      - name: Build
-        run: vercel build --prod --token="$VERCEL_TOKEN"
-      - name: Deploy without the domain
-        id: deploy
-        run: |
-          url=$(vercel deploy --prebuilt --prod --skip-domain --token="$VERCEL_TOKEN")
-          echo "url=$url" >> "$GITHUB_OUTPUT"
-          echo "Deployment: $url"
-      - name: Playwright version
-        id: playwright
-        run: echo "version=$(bun -e 'console.log(require("@playwright/test/package.json").version)')" >> "$GITHUB_OUTPUT"
-      - name: Cache Playwright browsers
-        id: playwright-cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
-      - name: Install Chromium
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: bunx playwright install --with-deps chromium
-      - name: Install Chromium system libraries
-        if: steps.playwright-cache.outputs.cache-hit == 'true'
-        run: bunx playwright install-deps chromium
-      - name: Test the deployment
+      - name: Build for Vercel
+        if: env.IS_MAIN == 'true'
         env:
-          PLAYWRIGHT_BASE_URL: ${{ steps.deploy.outputs.url }}
-          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
-        run: bun run test:e2e:run
-      - uses: actions/upload-artifact@v4
-        if: failure()
-        with:
-          name: playwright-report-deploy
-          path: |
-            playwright-report
-            test-results
-          if-no-files-found: ignore
-          retention-days: 7
-      - name: Promote the deployment to the domain
-        run: vercel promote "${{ steps.deploy.outputs.url }}" --token="$VERCEL_TOKEN"
+          NITRO_PRESET: vercel
+        run: |
+          set -a
+          # shellcheck disable=SC1091
+          . .vercel/.env.production.local
+          set +a
+          bun run build
+      - name: Deploy to production
+        if: env.IS_MAIN == 'true'
+        run: vercel deploy --prod --token="$VERCEL_TOKEN"
