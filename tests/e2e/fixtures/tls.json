@@ -7,6 +7,8 @@
     "validFrom": "2026-01-01T00:00:00.000Z",
     "validTo": "2026-12-31T23:59:59.000Z",
     "matchesHost": true,
+    "authorized": true,
+    "authorizationError": null,
     "isSelfSigned": false,
     "protocol": "TLSv1.3",
     "cipher": {

@@ -18,6 +18,7 @@ test.describe('TLS Certificate Inspector tool', () => {
 
     await expect(page.locator('main').getByText('75 days', { exact: true })).toBeVisible()
     await expect(page.locator('main').getByText('Matches Hostname', { exact: true })).toBeVisible()
+    await expect(page.locator('main').getByText('Trusted CA', { exact: true })).toBeVisible()
     await expect(page.locator('main').getByText('*.google.com').first()).toBeVisible()
 
     // Test clear
