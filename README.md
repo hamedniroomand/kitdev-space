@@ -30,8 +30,10 @@ bun install
 cp .env.example .env
 ```
 
-The `.env` file is optional. It holds the Google Analytics id and the OG image secret. Both are
-empty by default.
+The `.env` file is optional. It holds the Google Analytics id, the OG image secret, and the Sentry
+settings. All are empty by default, and each feature stays off until its value is set. The Sentry
+auth token is needed at build time only, to upload source maps, so it belongs in the Vercel build
+environment and never in the browser.
 
 ## Development
 

@@ -7,6 +7,9 @@ function nitroPreset(): string {
 }
 
 const googleAnalyticsId = process.env.NUXT_PUBLIC_GOOGLE_ANALYTICS_ID || ''
+const sentryDsn = process.env.NUXT_PUBLIC_SENTRY_DSN || ''
+const sentryEnvironment = process.env.VERCEL_ENV || process.env.NODE_ENV || 'development'
+const sentryOrigin = sentryDsn ? new URL(sentryDsn).origin : ''
 
 const legacyRouteRules: Record<string, { redirect: { to: string, statusCode: number } }> = {}
 for (const [oldPath, newPath] of Object.entries(legacyRedirects)) {
@@ -45,7 +48,7 @@ const contentSecurityPolicy = [
   'font-src \'self\' data: https://fonts.gstatic.com',
   'style-src \'self\' \'unsafe-inline\'',
   'script-src \'self\' \'unsafe-inline\' \'wasm-unsafe-eval\' https://www.googletagmanager.com https://va.vercel-scripts.com',
-  'connect-src \'self\' https://www.google-analytics.com https://region1.google-analytics.com https://www.googletagmanager.com https://va.vercel-scripts.com',
+  `connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://www.googletagmanager.com https://va.vercel-scripts.com${sentryOrigin ? ` ${sentryOrigin}` : ''}`,
   'worker-src \'self\' blob:',
   'manifest-src \'self\'',
   'upgrade-insecure-requests',
@@ -97,8 +100,23 @@ export default defineNuxtConfig({
     '@nuxtjs/seo',
     '@vueuse/nuxt',
     'nuxt-llms',
+    '@sentry/nuxt/module',
     ...(nitroPreset() === 'vercel' ? ['@vercel/speed-insights', '@vercel/analytics'] : []),
   ],
+
+  sentry: {
+    enabled: Boolean(process.env.SENTRY_AUTH_TOKEN),
+    org: process.env.SENTRY_ORG,
+    project: process.env.SENTRY_PROJECT,
+    authToken: process.env.SENTRY_AUTH_TOKEN,
+    sourcemaps: {
+      filesToDeleteAfterUpload: ['.*/**/*.map'],
+    },
+    autoInjectServerSentry: 'top-level-import',
+    telemetry: false,
+  },
+
+  sourcemap: { client: 'hidden' },
 
   components: [{ path: '~/components', pathPrefix: false }],
 
@@ -124,6 +142,10 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       googleAnalyticsId,
+      sentry: {
+        dsn: sentryDsn,
+        environment: sentryEnvironment,
+      },
     },
   },
 

@@ -63,6 +63,7 @@
     "@nuxt/ui": "^4.11.0",
     "@nuxtjs/seo": "5.3.14",
     "@resvg/resvg-js": "^2.6.2",
+    "@sentry/nuxt": "^10.73.0",
     "@takumi-rs/core": "^2.13.7",
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
