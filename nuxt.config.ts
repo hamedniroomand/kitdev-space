@@ -101,7 +101,6 @@ export default defineNuxtConfig({
     '@vueuse/nuxt',
     'nuxt-llms',
     '@sentry/nuxt/module',
-    ...(nitroPreset() === 'vercel' ? ['@vercel/speed-insights', '@vercel/analytics'] : []),
   ],
 
   sentry: {
