@@ -176,7 +176,7 @@ defineShortcuts({
         label="Transform"
         color="neutral"
         variant="subtle"
-        icon="i-lucide-wand-sparkles"
+        icon="i-lucide-code-xml"
         :loading="status === 'processing'"
         @click="runTransform"
       />
