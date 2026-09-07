@@ -99,4 +99,4 @@ jobs:
           bun run build
       - name: Deploy to production
         if: env.IS_MAIN == 'true'
-        run: vercel deploy --prod --token="$VERCEL_TOKEN"
+        run: vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN"
