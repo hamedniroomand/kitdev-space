@@ -87,11 +87,15 @@ jobs:
       - name: Pull the production settings and environment
         if: env.IS_MAIN == 'true'
         run: vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
+      # The first build must not leak into this one. A Vercel-preset build that
+      # runs after a Bun-preset build in the same tree mixes the two outputs,
+      # and the deployment then serves HTML that points at missing chunks.
       - name: Build for Vercel
         if: env.IS_MAIN == 'true'
         env:
           NITRO_PRESET: vercel
         run: |
+          rm -rf .output .vercel/output node_modules/.cache/nuxt
           set -a
           # shellcheck disable=SC1091
           . .vercel/.env.production.local
