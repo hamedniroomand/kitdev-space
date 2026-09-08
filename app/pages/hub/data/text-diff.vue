@@ -1,6 +1,6 @@
-<script setup lang="ts">
 import type { DiffOptions, DiffResult } from '#shared/utils/data/diff'
 import { diffTexts, formatUnifiedDiff } from '#shared/utils/data/diff'
+import { applyWordDiff, diffLineWords, diffTokens, tokenizeWords } from '#shared/utils/data/word-diff'
 
 const WORKER_CHARS = 80_000
 
@@ -50,7 +50,13 @@ const {
   (input: { left: string, right: string, options?: DiffOptions }) => diffTexts(input.left, input.right, input.options),
   {
     timeout: 30_000,
-    localDependencies: [diffTexts],
+    localDependencies: [
+      diffTexts,
+      applyWordDiff,
+      diffLineWords,
+      diffTokens,
+      tokenizeWords,
+    ],
   },
 )
 

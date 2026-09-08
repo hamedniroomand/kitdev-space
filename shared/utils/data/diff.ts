@@ -1,3 +1,8 @@
+import type { DiffSpan } from './word-diff'
+import { applyWordDiff } from './word-diff'
+
+export type { DiffSpan }
+
 export type DiffOp = 'equal' | 'insert' | 'delete'
 
 export interface DiffLine {
@@ -5,6 +10,7 @@ export interface DiffLine {
   text: string
   oldLine: number | null
   newLine: number | null
+  spans?: DiffSpan[]
 }
 
 export interface DiffResult {
@@ -279,8 +285,10 @@ export function diffTexts(
   const { lines: aLines, hasNewline: aNewline } = splitLines(left)
   const { lines: bLines, hasNewline: bNewline } = splitLines(right)
   const diff = diffArrays(aLines, bLines)
+  const linesWithSpans = applyWordDiff(diff.lines)
   return {
     ...diff,
+    lines: linesWithSpans,
     hasOldNewline: aNewline,
     hasNewNewline: bNewline,
   }

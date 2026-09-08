@@ -43,8 +43,20 @@ describe('diffTexts', () => {
   it('handles full replace', () => {
     const result = diffTexts('old', 'new')
     expect(result.lines).toEqual([
-      { type: 'delete', text: 'old', oldLine: 1, newLine: null },
-      { type: 'insert', text: 'new', oldLine: null, newLine: 1 },
+      {
+        type: 'delete',
+        text: 'old',
+        oldLine: 1,
+        newLine: null,
+        spans: [{ type: 'delete', text: 'old' }],
+      },
+      {
+        type: 'insert',
+        text: 'new',
+        oldLine: null,
+        newLine: 1,
+        spans: [{ type: 'insert', text: 'new' }],
+      },
     ])
   })
 

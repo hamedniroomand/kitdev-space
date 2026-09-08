@@ -228,7 +228,23 @@ function prefix(type: DiffLine['type']) {
             <span class="w-5 shrink-0 select-none">
               {{ prefix(item.data.line.type) }}
             </span>
-            <span class="whitespace-pre">{{ item.data.line.text }}</span>
+            <span
+              v-if="item.data.line.spans && item.data.line.spans.length > 0"
+              class="whitespace-pre"
+            >
+              <template v-for="(span, sIdx) in item.data.line.spans" :key="sIdx">
+                <mark
+                  v-if="span.type === 'delete'"
+                  class="rounded bg-error/30 px-0.5 font-semibold text-error"
+                >{{ span.text }}</mark>
+                <mark
+                  v-else-if="span.type === 'insert'"
+                  class="rounded bg-success/30 px-0.5 font-semibold text-success"
+                >{{ span.text }}</mark>
+                <span v-else>{{ span.text }}</span>
+              </template>
+            </span>
+            <span v-else class="whitespace-pre">{{ item.data.line.text }}</span>
           </div>
         </template>
       </div>
