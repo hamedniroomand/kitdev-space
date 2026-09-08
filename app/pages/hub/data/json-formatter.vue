@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { detectJsonWarnings, formatJson, minifyJson, validateJson } from '#shared/utils/data/json'
+import { createJsonLinter } from '#shared/utils/data/json-linter'
 import { getTextStats } from '#shared/utils/data/stats'
 
+const jsonLinter = createJsonLinter()
 const WORKER_BYTES = 1_000_000
 
 const input = ref('{\n  "name": "KitDev",\n  "ready": true\n}')
@@ -237,6 +239,7 @@ useToolShortcuts({
       lang="json"
       :max-file-size="30 * 1024 * 1024"
       accept="application/json,text/*,.json"
+      :extensions="[jsonLinter]"
     />
 
     <ToolActions>

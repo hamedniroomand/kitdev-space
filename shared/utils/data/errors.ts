@@ -1,3 +1,5 @@
+import { parser as jsonParser } from '@lezer/json'
+
 export class DataError extends Error {
   line?: number
   column?: number
@@ -25,8 +27,38 @@ export function positionToLineColumn(input: string, position: number): { line: n
   }
 }
 
+export function getJsonErrorPosition(input: string): { line: number, column: number, position: number } | null {
+  try {
+    const tree = jsonParser.parse(input)
+    let errorPos: number | undefined
+    tree.iterate({
+      enter(node) {
+        if (node.type.isError && errorPos === undefined) {
+          errorPos = node.from
+        }
+      },
+    })
+    if (errorPos !== undefined) {
+      const { line, column } = positionToLineColumn(input, errorPos)
+      return { line, column, position: errorPos }
+    }
+  }
+  catch {
+    // If lezer parsing throws, return null
+  }
+  return null
+}
+
 export function formatJsonError(cause: unknown, input: string): DataError {
   if (cause instanceof SyntaxError) {
+    const lezerPos = getJsonErrorPosition(input)
+    if (lezerPos) {
+      return new DataError(
+        `Invalid JSON.\n\nCheck the syntax near this point.\n\nLine ${lezerPos.line}, column ${lezerPos.column}.`,
+        { line: lezerPos.line, column: lezerPos.column, position: lezerPos.position, cause },
+      )
+    }
+
     const err = cause as SyntaxError & { line?: number, column?: number, position?: number }
     const match = /position\s+(\d+)/i.exec(cause.message)
     const position = match ? Number(match[1]) : (typeof err.position === 'number' ? err.position : undefined)
