@@ -9,12 +9,45 @@ const output = ref('')
 const statusMessage = ref('')
 const statusMeta = ref('')
 const warnings = ref<string[]>([])
+const indent = useToolOption<string>('indent', '2')
+const sortKeysOption = useToolOption<boolean>('sort-keys', false)
+
+const indentItems = [
+  { label: '2 spaces', value: '2' },
+  { label: '4 spaces', value: '4' },
+  { label: 'Tab', value: 'tab' },
+  { label: 'Compact', value: 'compact' },
+]
+
 const { buildShareUrl, canShare } = useToolQuery({ input })
 const { status, error, result, run, reset } = useTool<string>()
 const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
 
 const { execute: workerFormat, isRunning: workerRunning, stop: stopWorker } = useToolWorker(
-  (data: { text: string, space: number }) => JSON.stringify(JSON.parse(data.text), null, data.space),
+  (data: { text: string, space: string, sort: boolean }) => {
+    let val = JSON.parse(data.text)
+    if (data.sort) {
+      const sort = (v: any): any => {
+        if (Array.isArray(v)) {
+          return v.map(sort)
+        }
+        if (v && typeof v === 'object') {
+          const sorted: Record<string, any> = {}
+          for (const k of Object.keys(v).sort()) {
+            sorted[k] = sort(v[k])
+          }
+          return sorted
+        }
+        return v
+      }
+      val = sort(val)
+    }
+    if (data.space === 'compact') {
+      return JSON.stringify(val)
+    }
+    const resolvedSpace = data.space === 'tab' ? '\t' : Number(data.space)
+    return JSON.stringify(val, null, resolvedSpace)
+  },
   { timeout: 30_000 },
 )
 
@@ -59,14 +92,14 @@ async function format() {
   await run(async () => {
     if (input.value.length >= WORKER_CHARS) {
       try {
-        return await workerFormat({ text: input.value, space: 2 })
+        return await workerFormat({ text: input.value, space: indent.value, sort: sortKeysOption.value })
       }
       catch {
         // Fallback to local full parser (supports JSON5/JSONC)
-        return formatJson(input.value)
+        return formatJson(input.value, indent.value, sortKeysOption.value)
       }
     }
-    return formatJson(input.value)
+    return formatJson(input.value, indent.value, sortKeysOption.value)
   })
   if (status.value === 'success' && result.value !== null) {
     output.value = result.value
@@ -81,13 +114,13 @@ async function minify() {
   await run(async () => {
     if (input.value.length >= WORKER_CHARS) {
       try {
-        return await workerFormat({ text: input.value, space: 0 })
+        return await workerFormat({ text: input.value, space: 'compact', sort: sortKeysOption.value })
       }
       catch {
-        return minifyJson(input.value)
+        return minifyJson(input.value, sortKeysOption.value)
       }
     }
-    return minifyJson(input.value)
+    return minifyJson(input.value, sortKeysOption.value)
   })
   if (status.value === 'success' && result.value !== null) {
     output.value = result.value
@@ -163,6 +196,23 @@ useToolShortcuts({
       title="Heavy processing mode"
       description="Large JSON files run in a background web worker to prevent UI lag. Limit: 30 seconds."
     />
+
+    <div class="flex flex-wrap items-center gap-4">
+      <UFormField label="Indentation">
+        <USelect
+          v-model="indent"
+          :items="indentItems"
+          class="w-36"
+        />
+      </UFormField>
+
+      <div class="pt-6">
+        <UCheckbox
+          v-model="sortKeysOption"
+          label="Sort keys"
+        />
+      </div>
+    </div>
 
     <LazyToolEditor
       v-model="input"

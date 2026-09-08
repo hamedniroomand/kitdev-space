@@ -3,11 +3,11 @@
  * two objects with the same content give the same text. Arrays keep their
  * order, because the order of an array is part of its meaning.
  */
-export function stableStringify(value: unknown, space?: number): string {
+export function stableStringify(value: unknown, space?: number | string): string {
   return JSON.stringify(sortKeys(value), null, space)
 }
 
-function sortKeys(value: unknown): unknown {
+export function sortKeys(value: unknown): unknown {
   if (Array.isArray(value)) {
     return value.map(sortKeys)
   }

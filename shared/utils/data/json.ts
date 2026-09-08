@@ -1,5 +1,6 @@
 import { DataError, formatJsonError } from './errors'
 import { toStrictJson } from './json5'
+import { sortKeys as sortObjectKeys } from './stable-json'
 
 /**
  * Parses JSON. When strict JSON fails, it retries with the JSON5 and JSONC
@@ -24,12 +25,30 @@ export function parseJson(input: string): unknown {
   }
 }
 
-export function formatJson(input: string, space = 2): string {
-  return JSON.stringify(parseJson(input), null, space)
+export type JsonIndentOption = '2' | '4' | 'tab' | 'compact' | number | string
+
+export function formatJson(
+  input: string,
+  space: JsonIndentOption = 2,
+  sortKeys = false,
+): string {
+  let parsed = parseJson(input)
+  if (sortKeys) {
+    parsed = sortObjectKeys(parsed)
+  }
+  if (space === 'compact' || space === 0 || space === '0') {
+    return JSON.stringify(parsed)
+  }
+  const resolvedSpace = space === 'tab' ? '\t' : (typeof space === 'string' && /^\d+$/.test(space) ? Number(space) : space)
+  return JSON.stringify(parsed, null, resolvedSpace as number | string)
 }
 
-export function minifyJson(input: string): string {
-  return JSON.stringify(parseJson(input))
+export function minifyJson(input: string, sortKeys = false): string {
+  let parsed = parseJson(input)
+  if (sortKeys) {
+    parsed = sortObjectKeys(parsed)
+  }
+  return JSON.stringify(parsed)
 }
 
 export function validateJson(input: string): { ok: true } | { ok: false, error: DataError } {

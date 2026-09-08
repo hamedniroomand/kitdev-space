@@ -10,11 +10,39 @@ import {
 
 describe('json core', () => {
   it('formats json with 2-space indent', () => {
-    expect(formatJson('{"a":1}')).toBe('{\n  "a": 1\n}')
+    expect(formatJson('{"a":1}', '2')).toBe('{\n  "a": 1\n}')
+  })
+
+  it('formats json with 4-space indent', () => {
+    expect(formatJson('{"a":1}', '4')).toBe('{\n    "a": 1\n}')
+  })
+
+  it('formats json with tab indent', () => {
+    expect(formatJson('{"a":1}', 'tab')).toBe('{\n\t"a": 1\n}')
+  })
+
+  it('formats json with compact output', () => {
+    expect(formatJson('{\n  "a": 1,\n  "b": 2\n}', 'compact')).toBe('{"a":1,"b":2}')
+  })
+
+  it('sorts object keys when sortKeys is true', () => {
+    const input = '{"z": 1, "a": 2, "nested": {"y": 3, "x": 4}}'
+    const formatted = formatJson(input, 2, true)
+    expect(formatted).toBe('{\n  "a": 2,\n  "nested": {\n    "x": 4,\n    "y": 3\n  },\n  "z": 1\n}')
+  })
+
+  it('preserves array element order when sorting keys', () => {
+    const input = '{"items": [3, 1, 2], "b": 1, "a": 2}'
+    const formatted = formatJson(input, 'compact', true)
+    expect(formatted).toBe('{"a":2,"b":1,"items":[3,1,2]}')
   })
 
   it('minifies json', () => {
     expect(minifyJson('{\n  "a": 1\n}')).toBe('{"a":1}')
+  })
+
+  it('minifies json with sorted keys', () => {
+    expect(minifyJson('{"z": 1, "a": 2}', true)).toBe('{"a":2,"z":1}')
   })
 
   it('validates good json', () => {
