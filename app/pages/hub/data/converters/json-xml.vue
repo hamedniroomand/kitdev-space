@@ -11,15 +11,70 @@
     download-name="converted.xml"
     download-mime="application/xml"
     docs-title="About JSON and XML"
-    :docs="[
-      'XML uses tags to describe structured data. It has no types, so every value comes back as text: true becomes the string true.',
-      'An attribute becomes a key with an @ prefix, such as @lang. Text next to attributes or child elements becomes #text. Repeated elements become an array.',
-      'If the JSON value is not an object, or the object has more than one top-level key, the tool wraps it under a root element.',
-      'Keys that are not valid XML names are written as item elements with a key attribute, for example item key=@nuxt/ui.',
-    ]"
+    :docs="[]"
     :related="[
       { label: 'JSON ↔ YAML', to: '/hub/data/converters/json-yaml' },
       { label: 'JSON Formatter', to: '/hub/data/json-formatter' },
     ]"
-  />
+  >
+    <template #docs>
+      <div class="space-y-6 text-muted">
+        <p>
+          This tool converts data between JSON objects and XML elements. All conversions run locally in your browser.
+        </p>
+
+        <div class="space-y-2">
+          <h3 class="text-sm font-semibold text-foreground">
+            Attribute Prefixes
+          </h3>
+          <p>
+            An XML attribute maps to a JSON key with an <code>@</code> prefix. The tool writes an <code>@</code> key as an XML attribute on its parent element.
+          </p>
+          <pre class="rounded-md bg-muted/20 p-3 text-xs font-mono text-foreground"><code>// JSON:
+{ "user": { "@id": "42", "name": "Alice" } }
+
+&lt;!-- XML: --&gt;
+&lt;user id="42"&gt;
+  &lt;name&gt;Alice&lt;/name&gt;
+&lt;/user&gt;</code></pre>
+        </div>
+
+        <div class="space-y-2">
+          <h3 class="text-sm font-semibold text-foreground">
+            Text Node Mapping
+          </h3>
+          <p>
+            Text content next to attributes or child elements maps to the <code>#text</code> key. Pure text elements map directly to string values without the key.
+          </p>
+          <pre class="rounded-md bg-muted/20 p-3 text-xs font-mono text-foreground"><code>// JSON:
+{ "link": { "@href": "https://kitdev.space", "#text": "KitDev Hub" } }
+
+&lt;!-- XML: --&gt;
+&lt;link href="https://kitdev.space"&gt;KitDev Hub&lt;/link&gt;</code></pre>
+        </div>
+
+        <div class="space-y-2">
+          <h3 class="text-sm font-semibold text-foreground">
+            Array Serialization
+          </h3>
+          <p>
+            A JSON array maps to repeated XML elements with the same tag name. Repeated child elements in XML parse into a JSON array.
+          </p>
+          <pre class="rounded-md bg-muted/20 p-3 text-xs font-mono text-foreground"><code>// JSON:
+{ "tags": { "tag": ["tools", "developer", "privacy"] } }
+
+&lt;!-- XML: --&gt;
+&lt;tags&gt;
+  &lt;tag&gt;tools&lt;/tag&gt;
+  &lt;tag&gt;developer&lt;/tag&gt;
+  &lt;tag&gt;privacy&lt;/tag&gt;
+&lt;/tags&gt;</code></pre>
+        </div>
+
+        <p>
+          XML values are text. Booleans and numbers in XML become strings in JSON. Top-level values without an object key get wrapped in a <code>&lt;root&gt;</code> element.
+        </p>
+      </div>
+    </template>
+  </ConverterPage>
 </template>

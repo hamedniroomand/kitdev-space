@@ -298,18 +298,20 @@ useToolShortcuts({
 
     <template #docs>
       <ToolDocs :title="docsTitle">
-        <div class="space-y-4 text-muted">
-          <p
-            v-for="(paragraph, index) in docs"
-            :key="index"
-          >
-            {{ paragraph }}
-          </p>
-          <p>
-            JSON, YAML, TOML, JSON5, and XML all convert in your browser. The XML parser is the one
-            that the browser ships, so no library is loaded and nothing is uploaded.
-          </p>
-        </div>
+        <slot name="docs">
+          <div class="space-y-4 text-muted">
+            <p
+              v-for="(paragraph, index) in docs"
+              :key="index"
+            >
+              {{ paragraph }}
+            </p>
+            <p>
+              JSON, YAML, TOML, JSON5, and XML all convert in your browser. The XML parser is the one
+              that the browser ships, so no library is loaded and nothing is uploaded.
+            </p>
+          </div>
+        </slot>
         <RelatedTools
           class="mt-8"
           :items="related"
