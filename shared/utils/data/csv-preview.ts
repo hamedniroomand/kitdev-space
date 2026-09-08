@@ -1,7 +1,8 @@
 import type { CsvDelimiter, CsvNullOptions } from './csv'
+import { formatMarkdownTable } from '../dev/markdown-table'
 import { coerceCell, formatCsv, parseCsvDetailed } from './csv'
 import { DataError } from './errors'
-import { sqlLiteral } from './sql'
+import { quoteIdentifier, sqlLiteral } from './sql'
 
 export type ColumnDataType = 'text' | 'number' | 'date' | 'boolean'
 
@@ -268,39 +269,82 @@ export function extractPreviewData(
   }
 }
 
+export type CsvExportFormat = 'json' | 'csv' | 'tsv' | 'markdown' | 'sql'
+
+export function generateCreateTableSql(
+  tableName: string,
+  columns: ColumnSchema[],
+  dialect: string = 'sql',
+): string {
+  const table = quoteIdentifier(tableName.trim() || 'table_name', dialect)
+  const colDefs = columns.map((col) => {
+    const colName = quoteIdentifier(col.name, dialect)
+    let colType = 'VARCHAR(255)'
+    if (col.type === 'number') {
+      colType = dialect === 'sqlite' ? 'NUMERIC' : (dialect === 'postgresql' ? 'NUMERIC' : 'DOUBLE')
+    }
+    else if (col.type === 'date') {
+      colType = dialect === 'sqlite' ? 'TEXT' : (dialect === 'postgresql' ? 'TIMESTAMP' : 'DATETIME')
+    }
+    else if (col.type === 'boolean') {
+      colType = dialect === 'sqlite' ? 'INTEGER' : (dialect === 'postgresql' ? 'BOOLEAN' : 'TINYINT(1)')
+    }
+    else {
+      colType = dialect === 'sqlite' ? 'TEXT' : (dialect === 'postgresql' ? 'TEXT' : 'VARCHAR(255)')
+    }
+    return `  ${colName} ${colType}`
+  })
+  return `CREATE TABLE ${table} (\n${colDefs.join(',\n')}\n);`
+}
+
 export function getDownloadFilename(
-  mode: 'csv-json' | 'json-csv' | 'csv-sql',
+  formatOrMode: CsvExportFormat | 'csv-json' | 'json-csv' | 'csv-sql',
   isFiltered: boolean,
 ): string {
   const suffix = isFiltered ? '-filtered' : '-all'
-  if (mode === 'csv-json') {
+  if (formatOrMode === 'json' || formatOrMode === 'csv-json') {
     return `converted${suffix}.json`
   }
-  if (mode === 'csv-sql') {
+  if (formatOrMode === 'tsv') {
+    return `converted${suffix}.tsv`
+  }
+  if (formatOrMode === 'markdown') {
+    return `converted${suffix}.md`
+  }
+  if (formatOrMode === 'sql' || formatOrMode === 'csv-sql') {
     return `inserts${suffix}.sql`
   }
   return `converted${suffix}.csv`
 }
 
-export function exportFilteredDataset(options: {
+export interface ExportFilteredDatasetOptions {
   rows: string[][]
   columns: ColumnSchema[]
   visibleColumnIndices?: number[]
   columnFilters?: Record<number, string>
-  mode: 'csv-json' | 'json-csv' | 'csv-sql'
+  format?: CsvExportFormat
+  mode?: 'csv-json' | 'json-csv' | 'csv-sql'
   delimiter?: CsvDelimiter
   tableName?: string
   nullOptions?: CsvNullOptions
-}): string {
+  includeCreateTable?: boolean
+  sqlDialect?: string
+}
+
+export function exportFilteredDataset(options: ExportFilteredDatasetOptions): string {
   const visibleIndices = options.visibleColumnIndices ?? options.columns.map((_, i) => i)
   const filtered = options.columnFilters
     ? filterRows(options.rows, options.columnFilters)
     : options.rows
 
-  const selectedColumns = visibleIndices.map(i => options.columns[i]?.name ?? `column_${i + 1}`)
+  const selectedColumnSchemas = visibleIndices.map(i => options.columns[i] ?? { name: `column_${i + 1}`, type: 'text' as const })
+  const selectedColumns = selectedColumnSchemas.map(c => c.name)
   const selectedRows = filtered.map(row => visibleIndices.map(i => row[i] ?? ''))
 
-  if (options.mode === 'csv-json') {
+  const effectiveFormat: CsvExportFormat = options.format
+    ?? (options.mode === 'csv-json' ? 'json' : options.mode === 'csv-sql' ? 'sql' : 'csv')
+
+  if (effectiveFormat === 'json') {
     const records = selectedRows.map((row) => {
       const rec: Record<string, unknown> = {}
       for (let i = 0; i < selectedColumns.length; i += 1) {
@@ -311,13 +355,40 @@ export function exportFilteredDataset(options: {
     return JSON.stringify(records, null, 2)
   }
 
-  if (options.mode === 'csv-sql') {
+  if (effectiveFormat === 'tsv') {
+    return formatCsv(
+      selectedColumns,
+      selectedRows,
+      '\t',
+      options.nullOptions ?? {},
+    )
+  }
+
+  if (effectiveFormat === 'markdown') {
+    return formatMarkdownTable({
+      headers: selectedColumns,
+      rows: selectedRows,
+      pretty: true,
+    })
+  }
+
+  if (effectiveFormat === 'sql') {
+    const dialect = options.sqlDialect ?? 'sql'
     const table = options.tableName?.trim() || 'table_name'
-    const colList = selectedColumns.map(c => c.replace(/\W+/g, '_')).join(', ')
-    return selectedRows.map((row) => {
+    const quotedTable = quoteIdentifier(table, dialect)
+    const colList = selectedColumns.map(c => quoteIdentifier(c, dialect)).join(', ')
+
+    const insertStatements = selectedRows.map((row) => {
       const values = row.map(cell => sqlLiteral(coerceCell(cell, options.nullOptions)))
-      return `INSERT INTO ${table} (${colList}) VALUES (${values.join(', ')});`
+      return `INSERT INTO ${quotedTable} (${colList}) VALUES (${values.join(', ')});`
     }).join('\n')
+
+    if (options.includeCreateTable) {
+      const createTable = generateCreateTableSql(table, selectedColumnSchemas, dialect)
+      return `${createTable}\n\n${insertStatements}`
+    }
+
+    return insertStatements
   }
 
   return formatCsv(
@@ -326,4 +397,31 @@ export function exportFilteredDataset(options: {
     options.delimiter ?? ',',
     options.nullOptions ?? {},
   )
+}
+
+export function processHeavyCsvWorker(payload: {
+  text: string
+  filterText?: string
+  filterColIndex?: number
+  delimiter?: string
+}): { totalRows: number, filteredRowsCount: number } {
+  const lines = payload.text.split(/\r?\n/).filter(l => l.trim().length > 0)
+  const sep = payload.delimiter ?? ','
+  let matchCount = 0
+  const filter = payload.filterText?.toLowerCase().trim()
+  for (let i = 0; i < lines.length; i++) {
+    if (!filter) {
+      matchCount++
+      continue
+    }
+    const cols = lines[i]!.split(sep)
+    const val = (payload.filterColIndex !== undefined ? cols[payload.filterColIndex] : lines[i]) ?? ''
+    if (val.toLowerCase().includes(filter)) {
+      matchCount++
+    }
+  }
+  return {
+    totalRows: lines.length,
+    filteredRowsCount: matchCount,
+  }
 }

@@ -191,7 +191,13 @@ export function createSqlLinter(getDialect: () => SqlDialect): Extension {
   })
 }
 
-export function quoteIdentifier(name: string): string {
+export function quoteIdentifier(name: string, dialect: string = 'sql'): string {
+  if (dialect === 'mysql' || dialect === 'mariadb' || dialect === 'singlestoredb' || dialect === 'tidb') {
+    return `\`${name.replace(/`/g, '``')}\``
+  }
+  if (dialect === 'transactsql' || dialect === 'tsql' || dialect === 'mssql') {
+    return `[${name.replace(/\]/g, ']]')}]`
+  }
   return `"${name.replace(/"/g, '""')}"`
 }
 

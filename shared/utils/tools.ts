@@ -137,6 +137,20 @@ export const tools: Tool[] = [
     status: 'available',
   },
   {
+    id: 'csv-studio',
+    slug: 'csv-studio',
+    name: 'CSV Studio',
+    description: 'Inspect, filter, convert, and export tabular data across CSV, TSV, JSON, Markdown, and SQL.',
+    category: 'data',
+    icon: 'i-lucide-table',
+    keywords: ['csv', 'tsv', 'json', 'sql', 'markdown', 'table', 'grid', 'convert', 'export', 'viewer'],
+    route: '/hub/data/csv-studio',
+    clientOnly: true,
+    serverRequired: false,
+    status: 'available',
+    seoTitle: 'CSV Studio - Tabular Data Converter',
+  },
+  {
     id: 'csv-json',
     slug: 'csv-json',
     name: 'CSV ↔ JSON / SQL',
@@ -149,6 +163,7 @@ export const tools: Tool[] = [
     serverRequired: false,
     status: 'available',
     seoTitle: 'CSV to JSON Converter',
+    variantOf: 'csv-studio',
   },
   {
     id: 'text-stats',
@@ -242,6 +257,7 @@ export const tools: Tool[] = [
     serverRequired: false,
     status: 'available',
     seoTitle: 'CSV and JSON Table Viewer',
+    variantOf: 'csv-studio',
   },
   {
     id: 'fake-data',

@@ -6,6 +6,7 @@ import {
   getDownloadFilename,
   inferColumnType,
   isLeadingZeroIdentifier,
+  processHeavyCsvWorker,
   sortRows,
 } from '#shared/utils/data/csv-preview'
 
@@ -175,7 +176,7 @@ describe('csv distinct download actions and filenames', () => {
       tableName: 'admins',
     })
 
-    expect(sql).toBe('INSERT INTO admins (id, name) VALUES (2, \'Grace\');')
+    expect(sql).toBe('INSERT INTO "admins" ("id", "name") VALUES (2, \'Grace\');')
   })
 
   it('exports filtered dataset to CSV preserving delimiter and format', () => {
@@ -197,5 +198,89 @@ describe('csv distinct download actions and filenames', () => {
     })
 
     expect(csv).toBe('id;name\n1;Ada')
+  })
+
+  it('exports to TSV and Markdown table', () => {
+    const columns = [
+      { name: 'city', type: 'text' as const },
+      { name: 'pop', type: 'number' as const },
+    ]
+    const rows = [
+      ['Paris', '2161000'],
+      ['Tokyo', '13960000'],
+    ]
+
+    const tsv = exportFilteredDataset({
+      rows,
+      columns,
+      format: 'tsv',
+    })
+    expect(tsv).toBe('city\tpop\nParis\t2161000\nTokyo\t13960000')
+
+    const md = exportFilteredDataset({
+      rows,
+      columns,
+      format: 'markdown',
+    })
+    expect(md).toContain('| city')
+    expect(md).toContain('| Paris')
+    expect(md).toContain('| Tokyo')
+  })
+
+  it('exports SQL with CREATE TABLE and dialect-specific identifier quoting', () => {
+    const columns = [
+      { name: 'user id', type: 'number' as const },
+      { name: 'full name', type: 'text' as const },
+      { name: 'is active', type: 'boolean' as const },
+    ]
+    const rows = [
+      ['10', 'Alice', 'true'],
+    ]
+
+    // MySQL dialect uses backticks
+    const mysqlResult = exportFilteredDataset({
+      rows,
+      columns,
+      format: 'sql',
+      sqlDialect: 'mysql',
+      tableName: 'app users',
+      includeCreateTable: true,
+    })
+    expect(mysqlResult).toContain('CREATE TABLE `app users` (')
+    expect(mysqlResult).toContain('`user id` DOUBLE')
+    expect(mysqlResult).toContain('`is active` TINYINT(1)')
+    expect(mysqlResult).toContain('INSERT INTO `app users` (`user id`, `full name`, `is active`) VALUES (10, \'Alice\', TRUE);')
+
+    // PostgreSQL dialect uses double quotes
+    const pgResult = exportFilteredDataset({
+      rows,
+      columns,
+      format: 'sql',
+      sqlDialect: 'postgresql',
+      tableName: 'app_users',
+      includeCreateTable: true,
+    })
+    expect(pgResult).toContain('CREATE TABLE "app_users" (')
+    expect(pgResult).toContain('"user id" NUMERIC')
+    expect(pgResult).toContain('"is active" BOOLEAN')
+    expect(pgResult).toContain('INSERT INTO "app_users" ("user id", "full name", "is active") VALUES (10, \'Alice\', TRUE);')
+  })
+
+  it('processes heavy CSV parsing and filtering in worker helper without freezing', () => {
+    // Generate simulated heavy CSV (10,000 rows)
+    const lines = ['id,name,role,department']
+    for (let i = 1; i <= 10_000; i++) {
+      lines.push(`${i},Person ${i},${i % 2 === 0 ? 'Dev' : 'Designer'},Engineering`)
+    }
+    const heavyCsv = lines.join('\n')
+
+    const result = processHeavyCsvWorker({
+      text: heavyCsv,
+      filterText: 'designer',
+      filterColIndex: 2,
+    })
+
+    expect(result.totalRows).toBe(10_001)
+    expect(result.filteredRowsCount).toBe(5_000)
   })
 })

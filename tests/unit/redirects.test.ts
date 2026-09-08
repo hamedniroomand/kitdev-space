@@ -37,6 +37,9 @@ describe('legacy redirects', () => {
     expect(resolveLegacyRedirect('/dev/cron')).toBe('/hub/dev/cron')
     expect(resolveLegacyRedirect('/data/sql-formatter')).toBe('/hub/data/sql-formatter')
     expect(resolveLegacyRedirect('/hub/dev/sql-formatter')).toBe('/hub/data/sql-formatter')
+    expect(resolveLegacyRedirect('/data/csv-studio')).toBe('/hub/data/csv-studio')
+    expect(resolveLegacyRedirect('/data/converters/csv-json')).toBe('/hub/data/csv-studio')
+    expect(resolveLegacyRedirect('/data/table-viewer')).toBe('/hub/data/csv-studio')
   })
 
   it('handles paths with trailing slashes', () => {
@@ -51,7 +54,16 @@ describe('legacy redirects', () => {
   })
 
   it('keeps the variant routes as real pages', () => {
-    for (const route of ['/hub/crypto/uuid', '/hub/crypto/passphrase', '/hub/dev/base64', '/hub/image/resizer', '/hub/image/converter', '/hub/dev/svg-component']) {
+    for (const route of [
+      '/hub/crypto/uuid',
+      '/hub/crypto/passphrase',
+      '/hub/dev/base64',
+      '/hub/image/resizer',
+      '/hub/image/converter',
+      '/hub/dev/svg-component',
+      '/hub/data/converters/csv-json',
+      '/hub/data/table-viewer',
+    ]) {
       expect(resolveLegacyRedirect(route)).toBeNull()
       expect(legacyRedirects[route]).toBeUndefined()
     }

@@ -317,7 +317,17 @@ const { open: openFileDialog, onChange: onFileChange } = useFileDialog({
   multiple: false,
 })
 
+const MAX_FILE_SIZE = 100 * 1024 * 1024
+
 async function handleFileLoaded(file: File) {
+  if (file.size > MAX_FILE_SIZE) {
+    toast.add({
+      title: 'File too large',
+      description: 'Files larger than 100 MB cannot be processed in memory.',
+      color: 'error',
+    })
+    return
+  }
   try {
     const text = await file.text()
     input.value = text

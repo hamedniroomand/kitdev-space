@@ -30,6 +30,9 @@ export const legacyRedirects: Record<string, string> = {
   '/hub/data/converters/json-json5': '/hub/data/json-formatter',
   '/data/sql-formatter': '/hub/data/sql-formatter',
   '/hub/dev/sql-formatter': '/hub/data/sql-formatter',
+  '/data/csv-studio': '/hub/data/csv-studio',
+  '/data/converters/csv-json': '/hub/data/csv-studio',
+  '/data/table-viewer': '/hub/data/csv-studio',
 
   // Network tools
   '/network/og-preview': '/hub/network/og-preview',

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { ColumnDataType, ColumnSchema, ColumnSortState } from '#shared/utils/data/csv-preview'
+import { useVirtualList } from '@vueuse/core'
 import { COLUMN_TYPE_OPTIONS, filterRows, sortRows } from '#shared/utils/data/csv-preview'
 
 const props = defineProps<{
@@ -82,6 +83,28 @@ const sortedAndFilteredRows = computed(() => {
   return sortRows(filteredRows.value, sortState.value, colType)
 })
 
+const { list: virtualRows, containerProps } = useVirtualList(sortedAndFilteredRows, {
+  itemHeight: 37,
+  overscan: 10,
+})
+
+const virtualPaddingTop = computed(() => {
+  if (virtualRows.value.length === 0) {
+    return 0
+  }
+  const firstIndex = virtualRows.value[0]?.index ?? 0
+  return firstIndex * 37
+})
+
+const virtualPaddingBottom = computed(() => {
+  if (virtualRows.value.length === 0) {
+    return 0
+  }
+  const lastIndex = virtualRows.value[virtualRows.value.length - 1]?.index ?? 0
+  const remaining = sortedAndFilteredRows.value.length - 1 - lastIndex
+  return Math.max(0, remaining * 37)
+})
+
 const visibleColumnCount = computed(() => {
   return props.columns.filter((_, idx) => !hiddenColumns.value.has(idx)).length
 })
@@ -162,7 +185,10 @@ watch(hiddenColumns, () => {
       </div>
     </div>
 
-    <div class="overflow-x-auto max-h-[360px]">
+    <div
+      v-bind="containerProps"
+      class="overflow-x-auto max-h-[360px]"
+    >
       <table class="w-full text-left border-collapse text-xs">
         <thead class="sticky top-0 bg-elevated z-10 border-b border-default shadow-xs">
           <tr>
@@ -210,8 +236,18 @@ watch(hiddenColumns, () => {
         </thead>
         <tbody class="divide-y divide-default/40">
           <tr
-            v-for="(row, rowIdx) in sortedAndFilteredRows"
-            :key="rowIdx"
+            v-if="virtualPaddingTop > 0"
+            :style="{ height: `${virtualPaddingTop}px` }"
+            aria-hidden="true"
+          >
+            <td
+              :colspan="visibleColumnCount"
+              class="p-0 border-none"
+            />
+          </tr>
+          <tr
+            v-for="item in virtualRows"
+            :key="item.index"
             class="hover:bg-muted/10 transition-colors"
           >
             <td
@@ -219,10 +255,20 @@ watch(hiddenColumns, () => {
               v-show="!hiddenColumns.has(colIdx)"
               :key="colIdx"
               class="p-2.5 font-mono text-muted truncate max-w-[200px] border-r border-default/30 last:border-r-0"
-              :title="row[colIdx] ?? ''"
+              :title="item.data[colIdx] ?? ''"
             >
-              {{ row[colIdx] ?? '' }}
+              {{ item.data[colIdx] ?? '' }}
             </td>
+          </tr>
+          <tr
+            v-if="virtualPaddingBottom > 0"
+            :style="{ height: `${virtualPaddingBottom}px` }"
+            aria-hidden="true"
+          >
+            <td
+              :colspan="visibleColumnCount"
+              class="p-0 border-none"
+            />
           </tr>
           <tr v-if="sortedAndFilteredRows.length === 0">
             <td
