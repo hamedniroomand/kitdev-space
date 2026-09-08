@@ -47,6 +47,49 @@ describe('jsonToTypeScript', () => {
     expect(output).toContain('interface User {')
     expect(output).toContain('id: number')
   })
+
+  it('marks fields missing in some array objects with question mark', () => {
+    const input = [
+      { id: 1, name: 'Alice', role: 'admin' },
+      { id: 2, name: 'Bob' },
+      { id: 3, name: 'Charlie', role: 'editor', bio: 'text' },
+    ]
+    const output = jsonToTypeScript(input, 'User')
+    expect(output).toContain('id: number')
+    expect(output).toContain('name: string')
+    expect(output).toContain('role?: string')
+    expect(output).toContain('bio?: string')
+  })
+
+  it('quotes property names containing spaces, dashes, or invalid identifier characters', () => {
+    const input = {
+      'user name': 'Alice',
+      'content-type': 'application/json',
+      '123_number_start': 42,
+      '@version': '1.0.0',
+      'normal_field': true,
+    }
+    const output = jsonToTypeScript(input, 'Config')
+    expect(output).toContain('\'user name\': string')
+    expect(output).toContain('\'content-type\': string')
+    expect(output).toContain('\'123_number_start\': number')
+    expect(output).toContain('\'@version\': string')
+    expect(output).toContain('normal_field: boolean')
+  })
+
+  it('preserves casing of property keys', () => {
+    const input = {
+      'camelCase': 1,
+      'snake_case_prop': 2,
+      'UPPER_CASE': 3,
+      'kebab-case-prop': 4,
+    }
+    const output = jsonToTypeScript(input, 'Casing')
+    expect(output).toContain('camelCase: number')
+    expect(output).toContain('snake_case_prop: number')
+    expect(output).toContain('UPPER_CASE: number')
+    expect(output).toContain('\'kebab-case-prop\': number')
+  })
 })
 
 describe('jsonToTypeScript naming', () => {

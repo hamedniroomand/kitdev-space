@@ -238,7 +238,7 @@ function primitiveText(value: unknown): string {
 }
 
 function fieldName(key: string): string {
-  return /^[A-Z_$][\w$]*$/i.test(key) ? key : `'${key.replace(/'/g, '\\\'')}'`
+  return /^[a-z_$][\w$]*$/i.test(key) ? key : `'${key.replace(/'/g, '\\\'')}'`
 }
 
 function pascalCase(value: string): string {
