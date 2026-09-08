@@ -7,6 +7,8 @@ describe('fileFormat', () => {
     expect(fileFormat('clean-photo.jpeg')).toBe('jpeg')
     expect(fileFormat('archive.tar.gz')).toBe('gz')
     expect(fileFormat('site.webmanifest')).toBe('webmanifest')
+    expect(fileFormat('changes.patch')).toBe('patch')
+    expect(fileFormat('unified.diff')).toBe('diff')
   })
 
   it('never returns the file name', () => {

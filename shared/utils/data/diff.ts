@@ -12,6 +12,8 @@ export interface DiffResult {
   added: number
   removed: number
   unchanged: number
+  hasOldNewline?: boolean
+  hasNewNewline?: boolean
 }
 
 /**
@@ -22,11 +24,14 @@ export interface DiffResult {
 export function diffTexts(left: string, right: string): DiffResult {
   interface Part { type: DiffOp, text: string }
 
-  function splitLines(text: string): string[] {
+  function splitLines(text: string): { lines: string[], hasNewline: boolean } {
     if (text.length === 0) {
-      return []
+      return { lines: [], hasNewline: false }
     }
-    return text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n')
+    const normalized = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
+    const hasNewline = normalized.endsWith('\n')
+    const content = hasNewline ? normalized.slice(0, -1) : normalized
+    return { lines: content.split('\n'), hasNewline }
   }
 
   function backtrack(
@@ -216,7 +221,7 @@ export function diffTexts(left: string, right: string): DiffResult {
       return { lines: [], added: 0, removed: 0, unchanged: 0 }
     }
 
-    const parts = splitLines(left)
+    const { lines: parts, hasNewline } = splitLines(left)
     return {
       lines: parts.map((text, index) => ({
         type: 'equal' as const,
@@ -227,10 +232,19 @@ export function diffTexts(left: string, right: string): DiffResult {
       added: 0,
       removed: 0,
       unchanged: parts.length,
+      hasOldNewline: hasNewline,
+      hasNewNewline: hasNewline,
     }
   }
 
-  return diffArrays(splitLines(left), splitLines(right))
+  const { lines: aLines, hasNewline: aNewline } = splitLines(left)
+  const { lines: bLines, hasNewline: bNewline } = splitLines(right)
+  const diff = diffArrays(aLines, bLines)
+  return {
+    ...diff,
+    hasOldNewline: aNewline,
+    hasNewNewline: bNewline,
+  }
 }
 
 export function formatUnifiedDiff(
@@ -245,6 +259,8 @@ export function formatUnifiedDiff(
   const CONTEXT = 3
   const out: string[] = [`--- ${oldName}`, `+++ ${newName}`]
   const lines = result.lines
+  const totalOld = lines.filter(l => l.oldLine !== null).length
+  const totalNew = lines.filter(l => l.newLine !== null).length
   let i = 0
 
   while (i < lines.length) {
@@ -294,6 +310,13 @@ export function formatUnifiedDiff(
         oldCount++
         newCount++
         body.push(` ${line.text}`)
+        if (
+          line.oldLine === totalOld
+          && line.newLine === totalNew
+          && (result.hasOldNewline === false || result.hasNewNewline === false)
+        ) {
+          body.push('\\ No newline at end of file')
+        }
       }
       else if (line.type === 'delete') {
         if (oldStart === 0 && line.oldLine !== null) {
@@ -301,6 +324,9 @@ export function formatUnifiedDiff(
         }
         oldCount++
         body.push(`-${line.text}`)
+        if (line.oldLine === totalOld && result.hasOldNewline === false) {
+          body.push('\\ No newline at end of file')
+        }
       }
       else {
         if (newStart === 0 && line.newLine !== null) {
@@ -308,13 +334,23 @@ export function formatUnifiedDiff(
         }
         newCount++
         body.push(`+${line.text}`)
+        if (line.newLine === totalNew && result.hasNewNewline === false) {
+          body.push('\\ No newline at end of file')
+        }
       }
     }
 
-    if (oldStart === 0) {
+    if (oldCount === 0) {
+      oldStart = 0
+    }
+    else if (oldStart === 0) {
       oldStart = 1
     }
-    if (newStart === 0) {
+
+    if (newCount === 0) {
+      newStart = 0
+    }
+    else if (newStart === 0) {
       newStart = 1
     }
 
@@ -323,5 +359,5 @@ export function formatUnifiedDiff(
     i = end
   }
 
-  return out.join('\n')
+  return `${out.join('\n')}\n`
 }

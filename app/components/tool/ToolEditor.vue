@@ -26,6 +26,7 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits<{
   fileLoaded: [file: File]
+  filesDropped: [files: File[]]
 }>()
 
 /**
@@ -102,6 +103,7 @@ const { isOverDropZone } = useDropZone(dropZoneRef, {
     if (props.readonly || !files || files.length === 0) {
       return
     }
+    emit('filesDropped', files)
     const file = files[0]
     if (file) {
       loadFile(file)

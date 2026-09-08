@@ -35,6 +35,8 @@ const KNOWN_FORMATS = new Set([
   'gz',
   'pdf',
   'webmanifest',
+  'patch',
+  'diff',
 ])
 
 /** The file extension of a download, lowercase, from a fixed list. Any other extension is `other`. */
