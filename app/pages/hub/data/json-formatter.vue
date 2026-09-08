@@ -19,6 +19,21 @@ const indentItems = [
   { label: 'Compact', value: 'compact' },
 ]
 
+const viewMode = ref<'code' | 'tree'>('code')
+
+const treeData = computed(() => {
+  const text = output.value || input.value
+  if (!text) {
+    return null
+  }
+  try {
+    return JSON.parse(text)
+  }
+  catch {
+    return null
+  }
+})
+
 const { buildShareUrl, canShare } = useToolQuery({ input })
 const { status, error, result, run, reset } = useTool<string>()
 const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
@@ -304,14 +319,52 @@ useToolShortcuts({
       />
     </div>
 
-    <LazyToolEditor
-      v-model="output"
-      hydrate-on-idle
-      label="Output"
-      readonly
-      placeholder="Result appears here"
-      lang="json"
-    />
+    <div class="space-y-2">
+      <div class="flex items-center justify-between">
+        <span class="text-sm font-medium text-foreground">Output</span>
+        <div class="flex items-center gap-1">
+          <UButton
+            size="xs"
+            :variant="viewMode === 'code' ? 'solid' : 'ghost'"
+            color="neutral"
+            label="Code"
+            icon="i-lucide-code"
+            @click="viewMode = 'code'"
+          />
+          <UButton
+            size="xs"
+            :variant="viewMode === 'tree' ? 'solid' : 'ghost'"
+            color="neutral"
+            label="Tree View"
+            icon="i-lucide-folder-tree"
+            @click="viewMode = 'tree'"
+          />
+        </div>
+      </div>
+
+      <LazyToolEditor
+        v-if="viewMode === 'code'"
+        v-model="output"
+        hydrate-on-idle
+        label="Output"
+        readonly
+        placeholder="Result appears here"
+        lang="json"
+      />
+
+      <div v-else>
+        <JsonTreeView
+          v-if="treeData !== null"
+          :data="treeData"
+        />
+        <div
+          v-else
+          class="rounded-md border border-dashed border-default p-8 text-center text-sm text-muted"
+        >
+          Format or paste valid JSON to display the tree view.
+        </div>
+      </div>
+    </div>
 
     <ToolStatus
       v-if="status === 'success' && statusMessage"
