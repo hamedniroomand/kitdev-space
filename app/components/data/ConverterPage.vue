@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { DataFormat } from '#shared/utils/data/types'
 import { convertInBrowser } from '#shared/utils/data/convert'
+import { detectConversionLossWarnings } from '#shared/utils/data/convert-warnings'
 import { getTextStats } from '#shared/utils/data/stats'
 
 const props = defineProps<{
@@ -21,6 +22,7 @@ const to = ref(props.defaultTo)
 const input = ref(props.sample)
 const output = ref('')
 const statusMeta = ref('')
+const warnings = ref<string[]>([])
 const { status, error, result, run, reset } = useTool<string>()
 const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
 const { downloadText } = useDownload()
@@ -89,6 +91,7 @@ function onFileLoaded(file: File) {
 }
 
 async function convert() {
+  warnings.value = detectConversionLossWarnings(input.value, from.value, to.value)
   await run(() => convertInBrowser(input.value, from.value, to.value), 'The convert operation failed.', { option: `${from.value}_to_${to.value}` })
 
   if (status.value === 'success' && result.value !== null) {
@@ -115,6 +118,7 @@ function handleDownload() {
 function handleClear() {
   input.value = ''
   output.value = ''
+  warnings.value = []
   statusMeta.value = ''
   reset()
 }
@@ -188,6 +192,20 @@ useToolShortcuts({
       v-if="error"
       :message="error"
     />
+
+    <div
+      v-if="warnings.length > 0"
+      class="space-y-2"
+    >
+      <UAlert
+        v-for="(warning, idx) in warnings"
+        :key="idx"
+        color="warning"
+        variant="subtle"
+        icon="i-lucide-triangle-alert"
+        :title="warning"
+      />
+    </div>
 
     <LazyToolEditor
       v-model="output"
