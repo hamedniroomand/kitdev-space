@@ -48,6 +48,10 @@ watch(mode, () => {
 
 useToolSeo('lorem')
 
+onMounted(() => {
+  generate()
+})
+
 async function generate() {
   await run(() => {
     return generateLorem(mode.value, count.value)

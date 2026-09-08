@@ -86,3 +86,11 @@ describe('lorem count preservation across mode toggles', () => {
     expect(mode).toBe('paragraphs')
   })
 })
+
+describe('default lorem generation', () => {
+  it('produces sample text immediately without network access', () => {
+    const defaultOutput = generateLorem('paragraphs', 3)
+    expect(defaultOutput).toBeTruthy()
+    expect(defaultOutput.split(/\n{2,}/)).toHaveLength(3)
+  })
+})
