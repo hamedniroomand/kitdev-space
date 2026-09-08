@@ -8,7 +8,7 @@ import type {
 import type { ColumnDataType, ColumnSchema } from '#shared/utils/data/csv-preview'
 import { useFileDialog } from '@vueuse/core'
 import { convertCsvJsonSql, CSV_DELIMITERS } from '#shared/utils/data/csv'
-import { extractPreviewData } from '#shared/utils/data/csv-preview'
+import { exportFilteredDataset, extractPreviewData, getDownloadFilename } from '#shared/utils/data/csv-preview'
 import { DataError } from '#shared/utils/data/errors'
 import { getTextStats } from '#shared/utils/data/stats'
 
@@ -111,16 +111,6 @@ const outputLabel = computed(() => {
   return 'CSV'
 })
 
-const downloadName = computed(() => {
-  if (mode.value === 'csv-json') {
-    return 'converted.json'
-  }
-  if (mode.value === 'csv-sql') {
-    return 'inserts.sql'
-  }
-  return 'converted.csv'
-})
-
 const downloadMime = computed(() => {
   if (mode.value === 'csv-json') {
     return 'application/json'
@@ -217,14 +207,87 @@ async function handleCopy() {
   await copy(output.value)
 }
 
-function handleDownload() {
+const customColumnTypes = ref<Record<string, ColumnDataType>>({})
+
+const previewData = computed(() => {
+  if (!input.value.trim()) {
+    return { columns: [], rows: [], totalRows: 0 }
+  }
+  try {
+    const isJsonMode = mode.value === 'json-csv'
+    const data = extractPreviewData(input.value, isJsonMode ? 'json' : 'csv', 50)
+    const columns: ColumnSchema[] = data.columns.map((col) => {
+      const customType = customColumnTypes.value[col.name]
+      return {
+        name: col.name,
+        type: customType ?? col.type,
+      }
+    })
+    return {
+      columns,
+      rows: data.rows,
+      totalRows: data.totalRows,
+    }
+  }
+  catch {
+    return { columns: [], rows: [], totalRows: 0 }
+  }
+})
+
+function handleUpdateColumnType(index: number, newType: ColumnDataType) {
+  const col = previewData.value.columns[index]
+  if (col) {
+    customColumnTypes.value = {
+      ...customColumnTypes.value,
+      [col.name]: newType,
+    }
+  }
+}
+
+const filteredPreviewRows = ref<string[][]>([])
+const visibleColumnIndices = ref<number[]>([])
+
+function onFilteredRowsChange(rows: string[][]) {
+  filteredPreviewRows.value = rows
+}
+
+function onVisibleColumnsChange(indices: number[]) {
+  visibleColumnIndices.value = indices
+}
+
+const isFiltered = computed(() => {
+  if (visibleColumnIndices.value.length > 0 && visibleColumnIndices.value.length < previewData.value.columns.length) {
+    return true
+  }
+  return filteredPreviewRows.value.length < previewData.value.rows.length
+})
+
+function handleDownloadAll() {
   if (!output.value) {
     return
   }
-  downloadText(downloadName.value, output.value, downloadMime.value)
+  downloadText(getDownloadFilename(mode.value, false), output.value, downloadMime.value)
 }
 
-const customColumnTypes = ref<Record<string, ColumnDataType>>({})
+function handleDownloadFiltered() {
+  if (!output.value) {
+    return
+  }
+  const filteredOutput = exportFilteredDataset({
+    rows: filteredPreviewRows.value,
+    columns: previewData.value.columns,
+    visibleColumnIndices: visibleColumnIndices.value.length > 0 ? visibleColumnIndices.value : undefined,
+    mode: mode.value,
+    delimiter: delimiter.value === 'auto' ? undefined : delimiter.value,
+    tableName: tableName.value,
+    nullOptions: {
+      nullValue: nullValue.value,
+      emptyStringValue: emptyStringValue.value,
+      missingFieldValue: missingFieldValue.value,
+    },
+  })
+  downloadText(getDownloadFilename(mode.value, true), filteredOutput, downloadMime.value)
+}
 
 function handleClear() {
   input.value = ''
@@ -270,41 +333,6 @@ onFileChange(async (files) => {
     await handleFileLoaded(file)
   }
 })
-
-const previewData = computed(() => {
-  if (!input.value.trim()) {
-    return { columns: [], rows: [], totalRows: 0 }
-  }
-  try {
-    const isJsonMode = mode.value === 'json-csv'
-    const data = extractPreviewData(input.value, isJsonMode ? 'json' : 'csv', 50)
-    const columns: ColumnSchema[] = data.columns.map((col) => {
-      const customType = customColumnTypes.value[col.name]
-      return {
-        name: col.name,
-        type: customType ?? col.type,
-      }
-    })
-    return {
-      columns,
-      rows: data.rows,
-      totalRows: data.totalRows,
-    }
-  }
-  catch {
-    return { columns: [], rows: [], totalRows: 0 }
-  }
-})
-
-function handleUpdateColumnType(index: number, newType: ColumnDataType) {
-  const col = previewData.value.columns[index]
-  if (col) {
-    customColumnTypes.value = {
-      ...customColumnTypes.value,
-      [col.name]: newType,
-    }
-  }
-}
 
 watch(input, () => {
   excludeInvalidRows.value = false
@@ -444,12 +472,20 @@ useToolShortcuts({
         @click="handleCopy"
       />
       <UButton
-        label="Download"
+        label="Download all rows"
         color="neutral"
         variant="subtle"
         icon="i-lucide-download"
         :disabled="!output"
-        @click="handleDownload"
+        @click="handleDownloadAll"
+      />
+      <UButton
+        label="Download filtered rows"
+        color="neutral"
+        variant="subtle"
+        icon="i-lucide-filter"
+        :disabled="!output || !isFiltered"
+        @click="handleDownloadFiltered"
       />
       <UButton
         label="Clear"
@@ -490,6 +526,8 @@ useToolShortcuts({
       :rows="previewData.rows"
       :total-rows="previewData.totalRows"
       @update-type="handleUpdateColumnType"
+      @update-filtered-rows="onFilteredRowsChange"
+      @update-visible-columns="onVisibleColumnsChange"
     />
 
     <LazyToolEditor

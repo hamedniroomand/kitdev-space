@@ -1,5 +1,7 @@
-import { parseCsvDetailed } from './csv'
+import type { CsvDelimiter, CsvNullOptions } from './csv'
+import { coerceCell, formatCsv, parseCsvDetailed } from './csv'
 import { DataError } from './errors'
+import { sqlLiteral } from './sql'
 
 export type ColumnDataType = 'text' | 'number' | 'date' | 'boolean'
 
@@ -264,4 +266,64 @@ export function extractPreviewData(
     rows: previewRows,
     totalRows: dataRows.length,
   }
+}
+
+export function getDownloadFilename(
+  mode: 'csv-json' | 'json-csv' | 'csv-sql',
+  isFiltered: boolean,
+): string {
+  const suffix = isFiltered ? '-filtered' : '-all'
+  if (mode === 'csv-json') {
+    return `converted${suffix}.json`
+  }
+  if (mode === 'csv-sql') {
+    return `inserts${suffix}.sql`
+  }
+  return `converted${suffix}.csv`
+}
+
+export function exportFilteredDataset(options: {
+  rows: string[][]
+  columns: ColumnSchema[]
+  visibleColumnIndices?: number[]
+  columnFilters?: Record<number, string>
+  mode: 'csv-json' | 'json-csv' | 'csv-sql'
+  delimiter?: CsvDelimiter
+  tableName?: string
+  nullOptions?: CsvNullOptions
+}): string {
+  const visibleIndices = options.visibleColumnIndices ?? options.columns.map((_, i) => i)
+  const filtered = options.columnFilters
+    ? filterRows(options.rows, options.columnFilters)
+    : options.rows
+
+  const selectedColumns = visibleIndices.map(i => options.columns[i]?.name ?? `column_${i + 1}`)
+  const selectedRows = filtered.map(row => visibleIndices.map(i => row[i] ?? ''))
+
+  if (options.mode === 'csv-json') {
+    const records = selectedRows.map((row) => {
+      const rec: Record<string, unknown> = {}
+      for (let i = 0; i < selectedColumns.length; i += 1) {
+        rec[selectedColumns[i]!] = coerceCell(row[i] ?? '', options.nullOptions)
+      }
+      return rec
+    })
+    return JSON.stringify(records, null, 2)
+  }
+
+  if (options.mode === 'csv-sql') {
+    const table = options.tableName?.trim() || 'table_name'
+    const colList = selectedColumns.map(c => c.replace(/\W+/g, '_')).join(', ')
+    return selectedRows.map((row) => {
+      const values = row.map(cell => sqlLiteral(coerceCell(cell, options.nullOptions)))
+      return `INSERT INTO ${table} (${colList}) VALUES (${values.join(', ')});`
+    }).join('\n')
+  }
+
+  return formatCsv(
+    selectedColumns,
+    selectedRows,
+    options.delimiter ?? ',',
+    options.nullOptions ?? {},
+  )
 }

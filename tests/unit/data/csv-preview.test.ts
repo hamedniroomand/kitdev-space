@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import {
+  exportFilteredDataset,
   extractPreviewData,
   filterRows,
+  getDownloadFilename,
   inferColumnType,
   isLeadingZeroIdentifier,
   sortRows,
@@ -113,5 +115,87 @@ describe('csv preview filterRows and sortRows', () => {
   it('sorts rows alphabetically for text columns', () => {
     const sortedAsc = sortRows(sampleRows, { columnIndex: 1, direction: 'asc' }, 'text')
     expect(sortedAsc.map(r => r[1])).toEqual(['Ada', 'Alan', 'Grace', 'Margaret'])
+  })
+})
+
+describe('csv distinct download actions and filenames', () => {
+  it('generates distinct filenames indicating all vs filtered export', () => {
+    expect(getDownloadFilename('csv-json', false)).toBe('converted-all.json')
+    expect(getDownloadFilename('csv-json', true)).toBe('converted-filtered.json')
+
+    expect(getDownloadFilename('json-csv', false)).toBe('converted-all.csv')
+    expect(getDownloadFilename('json-csv', true)).toBe('converted-filtered.csv')
+
+    expect(getDownloadFilename('csv-sql', false)).toBe('inserts-all.sql')
+    expect(getDownloadFilename('csv-sql', true)).toBe('inserts-filtered.sql')
+  })
+
+  it('exports filtered dataset to JSON with selected columns and filtered rows', () => {
+    const columns = [
+      { name: 'id', type: 'number' as const },
+      { name: 'name', type: 'text' as const },
+      { name: 'role', type: 'text' as const },
+    ]
+    const rows = [
+      ['1', 'Ada', 'Engineer'],
+      ['2', 'Grace', 'Scientist'],
+      ['3', 'Alan', 'Engineer'],
+    ]
+
+    const result = exportFilteredDataset({
+      rows,
+      columns,
+      columnFilters: { 2: 'engineer' },
+      visibleColumnIndices: [0, 1], // exclude role column
+      mode: 'csv-json',
+    })
+
+    const parsed = JSON.parse(result)
+    expect(parsed).toEqual([
+      { id: 1, name: 'Ada' },
+      { id: 3, name: 'Alan' },
+    ])
+  })
+
+  it('exports filtered dataset to SQL with custom table name and filtered rows', () => {
+    const columns = [
+      { name: 'id', type: 'number' as const },
+      { name: 'name', type: 'text' as const },
+    ]
+    const rows = [
+      ['1', 'Ada'],
+      ['2', 'Grace'],
+    ]
+
+    const sql = exportFilteredDataset({
+      rows,
+      columns,
+      columnFilters: { 1: 'Grace' },
+      mode: 'csv-sql',
+      tableName: 'admins',
+    })
+
+    expect(sql).toBe('INSERT INTO admins (id, name) VALUES (2, \'Grace\');')
+  })
+
+  it('exports filtered dataset to CSV preserving delimiter and format', () => {
+    const columns = [
+      { name: 'id', type: 'number' as const },
+      { name: 'name', type: 'text' as const },
+    ]
+    const rows = [
+      ['1', 'Ada'],
+      ['2', 'Grace'],
+    ]
+
+    const csv = exportFilteredDataset({
+      rows,
+      columns,
+      columnFilters: { 1: 'Ada' },
+      mode: 'json-csv',
+      delimiter: ';',
+    })
+
+    expect(csv).toBe('id;name\n1;Ada')
   })
 })
