@@ -72,8 +72,18 @@ describe('convertInBrowser', () => {
     expect(() => convertInBrowser('   ', 'json', 'yaml')).toThrow(DataError)
   })
 
-  it('reports invalid yaml', () => {
-    expect(() => convertInBrowser('a: [1, 2\n', 'yaml', 'json')).toThrow(/Invalid YAML/)
+  it('reports invalid yaml with line and column numbers', () => {
+    try {
+      convertInBrowser('foo:\n\tbar', 'yaml', 'json')
+      expect.unreachable('Should have thrown')
+    }
+    catch (err) {
+      expect(err).toBeInstanceOf(DataError)
+      const dataErr = err as DataError
+      expect(dataErr.line).toBe(2)
+      expect(dataErr.column).toBe(1)
+      expect(dataErr.message).toContain('Line 2, column 1.')
+    }
   })
 
   it('reports invalid toml', () => {

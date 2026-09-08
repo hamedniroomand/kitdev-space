@@ -6,6 +6,7 @@ describe('resolveEditorLanguage', () => {
     expect((await resolveEditorLanguage('json'))?.language.name).toBeTruthy()
     expect((await resolveEditorLanguage('typescript'))?.language.name).toBeTruthy()
     expect((await resolveEditorLanguage('sql'))?.language.name).toBeTruthy()
+    expect((await resolveEditorLanguage('yaml'))?.language.name).toBeTruthy()
   })
 
   it('returns undefined for plain text', async () => {

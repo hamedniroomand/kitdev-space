@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { DataFormat } from '#shared/utils/data/types'
+import type { ToolEditorLang } from '#shared/utils/dev/editor-lang'
 import { convertInBrowser } from '#shared/utils/data/convert'
 import { detectConversionLossWarnings } from '#shared/utils/data/convert-warnings'
 import { getTextStats } from '#shared/utils/data/stats'
@@ -29,8 +30,31 @@ const { downloadText } = useDownload()
 
 useToolSeo(props.toolId)
 
-const inputLang = computed(() => (from.value === 'json' || from.value === 'json5' ? 'json' : 'text'))
-const outputLang = computed(() => (to.value === 'json' || to.value === 'json5' ? 'json' : 'text'))
+const inputLang = computed<ToolEditorLang>(() => {
+  if (from.value === 'json' || from.value === 'json5') {
+    return 'json'
+  }
+  if (from.value === 'yaml') {
+    return 'yaml'
+  }
+  if (from.value === 'xml') {
+    return 'xml'
+  }
+  return 'text'
+})
+
+const outputLang = computed<ToolEditorLang>(() => {
+  if (to.value === 'json' || to.value === 'json5') {
+    return 'json'
+  }
+  if (to.value === 'yaml') {
+    return 'yaml'
+  }
+  if (to.value === 'xml') {
+    return 'xml'
+  }
+  return 'text'
+})
 
 const downloadFilename = computed(() => {
   const base = props.downloadName.replace(/\.[^.]+$/, '') || 'converted'
@@ -115,6 +139,48 @@ function handleDownload() {
   downloadText(downloadFilename.value, output.value, downloadMimeType.value)
 }
 
+function getSampleForFormat(format: Exclude<DataFormat, 'typescript'>): string {
+  try {
+    return convertInBrowser(props.sample, props.defaultFrom, format)
+  }
+  catch {
+    return props.sample
+  }
+}
+
+watch(from, (newFrom, oldFrom) => {
+  const oldSample = getSampleForFormat(oldFrom)
+  if (!input.value || input.value.trim() === oldSample.trim()) {
+    input.value = getSampleForFormat(newFrom)
+    output.value = ''
+    warnings.value = []
+    statusMeta.value = ''
+    reset()
+  }
+})
+
+function handleSwap() {
+  const previousFrom = from.value
+  const previousTo = to.value
+
+  from.value = previousTo
+  to.value = previousFrom
+
+  if (output.value) {
+    input.value = output.value
+    output.value = ''
+    warnings.value = []
+    statusMeta.value = ''
+    reset()
+  }
+  else {
+    input.value = getSampleForFormat(previousTo)
+    warnings.value = []
+    statusMeta.value = ''
+    reset()
+  }
+}
+
 function handleClear() {
   input.value = ''
   output.value = ''
@@ -162,6 +228,14 @@ useToolShortcuts({
         icon="i-lucide-arrow-left-right"
         :loading="status === 'processing'"
         @click="convert"
+      />
+      <UButton
+        label="Swap"
+        color="neutral"
+        variant="subtle"
+        icon="i-lucide-refresh-cw"
+        :disabled="!output && !input"
+        @click="handleSwap"
       />
       <UButton
         :label="copyLabel()"

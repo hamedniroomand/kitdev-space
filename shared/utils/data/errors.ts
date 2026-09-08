@@ -92,3 +92,44 @@ export function formatJsonError(cause: unknown, input: string): DataError {
 
   return new DataError('Invalid JSON.\n\nCheck the syntax and try again.', { cause })
 }
+
+export function formatYamlError(cause: unknown): DataError {
+  if (cause && typeof cause === 'object') {
+    const err = cause as {
+      mark?: { line?: number, column?: number, position?: number }
+      linePos?: Array<{ line: number, col: number }>
+      message?: string
+    }
+
+    if (err.mark && typeof err.mark.line === 'number' && typeof err.mark.column === 'number') {
+      const line = err.mark.line + 1
+      const column = err.mark.column + 1
+      const position = err.mark.position
+      return new DataError(
+        `Invalid YAML.\n\nCheck the syntax near this point.\n\nLine ${line}, column ${column}.`,
+        { line, column, position, cause },
+      )
+    }
+
+    if (err.linePos && err.linePos[0]) {
+      const line = err.linePos[0].line
+      const column = err.linePos[0].col
+      return new DataError(
+        `Invalid YAML.\n\nCheck the syntax near this point.\n\nLine ${line}, column ${column}.`,
+        { line, column, cause },
+      )
+    }
+
+    const match = /\((\d+):(\d+)\)/.exec(err.message ?? '')
+    if (match && match[1] && match[2]) {
+      const line = Number(match[1])
+      const column = Number(match[2])
+      return new DataError(
+        `Invalid YAML.\n\nCheck the syntax near this point.\n\nLine ${line}, column ${column}.`,
+        { line, column, cause },
+      )
+    }
+  }
+
+  return new DataError('Invalid YAML.\n\nCheck the syntax and try again.', { cause })
+}

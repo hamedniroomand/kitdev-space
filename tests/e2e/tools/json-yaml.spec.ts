@@ -39,3 +39,32 @@ test('loads dropped YAML file and updates target download extension to .json', a
   const download = await downloadPromise
   expect(download.suggestedFilename()).toBe('converted.json')
 })
+
+test('swaps output to input and reverses conversion direction', async ({ page }) => {
+  await gotoHydrated(page, '/hub/data/converters/json-yaml')
+
+  await fillCodeMirror(page, 'Input', '{"name": "KitDev", "ready": true}')
+  await page.getByRole('button', { name: 'Convert' }).click()
+
+  const output = page.getByRole('textbox', { name: 'Output' })
+  await expect(output).toContainText('name: KitDev')
+
+  await page.getByRole('button', { name: 'Swap' }).click()
+
+  const input = page.getByRole('textbox', { name: 'Input' })
+  await expect(input).toContainText('name: KitDev')
+  await expect(output).toHaveText('')
+
+  await page.getByRole('button', { name: 'Convert' }).click()
+  await expect(output).toContainText('"name": "KitDev"')
+})
+
+test('adapts sample input dynamically when format direction changes', async ({ page }) => {
+  await gotoHydrated(page, '/hub/data/converters/json-yaml')
+
+  const input = page.getByRole('textbox', { name: 'Input' })
+  await expect(input).toContainText('"name":"KitDev"')
+
+  await page.getByRole('button', { name: 'Swap formats' }).click()
+  await expect(input).toContainText('name: KitDev')
+})

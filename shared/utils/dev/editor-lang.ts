@@ -13,6 +13,7 @@ export type ToolEditorLang
     | 'sql'
     | 'xml'
     | 'svg'
+    | 'yaml'
 
 /**
  * Loads the CodeMirror language pack for one language. Each pack is a dynamic
@@ -40,6 +41,8 @@ export async function resolveEditorLanguage(lang: ToolEditorLang = 'text'): Prom
       return (await import('@codemirror/lang-markdown')).markdown()
     case 'sql':
       return (await import('@codemirror/lang-sql')).sql()
+    case 'yaml':
+      return (await import('@codemirror/lang-yaml')).yaml()
     case 'text':
     default:
       return undefined

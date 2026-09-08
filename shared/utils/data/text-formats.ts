@@ -6,7 +6,7 @@ import {
   stringifyTOML,
   stringifyYAML,
 } from 'confbox'
-import { DataError } from './errors'
+import { DataError, formatYamlError } from './errors'
 
 /**
  * YAML, TOML, and JSON5 in the browser.
@@ -30,7 +30,7 @@ export function parseYamlText(text: string): unknown {
     return parseYAML(text)
   }
   catch (cause) {
-    throw new DataError('Invalid YAML.\n\nCheck the syntax and try again.', { cause })
+    throw formatYamlError(cause)
   }
 }
 
