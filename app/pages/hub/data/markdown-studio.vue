@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { MarkdownHeadingItem } from '#shared/utils/data/markdown'
-import { useEventListener, useFileDialog, useStorage } from '@vueuse/core'
+import { refDebounced, useEventListener, useFileDialog, useStorage } from '@vueuse/core'
 import {
   deriveMarkdownFilename,
   extractMarkdownHeading,
@@ -93,15 +93,17 @@ async function handleFileLoaded(file: File) {
 
 useToolSeo('markdown-studio')
 
-const compiledHtml = computed(() => parseMarkdown(input.value, { breaks: gfmBreaks.value }))
+const debouncedInput = refDebounced(input, 200)
+const compiledHtml = computed(() => parseMarkdown(debouncedInput.value, { breaks: gfmBreaks.value }))
 useLiveTool(compiledHtml)
 const stats = computed(() => getTextStats(input.value))
 
 async function handleCopyHtml() {
-  if (!compiledHtml.value) {
+  if (!input.value.trim()) {
     return
   }
-  await copy(compiledHtml.value, 'html')
+  const html = parseMarkdown(input.value, { breaks: gfmBreaks.value })
+  await copy(html, 'html')
 }
 
 async function handleCopyMarkdown() {
@@ -112,13 +114,14 @@ async function handleCopyMarkdown() {
 }
 
 function handleDownload() {
-  if (!compiledHtml.value) {
+  if (!input.value.trim()) {
     return
   }
   const heading = extractMarkdownHeading(input.value)
   const title = heading || 'Markdown Document'
   const filename = deriveMarkdownFilename(input.value, 'html', 'document')
-  const documentHtml = generateHtmlDocument(compiledHtml.value, title)
+  const html = parseMarkdown(input.value, { breaks: gfmBreaks.value })
+  const documentHtml = generateHtmlDocument(html, title)
   downloadText(filename, documentHtml, 'text/html')
   toast.add({
     title: `Downloaded ${filename}`,
@@ -163,7 +166,7 @@ function handleClearDraft() {
   })
 }
 
-const headings = computed(() => extractMarkdownHeadings(input.value))
+const headings = computed(() => extractMarkdownHeadings(debouncedInput.value))
 const showOutline = ref(true)
 const syncScroll = useToolOption<boolean>('sync-scroll', true)
 

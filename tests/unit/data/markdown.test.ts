@@ -1,5 +1,7 @@
+import { refDebounced } from '@vueuse/core'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 // @vitest-environment happy-dom
-import { beforeEach, describe, expect, it } from 'vitest'
+import { nextTick, ref } from 'vue'
 import {
   deriveMarkdownFilename,
   extractMarkdownHeading,
@@ -236,5 +238,33 @@ describe('markdown GFM options', () => {
     const input = 'First line\nSecond line'
     const html = parseMarkdown(input, { breaks: true })
     expect(html).toContain('<br>')
+  })
+})
+
+describe('markdown studio debounced rendering', () => {
+  it('updates debounced input 200 ms after typing stops', async () => {
+    vi.useFakeTimers()
+    const raw = ref('initial')
+    const debounced = refDebounced(raw, 200)
+
+    expect(debounced.value).toBe('initial')
+
+    raw.value = 'typed text'
+    await nextTick()
+    expect(debounced.value).toBe('initial')
+
+    vi.advanceTimersByTime(200)
+    await nextTick()
+    expect(debounced.value).toBe('typed text')
+
+    vi.useRealTimers()
+  })
+
+  it('keeps preview rendering under 50 ms render time', () => {
+    const mediumMarkdown = `# Test Heading\n\n${`Paragraph with **bold** and *italic* text and \`code\`.\n\n`.repeat(50)}`
+    const start = performance.now()
+    parseMarkdown(mediumMarkdown)
+    const duration = performance.now() - start
+    expect(duration).toBeLessThan(50)
   })
 })
