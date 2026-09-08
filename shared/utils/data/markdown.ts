@@ -2,7 +2,7 @@ import { marked } from 'marked'
 
 marked.setOptions({
   gfm: true,
-  breaks: true,
+  breaks: false,
 })
 
 function escapeHtml(value: string): string {
@@ -279,13 +279,22 @@ marked.use({
   },
 })
 
-export function parseMarkdown(input: string): string {
+export interface MarkdownParseOptions {
+  breaks?: boolean
+  gfm?: boolean
+}
+
+export function parseMarkdown(input: string, options?: MarkdownParseOptions): string {
   if (!input || typeof input !== 'string') {
     return ''
   }
 
   try {
-    return marked.parse(input, { async: false }) as string
+    return marked.parse(input, {
+      async: false,
+      breaks: options?.breaks ?? false,
+      gfm: options?.gfm ?? true,
+    }) as string
   }
   catch {
     return ''
@@ -426,6 +435,10 @@ export function generateHtmlDocument(bodyHtml: string, title = 'Markdown Documen
     th { background: var(--code-bg); font-weight: 600; }
     hr { border: 0; border-top: 1px solid var(--border); margin: 2rem 0; }
     input[type="checkbox"] { margin-right: 0.5em; }
+    kbd { font-family: var(--font-mono); background: var(--code-bg); border: 1px solid var(--border); border-radius: 4px; padding: 0.1em 0.35em; font-size: 0.85em; }
+    details { border: 1px solid var(--border); border-radius: 6px; padding: 0.5rem 0.75rem; margin-bottom: 1rem; }
+    summary { font-weight: 600; cursor: pointer; }
+    img { max-width: 100%; height: auto; }
   </style>
 </head>
 <body>

@@ -12,6 +12,7 @@ import { formatReadingTime, getTextStats } from '#shared/utils/data/stats'
 
 const DRAFT_KEY = 'kitdev:markdown-studio:draft'
 const autoSaveDraft = useToolOption<boolean>('autosave-draft', false)
+const gfmBreaks = useToolOption<boolean>('gfm-breaks', false)
 const savedDraft = useStorage<string>(DRAFT_KEY, '')
 const hasStoredDraft = computed(() => Boolean(savedDraft.value))
 
@@ -34,6 +35,7 @@ This tool supports tables, task lists, strikethrough, and code blocks.
 | Tables | Yes | Standard GFM pipe tables |
 | Checklists | Yes | Interactive style task lists |
 | Code Blocks | Yes | Inline and fenced code blocks |
+| Elements | Yes | Details, summary, and kbd |
 
 ### Code and Quotes
 > Markdown is a lightweight markup language for plain text formatting.
@@ -43,7 +45,13 @@ You can run \`bun dev\` or install packages with:
 bun add marked
 \`\`\`
 
-You can also use ~~strikethrough~~ and **bold** text.
+You can also use ~~strikethrough~~ and **bold** text. Press <kbd>Ctrl</kbd> + <kbd>C</kbd> to copy.
+
+<details>
+<summary>Advanced Details</summary>
+
+This collapsible disclosure element runs natively in HTML preview and exports.
+</details>
 `
 
 const input = ref(sampleMarkdown)
@@ -85,7 +93,7 @@ async function handleFileLoaded(file: File) {
 
 useToolSeo('markdown-studio')
 
-const compiledHtml = computed(() => parseMarkdown(input.value))
+const compiledHtml = computed(() => parseMarkdown(input.value, { breaks: gfmBreaks.value }))
 useLiveTool(compiledHtml)
 const stats = computed(() => getTextStats(input.value))
 
@@ -267,6 +275,10 @@ function jumpToHeading(item: MarkdownHeadingItem) {
         <USwitch
           v-model="syncScroll"
           label="Sync scroll"
+        />
+        <USwitch
+          v-model="gfmBreaks"
+          label="GFM line breaks"
         />
       </div>
       <div class="flex items-center gap-2">
@@ -562,5 +574,33 @@ function jumpToHeading(item: MarkdownHeadingItem) {
   color: var(--ui-primary);
   text-decoration: underline;
   text-underline-offset: 2px;
+}
+
+.markdown-preview :deep(.markdown-body kbd) {
+  font-family: var(--font-mono);
+  background-color: var(--ui-bg-accented);
+  border: 1px solid var(--ui-border);
+  border-radius: 4px;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+  padding: 0.1rem 0.35rem;
+  font-size: 0.8em;
+}
+
+.markdown-preview :deep(.markdown-body details) {
+  border: 1px solid var(--ui-border);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  margin: 0.75rem 0;
+  background-color: var(--ui-bg-accented);
+}
+
+.markdown-preview :deep(.markdown-body summary) {
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.markdown-preview :deep(.markdown-body img) {
+  max-width: 100%;
+  height: auto;
 }
 </style>

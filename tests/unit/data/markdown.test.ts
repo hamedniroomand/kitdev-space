@@ -223,3 +223,18 @@ echo "hi"
     expect(extractMarkdownHeadings('')).toEqual([])
   })
 })
+
+describe('markdown GFM options', () => {
+  it('defaults line breaks to off without br tags', () => {
+    const input = 'First line\nSecond line'
+    const html = parseMarkdown(input)
+    expect(html).not.toContain('<br')
+    expect(html).toContain('First line\nSecond line')
+  })
+
+  it('generates br tags when breaks option is enabled', () => {
+    const input = 'First line\nSecond line'
+    const html = parseMarkdown(input, { breaks: true })
+    expect(html).toContain('<br>')
+  })
+})
