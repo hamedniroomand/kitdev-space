@@ -1,3 +1,5 @@
+import { classifyIp } from './ip-classify'
+
 export interface CidrCalculation {
   ip: string
   prefix: number
@@ -100,16 +102,10 @@ export function parseCidr(cidrInput: string): CidrCalculation {
     ipClass = 'B'
   else ipClass = 'A'
 
-  const secondOctet = (ipInt >>> 16) & 255
-  const isPrivate = firstOctet === 10
-    || (firstOctet === 172 && secondOctet >= 16 && secondOctet <= 31)
-    || (firstOctet === 192 && secondOctet === 168)
-
-  const isLoopback = firstOctet === 127
-  const isLinkLocal = firstOctet === 169 && secondOctet === 254
+  const classification = classifyIp(intToIp(ipInt))
 
   return {
-    ip: intToIp(ipInt),
+    ip: classification.ip,
     prefix,
     netmask: intToIp(maskInt),
     wildcard: intToIp(wildcardInt),
@@ -120,9 +116,9 @@ export function parseCidr(cidrInput: string): CidrCalculation {
     totalHosts,
     usableHosts,
     ipClass,
-    isPrivate,
-    isLoopback,
-    isLinkLocal,
+    isPrivate: classification.isPrivate,
+    isLoopback: classification.isLoopback,
+    isLinkLocal: classification.isLinkLocal,
     ipBinary: toBinaryString(ipInt),
     maskBinary: toBinaryString(maskInt),
   }

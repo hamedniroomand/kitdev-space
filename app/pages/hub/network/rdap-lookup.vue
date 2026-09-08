@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { RdapResult } from '#server/utils/network/rdap'
+import type { RdapResult } from '#shared/utils/network/types'
 
 const query = ref('github.com')
 
@@ -42,8 +42,7 @@ function handleReset() {
     <div class="space-y-6">
       <!-- Search Input Section -->
       <div class="p-4 border border-default rounded-xl bg-elevated/40 space-y-4">
-        <div class="space-y-1">
-          <label class="text-xs font-medium text-muted">Domain Name or IP Address</label>
+        <UFormField label="Domain Name or IP Address">
           <div class="flex gap-2">
             <UInput
               v-model="query"
@@ -61,7 +60,7 @@ function handleReset() {
               @click="lookup"
             />
           </div>
-        </div>
+        </UFormField>
 
         <div class="flex flex-wrap items-center justify-between gap-3 pt-1">
           <div class="flex items-center gap-2">
@@ -89,26 +88,24 @@ function handleReset() {
             />
           </div>
 
-          <UButton
-            label="Clear"
-            size="xs"
-            variant="ghost"
-            color="neutral"
-            icon="i-lucide-eraser"
-            :disabled="!query && !result"
-            @click="handleReset"
-          />
+          <ToolActions class="gap-2">
+            <UButton
+              label="Clear"
+              size="xs"
+              variant="ghost"
+              color="neutral"
+              icon="i-lucide-eraser"
+              :disabled="!query && !result"
+              @click="handleReset"
+            />
+          </ToolActions>
         </div>
       </div>
 
       <!-- Error Alert -->
-      <UAlert
+      <ToolError
         v-if="error"
-        color="error"
-        variant="subtle"
-        icon="i-lucide-alert-circle"
-        title="Lookup Error"
-        :description="error"
+        :message="error"
       />
 
       <!-- Results View -->
@@ -282,13 +279,13 @@ function handleReset() {
           <!-- Raw RDAP JSON Section -->
           <div class="space-y-2">
             <div class="flex items-center justify-between">
-              <label class="text-xs font-semibold text-default flex items-center gap-1.5">
+              <span class="text-xs font-semibold text-default flex items-center gap-1.5">
                 <UIcon
                   name="i-lucide-file-json"
                   class="w-3.5 h-3.5 text-primary"
                 />
                 Raw RDAP Response
-              </label>
+              </span>
               <UButton
                 size="xs"
                 variant="subtle"

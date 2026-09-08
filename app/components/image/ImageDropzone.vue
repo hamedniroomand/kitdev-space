@@ -1,44 +1,157 @@
 <script setup lang="ts">
 import { formatBytes } from '#shared/utils/format'
+import ToolError from '../tool/ToolError.vue'
 
-const props = defineProps<{
-  modelValue: File | null
-  accept?: string
-  hint?: string
-  prompt?: string
-}>()
+const props = withDefaults(
+  defineProps<{
+    modelValue?: File | File[] | null
+    accept?: string
+    hint?: string
+    prompt?: string
+    multiple?: boolean
+    maxBytes?: number
+  }>(),
+  {
+    modelValue: null,
+    accept: undefined,
+    hint: undefined,
+    prompt: undefined,
+    multiple: false,
+    maxBytes: 25 * 1024 * 1024, // 25 MB
+  },
+)
 
 const emit = defineEmits<{
-  'update:modelValue': [file: File | null]
+  'update:modelValue': [file: File | File[] | null]
+  'update:files': [files: File[]]
 }>()
 
 const { reportInput, reportBytes, clearBytes } = useToolInput()
 const sourceId = useId()
-watch(() => props.modelValue, file => reportBytes(sourceId, file?.size ?? 0), { immediate: true })
+const validationError = ref<string | null>(null)
+
+const primaryFile = computed<File | null>(() => {
+  if (Array.isArray(props.modelValue)) {
+    return props.modelValue[0] ?? null
+  }
+  return props.modelValue ?? null
+})
+
+watch(
+  () => props.modelValue,
+  (val) => {
+    let size = 0
+    if (Array.isArray(val)) {
+      size = val.reduce((acc, f) => acc + f.size, 0)
+    }
+    else if (val) {
+      size = val.size
+    }
+    reportBytes(sourceId, size)
+  },
+  { immediate: true },
+)
 onUnmounted(() => clearBytes(sourceId))
 
 const inputRef = ref<HTMLInputElement | null>(null)
 const dropZoneRef = ref<HTMLDivElement | null>(null)
-const previewUrl = useObjectUrl(() => props.modelValue)
-const isImage = computed(() => props.modelValue?.type.startsWith('image/') ?? false)
+const previewUrl = useObjectUrl(primaryFile)
+const isImage = computed(() => primaryFile.value?.type.startsWith('image/') ?? false)
+
+function validateFile(file: File): boolean {
+  if (file.size > props.maxBytes) {
+    const limitMb = Math.round(props.maxBytes / (1024 * 1024))
+    validationError.value = `"${file.name}" exceeds the ${limitMb} MB limit.`
+    return false
+  }
+
+  const acceptStr = props.accept
+  if (acceptStr) {
+    const types = acceptStr.split(',').map(t => t.trim().toLowerCase())
+    const fileType = file.type.toLowerCase()
+    const fileName = file.name.toLowerCase()
+    const matches = types.some((pattern) => {
+      if (pattern.startsWith('.')) {
+        return fileName.endsWith(pattern)
+      }
+      if (pattern.endsWith('/*')) {
+        const prefix = pattern.slice(0, -1)
+        return fileType.startsWith(prefix)
+      }
+      return fileType === pattern
+    })
+    if (!matches) {
+      validationError.value = `"${file.name}" is not an accepted format.`
+      return false
+    }
+  }
+
+  return true
+}
+
+function handleIncomingFiles(files: File[], method: 'drop' | 'file' | 'paste') {
+  validationError.value = null
+  const validFiles: File[] = []
+  for (const f of files) {
+    if (validateFile(f)) {
+      validFiles.push(f)
+    }
+    else {
+      return
+    }
+  }
+
+  if (validFiles.length === 0) {
+    return
+  }
+
+  reportInput(method)
+  if (props.multiple) {
+    emit('update:modelValue', validFiles)
+    emit('update:files', validFiles)
+  }
+  else {
+    emit('update:modelValue', validFiles[0] ?? null)
+    emit('update:files', validFiles)
+  }
+}
 
 const { isOverDropZone } = useDropZone(dropZoneRef, {
   onDrop(files) {
-    const file = files?.[0] ?? null
-    if (file) {
-      reportInput('drop')
-      emit('update:modelValue', file)
+    if (!files || files.length === 0) {
+      return
     }
+    handleIncomingFiles(Array.from(files), 'drop')
   },
 })
 
 function onPick(event: Event) {
   const input = event.target as HTMLInputElement
-  const file = input.files?.[0] ?? null
-  if (file) {
-    reportInput('file')
+  if (!input.files || input.files.length === 0) {
+    return
   }
-  emit('update:modelValue', file)
+  handleIncomingFiles(Array.from(input.files), 'file')
+}
+
+function onPaste(event: ClipboardEvent) {
+  const items = event.clipboardData?.items
+  if (!items || items.length === 0) {
+    return
+  }
+  const pastedFiles: File[] = []
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i]
+    if (item && item.kind === 'file') {
+      const file = item.getAsFile()
+      if (file) {
+        pastedFiles.push(file)
+      }
+    }
+  }
+  if (pastedFiles.length > 0) {
+    event.preventDefault()
+    handleIncomingFiles(pastedFiles, 'paste')
+  }
 }
 
 function openPicker() {
@@ -47,6 +160,8 @@ function openPicker() {
 
 function clear() {
   emit('update:modelValue', null)
+  emit('update:files', [])
+  validationError.value = null
   if (inputRef.value) {
     inputRef.value.value = ''
   }
@@ -56,7 +171,10 @@ defineExpose({ clear })
 </script>
 
 <template>
-  <div class="space-y-3">
+  <div
+    class="space-y-3"
+    @paste="onPaste"
+  >
     <div
       ref="dropZoneRef"
       class="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-md border border-dashed border-default bg-elevated/30 px-4 py-10 text-center transition-colors hover:border-primary"
@@ -80,13 +198,19 @@ defineExpose({ clear })
         ref="inputRef"
         type="file"
         class="sr-only"
+        :multiple="multiple"
         :accept="accept ?? 'image/jpeg,image/png,image/webp,image/gif,image/bmp,image/tiff,image/heic,image/avif,image/svg+xml,.jpg,.jpeg,.png,.webp,.gif,.bmp,.tif,.tiff,.heic,.avif,.svg'"
         @change="onPick"
       >
     </div>
 
+    <ToolError
+      v-if="validationError"
+      :message="validationError"
+    />
+
     <div
-      v-if="modelValue"
+      v-if="primaryFile"
       class="flex items-center gap-3 rounded-md border border-default bg-elevated/40 p-3"
     >
       <img
@@ -97,10 +221,10 @@ defineExpose({ clear })
       >
       <div class="min-w-0 flex-1">
         <p class="truncate text-sm text-highlighted">
-          {{ modelValue.name }}
+          {{ Array.isArray(modelValue) ? `${modelValue.length} files selected` : primaryFile.name }}
         </p>
         <p class="text-xs text-muted">
-          {{ formatBytes(modelValue.size) }}
+          {{ formatBytes(Array.isArray(modelValue) ? modelValue.reduce((a, b) => a + b.size, 0) : primaryFile.size) }}
         </p>
       </div>
       <UButton

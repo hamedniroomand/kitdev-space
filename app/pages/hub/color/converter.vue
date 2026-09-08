@@ -9,7 +9,6 @@ const hsl = ref('')
 const oklch = ref('')
 const outOfGamut = ref(false)
 const { status, error, run, reset } = useTool<string>()
-const { copy, icon: copyIcon, color: copyColor } = useCopyFeedback()
 
 useToolSeo('color-converter')
 
@@ -25,10 +24,6 @@ async function convert() {
   })
 }
 
-async function copyValue(value: string, key: string) {
-  await copy(value, key)
-}
-
 function handleClear() {
   input.value = ''
   hex.value = ''
@@ -39,13 +34,8 @@ function handleClear() {
   reset()
 }
 
-defineShortcuts({
-  meta_enter: {
-    usingInput: true,
-    handler: () => {
-      convert()
-    },
-  },
+useToolShortcuts({
+  onRun: () => convert(),
 })
 
 onMounted(() => {
@@ -96,7 +86,7 @@ onMounted(() => {
       v-if="status === 'success'"
       class="space-y-3"
     >
-      <div
+      <ToolResultRow
         v-for="item in [
           { label: 'HEX', value: hex },
           { label: 'RGB', value: rgb },
@@ -104,19 +94,9 @@ onMounted(() => {
           { label: 'OKLCH', value: oklch },
         ]"
         :key="item.label"
-        class="flex items-center justify-between gap-3 font-mono text-sm"
-      >
-        <span class="text-muted w-14">{{ item.label }}</span>
-        <span class="flex-1 text-highlighted">{{ item.value }}</span>
-        <UButton
-          size="xs"
-          variant="ghost"
-          :icon="copyIcon(item.label.toLowerCase())"
-          :color="copyColor(item.label.toLowerCase())"
-          :aria-label="`Copy ${item.label}`"
-          @click="copyValue(item.value, item.label.toLowerCase())"
-        />
-      </div>
+        :label="item.label"
+        :value="item.value"
+      />
     </div>
 
     <UAlert

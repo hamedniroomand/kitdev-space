@@ -19,8 +19,8 @@ test.describe('Email Health Inspector tool', () => {
     await domainInput.fill('example.com')
     await page.locator('main').getByRole('button', { name: 'Inspect' }).click()
 
-    await expect(page.locator('main').getByText('Valid SPF record found.')).toBeVisible({ timeout: 10_000 })
-    await expect(page.locator('main').getByText('Enforcing reject policy.')).toBeVisible()
+    await expect(page.locator('main').getByText('SPF record looks valid.')).toBeVisible({ timeout: 10_000 })
+    await expect(page.locator('main').getByText('DMARC record looks valid.')).toBeVisible()
     await expect(page.locator('main').getByText('mail.example.com')).toBeVisible()
   })
 })

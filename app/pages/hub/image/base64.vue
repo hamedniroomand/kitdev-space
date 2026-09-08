@@ -52,6 +52,7 @@ const decodedDataUri = computed(() => {
     return base64Input.value.trim()
   return `data:${parsedInput.value.mimeType};base64,${parsedInput.value.base64}`
 })
+useLiveTool(decodedDataUri)
 
 function handleDownloadDecoded() {
   if (!decodedDataUri.value || !parsedInput.value)
@@ -220,17 +221,14 @@ function handleDownloadDecoded() {
         v-else
         class="space-y-6"
       >
-        <div class="space-y-2">
-          <label class="block text-sm font-medium text-default">
-            Base64 String or Data URI
-          </label>
+        <UFormField label="Base64 String or Data URI">
           <UTextarea
             v-model="base64Input"
             :rows="6"
-            placeholder="Paste raw Base64 string or data:image/... URI..."
+            placeholder="Paste data:image/...;base64,... or raw base64 string here..."
             class="font-mono text-xs w-full"
           />
-        </div>
+        </UFormField>
 
         <div
           v-if="decodedDataUri"

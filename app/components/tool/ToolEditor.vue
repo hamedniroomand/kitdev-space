@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import type { Extension } from '@codemirror/state'
 import type { ToolEditorLang } from '#shared/utils/dev/editor-lang'
+import { useDropZone, useFileDialog } from '@vueuse/core'
 import { textBytes } from '#shared/utils/analytics/buckets'
+import ToolError from './ToolError.vue'
 
 const props = withDefaults(defineProps<{
   label: string
@@ -11,11 +13,15 @@ const props = withDefaults(defineProps<{
   lang?: ToolEditorLang
   wrap?: boolean
   extensions?: Extension[]
+  maxFileSize?: number
+  accept?: string
 }>(), {
   rows: 12,
   lang: 'text',
   wrap: true,
   extensions: () => [],
+  maxFileSize: 10 * 1024 * 1024, // 10 MB
+  accept: 'text/*,.*',
 })
 
 /**
@@ -65,13 +71,62 @@ const lineCount = computed(() => (
 ))
 
 const editorHeight = computed(() => `${Math.max(lineCount.value * 1.35, 12)}rem`)
+
+const fileError = ref<string | null>(null)
+const dropZoneRef = ref<HTMLDivElement | null>(null)
+
+async function loadFile(file: File) {
+  if (file.size > props.maxFileSize) {
+    const limitMb = Math.round(props.maxFileSize / (1024 * 1024))
+    fileError.value = `File size exceeds the ${limitMb} MB limit.`
+    return
+  }
+  fileError.value = null
+  try {
+    const text = await file.text()
+    model.value = text
+    reportInput('file')
+  }
+  catch {
+    fileError.value = 'Failed to read file.'
+  }
+}
+
+const { isOverDropZone } = useDropZone(dropZoneRef, {
+  onDrop(files) {
+    if (props.readonly || !files || files.length === 0) {
+      return
+    }
+    const file = files[0]
+    if (file) {
+      loadFile(file)
+    }
+  },
+})
+
+const { open: openFileDialog, onChange: onFileChange } = useFileDialog({
+  accept: props.accept,
+  multiple: false,
+})
+
+onFileChange((files) => {
+  if (props.readonly || !files || files.length === 0) {
+    return
+  }
+  const file = files[0]
+  if (file) {
+    loadFile(file)
+  }
+})
 </script>
 
 <template>
   <ClientOnly>
     <UFormField :label="label">
       <div
-        class="tool-editor relative overflow-hidden rounded-md bg-default ring ring-inset ring-accented"
+        ref="dropZoneRef"
+        class="tool-editor relative overflow-hidden rounded-md bg-default ring ring-inset ring-accented transition-colors"
+        :class="{ 'ring-2 ring-primary bg-primary/5': isOverDropZone }"
         :style="{ height: editorHeight }"
         @paste.capture="onPaste"
         @keydown.capture="onKeydown"
@@ -85,17 +140,33 @@ const editorHeight = computed(() => `${Math.max(lineCount.value * 1.35, 12)}rem`
           :wrap="wrap"
           :extensions="extensions"
         />
-        <UButton
-          class="absolute inset-e-1.5 top-1.5 z-10"
-          size="xs"
-          color="neutral"
-          variant="soft"
-          square
-          :icon="expanded ? 'i-lucide-minimize-2' : 'i-lucide-maximize-2'"
-          :aria-label="expanded ? 'Collapse editor' : 'Expand editor'"
-          @click="toggleExpanded()"
-        />
+        <div class="absolute inset-e-1.5 top-1.5 z-10 flex items-center gap-1">
+          <UButton
+            v-if="!readonly"
+            size="xs"
+            color="neutral"
+            variant="soft"
+            square
+            icon="i-lucide-folder-open"
+            aria-label="Upload file into editor"
+            @click="openFileDialog()"
+          />
+          <UButton
+            size="xs"
+            color="neutral"
+            variant="soft"
+            square
+            :icon="expanded ? 'i-lucide-minimize-2' : 'i-lucide-maximize-2'"
+            :aria-label="expanded ? 'Collapse editor' : 'Expand editor'"
+            @click="toggleExpanded()"
+          />
+        </div>
       </div>
+      <ToolError
+        v-if="fileError"
+        :message="fileError"
+        class="mt-2"
+      />
     </UFormField>
     <template #fallback>
       <UFormField :label="label">

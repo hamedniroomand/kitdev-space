@@ -30,6 +30,7 @@ const evaluatedResults = computed(() => {
     matches: testGlobMatch(pattern, path),
   }))
 })
+useLiveTool(evaluatedResults)
 
 const matchedCount = computed(() => evaluatedResults.value.filter(r => r.matches).length)
 const totalCount = computed(() => evaluatedResults.value.length)
@@ -90,20 +91,17 @@ function applyPreset(pattern: string) {
       <!-- Split View -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <!-- Input file paths -->
-        <div class="space-y-2">
-          <label class="text-xs font-medium text-muted block">Test Paths (one per line)</label>
-          <textarea
-            v-model="testPaths"
-            rows="12"
-            placeholder="Enter file paths..."
-            class="w-full p-3 font-mono text-xs bg-default border border-default rounded-xl text-highlighted resize-y focus:outline-none focus:border-primary"
-          />
-        </div>
+        <LazyToolEditor
+          v-model="testPaths"
+          hydrate-on-idle
+          label="Test Paths (one per line)"
+          placeholder="Enter file paths..."
+        />
 
         <!-- Evaluation results -->
         <div class="space-y-2">
           <div class="flex items-center justify-between">
-            <label class="text-xs font-medium text-muted block">Match Results</label>
+            <span class="text-xs font-medium text-muted block">Match Results</span>
             <span class="text-xs font-mono text-muted">
               {{ matchedCount }} / {{ totalCount }} matched
             </span>
@@ -114,11 +112,11 @@ function applyPreset(pattern: string) {
               v-for="(item, index) in evaluatedResults"
               :key="index"
               class="flex items-center justify-between px-3 py-2 transition-colors"
-              :class="item.matches ? 'bg-green-50/50 dark:bg-green-950/20' : 'bg-transparent text-muted'"
+              :class="item.matches ? 'bg-success/10' : 'bg-transparent text-muted'"
             >
               <span
                 class="truncate"
-                :class="item.matches ? 'text-green-700 dark:text-green-300 font-medium' : ''"
+                :class="item.matches ? 'text-success font-medium' : ''"
               >
                 {{ item.path }}
               </span>

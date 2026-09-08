@@ -58,6 +58,7 @@ const conversion = computed(() => {
 
 const output = computed(() => conversion.value.output)
 const parseError = computed(() => conversion.value.error)
+useLiveTool(conversion)
 
 function handleModeChange(newMode: ConversionMode) {
   if (newMode === mode.value) {

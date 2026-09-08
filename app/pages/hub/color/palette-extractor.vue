@@ -82,6 +82,7 @@ const jsonOutput = computed(() => {
     return ''
   return JSON.stringify(palette.value.map(c => c.hex), null, 2)
 })
+useLiveTool(palette)
 </script>
 
 <template>

@@ -2,57 +2,23 @@
   "result": {
     "domain": "example.com",
     "spf": {
+      "present": true,
       "raw": [
-        "v=spf1 include:_spf.example.com ~all"
+        "v=spf1 -all"
       ],
+      "version": "spf1",
       "mechanisms": [
         {
-          "raw": "include:_spf.example.com"
-        },
-        {
-          "raw": "~all"
+          "qualifier": "-",
+          "type": "all",
+          "raw": "-all"
         }
       ],
       "issues": [
         {
-          "code": "spf-valid",
-          "level": "ok",
-          "message": "Valid SPF record found."
-        }
-      ]
-    },
-    "dkim": {
-      "issues": [
-        {
-          "code": "dkim-ok",
-          "level": "ok",
-          "message": "DKIM verified."
-        }
-      ],
-      "selectors": [
-        {
-          "selector": "default",
-          "present": true,
-          "issues": []
-        }
-      ]
-    },
-    "dmarc": {
-      "raw": [
-        "v=DMARC1; p=reject; pct=100; rua=mailto:dmarc@example.com"
-      ],
-      "present": true,
-      "policy": "reject",
-      "subdomainPolicy": "reject",
-      "percent": 100,
-      "aggregateReportUris": [
-        "mailto:dmarc@example.com"
-      ],
-      "issues": [
-        {
-          "code": "dmarc-reject",
-          "level": "ok",
-          "message": "Enforcing reject policy."
+          "level": "warning",
+          "code": "spf-no-permissions",
+          "message": "SPF has no authorizing mechanisms (a, mx, ip4, ip6, include, exists) or redirect."
         }
       ]
     },
@@ -66,9 +32,73 @@
       ],
       "issues": [
         {
-          "code": "mx-found",
           "level": "ok",
-          "message": "MX record found."
+          "code": "mx-ok",
+          "message": "MX records look valid."
+        }
+      ]
+    },
+    "dkim": {
+      "selectors": [
+        {
+          "selector": "default",
+          "present": true,
+          "records": [
+            "v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQD"
+          ],
+          "issues": [
+            {
+              "level": "ok",
+              "code": "dkim-present",
+              "message": "DKIM record found for selector \"default\"."
+            }
+          ]
+        }
+      ],
+      "issues": [
+        {
+          "level": "ok",
+          "code": "dkim-ok",
+          "message": "Found DKIM for 1 of 1 selector."
+        }
+      ]
+    },
+    "dmarc": {
+      "present": true,
+      "raw": [
+        "v=DMARC1; p=reject; pct=100; rua=mailto:dmarc@example.com"
+      ],
+      "version": "DMARC1",
+      "policy": "reject",
+      "subdomainPolicy": null,
+      "percent": 100,
+      "aggregateReportUris": [
+        "mailto:dmarc@example.com"
+      ],
+      "forensicReportUris": [],
+      "tags": [
+        {
+          "name": "v",
+          "value": "DMARC1"
+        },
+        {
+          "name": "p",
+          "value": "reject"
+        },
+        {
+          "name": "pct",
+          "value": "100"
+        },
+        {
+          "name": "rua",
+          "value": "mailto:dmarc@example.com"
+        }
+      ],
+      "issues": [
+        {
+          "level": "ok",
+          "code": "dmarc-ok",
+          "message": "DMARC record looks valid."
         }
       ]
     }

@@ -1,9 +1,12 @@
 <script setup lang="ts">
+import { describeCron, nextCronRuns } from '#shared/utils/dev/cron'
+
 const expression = ref('30 9 * * MON-FRI')
 const timeZone = ref('UTC')
 const description = ref('')
 const nextRuns = ref<string[]>([])
 const { status, error, run, reset } = useTool<string>()
+const { copy } = useCopyFeedback()
 
 const timeZoneItems = [
   { label: 'UTC', value: 'UTC' },
@@ -32,21 +35,19 @@ function formatRun(iso: string): string {
 async function execute() {
   description.value = ''
   nextRuns.value = []
-  await run(async () => {
-    const data = await $fetch<{
-      result: { description: string, nextRuns: string[] }
-    }>('/api/dev/cron', {
-      method: 'POST',
-      body: {
-        expression: expression.value,
-        timeZone: timeZone.value,
-        count: 5,
-      },
-    })
-    description.value = data.result.description
-    nextRuns.value = data.result.nextRuns
-    return data.result.description
+  await run(() => {
+    description.value = describeCron(expression.value)
+    nextRuns.value = nextCronRuns(expression.value, 5, new Date(), timeZone.value)
+    return description.value
   }, 'The cron operation failed.')
+}
+
+async function handleCopy() {
+  if (!description.value) {
+    return
+  }
+  const content = [description.value, ...nextRuns.value].join('\n')
+  await copy(content)
 }
 
 function handleClear() {
@@ -55,24 +56,19 @@ function handleClear() {
   reset()
 }
 
-defineShortcuts({
-  meta_enter: {
-    usingInput: true,
-    handler: () => {
-      execute()
-    },
-  },
+useToolShortcuts({
+  onRun: () => execute(),
+  onCopy: () => handleCopy(),
 })
 </script>
 
 <template>
   <ToolPage>
     <UAlert
-      color="info"
+      color="neutral"
       variant="subtle"
-      icon="i-lucide-server"
-      title="Processed with Bun"
-      description="This tool uses Bun.cron.parse on the server."
+      title="Processed locally"
+      description="This tool runs in the browser."
     />
 
     <UFormField label="Cron expression">

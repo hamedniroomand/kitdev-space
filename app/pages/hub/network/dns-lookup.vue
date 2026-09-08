@@ -53,13 +53,8 @@ function handleClear() {
   reset()
 }
 
-defineShortcuts({
-  meta_enter: {
-    usingInput: true,
-    handler: () => {
-      lookup()
-    },
-  },
+useToolShortcuts({
+  onRun: () => lookup(),
 })
 </script>
 

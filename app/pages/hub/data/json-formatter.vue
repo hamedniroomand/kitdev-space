@@ -2,12 +2,23 @@
 import { formatJson, minifyJson, validateJson } from '#shared/utils/data/json'
 import { getTextStats } from '#shared/utils/data/stats'
 
+const WORKER_CHARS = 100_000
+
 const input = ref('{\n  "name": "KitDev",\n  "ready": true\n}')
 const output = ref('')
 const statusMessage = ref('')
 const statusMeta = ref('')
+const { buildShareUrl, canShare } = useToolQuery({ input })
 const { status, error, result, run, reset } = useTool<string>()
 const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
+
+const { execute: workerFormat, isRunning: workerRunning, stop: stopWorker } = useToolWorker(
+  (data: { text: string, space: number }) => JSON.stringify(JSON.parse(data.text), null, data.space),
+  { timeout: 30_000 },
+)
+
+const isHeavy = computed(() => input.value.length >= WORKER_CHARS)
+
 const validateFeedback = useActionFeedback({
   idle: {
     label: 'Validate',
@@ -39,7 +50,18 @@ function setStats(text: string) {
 
 async function format() {
   validateFeedback.reset()
-  await run(() => formatJson(input.value))
+  await run(async () => {
+    if (input.value.length >= WORKER_CHARS) {
+      try {
+        return await workerFormat({ text: input.value, space: 2 })
+      }
+      catch {
+        // Fallback to local full parser (supports JSON5/JSONC)
+        return formatJson(input.value)
+      }
+    }
+    return formatJson(input.value)
+  })
   if (status.value === 'success' && result.value !== null) {
     output.value = result.value
     statusMessage.value = 'Valid JSON'
@@ -49,7 +71,17 @@ async function format() {
 
 async function minify() {
   validateFeedback.reset()
-  await run(() => minifyJson(input.value))
+  await run(async () => {
+    if (input.value.length >= WORKER_CHARS) {
+      try {
+        return await workerFormat({ text: input.value, space: 0 })
+      }
+      catch {
+        return minifyJson(input.value)
+      }
+    }
+    return minifyJson(input.value)
+  })
   if (status.value === 'success' && result.value !== null) {
     output.value = result.value
     statusMessage.value = 'Valid JSON'
@@ -98,18 +130,31 @@ function handleClear() {
   reset()
 }
 
-defineShortcuts({
-  meta_enter: {
-    usingInput: true,
-    handler: () => {
-      format()
-    },
-  },
+async function handleShare() {
+  const url = buildShareUrl()
+  if (!url) {
+    return
+  }
+  await copy(url, 'share', 'snippet')
+}
+
+useToolShortcuts({
+  onRun: () => format(),
+  onCopy: () => handleCopy(),
 })
 </script>
 
 <template>
   <ToolPage>
+    <UAlert
+      v-if="isHeavy"
+      color="info"
+      variant="subtle"
+      icon="i-lucide-cpu"
+      title="Heavy processing mode"
+      description="Large JSON files run in a background web worker to prevent UI lag. Limit: 30 seconds."
+    />
+
     <LazyToolEditor
       v-model="input"
       hydrate-on-idle
@@ -124,6 +169,14 @@ defineShortcuts({
         icon="i-lucide-align-left"
         :loading="status === 'processing'"
         @click="format"
+      />
+      <UButton
+        v-if="workerRunning"
+        label="Stop"
+        color="error"
+        variant="subtle"
+        icon="i-lucide-square"
+        @click="stopWorker"
       />
       <UButton
         label="Minify"
@@ -154,6 +207,15 @@ defineShortcuts({
         icon="i-lucide-download"
         :disabled="!output"
         @click="handleDownload"
+      />
+      <UButton
+        v-if="canShare"
+        :label="copyLabel('share', 'Share')"
+        :color="copyColor('share')"
+        variant="subtle"
+        :icon="copyIcon('share', 'i-lucide-share-2')"
+        aria-label="Share tool link with input"
+        @click="handleShare"
       />
       <UButton
         label="Clear"

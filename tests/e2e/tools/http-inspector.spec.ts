@@ -19,8 +19,8 @@ test.describe('HTTP Inspector tool', () => {
     await input.fill('https://example.com')
     await page.locator('main').getByRole('button', { name: 'Inspect' }).click()
 
-    await expect(page.locator('main').getByText('85/100 · Grade B')).toBeVisible({ timeout: 10_000 })
-    await expect(page.locator('main').getByText('Content Security Policy missing')).toBeVisible()
+    await expect(page.locator('main').getByText('75/100 · Grade C')).toBeVisible({ timeout: 10_000 })
+    await expect(page.locator('main').getByText('CSP is missing')).toBeVisible()
 
     // Switch to Headers tab
     await page.locator('main').getByRole('tab', { name: 'Headers' }).click()

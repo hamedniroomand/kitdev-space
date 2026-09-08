@@ -41,6 +41,7 @@ const { downloadText } = useDownload()
 useToolSeo('markdown-studio')
 
 const compiledHtml = computed(() => parseMarkdown(input.value))
+useLiveTool(compiledHtml)
 const stats = computed(() => getTextStats(input.value))
 
 async function handleCopyHtml() {
@@ -90,32 +91,9 @@ function handleClear() {
     />
 
     <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
-      <div class="rounded-lg border border-default bg-elevated p-3">
-        <p class="text-xs font-medium text-muted">
-          Characters
-        </p>
-        <p class="mt-1 text-2xl font-semibold">
-          {{ stats.characters.toLocaleString() }}
-        </p>
-      </div>
-
-      <div class="rounded-lg border border-default bg-elevated p-3">
-        <p class="text-xs font-medium text-muted">
-          Words
-        </p>
-        <p class="mt-1 text-2xl font-semibold">
-          {{ stats.words.toLocaleString() }}
-        </p>
-      </div>
-
-      <div class="rounded-lg border border-default bg-elevated p-3">
-        <p class="text-xs font-medium text-muted">
-          Estimated Read Time
-        </p>
-        <p class="mt-1 text-2xl font-semibold">
-          {{ formatReadingTime(stats.readingTimeMinutes) }}
-        </p>
-      </div>
+      <StatCard label="Characters" :value="stats.characters" />
+      <StatCard label="Words" :value="stats.words" />
+      <StatCard label="Estimated Read Time" :value="formatReadingTime(stats.readingTimeMinutes)" />
     </div>
 
     <div class="grid gap-4 lg:grid-cols-2">

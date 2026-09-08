@@ -1,14 +1,5 @@
 import { formatJson, minifyJson } from '../data/json'
 
-/**
- * Code formatting in the browser.
- *
- * JSON needs no library. HTML minify is a small regular expression. CSS minify
- * uses `csso`, an installed dependency that runs in the browser. Everything
- * else needs `Bun.Transpiler`, `oxc-minify`, or Prettier, so
- * `/api/dev/code-format` keeps that work.
- */
-
 export type CodeLanguage = 'javascript' | 'typescript' | 'html' | 'css' | 'json'
 export type CodeAction = 'minify' | 'beautify'
 
@@ -71,11 +62,70 @@ export async function minifyCss(code: string): Promise<string> {
   }
 }
 
-export function canFormatInBrowser(language: CodeLanguage, action: CodeAction): boolean {
+export async function beautifyInBrowser(code: string, language: CodeLanguage): Promise<string> {
+  const text = requireCodeInput(code)
   if (language === 'json') {
+    return formatJson(text)
+  }
+
+  const { format } = await import('prettier/standalone')
+  let parser = 'babel'
+  let plugins: any[] = []
+
+  switch (language) {
+    case 'javascript': {
+      const [babel, estree] = await Promise.all([
+        import('prettier/plugins/babel'),
+        import('prettier/plugins/estree'),
+      ])
+      parser = 'babel'
+      plugins = [babel.default ?? babel, estree.default ?? estree]
+      break
+    }
+    case 'typescript': {
+      const [typescript, estree] = await Promise.all([
+        import('prettier/plugins/typescript'),
+        import('prettier/plugins/estree'),
+      ])
+      parser = 'typescript'
+      plugins = [typescript.default ?? typescript, estree.default ?? estree]
+      break
+    }
+    case 'html': {
+      const html = await import('prettier/plugins/html')
+      parser = 'html'
+      plugins = [html.default ?? html]
+      break
+    }
+    case 'css': {
+      const postcss = await import('prettier/plugins/postcss')
+      parser = 'css'
+      plugins = [postcss.default ?? postcss]
+      break
+    }
+  }
+
+  try {
+    return await format(text, {
+      parser,
+      plugins,
+      printWidth: 80,
+      tabWidth: 2,
+      semi: true,
+      singleQuote: false,
+    })
+  }
+  catch (cause) {
+    const message = cause instanceof Error ? cause.message : 'Format failed.'
+    throw new Error(`Syntax error.\n\n${message}`, { cause })
+  }
+}
+
+export function canFormatInBrowser(language: CodeLanguage, action: CodeAction): boolean {
+  if (action === 'beautify') {
     return true
   }
-  return action === 'minify' && (language === 'html' || language === 'css')
+  return language === 'json' || language === 'html' || language === 'css'
 }
 
 export async function formatInBrowser(
@@ -83,20 +133,27 @@ export async function formatInBrowser(
   language: CodeLanguage,
   action: CodeAction,
 ): Promise<{ code: string, engine: string }> {
-  if (!canFormatInBrowser(language, action)) {
-    throw new Error('This language and action need the server.')
-  }
-
   const text = requireCodeInput(code)
+
+  if (action === 'beautify') {
+    return {
+      code: await beautifyInBrowser(text, language),
+      engine: language === 'json' ? 'json' : 'prettier',
+    }
+  }
 
   if (language === 'json') {
     return {
-      code: action === 'minify' ? minifyJson(text) : formatJson(text),
+      code: minifyJson(text),
       engine: 'json',
     }
   }
   if (language === 'html') {
     return { code: minifyHtml(text), engine: 'html' }
   }
-  return { code: await minifyCss(text), engine: 'csso' }
+  if (language === 'css') {
+    return { code: await minifyCss(text), engine: 'csso' }
+  }
+
+  throw new Error('This language and action need the server.')
 }

@@ -1,5 +1,5 @@
 import type { Hsl, Oklch, ParsedColor, Rgb } from './types'
-import { rgbToHsl } from './convert'
+import { hslToRgb, rgbToHsl } from './convert'
 import { oklchToRgb, rgbToOklch } from './oklch'
 
 function clampByte(value: number): number {
@@ -10,12 +10,19 @@ export function rgbToHex({ r, g, b }: Rgb): string {
   return `#${[r, g, b].map(value => clampByte(value).toString(16).padStart(2, '0')).join('')}`
 }
 
-function describe(rgb: Rgb, hsl?: Hsl): ParsedColor {
+function describe(rgb: Rgb, hsl?: Hsl, oklchInput?: Oklch, alpha?: number): ParsedColor {
+  const finalRgb: Rgb = alpha !== undefined && alpha < 1 ? { ...rgb, a: alpha } : { ...rgb }
+  const computedHsl = hsl ?? rgbToHsl(rgb)
+  const finalHsl: Hsl = alpha !== undefined && alpha < 1 ? { ...computedHsl, a: alpha } : { ...computedHsl }
+  const computedOklch = oklchInput ?? rgbToOklch(rgb)
+  const finalOklch: Oklch = alpha !== undefined && alpha < 1 ? { ...computedOklch, a: alpha } : { ...computedOklch }
+
   return {
-    hex: rgbToHex(rgb),
-    rgb,
-    hsl: hsl ?? rgbToHsl(rgb),
-    oklch: rgbToOklch(rgb),
+    hex: rgbToHex(finalRgb),
+    rgb: finalRgb,
+    hsl: finalHsl,
+    oklch: finalOklch,
+    alpha: alpha !== undefined && alpha < 1 ? alpha : undefined,
   }
 }
 
@@ -161,6 +168,7 @@ const NAMED_COLORS: Record<string, string> = {
   teal: '#008080',
   thistle: '#d8bfd8',
   tomato: '#ff6347',
+  transparent: '#00000000',
   turquoise: '#40e0d0',
   violet: '#ee82ee',
   wheat: '#f5deb3',
@@ -168,6 +176,73 @@ const NAMED_COLORS: Record<string, string> = {
   whitesmoke: '#f5f5f5',
   yellow: '#ffff00',
   yellowgreen: '#9acd32',
+}
+
+function parseHue(val: string): number {
+  const trimmed = val.trim().toLowerCase()
+  if (trimmed === 'none') {
+    return 0
+  }
+  let deg = 0
+  if (trimmed.endsWith('deg')) {
+    deg = Number.parseFloat(trimmed.slice(0, -3))
+  }
+  else if (trimmed.endsWith('grad')) {
+    deg = Number.parseFloat(trimmed.slice(0, -4)) * (360 / 400)
+  }
+  else if (trimmed.endsWith('rad')) {
+    deg = Number.parseFloat(trimmed.slice(0, -3)) * (180 / Math.PI)
+  }
+  else if (trimmed.endsWith('turn')) {
+    deg = Number.parseFloat(trimmed.slice(0, -4)) * 360
+  }
+  else {
+    deg = Number.parseFloat(trimmed)
+  }
+  if (Number.isNaN(deg)) {
+    throw new TypeError(`Invalid hue value: "${val}"`)
+  }
+  return ((deg % 360) + 360) % 360
+}
+
+function parseAlpha(val: string): number {
+  const trimmed = val.trim().toLowerCase()
+  if (trimmed === 'none') {
+    return 1
+  }
+  let num: number
+  if (trimmed.endsWith('%')) {
+    num = Number.parseFloat(trimmed.slice(0, -1)) / 100
+  }
+  else {
+    num = Number.parseFloat(trimmed)
+  }
+  if (Number.isNaN(num)) {
+    throw new TypeError(`Invalid alpha value: "${val}"`)
+  }
+  return Math.min(1, Math.max(0, Math.round(num * 1000) / 1000))
+}
+
+function parseRgbChannel(val: string): number {
+  const trimmed = val.trim().toLowerCase()
+  if (trimmed === 'none') {
+    return 0
+  }
+  if (trimmed.endsWith('%')) {
+    return clampByte((Number.parseFloat(trimmed.slice(0, -1)) / 100) * 255)
+  }
+  return clampByte(Number.parseFloat(trimmed))
+}
+
+function parsePercentage(val: string): number {
+  const trimmed = val.trim().toLowerCase()
+  if (trimmed === 'none') {
+    return 0
+  }
+  const num = trimmed.endsWith('%')
+    ? Number.parseFloat(trimmed.slice(0, -1))
+    : Number.parseFloat(trimmed)
+  return Math.min(100, Math.max(0, num))
 }
 
 export function parseColor(input: string): ParsedColor {
@@ -181,111 +256,122 @@ export function parseColor(input: string): ParsedColor {
   const hexMatch = /^#([0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i.exec(text)
   if (hexMatch) {
     const raw = hexMatch[1]!
-    const full = (raw.length === 3 || raw.length === 4)
-      ? raw.split('').map(char => char + char).join('')
-      : raw
-    const rgb = {
+    let full: string
+    let alphaValue: number | undefined
+    if (raw.length === 3) {
+      full = raw.split('').map(char => char + char).join('')
+    }
+    else if (raw.length === 4) {
+      const chars = raw.split('')
+      full = chars.slice(0, 3).map(char => char + char).join('')
+      alphaValue = Math.round((Number.parseInt(chars[3]! + chars[3]!, 16) / 255) * 1000) / 1000
+    }
+    else if (raw.length === 6) {
+      full = raw
+    }
+    else {
+      full = raw.slice(0, 6)
+      alphaValue = Math.round((Number.parseInt(raw.slice(6, 8), 16) / 255) * 1000) / 1000
+    }
+
+    const rgb: Rgb = {
       r: Number.parseInt(full.slice(0, 2), 16),
       g: Number.parseInt(full.slice(2, 4), 16),
       b: Number.parseInt(full.slice(4, 6), 16),
     }
-    return describe(rgb)
+    return describe(rgb, undefined, undefined, alphaValue)
   }
 
-  const rgbMatch = /^rgba?\(\s*([0-9.]+%?)[\s,]+([0-9.]+%?)[\s,]+([0-9.]+%?)(?:\s*[,/]\s*[0-9.]+%?)?\s*\)$/i.exec(text)
-  if (rgbMatch) {
-    const parseChannel = (val: string) => {
-      if (val.endsWith('%')) {
-        return clampByte(Number.parseFloat(val) * 2.55)
+  const funcMatch = /^(rgba?|hsla?|oklch)\((.*)\)$/i.exec(text)
+  if (funcMatch) {
+    const fn = funcMatch[1]!.toLowerCase()
+    const rawArgs = funcMatch[2]!.trim()
+
+    let channelsStr = rawArgs
+    let alphaValue: number | undefined
+
+    if (rawArgs.includes('/')) {
+      const slashParts = rawArgs.split('/')
+      if (slashParts.length !== 2) {
+        throw new Error('Invalid syntax: multiple slashes in color')
       }
-      return clampByte(Number.parseFloat(val))
+      channelsStr = slashParts[0]!.trim()
+      alphaValue = parseAlpha(slashParts[1]!)
     }
-    const rgb = {
-      r: parseChannel(rgbMatch[1]!),
-      g: parseChannel(rgbMatch[2]!),
-      b: parseChannel(rgbMatch[3]!),
-    }
-    return describe(rgb)
-  }
 
-  const hslMatch = /^hsla?\(\s*([0-9.]+(?:deg)?)[\s,]+([0-9.]+)%[\s,]+([0-9.]+)%(?:\s*[,/]\s*[0-9.]+%?)?\s*\)$/i.exec(text)
-  if (hslMatch) {
-    const hRaw = Number.parseFloat(hslMatch[1]!)
-    const hsl: Hsl = {
-      h: ((hRaw % 360) + 360) % 360,
-      s: Math.min(100, Math.max(0, Number.parseFloat(hslMatch[2]!))),
-      l: Math.min(100, Math.max(0, Number.parseFloat(hslMatch[3]!))),
+    let parts: string[]
+    if (channelsStr.includes(',')) {
+      parts = channelsStr.split(',').map(s => s.trim()).filter(Boolean)
+      if (alphaValue === undefined && parts.length === 4) {
+        alphaValue = parseAlpha(parts.pop()!)
+      }
     }
-    return describe(hslToRgb(hsl), hsl)
-  }
-
-  const oklchMatch = /^oklch\(\s*([0-9.]+%?)\s+([0-9.]+)\s+([0-9.]+)(?:\s*[,/]\s*[0-9.]+%?)?\s*\)$/i.exec(text)
-  if (oklchMatch) {
-    const rawLStr = oklchMatch[1]!
-    const isPercent = rawLStr.endsWith('%')
-    const rawL = Number.parseFloat(rawLStr)
-    const lightness = isPercent || rawL > 1.0
-      ? Math.min(100, Math.max(0, rawL))
-      : Math.min(100, Math.max(0, rawL * 100))
-
-    const oklch: Oklch = {
-      l: lightness,
-      c: Math.max(0, Number.parseFloat(oklchMatch[2]!)),
-      h: ((Number.parseFloat(oklchMatch[3]!) % 360) + 360) % 360,
+    else {
+      parts = channelsStr.split(/\s+/).map(s => s.trim()).filter(Boolean)
+      if (alphaValue === undefined && parts.length === 4) {
+        alphaValue = parseAlpha(parts.pop()!)
+      }
     }
-    return describe(oklchToRgb(oklch))
+
+    if (parts.length !== 3) {
+      throw new Error(`Invalid color arguments: expected 3 channels, got ${parts.length}`)
+    }
+
+    if (fn.startsWith('rgb')) {
+      const rgb: Rgb = {
+        r: parseRgbChannel(parts[0]!),
+        g: parseRgbChannel(parts[1]!),
+        b: parseRgbChannel(parts[2]!),
+      }
+      return describe(rgb, undefined, undefined, alphaValue)
+    }
+
+    if (fn.startsWith('hsl')) {
+      const hsl: Hsl = {
+        h: parseHue(parts[0]!),
+        s: parsePercentage(parts[1]!),
+        l: parsePercentage(parts[2]!),
+      }
+      return describe(hslToRgb(hsl), hsl, undefined, alphaValue)
+    }
+
+    if (fn === 'oklch') {
+      const rawLStr = parts[0]!
+      const isPercent = rawLStr.endsWith('%')
+      const rawL = rawLStr.toLowerCase() === 'none' ? 0 : Number.parseFloat(rawLStr)
+      const lightness = isPercent || rawL > 1.0
+        ? Math.min(100, Math.max(0, rawL))
+        : Math.min(100, Math.max(0, rawL * 100))
+
+      const rawCStr = parts[1]!
+      const chroma = rawCStr.toLowerCase() === 'none'
+        ? 0
+        : rawCStr.endsWith('%')
+          ? (Number.parseFloat(rawCStr.slice(0, -1)) / 100) * 0.4
+          : Math.max(0, Number.parseFloat(rawCStr))
+
+      const oklch: Oklch = {
+        l: lightness,
+        c: chroma,
+        h: parseHue(parts[2]!),
+      }
+      return describe(oklchToRgb(oklch), undefined, oklch, alphaValue)
+    }
   }
 
   throw new Error('Invalid color.\n\nUse HEX, RGB, HSL, or OKLCH.')
 }
 
-export function toRgbString({ r, g, b }: Rgb): string {
+export function toRgbString({ r, g, b, a }: Rgb): string {
+  if (a !== undefined && a < 1) {
+    return `rgb(${clampByte(r)} ${clampByte(g)} ${clampByte(b)} / ${a})`
+  }
   return `rgb(${clampByte(r)}, ${clampByte(g)}, ${clampByte(b)})`
 }
 
-export function toHslString({ h, s, l }: Hsl): string {
+export function toHslString({ h, s, l, a }: Hsl): string {
+  if (a !== undefined && a < 1) {
+    return `hsl(${Math.round(h)} ${Math.round(s)}% ${Math.round(l)}% / ${a})`
+  }
   return `hsl(${Math.round(h)}, ${Math.round(s)}%, ${Math.round(l)}%)`
-}
-
-function hslToRgb({ h, s, l }: Hsl): Rgb {
-  const sat = s / 100
-  const light = l / 100
-  const chroma = (1 - Math.abs(2 * light - 1)) * sat
-  const huePrime = ((h % 360) + 360) % 360 / 60
-  const x = chroma * (1 - Math.abs(huePrime % 2 - 1))
-  let r = 0
-  let g = 0
-  let b = 0
-
-  if (huePrime < 1) {
-    r = chroma
-    g = x
-  }
-  else if (huePrime < 2) {
-    r = x
-    g = chroma
-  }
-  else if (huePrime < 3) {
-    g = chroma
-    b = x
-  }
-  else if (huePrime < 4) {
-    g = x
-    b = chroma
-  }
-  else if (huePrime < 5) {
-    r = x
-    b = chroma
-  }
-  else {
-    r = chroma
-    b = x
-  }
-
-  const match = light - chroma / 2
-  return {
-    r: clampByte((r + match) * 255),
-    g: clampByte((g + match) * 255),
-    b: clampByte((b + match) * 255),
-  }
 }

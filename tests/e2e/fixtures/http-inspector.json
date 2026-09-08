@@ -4,7 +4,10 @@
     "statusText": "OK",
     "headers": {
       "content-type": "text/html; charset=utf-8",
-      "x-frame-options": "DENY"
+      "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+      "x-frame-options": "DENY",
+      "x-content-type-options": "nosniff",
+      "referrer-policy": "strict-origin-when-cross-origin"
     },
     "url": "https://example.com",
     "hops": [
@@ -14,26 +17,90 @@
       }
     ],
     "security": {
-      "score": 85,
-      "grade": "B",
-      "cors": {
-        "allowOrigin": "*",
-        "allowMethods": "GET, POST",
-        "allowHeaders": "Content-Type",
-        "allowCredentials": "false",
-        "exposeHeaders": "",
-        "maxAge": "86400"
-      },
+      "score": 59,
+      "grade": "D",
       "findings": [
         {
-          "id": "csp-missing",
+          "id": "csp",
+          "level": "error",
           "header": "Content-Security-Policy",
-          "title": "Content Security Policy missing",
-          "level": "warning",
-          "detail": "No CSP header found.",
-          "fix": "Add a Content-Security-Policy header."
+          "title": "CSP is missing",
+          "detail": "No Content-Security-Policy header was returned.",
+          "fix": "Add Content-Security-Policy with a default-src and script-src policy that fits your app.",
+          "present": false,
+          "value": null
+        },
+        {
+          "id": "hsts",
+          "level": "ok",
+          "header": "Strict-Transport-Security",
+          "title": "HSTS is present",
+          "detail": "max-age=31536000; includeSubDomains; preload",
+          "fix": null,
+          "present": true,
+          "value": "max-age=31536000; includeSubDomains; preload"
+        },
+        {
+          "id": "xcto",
+          "level": "ok",
+          "header": "X-Content-Type-Options",
+          "title": "X-Content-Type-Options is nosniff",
+          "detail": "nosniff",
+          "fix": null,
+          "present": true,
+          "value": "nosniff"
+        },
+        {
+          "id": "xfo",
+          "level": "ok",
+          "header": "X-Frame-Options",
+          "title": "X-Frame-Options is set",
+          "detail": "DENY",
+          "fix": null,
+          "present": true,
+          "value": "DENY"
+        },
+        {
+          "id": "referrer",
+          "level": "ok",
+          "header": "Referrer-Policy",
+          "title": "Referrer-Policy is present",
+          "detail": "strict-origin-when-cross-origin",
+          "fix": null,
+          "present": true,
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "id": "cors-origin",
+          "level": "info",
+          "header": "Access-Control-Allow-Origin",
+          "title": "No CORS allow-origin header",
+          "detail": "This response does not advertise cross-origin access.",
+          "fix": "If browsers must call this URL from another origin, set Access-Control-Allow-Origin to that origin (avoid * with credentials).",
+          "present": false,
+          "value": null
         }
-      ]
+      ],
+      "cors": {
+        "allowOrigin": null,
+        "allowMethods": null,
+        "allowHeaders": null,
+        "allowCredentials": null,
+        "exposeHeaders": null,
+        "maxAge": null,
+        "findings": [
+          {
+            "id": "cors-origin",
+            "level": "info",
+            "header": "Access-Control-Allow-Origin",
+            "title": "No CORS allow-origin header",
+            "detail": "This response does not advertise cross-origin access.",
+            "fix": "If browsers must call this URL from another origin, set Access-Control-Allow-Origin to that origin (avoid * with credentials).",
+            "present": false,
+            "value": null
+          }
+        ]
+      }
     }
   }
 }

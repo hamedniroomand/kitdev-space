@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import type { FaviconPackageResult } from '#server/utils/image/favicon'
+import type { FaviconPackageResult } from '#shared/utils/image/favicon'
+import { generateFaviconPackageInBrowser } from '~/utils/image/favicon-browser'
 
 const file = ref<File | null>(null)
 const appName = ref('My Application')
@@ -31,17 +32,11 @@ async function generate() {
     return
 
   await run(async () => {
-    const formData = new FormData()
-    formData.append('file', file.value!)
-    formData.append('appName', appName.value)
-    formData.append('shortName', shortName.value)
-    formData.append('themeColor', themeColor.value)
-
-    const data = await $fetch<{ result: FaviconPackageResult }>('/api/image/favicon-generator', {
-      method: 'POST',
-      body: formData,
+    return await generateFaviconPackageInBrowser(file.value!, {
+      appName: appName.value,
+      shortName: shortName.value,
+      themeColor: themeColor.value,
     })
-    return data.result
   }, 'The favicon generation failed.')
 }
 
@@ -106,28 +101,26 @@ function handleReset() {
           </h3>
 
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div class="space-y-1">
-              <label class="text-xs font-medium text-muted">App Name</label>
+            <UFormField label="App Name">
               <UInput
                 v-model="appName"
                 placeholder="My Application"
                 class="w-full text-xs"
               />
-            </div>
-            <div class="space-y-1">
-              <label class="text-xs font-medium text-muted">Short Name</label>
+            </UFormField>
+            <UFormField label="Short Name">
               <UInput
                 v-model="shortName"
                 placeholder="App"
                 class="w-full text-xs"
               />
-            </div>
-            <div class="space-y-1">
-              <label class="text-xs font-medium text-muted">Theme Color</label>
+            </UFormField>
+            <UFormField label="Theme Color">
               <div class="flex items-center gap-2">
                 <input
                   v-model="themeColor"
                   type="color"
+                  aria-label="Theme color picker"
                   class="w-8 h-8 rounded border border-default cursor-pointer bg-transparent"
                 >
                 <UInput
@@ -136,7 +129,7 @@ function handleReset() {
                   class="flex-1 font-mono text-xs"
                 />
               </div>
-            </div>
+            </UFormField>
           </div>
 
           <div class="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-default">
@@ -247,13 +240,13 @@ function handleReset() {
           <!-- HTML Tags -->
           <div class="space-y-2">
             <div class="flex items-center justify-between">
-              <label class="text-xs font-semibold text-default flex items-center gap-1.5">
+              <span class="text-xs font-semibold text-default flex items-center gap-1.5">
                 <UIcon
                   name="i-lucide-code-xml"
                   class="w-3.5 h-3.5 text-primary"
                 />
                 HTML Header Code
-              </label>
+              </span>
               <UButton
                 size="xs"
                 variant="subtle"
@@ -276,13 +269,13 @@ function handleReset() {
           <!-- WebManifest JSON -->
           <div class="space-y-2">
             <div class="flex items-center justify-between">
-              <label class="text-xs font-semibold text-default flex items-center gap-1.5">
+              <span class="text-xs font-semibold text-default flex items-center gap-1.5">
                 <UIcon
                   name="i-lucide-file-code"
                   class="w-3.5 h-3.5 text-primary"
                 />
                 site.webmanifest
-              </label>
+              </span>
               <UButton
                 size="xs"
                 variant="subtle"

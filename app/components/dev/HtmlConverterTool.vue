@@ -149,13 +149,13 @@ function handleDownload() {
         <!-- Input HTML Column -->
         <div class="space-y-3">
           <div class="flex items-center justify-between">
-            <label class="text-xs font-semibold text-default flex items-center gap-1.5">
+            <span class="text-xs font-semibold text-default flex items-center gap-1.5">
               <UIcon
                 name="i-lucide-code"
                 class="w-4 h-4 text-primary"
               />
               HTML Input
-            </label>
+            </span>
           </div>
 
           <LazyToolEditor
@@ -224,39 +224,32 @@ function handleDownload() {
             v-if="targetFormat === 'jsx'"
             class="flex items-center gap-3 p-2.5 rounded-lg border border-default bg-elevated/20"
           >
-            <label class="flex items-center gap-2 text-xs font-medium text-default cursor-pointer select-none">
-              <input
-                v-model="wrapJsxComponent"
-                type="checkbox"
-                class="rounded border-default text-primary"
-              >
-              Wrap in component function
-            </label>
+            <UCheckbox
+              v-model="wrapJsxComponent"
+              label="Wrap in component function"
+              size="xs"
+            />
 
-            <label
+            <UCheckbox
               v-if="wrapJsxComponent"
-              class="flex items-center gap-2 text-xs font-medium text-default cursor-pointer select-none"
+              v-model="spreadProps"
+              label="Spread props"
+              size="xs"
               title="Adds a props parameter and spreads it on the root tag. An icon needs this."
-            >
-              <input
-                v-model="spreadProps"
-                type="checkbox"
-                class="rounded border-default text-primary"
-              >
-              Spread props
-            </label>
+            />
 
             <div
               v-if="wrapJsxComponent"
               class="flex items-center gap-2 ml-auto"
             >
-              <span class="text-xs text-muted">Name:</span>
-              <UInput
-                v-model="componentName"
-                placeholder="ComponentName"
-                class="w-40 font-mono text-xs"
-                size="xs"
-              />
+              <UFormField label="Name" class="flex items-center gap-2">
+                <UInput
+                  v-model="componentName"
+                  placeholder="ComponentName"
+                  class="w-40 font-mono text-xs"
+                  size="xs"
+                />
+              </UFormField>
             </div>
           </div>
 

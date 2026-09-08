@@ -99,6 +99,7 @@ export default defineNuxtConfig({
     '@nuxt/scripts',
     '@nuxtjs/seo',
     '@vueuse/nuxt',
+    '@vite-pwa/nuxt',
     'nuxt-llms',
     '@sentry/nuxt/module',
   ],
@@ -117,6 +118,66 @@ export default defineNuxtConfig({
     // Both Sentry configs send errors only. Remove unused tracing code.
     bundleSizeOptimizations: {
       excludeTracing: true,
+    },
+  },
+
+  pwa: {
+    registerType: 'autoUpdate',
+    manifest: {
+      name: 'KitDev Space',
+      short_name: 'KitDev',
+      description: 'Developer tools for people who build things.',
+      theme_color: '#0f172a',
+      background_color: '#0f172a',
+      display: 'standalone',
+      start_url: '/',
+      icons: [
+        {
+          src: '/favicon.ico',
+          sizes: '48x48',
+          type: 'image/x-icon',
+        },
+        {
+          src: '/apple-touch-icon.png',
+          sizes: '180x180',
+          type: 'image/png',
+        },
+      ],
+    },
+    workbox: {
+      navigateFallback: '/',
+      globPatterns: ['**/*.{js,css,html,png,svg,ico,woff,woff2}'],
+      runtimeCaching: [
+        {
+          urlPattern: /^https:\/\/fonts\.(?:googleapis|gstatic)\.com\/.*/i,
+          handler: 'CacheFirst',
+          options: {
+            cacheName: 'google-fonts',
+            expiration: {
+              maxEntries: 10,
+              maxAgeSeconds: 60 * 60 * 24 * 365,
+            },
+          },
+        },
+        {
+          urlPattern: /\/hub\/(?!network\/(?:dns|http-inspector|email-health|tls-inspector|rdap-lookup)).*/,
+          handler: 'StaleWhileRevalidate',
+          options: {
+            cacheName: 'client-tools-cache',
+            expiration: {
+              maxEntries: 100,
+              maxAgeSeconds: 60 * 60 * 24 * 30,
+            },
+          },
+        },
+      ],
+      navigateFallbackDenylist: [/^\/api\//, /^\/tunnel/],
+    },
+    client: {
+      installPrompt: true,
+    },
+    devOptions: {
+      enabled: false,
     },
   },
 

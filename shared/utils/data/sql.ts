@@ -157,3 +157,27 @@ export function createSqlLinter(getDialect: () => SqlDialect): Extension {
     return diagnostics
   })
 }
+
+export function quoteIdentifier(name: string): string {
+  return `"${name.replace(/"/g, '""')}"`
+}
+
+export function sqlLiteral(value: unknown, options: { quoteNumericStrings?: boolean } = {}): string {
+  if (value === null || value === undefined) {
+    return 'NULL'
+  }
+  if (typeof value === 'number') {
+    return Number.isFinite(value) ? String(value) : 'NULL'
+  }
+  if (typeof value === 'boolean') {
+    return value ? 'TRUE' : 'FALSE'
+  }
+  if (typeof value === 'string') {
+    const trimmed = value.trim()
+    if (!options.quoteNumericStrings && trimmed !== '' && /^-?\d+(?:\.\d+)?$/.test(trimmed)) {
+      return trimmed
+    }
+    return `'${value.replace(/'/g, '\'\'')}'`
+  }
+  return `'${JSON.stringify(value).replace(/'/g, '\'\'')}'`
+}

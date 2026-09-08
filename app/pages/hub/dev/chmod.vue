@@ -12,6 +12,7 @@ const { copy, label, color, icon } = useCopyFeedback()
 
 const symbolicOutput = computed(() => permissionsToSymbolic(permissions.value))
 const octalOutput = computed(() => permissionsToOctal(permissions.value))
+useLiveTool(octalOutput)
 const chmodCommand = computed(() => `chmod ${octalOutput.value} ${fileName.value.trim() || 'file.txt'}`)
 const errorMessage = ref<string | null>(null)
 

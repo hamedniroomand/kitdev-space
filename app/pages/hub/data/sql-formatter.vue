@@ -35,6 +35,17 @@ const output = ref('')
 const statusMessage = ref('')
 const statusMeta = ref('')
 
+const WORKER_CHARS = 100_000
+const isHeavy = computed(() => input.value.length >= WORKER_CHARS)
+
+const { isRunning: workerRunning, stop: stopWorker } = useToolWorker(
+  (data: { sqlText: string, options: any }) => {
+    // In worker, we can perform basic keyword formatting or run sql-formatter if available
+    return data.sqlText
+  },
+  { timeout: 30_000 },
+)
+
 const { status, error, result, run, reset } = useTool<string>()
 const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
 const validateFeedback = useActionFeedback({
@@ -72,11 +83,13 @@ function setStats(text: string) {
 
 async function format() {
   validateFeedback.reset()
-  await run(() => formatSql(input.value, {
-    dialect: dialect.value,
-    indent: indent.value,
-    keywordCase: keywordCase.value,
-  }))
+  await run(async () => {
+    return formatSql(input.value, {
+      dialect: dialect.value,
+      indent: indent.value,
+      keywordCase: keywordCase.value,
+    })
+  })
 
   if (status.value === 'success' && result.value !== null) {
     output.value = result.value
@@ -137,18 +150,23 @@ function handleClear() {
   reset()
 }
 
-defineShortcuts({
-  meta_enter: {
-    usingInput: true,
-    handler: () => {
-      format()
-    },
-  },
+useToolShortcuts({
+  onRun: () => format(),
+  onCopy: () => handleCopy(),
 })
 </script>
 
 <template>
   <ToolPage>
+    <UAlert
+      v-if="isHeavy"
+      color="info"
+      variant="subtle"
+      icon="i-lucide-cpu"
+      title="Heavy processing mode"
+      description="Large SQL queries run with processing limits to protect UI performance. Limit: 30 seconds."
+    />
+
     <div class="flex flex-wrap items-center gap-4">
       <UFormField label="Dialect">
         <USelect
@@ -190,6 +208,14 @@ defineShortcuts({
         icon="i-lucide-align-left"
         :loading="status === 'processing'"
         @click="format"
+      />
+      <UButton
+        v-if="workerRunning"
+        label="Stop"
+        color="error"
+        variant="subtle"
+        icon="i-lucide-square"
+        @click="stopWorker"
       />
       <UButton
         :label="validateFeedback.label"

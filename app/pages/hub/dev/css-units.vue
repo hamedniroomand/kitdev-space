@@ -8,8 +8,6 @@ const rootFontSize = ref(16)
 const viewportWidth = ref(1920)
 const viewportHeight = ref(1080)
 
-const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
-
 useToolSeo('css-units')
 
 const unitOptions = [
@@ -42,10 +40,7 @@ const conversions = computed(() => {
     { label: 'Viewport Height (vh)', unit: 'vh', value: `${formatNumber(results.vh)}vh`, raw: results.vh },
   ]
 })
-
-async function handleCopy(val: string, key: string) {
-  await copy(val, key)
-}
+useLiveTool(conversions)
 
 function handleReset() {
   inputValue.value = 16
@@ -133,29 +128,13 @@ function handleReset() {
     </ToolActions>
 
     <div class="space-y-3">
-      <div
+      <ToolResultRow
         v-for="item in conversions"
         :key="item.unit"
-        class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-[12px] border border-default bg-elevated p-4"
-        :class="{ 'ring-1 ring-primary/40': item.unit === sourceUnit }"
-      >
-        <div class="min-w-0 flex-1">
-          <p class="font-mono text-xs font-medium text-muted uppercase">
-            {{ item.label }}
-          </p>
-          <p class="mt-1 font-mono text-base font-semibold text-highlighted">
-            {{ item.value }}
-          </p>
-        </div>
-        <UButton
-          :label="copyLabel(item.unit)"
-          size="xs"
-          :color="copyColor(item.unit)"
-          variant="subtle"
-          :icon="copyIcon(item.unit)"
-          @click="handleCopy(item.value, item.unit)"
-        />
-      </div>
+        :label="item.label"
+        :value="item.value"
+        :active="item.unit === sourceUnit"
+      />
     </div>
 
     <template #docs>

@@ -125,6 +125,7 @@ const outputText = computed(() => {
   }
   return formatAsSqlInserts(rows.value, tableName.value || 'table_name')
 })
+useLiveTool(outputText)
 
 const editorLang = computed<ToolEditorLang>(() => {
   if (format.value === 'json')
@@ -216,8 +217,7 @@ function handleDownload() {
 
           <!-- General Controls -->
           <div class="grid grid-cols-2 gap-3 pt-1">
-            <div class="space-y-1">
-              <label class="text-xs text-muted font-medium">Row Count</label>
+            <UFormField label="Row Count">
               <USelect
                 v-model.number="rowCount"
                 :items="[
@@ -229,15 +229,14 @@ function handleDownload() {
                 ]"
                 class="w-full"
               />
-            </div>
-            <div class="space-y-1">
-              <label class="text-xs text-muted font-medium">Table Name</label>
+            </UFormField>
+            <UFormField label="Table Name">
               <UInput
                 v-model="tableName"
                 placeholder="users"
                 class="w-full font-mono text-xs"
               />
-            </div>
+            </UFormField>
           </div>
 
           <!-- Field List -->

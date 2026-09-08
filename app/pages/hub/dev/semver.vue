@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { SemverAction, SemverRelease } from '#shared/utils/dev/semver'
-import { canSemverInBrowser, semverBump } from '#shared/utils/dev/semver'
+import { semverBump, semverSatisfies, semverSort } from '#shared/utils/dev/semver'
 
 const action = ref<SemverAction>('satisfies')
 const version = ref('1.2.3')
@@ -27,40 +27,20 @@ useToolSeo('semver')
 
 async function execute() {
   output.value = ''
-  await run(async () => {
-    if (canSemverInBrowser(action.value)) {
-      const text = semverBump(version.value, release.value)
-      output.value = text
-      return text
-    }
-
-    const body: Record<string, unknown> = { action: action.value }
-    if (action.value === 'satisfies') {
-      body.version = version.value
-      body.range = range.value
-    }
-    else {
-      body.versions = versionsText.value
-    }
-
-    const data = await $fetch<{
-      result: { ok?: boolean, versions?: string[], version?: string }
-    }>('/api/dev/semver', {
-      method: 'POST',
-      body,
-    })
-
+  await run(() => {
     let text = ''
-    if (typeof data.result.ok === 'boolean') {
-      text = data.result.ok
+    if (action.value === 'bump') {
+      text = semverBump(version.value, release.value)
+    }
+    else if (action.value === 'satisfies') {
+      const ok = semverSatisfies(version.value, range.value)
+      text = ok
         ? 'true — version satisfies range'
         : 'false — version does not satisfy range'
     }
-    else if (data.result.versions) {
-      text = data.result.versions.join('\n')
-    }
-    else {
-      text = data.result.version ?? ''
+    else if (action.value === 'sort') {
+      const list = versionsText.value.split('\n')
+      text = semverSort(list).join('\n')
     }
     output.value = text
     return text
@@ -79,24 +59,19 @@ function handleClear() {
   reset()
 }
 
-defineShortcuts({
-  meta_enter: {
-    usingInput: true,
-    handler: () => {
-      execute()
-    },
-  },
+useToolShortcuts({
+  onRun: () => execute(),
+  onCopy: () => handleCopy(),
 })
 </script>
 
 <template>
   <ToolPage>
     <UAlert
-      color="info"
+      color="neutral"
       variant="subtle"
-      icon="i-lucide-shield-check"
-      title="Where the work runs"
-      description="A bump runs in your browser. Satisfies and sort go to the server, because they read the full range grammar."
+      title="Processed locally"
+      description="This tool runs in the browser."
     />
 
     <UFormField label="Action">

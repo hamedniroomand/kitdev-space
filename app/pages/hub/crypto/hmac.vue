@@ -123,11 +123,8 @@ function handleClear() {
       </div>
 
       <!-- Secret Key Input -->
-      <div class="space-y-2">
-        <div class="flex items-center justify-between">
-          <label class="block text-sm font-medium text-default">
-            Secret Key
-          </label>
+      <UFormField label="Secret Key">
+        <template #hint>
           <UButton
             size="xs"
             variant="subtle"
@@ -136,33 +133,27 @@ function handleClear() {
             label="Generate Random Key"
             @click="handleGenerateKey"
           />
-        </div>
+        </template>
         <UInput
           v-model="secret"
           placeholder="Enter secret key string..."
           class="font-mono text-sm w-full"
         />
-      </div>
+      </UFormField>
 
       <!-- Message Input -->
-      <div class="space-y-2">
-        <label class="block text-sm font-medium text-default">
-          Message to Sign
-        </label>
+      <UFormField label="Message to Sign">
         <UTextarea
           v-model="message"
           :rows="5"
           placeholder="Enter text message to authenticate..."
           class="font-mono text-sm w-full"
         />
-      </div>
+      </UFormField>
 
       <!-- Signature Output -->
-      <div class="space-y-2">
-        <div class="flex items-center justify-between">
-          <label class="block text-sm font-medium text-default">
-            HMAC Signature ({{ algorithm }})
-          </label>
+      <UFormField :label="`HMAC Signature (${algorithm})`">
+        <template #hint>
           <UButton
             :label="label()"
             :color="color()"
@@ -172,7 +163,7 @@ function handleClear() {
             :disabled="!signature"
             @click="handleCopy"
           />
-        </div>
+        </template>
         <div class="p-3.5 border border-default rounded-lg bg-default font-mono text-sm break-all select-all min-h-12 flex items-center">
           <span
             v-if="signature"
@@ -183,7 +174,7 @@ function handleClear() {
             class="text-muted italic"
           >Enter a secret key and a message to compute HMAC...</span>
         </div>
-      </div>
+      </UFormField>
 
       <ToolError
         v-if="errorMessage"

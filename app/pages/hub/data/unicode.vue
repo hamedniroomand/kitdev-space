@@ -9,6 +9,7 @@ const { copy } = useCopyFeedback()
 const sampleText = 'Code 🚀 & Data — café \u200B\uFEFF'
 
 const analysis = computed(() => inspectUnicode(input.value))
+useLiveTool(analysis)
 
 function handleLoadSample() {
   input.value = sampleText
@@ -53,17 +54,14 @@ function copyText(val: string) {
       </div>
 
       <!-- Input Area -->
-      <div class="space-y-2">
-        <label class="block text-sm font-medium text-default">
-          Input Text
-        </label>
+      <UFormField label="Input Text">
         <UTextarea
           v-model="input"
           :rows="4"
           placeholder="Paste or type text to inspect Unicode characters..."
           class="w-full font-mono text-sm"
         />
-      </div>
+      </UFormField>
 
       <!-- Warning Alerts for Hidden / Zero-width characters -->
       <div
@@ -81,41 +79,17 @@ function copyText(val: string) {
 
       <!-- Summary Stats -->
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div class="p-3 border border-default rounded-xl bg-elevated/40 text-center">
-          <div class="text-xs text-muted">
-            Code Points
-          </div>
-          <div class="text-xl font-bold font-mono mt-1">
-            {{ analysis.totalCodePoints }}
-          </div>
-        </div>
-        <div class="p-3 border border-default rounded-xl bg-elevated/40 text-center">
-          <div class="text-xs text-muted">
-            UTF-16 Length
-          </div>
-          <div class="text-xl font-bold font-mono mt-1">
-            {{ analysis.totalChars }}
-          </div>
-        </div>
-        <div class="p-3 border border-default rounded-xl bg-elevated/40 text-center">
-          <div class="text-xs text-muted">
-            Zero-Width Marks
-          </div>
-          <div
-            class="text-xl font-bold font-mono mt-1"
-            :class="analysis.hasZeroWidth ? 'text-warning' : 'text-success'"
-          >
-            {{ analysis.hasZeroWidth ? 'Found' : 'None' }}
-          </div>
-        </div>
-        <div class="p-3 border border-default rounded-xl bg-elevated/40 text-center">
-          <div class="text-xs text-muted">
-            Normalization (NFC)
-          </div>
-          <div class="text-xl font-bold font-mono mt-1">
-            {{ analysis.normalization.isNfc ? 'Yes' : 'No' }}
-          </div>
-        </div>
+        <StatCard label="Code Points" :value="analysis.totalCodePoints" />
+        <StatCard label="UTF-16 Length" :value="analysis.totalChars" />
+        <StatCard
+          label="Zero-Width Marks"
+          :value="analysis.hasZeroWidth ? 'Found' : 'None'"
+          :color="analysis.hasZeroWidth ? 'warning' : 'success'"
+        />
+        <StatCard
+          label="Normalization (NFC)"
+          :value="analysis.normalization.isNfc ? 'Yes' : 'No'"
+        />
       </div>
 
       <!-- Normalization Overview -->

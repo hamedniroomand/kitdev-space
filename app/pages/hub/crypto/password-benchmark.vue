@@ -67,13 +67,9 @@ function handleClear() {
   reset()
 }
 
-defineShortcuts({
-  meta_enter: {
-    usingInput: true,
-    handler: () => {
-      execute()
-    },
-  },
+useToolShortcuts({
+  onRun: () => execute(),
+  onCopy: () => handleCopy(),
 })
 </script>
 

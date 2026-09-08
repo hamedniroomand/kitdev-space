@@ -159,11 +159,8 @@ function handleClear() {
       </div>
 
       <!-- Secret Input -->
-      <div class="space-y-2">
-        <div class="flex items-center justify-between">
-          <label class="block text-sm font-medium text-default">
-            Base32 Secret or OTPAuth URI
-          </label>
+      <UFormField label="Base32 Secret or OTPAuth URI">
+        <template #hint>
           <UButton
             size="xs"
             variant="subtle"
@@ -172,13 +169,13 @@ function handleClear() {
             label="Generate Random Secret"
             @click="handleGenerateSecret"
           />
-        </div>
+        </template>
         <UInput
           v-model="secretInput"
           placeholder="Paste Base32 secret key or otpauth:// URI..."
           class="font-mono text-sm w-full"
         />
-      </div>
+      </UFormField>
 
       <!-- URI Metadata info if detected -->
       <div
@@ -196,13 +193,9 @@ function handleClear() {
       </div>
 
       <!-- Error Alert -->
-      <UAlert
+      <ToolError
         v-if="errorMessage"
-        color="error"
-        variant="subtle"
-        icon="i-lucide-alert-triangle"
-        title="Invalid Secret"
-        :description="errorMessage"
+        :message="errorMessage"
       />
 
       <!-- Active TOTP Code Card -->

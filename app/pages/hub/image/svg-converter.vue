@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { imageExtensionFor } from '#shared/utils/image/format'
-import { readImageResponse } from '#shared/utils/image/response'
+import { rasterizeSvgInBrowser } from '~/utils/image/svg-browser'
 
 type SvgFormat = 'png' | 'webp'
 type SvgScale = 1 | 2 | 4
@@ -38,26 +38,12 @@ const scaleCards = computed(() => [
 useToolSeo('svg-converter')
 
 async function convertScale(scale: SvgScale) {
-  const formData = new FormData()
-  formData.append('scale', String(scale))
-  formData.append('format', format.value)
-  formData.append('quality', String(quality.value))
-
-  if (svgText.value.trim()) {
-    formData.append('svg', svgText.value.trim())
-  }
-  else if (file.value) {
-    formData.append('file', file.value)
-  }
-  else {
+  const source = svgText.value.trim() ? svgText.value.trim() : file.value
+  if (!source) {
     throw new Error('Paste SVG code or upload an SVG file.')
   }
 
-  const response = await fetch('/api/image/svg-convert', {
-    method: 'POST',
-    body: formData,
-  })
-  const processed = await readImageResponse(response, 'The SVG convert operation failed.')
+  const processed = await rasterizeSvgInBrowser(source, scale, format.value, quality.value)
 
   if (scale === 1) {
     result1x.value = processed.blob
@@ -113,26 +99,13 @@ watch(file, async (next) => {
   svgText.value = await next.text()
 })
 
-defineShortcuts({
-  meta_enter: {
-    usingInput: true,
-    handler: () => {
-      handleConvert()
-    },
-  },
+useToolShortcuts({
+  onRun: () => handleConvert(),
 })
 </script>
 
 <template>
   <ToolPage>
-    <UAlert
-      color="info"
-      variant="subtle"
-      icon="i-lucide-server"
-      title="Processed with Bun"
-      description="This tool uses resvg and Bun.Image on the server. Files are not stored."
-    />
-
     <LazyToolEditor
       v-model="svgText"
       hydrate-on-idle
@@ -241,10 +214,10 @@ defineShortcuts({
     <template #docs>
       <ToolDocs title="About SVG conversion">
         <p class="text-sm leading-relaxed text-muted">
-          The tool rasterizes SVG with resvg, then encodes PNG or WebP with Bun.Image.
+          The tool renders SVG markup to HTML canvas and exports PNG or WebP in your browser.
         </p>
         <p class="text-sm leading-relaxed text-muted">
-          Remote resources in SVG are blocked.
+          Your SVG data never leaves your device.
         </p>
         <RelatedTools
           :items="[

@@ -18,27 +18,7 @@ function assertDomainName(value: string): void {
   }
 }
 
-export interface RdapRegistrar {
-  name?: string
-  ianaId?: string
-  abuseEmail?: string
-  abusePhone?: string
-}
-
-export interface RdapResult {
-  query: string
-  type: 'domain' | 'ip'
-  found: boolean
-  status: string[]
-  registrationDate?: string
-  expirationDate?: string
-  updatedDate?: string
-  daysUntilExpiration?: number
-  registrar?: RdapRegistrar
-  nameservers: string[]
-  dnssec?: boolean
-  raw: Record<string, unknown>
-}
+export type { RdapRegistrar, RdapResult } from '#shared/utils/network/types'
 
 export function parseRdapEntity(entity: Record<string, unknown>): RdapRegistrar {
   const result: RdapRegistrar = {}

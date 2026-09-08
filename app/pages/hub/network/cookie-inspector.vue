@@ -20,6 +20,7 @@ const input = ref(SAMPLE)
 const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
 
 const report = computed(() => inspectCookies(input.value))
+useLiveTool(report)
 const total = computed(() => report.value.setCookies.length + report.value.requestCookies.length)
 
 const LEVEL_COLOR: Record<FindingLevel, 'error' | 'warning' | 'info'> = {

@@ -24,13 +24,7 @@ const conversions = computed(() => {
     { label: 'CONSTANT_CASE', value: toConstantCase(text), id: 'constant' },
   ]
 })
-
-async function copyItem(val: string, id: string) {
-  if (!val) {
-    return
-  }
-  await copy(val, id)
-}
+useLiveTool(conversions)
 
 async function copyAll() {
   const summary = conversions.value
@@ -79,29 +73,12 @@ function handleClear() {
     </ToolActions>
 
     <div class="space-y-3">
-      <div
+      <ToolResultRow
         v-for="item in conversions"
         :key="item.id"
-        class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-[12px] border border-default bg-elevated p-4"
-      >
-        <div class="min-w-0 flex-1">
-          <p class="font-mono text-xs font-medium text-muted uppercase">
-            {{ item.label }}
-          </p>
-          <p class="mt-1 font-mono text-sm break-all text-highlighted">
-            {{ item.value || '—' }}
-          </p>
-        </div>
-        <UButton
-          :label="copyLabel(item.id)"
-          size="xs"
-          :color="copyColor(item.id)"
-          variant="subtle"
-          :icon="copyIcon(item.id)"
-          :disabled="!item.value"
-          @click="copyItem(item.value, item.id)"
-        />
-      </div>
+        :label="item.label"
+        :value="item.value"
+      />
     </div>
 
     <template #docs>

@@ -95,14 +95,12 @@ useToolShortcuts({
       <!-- Inputs Grid -->
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <!-- Color Input -->
-        <div class="space-y-2">
-          <label class="block text-sm font-medium text-default">
-            Base Color
-          </label>
+        <UFormField label="Base Color">
           <div class="flex items-center gap-3">
             <input
               v-model="inputColor"
               type="color"
+              aria-label="Base color picker"
               class="w-10 h-10 rounded-lg border border-default cursor-pointer p-0 bg-transparent shrink-0"
             >
             <UInput
@@ -111,19 +109,16 @@ useToolShortcuts({
               class="font-mono text-sm w-full"
             />
           </div>
-        </div>
+        </UFormField>
 
         <!-- Color Name Input -->
-        <div class="space-y-2">
-          <label class="block text-sm font-medium text-default">
-            Token Name
-          </label>
+        <UFormField label="Token Name">
           <UInput
             v-model="colorName"
             placeholder="e.g. brand, primary, accent"
             class="font-mono text-sm w-full"
           />
-        </div>
+        </UFormField>
       </div>
 
       <!-- Color Swatches Grid -->
@@ -131,9 +126,9 @@ useToolShortcuts({
         v-if="palette.length > 0"
         class="space-y-2"
       >
-        <label class="block text-sm font-medium text-default">
+        <span class="block text-sm font-medium text-default">
           Generated 50–950 Shade Scale (Click any swatch to copy hex)
-        </label>
+        </span>
         <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-11 gap-2">
           <button
             v-for="s in palette"

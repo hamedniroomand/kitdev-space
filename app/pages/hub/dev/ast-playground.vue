@@ -120,13 +120,8 @@ function handleSample() {
   applySample(language.value)
 }
 
-defineShortcuts({
-  meta_enter: {
-    usingInput: true,
-    handler: () => {
-      parseAst()
-    },
-  },
+useToolShortcuts({
+  onRun: () => parseAst(),
 })
 </script>
 

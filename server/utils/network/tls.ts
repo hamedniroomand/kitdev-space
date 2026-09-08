@@ -1,49 +1,11 @@
 import tls from 'node:tls'
 import { assertSafeUrl, TLS_PORTS } from './ssrf'
 
-export interface TlsCertSubject {
-  commonName?: string
-  organization?: string
-  organizationalUnit?: string
-  country?: string
-  state?: string
-  locality?: string
-}
-
-export interface TlsCertItem {
-  subject: TlsCertSubject
-  issuer: TlsCertSubject
-  validFrom: string
-  validTo: string
-  serialNumber: string
-  fingerprint256?: string
-  fingerprint?: string
-}
-
-export interface TlsInspectionResult {
-  host: string
-  port: number
-  authorized: boolean
-  authorizationError?: string | null
-  protocol: string
-  cipher: {
-    name: string
-    version?: string
-  }
-  subject: TlsCertSubject
-  issuer: TlsCertSubject
-  validFrom: string
-  validTo: string
-  daysRemaining: number
-  status: 'valid' | 'expiring_soon' | 'expired'
-  sans: string[]
-  matchesHost: boolean
-  serialNumber: string
-  fingerprint256: string
-  fingerprint: string
-  isSelfSigned: boolean
-  chain: TlsCertItem[]
-}
+export type {
+  TlsCertItem,
+  TlsCertSubject,
+  TlsInspectionResult,
+} from '#shared/utils/network/types'
 
 export function parseSubject(peerSubject: tls.Certificate | tls.DetailedPeerCertificate['subject']): TlsCertSubject {
   if (!peerSubject || typeof peerSubject !== 'object') {

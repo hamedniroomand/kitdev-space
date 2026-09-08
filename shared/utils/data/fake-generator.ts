@@ -1,4 +1,6 @@
 import { faker } from '@faker-js/faker'
+import { formatCsvRow } from './csv'
+import { quoteIdentifier, sqlLiteral } from './sql'
 
 export type FieldType
   = | 'uuid'
@@ -109,36 +111,24 @@ export function formatAsSqlInserts(
   if (rows.length === 0)
     return ''
   const columns = Object.keys(rows[0]!)
-  const colList = columns.map(c => `"${c}"`).join(', ')
+  const colList = columns.map(c => quoteIdentifier(c)).join(', ')
 
   const valueRows = rows.map((row) => {
-    const vals = columns.map((col) => {
-      const val = row[col]
-      if (typeof val === 'number')
-        return val
-      if (typeof val === 'boolean')
-        return val ? 'TRUE' : 'FALSE'
-      return `'${String(val).replace(/'/g, '\'\'')}'`
-    })
+    const vals = columns.map(col => sqlLiteral(row[col]))
     return `  (${vals.join(', ')})`
   })
 
-  return `INSERT INTO "${tableName}" (${colList}) VALUES\n${valueRows.join(',\n')};`
+  return `INSERT INTO ${quoteIdentifier(tableName)} (${colList}) VALUES\n${valueRows.join(',\n')};`
 }
 
 export function formatAsCsv(rows: Record<string, string | number | boolean>[]): string {
   if (rows.length === 0)
     return ''
   const columns = Object.keys(rows[0]!)
-  const lines = [columns.join(',')]
-
-  for (const row of rows) {
-    const line = columns.map((col) => {
-      const val = String(row[col] ?? '')
-      return val.includes(',') || val.includes('"') ? `"${val.replace(/"/g, '""')}"` : val
-    })
-    lines.push(line.join(','))
-  }
+  const lines = [
+    formatCsvRow(columns),
+    ...rows.map(row => formatCsvRow(columns.map(col => row[col]))),
+  ]
 
   return lines.join('\n')
 }

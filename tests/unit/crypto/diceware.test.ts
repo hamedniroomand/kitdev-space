@@ -13,10 +13,10 @@ describe('diceware', () => {
   it('generates the requested word count with separators', () => {
     const value = createDicewarePassphrase({
       wordCount: 5,
-      separator: '-',
+      separator: '.',
       capitalize: 'none',
     })
-    const parts = value.split('-')
+    const parts = value.split('.')
     expect(parts).toHaveLength(5)
     for (const part of parts) {
       expect(DICEWARE_WORDS).toContain(part)

@@ -32,7 +32,7 @@ function onFileSelect(event: Event) {
   <div class="flex flex-col items-center justify-center p-8 text-center min-h-[400px]">
     <div
       ref="dropZoneRef"
-      class="w-full max-w-xl border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl p-10 hover:border-primary transition-colors cursor-pointer flex flex-col items-center gap-4 bg-gray-50 dark:bg-gray-900/50"
+      class="w-full max-w-xl border-2 border-dashed border-default rounded-xl p-10 hover:border-primary transition-colors cursor-pointer flex flex-col items-center gap-4 bg-elevated/40"
       @click="fileInput?.click()"
     >
       <input
@@ -49,10 +49,10 @@ function onFileSelect(event: Event) {
         />
       </div>
       <div>
-        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+        <h3 class="text-lg font-medium text-highlighted">
           Drop your SQLite file here
         </h3>
-        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+        <p class="text-sm text-muted mt-1">
           Supports .sqlite, .db, and .sqlite3. Your database stays in your browser.
         </p>
       </div>
@@ -74,7 +74,7 @@ function onFileSelect(event: Event) {
         :loading="loading"
         @click="emit('createBlank')"
       />
-      <span class="text-xs text-gray-400">or</span>
+      <span class="text-xs text-muted">or</span>
       <UButton
         label="Load Sample Database"
         icon="i-lucide-folder-open"

@@ -1,4 +1,6 @@
 import type { InputMethod } from './useToolAnalytics'
+import { useCurrentToolId } from './useCurrentTool'
+import { useToolAnalytics } from './useToolAnalytics'
 
 /**
  * Tracks how a user puts input into the open tool and how large that input is.

@@ -8,6 +8,7 @@ const input = ref(
 )
 
 const stats = computed(() => getTextStats(input.value))
+useLiveTool(stats)
 
 function handleClear() {
   input.value = ''
@@ -23,83 +24,42 @@ function handleLoadSample() {
     <div class="space-y-6">
       <!-- Metric Cards Grid -->
       <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-        <div aria-label="Word count" class="p-3.5 rounded-xl border border-default bg-elevated/40 text-center">
-          <span class="text-xs text-muted font-medium block">Words</span>
-          <span class="text-2xl font-bold font-mono text-highlighted mt-1 block">{{ stats.words.toLocaleString() }}</span>
-        </div>
-
-        <div class="p-3.5 rounded-xl border border-default bg-elevated/40 text-center">
-          <span class="text-xs text-muted font-medium block">Characters</span>
-          <span class="text-2xl font-bold font-mono text-highlighted mt-1 block">{{ stats.characters.toLocaleString() }}</span>
-        </div>
-
-        <div class="p-3.5 rounded-xl border border-default bg-elevated/40 text-center">
-          <span class="text-xs text-muted font-medium block">Without Spaces</span>
-          <span class="text-2xl font-bold font-mono text-highlighted mt-1 block">{{ stats.charactersWithoutSpaces.toLocaleString() }}</span>
-        </div>
-
-        <div class="p-3.5 rounded-xl border border-default bg-elevated/40 text-center">
-          <span class="text-xs text-muted font-medium block">Sentences</span>
-          <span class="text-2xl font-bold font-mono text-highlighted mt-1 block">{{ stats.sentences.toLocaleString() }}</span>
-        </div>
-
-        <div class="p-3.5 rounded-xl border border-default bg-elevated/40 text-center">
-          <span class="text-xs text-muted font-medium block">Lines</span>
-          <span class="text-2xl font-bold font-mono text-highlighted mt-1 block">{{ stats.lines.toLocaleString() }}</span>
-        </div>
-
-        <div class="p-3.5 rounded-xl border border-default bg-elevated/40 text-center">
-          <span class="text-xs text-muted font-medium block">Paragraphs</span>
-          <span class="text-2xl font-bold font-mono text-highlighted mt-1 block">{{ stats.paragraphs.toLocaleString() }}</span>
-        </div>
-
-        <div class="p-3.5 rounded-xl border border-default bg-elevated/40 text-center">
-          <span class="text-xs text-muted font-medium block">UTF-8 Bytes</span>
-          <span class="text-2xl font-bold font-mono text-highlighted mt-1 block">{{ stats.bytes.toLocaleString() }}</span>
-        </div>
-
-        <div class="p-3.5 rounded-xl border border-default bg-elevated/40 text-center">
-          <span class="text-xs text-muted font-medium block">Reading Time</span>
-          <span class="text-2xl font-bold font-mono text-primary mt-1 block">{{ stats.readingTimeMinutes }} min</span>
-        </div>
-
-        <div class="p-3.5 rounded-xl border border-default bg-elevated/40 text-center">
-          <span class="text-xs text-muted font-medium block">Speaking Time</span>
-          <span class="text-2xl font-bold font-mono text-primary mt-1 block">{{ stats.speakingTimeMinutes }} min</span>
-        </div>
+        <StatCard aria-label="Word count" label="Words" :value="stats.words" />
+        <StatCard label="Characters" :value="stats.characters" />
+        <StatCard label="Without Spaces" :value="stats.charactersWithoutSpaces" />
+        <StatCard label="Sentences" :value="stats.sentences" />
+        <StatCard label="Lines" :value="stats.lines" />
+        <StatCard label="Paragraphs" :value="stats.paragraphs" />
+        <StatCard label="UTF-8 Bytes" :value="stats.bytes" />
+        <StatCard label="Reading Time" :value="stats.readingTimeMinutes" unit="min" color="primary" />
+        <StatCard label="Speaking Time" :value="stats.speakingTimeMinutes" unit="min" color="primary" />
       </div>
 
       <!-- Actions -->
-      <div class="flex items-center justify-between">
-        <span class="text-xs text-muted font-medium">Text Input</span>
-        <div class="flex items-center gap-2">
-          <UButton
-            label="Load Sample"
-            size="xs"
-            color="neutral"
-            variant="ghost"
-            icon="i-lucide-file-text"
-            @click="handleLoadSample"
-          />
-          <UButton
-            label="Clear"
-            size="xs"
-            color="neutral"
-            variant="ghost"
-            icon="i-lucide-eraser"
-            :disabled="!input"
-            @click="handleClear"
-          />
-        </div>
-      </div>
+      <ToolActions>
+        <UButton
+          label="Load Sample"
+          color="neutral"
+          variant="subtle"
+          icon="i-lucide-file-text"
+          @click="handleLoadSample"
+        />
+        <UButton
+          label="Clear"
+          color="neutral"
+          variant="ghost"
+          icon="i-lucide-eraser"
+          :disabled="!input"
+          @click="handleClear"
+        />
+      </ToolActions>
 
       <!-- Editor -->
-      <textarea
+      <LazyToolEditor
         v-model="input"
-        aria-label="Text input"
-        rows="12"
+        hydrate-on-idle
+        label="Text input"
         placeholder="Type or paste text here to see statistics..."
-        class="w-full p-4 font-mono text-xs bg-default border border-default rounded-xl text-highlighted resize-y focus:outline-none focus:border-primary leading-relaxed"
       />
     </div>
 

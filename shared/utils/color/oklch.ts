@@ -80,6 +80,9 @@ export function isOutOfSrgbGamut({ l, c, h }: Oklch): boolean {
   return channels.some(value => value < -0.0001 || value > 1.0001)
 }
 
-export function toOklchString({ l, c, h }: Oklch): string {
+export function toOklchString({ l, c, h, a }: Oklch): string {
+  if (a !== undefined && a < 1) {
+    return `oklch(${l}% ${c} ${h} / ${a})`
+  }
   return `oklch(${l}% ${c} ${h})`
 }

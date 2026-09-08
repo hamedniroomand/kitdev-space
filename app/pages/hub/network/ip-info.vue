@@ -104,13 +104,9 @@ onMounted(() => {
       </div>
 
       <!-- Error Alert -->
-      <UAlert
+      <ToolError
         v-if="error"
-        color="error"
-        variant="subtle"
-        icon="i-lucide-alert-triangle"
-        title="Lookup Error"
-        :description="error"
+        :message="error"
       />
 
       <!-- Results Grid -->
@@ -120,47 +116,24 @@ onMounted(() => {
       >
         <!-- Highlights -->
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <div class="p-4 border border-default rounded-xl bg-elevated/40 text-center">
-            <div class="text-xs text-muted">
-              IP Version
-            </div>
-            <div class="text-2xl font-bold font-mono mt-1 text-primary">
-              IPv{{ info.version }}
-            </div>
-          </div>
-
-          <div class="p-4 border border-default rounded-xl bg-elevated/40 text-center">
-            <div class="text-xs text-muted">
-              Address Scope
-            </div>
-            <div
-              class="text-2xl font-bold font-mono mt-1 capitalize"
-              :class="info.type === 'public' ? 'text-success' : 'text-warning'"
-            >
-              {{ info.type }}
-            </div>
-          </div>
-
-          <div class="p-4 border border-default rounded-xl bg-elevated/40 text-center">
-            <div class="text-xs text-muted">
-              Special Address
-            </div>
-            <div class="text-2xl font-bold font-mono mt-1">
-              {{ info.isSpecial ? 'Yes' : 'No' }}
-            </div>
-          </div>
-
-          <div class="p-4 border border-default rounded-xl bg-elevated/40 text-center">
-            <div class="text-xs text-muted">
-              Reverse DNS
-            </div>
-            <div
-              class="text-sm font-semibold font-mono mt-2 truncate text-default"
-              :title="info.hostname || 'None'"
-            >
-              {{ info.hostname || 'No PTR record' }}
-            </div>
-          </div>
+          <StatCard
+            label="IP Version"
+            :value="`IPv${info.version}`"
+            color="primary"
+          />
+          <StatCard
+            label="Address Scope"
+            :value="info.type"
+            :color="info.type === 'public' ? 'success' : 'warning'"
+          />
+          <StatCard
+            label="Special Address"
+            :value="info.isSpecial ? 'Yes' : 'No'"
+          />
+          <StatCard
+            label="Reverse DNS"
+            :value="info.hostname || 'No PTR record'"
+          />
         </div>
 
         <!-- Details Table -->

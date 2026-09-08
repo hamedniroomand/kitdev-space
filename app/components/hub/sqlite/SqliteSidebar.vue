@@ -28,8 +28,8 @@ function toggleExpand(name: string, event: Event) {
 </script>
 
 <template>
-  <aside class="w-64 border-r border-gray-200 dark:border-gray-800 flex flex-col h-full bg-gray-50 dark:bg-gray-950">
-    <div class="p-3 border-b border-gray-200 dark:border-gray-800">
+  <aside class="w-64 border-r border-default flex flex-col h-full bg-elevated/20">
+    <div class="p-3 border-b border-default">
       <UInput
         v-model="search"
         placeholder="Filter tables..."
@@ -41,7 +41,7 @@ function toggleExpand(name: string, event: Event) {
     <div class="flex-1 overflow-y-auto p-2 space-y-1">
       <div
         v-if="filteredTables.length === 0"
-        class="p-4 text-center text-xs text-gray-400"
+        class="p-4 text-center text-xs text-muted"
       >
         No tables found.
       </div>
@@ -53,12 +53,12 @@ function toggleExpand(name: string, event: Event) {
       >
         <div
           class="flex items-center justify-between px-2.5 py-1.5 text-sm cursor-pointer rounded transition-colors"
-          :class="activeTable === table.name ? 'bg-primary/10 text-primary font-medium' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200/50 dark:hover:bg-gray-800/50'"
+          :class="activeTable === table.name ? 'bg-primary/10 text-primary font-medium' : 'text-default hover:bg-elevated/50'"
           @click="emit('selectTable', table.name)"
         >
           <div class="flex items-center gap-2 truncate">
             <button
-              class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+              class="text-muted hover:text-highlighted"
               @click="toggleExpand(table.name, $event)"
             >
               <UIcon
@@ -83,7 +83,7 @@ function toggleExpand(name: string, event: Event) {
 
         <div
           v-if="expandedTables[table.name]"
-          class="pl-7 pr-2 py-1 space-y-0.5 text-xs text-gray-500 dark:text-gray-400"
+          class="pl-7 pr-2 py-1 space-y-0.5 text-xs text-muted"
         >
           <div
             v-for="col in table.columns"
@@ -91,7 +91,7 @@ function toggleExpand(name: string, event: Event) {
             class="flex items-center justify-between py-0.5"
           >
             <span class="truncate">{{ col.name }}</span>
-            <span class="text-[10px] font-mono text-gray-400 uppercase">{{ col.type || 'ANY' }}</span>
+            <span class="text-[10px] font-mono text-muted uppercase">{{ col.type || 'ANY' }}</span>
           </div>
         </div>
       </div>

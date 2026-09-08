@@ -1,4 +1,7 @@
 import type { ColumnInfo } from '~/types/sqlite'
+import { quoteIdentifier, sqlLiteral } from '#shared/utils/data/sql'
+
+export { quoteIdentifier, sqlLiteral }
 
 export type FilterOperator = 'eq' | 'neq' | 'contains' | 'starts' | 'gt' | 'lt' | 'null' | 'notnull'
 
@@ -40,21 +43,8 @@ export const FILTER_OPERATORS: { value: FilterOperator, label: string, needsValu
   { value: 'notnull', label: 'is not null', needsValue: false },
 ]
 
-export function quoteIdentifier(name: string): string {
-  return `"${name.replace(/"/g, '""')}"`
-}
-
 export function buildUpdateQuery(table: string, column: string): string {
   return `UPDATE ${quoteIdentifier(table)} SET ${quoteIdentifier(column)} = :val WHERE rowid = :rowid;`
-}
-
-/** A number stays a number, so `price > 30` compares numbers. Any other text is a quoted string. */
-export function sqlLiteral(value: string): string {
-  const trimmed = value.trim()
-  if (trimmed !== '' && /^-?\d+(?:\.\d+)?$/.test(trimmed)) {
-    return trimmed
-  }
-  return `'${value.replace(/'/g, '\'\'')}'`
 }
 
 function likeLiteral(value: string, mode: 'contains' | 'starts'): string {

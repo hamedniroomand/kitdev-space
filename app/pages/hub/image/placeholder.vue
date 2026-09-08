@@ -38,6 +38,7 @@ const svgOutput = computed(() => {
     textColor: textColor.value,
   })
 })
+useLiveTool(svgOutput)
 
 const dataUri = computed(() => svgToDataUri(svgOutput.value))
 
@@ -112,8 +113,7 @@ function downloadPng() {
 
           <!-- Dimensions -->
           <div class="grid grid-cols-2 gap-3">
-            <div class="space-y-1">
-              <label class="text-xs text-muted font-medium">Width (px)</label>
+            <UFormField label="Width (px)">
               <UInput
                 v-model.number="width"
                 type="number"
@@ -121,9 +121,8 @@ function downloadPng() {
                 max="4000"
                 class="w-full"
               />
-            </div>
-            <div class="space-y-1">
-              <label class="text-xs text-muted font-medium">Height (px)</label>
+            </UFormField>
+            <UFormField label="Height (px)">
               <UInput
                 v-model.number="height"
                 type="number"
@@ -131,12 +130,11 @@ function downloadPng() {
                 max="4000"
                 class="w-full"
               />
-            </div>
+            </UFormField>
           </div>
 
           <!-- Background Type -->
-          <div class="space-y-1.5">
-            <label class="text-xs text-muted font-medium">Background Style</label>
+          <UFormField label="Background Style">
             <div class="flex items-center rounded-lg border border-default p-0.5 bg-default">
               <UButton
                 size="xs"
@@ -155,16 +153,16 @@ function downloadPng() {
                 @click="bgType = 'gradient'"
               />
             </div>
-          </div>
+          </UFormField>
 
           <!-- Color Pickers -->
           <div class="grid grid-cols-2 gap-3">
-            <div class="space-y-1">
-              <label class="text-xs text-muted font-medium">{{ bgType === 'gradient' ? 'Color 1' : 'Color' }}</label>
+            <UFormField :label="bgType === 'gradient' ? 'Color 1' : 'Color'">
               <div class="flex items-center gap-2">
                 <input
                   v-model="bgColor1"
                   type="color"
+                  aria-label="Color 1 picker"
                   class="w-8 h-8 rounded border border-default cursor-pointer p-0 bg-transparent"
                 >
                 <UInput
@@ -172,17 +170,17 @@ function downloadPng() {
                   class="w-full font-mono text-xs"
                 />
               </div>
-            </div>
+            </UFormField>
 
-            <div
+            <UFormField
               v-if="bgType === 'gradient'"
-              class="space-y-1"
+              label="Color 2"
             >
-              <label class="text-xs text-muted font-medium">Color 2</label>
               <div class="flex items-center gap-2">
                 <input
                   v-model="bgColor2"
                   type="color"
+                  aria-label="Color 2 picker"
                   class="w-8 h-8 rounded border border-default cursor-pointer p-0 bg-transparent"
                 >
                 <UInput
@@ -190,26 +188,25 @@ function downloadPng() {
                   class="w-full font-mono text-xs"
                 />
               </div>
-            </div>
+            </UFormField>
           </div>
 
           <!-- Custom Text -->
-          <div class="space-y-1">
-            <label class="text-xs text-muted font-medium">Custom Label (optional)</label>
+          <UFormField label="Custom Label (optional)">
             <UInput
               v-model="customText"
               placeholder="e.g. Hero Image, Banner"
               class="w-full"
             />
-          </div>
+          </UFormField>
 
           <!-- Text Color -->
-          <div class="space-y-1">
-            <label class="text-xs text-muted font-medium">Label Color</label>
+          <UFormField label="Label Color">
             <div class="flex items-center gap-2">
               <input
                 v-model="textColor"
                 type="color"
+                aria-label="Label color picker"
                 class="w-8 h-8 rounded border border-default cursor-pointer p-0 bg-transparent"
               >
               <UInput
@@ -217,7 +214,7 @@ function downloadPng() {
                 class="w-full font-mono text-xs"
               />
             </div>
-          </div>
+          </UFormField>
         </div>
 
         <!-- Preview Area -->

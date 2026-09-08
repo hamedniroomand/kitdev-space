@@ -20,6 +20,9 @@ interface FetchErrorShape {
 }
 
 function toErrorMessage(cause: unknown, fallback: string) {
+  if (typeof navigator !== 'undefined' && !navigator.onLine) {
+    return 'Network connection is unavailable. Connect to the internet to run this tool.'
+  }
   const fetchError = cause as FetchErrorShape
   if (fetchError?.data?.message) {
     return fetchError.data.message
@@ -28,6 +31,9 @@ function toErrorMessage(cause: unknown, fallback: string) {
     return fetchError.statusMessage
   }
   if (cause instanceof Error && cause.message) {
+    if (/Failed to fetch|NetworkError|fetch failed/i.test(cause.message)) {
+      return 'Network connection is unavailable. Connect to the internet to run this tool.'
+    }
     return cause.message
   }
   return fallback

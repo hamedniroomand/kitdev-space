@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { transpileSource } from '#shared/utils/dev/transpile'
+
 type TranspileLoader = 'ts' | 'tsx' | 'js' | 'jsx'
 
 const input = ref(`type User = { name: string }
@@ -39,15 +41,9 @@ const editorLang = computed(() => {
 async function execute() {
   output.value = ''
   await run(async () => {
-    const data = await $fetch<{ result: string }>('/api/dev/transpile', {
-      method: 'POST',
-      body: {
-        input: input.value,
-        loader: loader.value,
-      },
-    })
-    output.value = data.result
-    return data.result
+    const res = await transpileSource(input.value, loader.value)
+    output.value = res.code
+    return res.code
   }, 'The transpile operation failed.')
 }
 
@@ -71,24 +67,19 @@ function handleClear() {
   reset()
 }
 
-defineShortcuts({
-  meta_enter: {
-    usingInput: true,
-    handler: () => {
-      execute()
-    },
-  },
+useToolShortcuts({
+  onRun: () => execute(),
+  onCopy: () => handleCopy(),
 })
 </script>
 
 <template>
   <ToolPage>
     <UAlert
-      color="info"
+      color="neutral"
       variant="subtle"
-      icon="i-lucide-server"
-      title="Processed with Bun"
-      description="This tool uses Bun.Transpiler on the server."
+      title="Processed locally"
+      description="This tool runs in the browser."
     />
 
     <UFormField label="Loader">

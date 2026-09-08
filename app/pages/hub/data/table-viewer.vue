@@ -35,6 +35,7 @@ const tableData = computed(() => {
     return { columns: [], rows: [] }
   }
 })
+useLiveTool(tableData)
 
 const displayedRows = computed<TableRow[]>(() => {
   return filterAndSortRows(
@@ -124,17 +125,14 @@ function handleDownloadCsv() {
       </div>
 
       <!-- Input Editor -->
-      <div class="space-y-2">
-        <label class="block text-sm font-medium text-default">
-          Data Source (Paste CSV or JSON array)
-        </label>
+      <UFormField label="Data Source (Paste CSV or JSON array)">
         <UTextarea
           v-model="input"
           :rows="6"
           placeholder="Paste CSV rows or JSON array of objects here..."
           class="font-mono text-xs w-full"
         />
-      </div>
+      </UFormField>
 
       <!-- Table Section -->
       <div

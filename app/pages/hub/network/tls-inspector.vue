@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { TlsInspectionResult } from '#server/utils/network/tls'
+import type { TlsInspectionResult } from '#shared/utils/network/types'
 
 const host = ref('google.com')
 const port = ref(443)
@@ -54,8 +54,7 @@ function handleReset() {
       <!-- Input Controls -->
       <div class="p-4 border border-default rounded-xl bg-elevated/40 space-y-4">
         <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
-          <div class="sm:col-span-3 space-y-1">
-            <label class="text-xs font-medium text-muted">Hostname or Domain</label>
+          <UFormField label="Hostname or Domain" class="sm:col-span-3">
             <UInput
               v-model="host"
               placeholder="e.g. example.com"
@@ -63,9 +62,8 @@ function handleReset() {
               class="w-full"
               @keydown.enter="inspect"
             />
-          </div>
-          <div class="space-y-1">
-            <label class="text-xs font-medium text-muted">Port</label>
+          </UFormField>
+          <UFormField label="Port">
             <UInput
               v-model.number="port"
               type="number"
@@ -73,7 +71,7 @@ function handleReset() {
               class="w-full"
               @keydown.enter="inspect"
             />
-          </div>
+          </UFormField>
         </div>
 
         <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
@@ -101,7 +99,7 @@ function handleReset() {
             />
           </div>
 
-          <div class="flex items-center gap-2">
+          <ToolActions class="gap-2">
             <UButton
               label="Clear"
               size="xs"
@@ -119,18 +117,14 @@ function handleReset() {
               :loading="status === 'processing'"
               @click="inspect"
             />
-          </div>
+          </ToolActions>
         </div>
       </div>
 
       <!-- Error banner -->
-      <UAlert
+      <ToolError
         v-if="error"
-        color="error"
-        variant="subtle"
-        icon="i-lucide-alert-circle"
-        title="Inspection Error"
-        :description="error"
+        :message="error"
       />
 
       <!-- Results View -->

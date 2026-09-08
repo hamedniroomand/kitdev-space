@@ -1,11 +1,32 @@
 import { describe, expect, it } from 'vitest'
-import { canSemverInBrowser, semverBump } from '#shared/utils/dev/semver'
+import { canSemverInBrowser, semverBump, semverSatisfies, semverSort } from '#shared/utils/dev/semver'
 
 describe('canSemverInBrowser', () => {
-  it('accepts bump only', () => {
+  it('accepts all actions', () => {
     expect(canSemverInBrowser('bump')).toBe(true)
-    expect(canSemverInBrowser('satisfies')).toBe(false)
-    expect(canSemverInBrowser('sort')).toBe(false)
+    expect(canSemverInBrowser('satisfies')).toBe(true)
+    expect(canSemverInBrowser('sort')).toBe(true)
+  })
+})
+
+describe('semverSatisfies', () => {
+  it('checks version against range', () => {
+    expect(semverSatisfies('1.2.3', '^1.0.0')).toBe(true)
+    expect(semverSatisfies('2.0.0', '^1.0.0')).toBe(false)
+  })
+
+  it('rejects empty input', () => {
+    expect(() => semverSatisfies('', '^1.0.0')).toThrow('Enter a version and a range.')
+  })
+})
+
+describe('semverSort', () => {
+  it('sorts versions in ascending order', () => {
+    expect(semverSort(['2.0.0', '1.0.0', '1.1.0'])).toEqual(['1.0.0', '1.1.0', '2.0.0'])
+  })
+
+  it('rejects empty list', () => {
+    expect(() => semverSort([])).toThrow('Enter at least one version.')
   })
 })
 

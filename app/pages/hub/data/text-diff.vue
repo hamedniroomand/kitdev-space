@@ -17,7 +17,11 @@ const unified = ref('')
 const { status, error, run, reset } = useTool<DiffResult>()
 const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
 
-const { workerFn } = useWebWorkerFn(
+const {
+  execute: workerCompare,
+  isRunning: workerRunning,
+  stop: stopWorker,
+} = useToolWorker(
   (input: { left: string, right: string }) => diffTexts(input.left, input.right),
   {
     timeout: 30_000,
@@ -42,7 +46,7 @@ async function compare() {
   await run(async () => {
     const size = left.value.length + right.value.length
     const next = size >= WORKER_CHARS
-      ? await workerFn({ left: left.value, right: right.value })
+      ? await workerCompare({ left: left.value, right: right.value })
       : diffTexts(left.value, right.value)
 
     diff.value = next
@@ -72,13 +76,9 @@ function handleClear() {
   reset()
 }
 
-defineShortcuts({
-  meta_enter: {
-    usingInput: true,
-    handler: () => {
-      compare()
-    },
-  },
+useToolShortcuts({
+  onRun: () => compare(),
+  onCopy: () => handleCopy(),
 })
 </script>
 
@@ -112,6 +112,14 @@ defineShortcuts({
         icon="i-lucide-git-compare"
         :loading="status === 'processing'"
         @click="compare"
+      />
+      <UButton
+        v-if="workerRunning"
+        label="Stop"
+        color="error"
+        variant="subtle"
+        icon="i-lucide-square"
+        @click="stopWorker"
       />
       <UButton
         label="Swap"

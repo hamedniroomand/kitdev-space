@@ -190,13 +190,9 @@ function handleSample() {
   applySample(language.value)
 }
 
-defineShortcuts({
-  meta_enter: {
-    usingInput: true,
-    handler: () => {
-      execute()
-    },
-  },
+useToolShortcuts({
+  onRun: () => execute(),
+  onCopy: () => handleCopy(),
 })
 </script>
 
@@ -207,7 +203,7 @@ defineShortcuts({
       variant="subtle"
       icon="i-lucide-shield-check"
       title="Where the work runs"
-      description="JSON, HTML minify, and CSS minify run in your browser. JavaScript minify, TypeScript minify, and beautify go to the server, because they use the OXC minifier and Prettier."
+      description="JSON, HTML, CSS, and all beautification run in your browser. JavaScript and TypeScript minification run on the server with the OXC minifier."
     />
 
     <div class="flex flex-wrap gap-4">

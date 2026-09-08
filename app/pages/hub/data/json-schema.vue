@@ -37,6 +37,7 @@ const dataInput = ref(sampleData)
 const generateError = ref<string | null>(null)
 
 const result = computed(() => validateJsonSchema(schemaInput.value, dataInput.value))
+useLiveTool(result)
 
 function handleLoadSample() {
   schemaInput.value = sampleSchema

@@ -25,14 +25,14 @@ const formattedSize = computed(() => {
 </script>
 
 <template>
-  <header class="h-12 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-4 bg-white dark:bg-gray-900">
+  <header class="h-12 border-b border-default flex items-center justify-between px-4 bg-default">
     <div class="flex items-center gap-3">
       <UIcon
         name="i-lucide-database"
         class="w-5 h-5 text-primary"
       />
-      <span class="font-medium text-sm text-gray-900 dark:text-gray-100">{{ databaseName }}</span>
-      <span class="text-xs text-gray-400 font-mono">({{ formattedSize }} • {{ tableCount }} tables)</span>
+      <span class="font-medium text-sm text-highlighted">{{ databaseName }}</span>
+      <span class="text-xs text-muted font-mono">({{ formattedSize }} • {{ tableCount }} tables)</span>
     </div>
 
     <div class="flex items-center gap-2">

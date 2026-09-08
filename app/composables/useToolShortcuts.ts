@@ -1,31 +1,43 @@
-import { useMagicKeys, whenever } from '@vueuse/core'
-
 export interface ToolShortcutsOptions {
-  onRun?: () => void
-  onCopy?: () => void
-  onClear?: () => void
-  onSwap?: () => void
+  onRun?: () => void | Promise<void>
+  onCopy?: () => void | Promise<void>
+  onClear?: () => void | Promise<void>
 }
 
-export function useToolShortcuts(options: ToolShortcutsOptions) {
-  const keys = useMagicKeys()
+export function useToolShortcuts(
+  optionsOrRun: ToolShortcutsOptions | (() => void | Promise<void>),
+) {
+  const options = typeof optionsOrRun === 'function' ? { onRun: optionsOrRun } : optionsOrRun
+
+  const shortcuts: Record<string, any> = {}
 
   if (options.onRun) {
-    if (keys.Meta_Enter)
-      whenever(keys.Meta_Enter, options.onRun)
-    if (keys.Ctrl_Enter)
-      whenever(keys.Ctrl_Enter, options.onRun)
+    const run = () => {
+      options.onRun?.()
+    }
+    shortcuts.meta_enter = {
+      usingInput: true,
+      handler: run,
+    }
+    shortcuts.ctrl_enter = {
+      usingInput: true,
+      handler: run,
+    }
   }
 
-  if (options.onCopy && keys.Alt_C) {
-    whenever(keys.Alt_C, options.onCopy)
+  if (options.onCopy) {
+    const copy = () => {
+      options.onCopy?.()
+    }
+    shortcuts.meta_shift_c = {
+      usingInput: true,
+      handler: copy,
+    }
+    shortcuts.ctrl_shift_c = {
+      usingInput: true,
+      handler: copy,
+    }
   }
 
-  if (options.onClear && keys.Alt_X) {
-    whenever(keys.Alt_X, options.onClear)
-  }
-
-  if (options.onSwap && keys.Alt_S) {
-    whenever(keys.Alt_S, options.onSwap)
-  }
+  defineShortcuts(shortcuts)
 }

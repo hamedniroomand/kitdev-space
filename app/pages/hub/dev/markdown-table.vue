@@ -21,6 +21,7 @@ const markdownOutput = computed(() => {
     rows: rows.value,
   })
 })
+useLiveTool(markdownOutput)
 
 function addColumn() {
   const index = headers.value.length + 1
@@ -186,25 +187,13 @@ function handleCopy() {
       </div>
 
       <!-- Formatted Markdown Output -->
-      <div class="space-y-2">
-        <div class="flex items-center justify-between text-xs font-medium text-muted">
-          <span>Markdown Output</span>
-          <UButton
-            :label="label()"
-            :color="color()"
-            :icon="icon()"
-            size="xs"
-            variant="ghost"
-            @click="handleCopy"
-          />
-        </div>
-        <textarea
-          :value="markdownOutput"
-          readonly
-          rows="7"
-          class="w-full p-3 font-mono text-xs bg-elevated/40 border border-default rounded-xl text-highlighted resize-y select-all focus:outline-none"
-        />
-      </div>
+      <LazyToolEditor
+        :model-value="markdownOutput"
+        hydrate-on-idle
+        label="Markdown Output"
+        readonly
+        lang="markdown"
+      />
     </div>
 
     <template #docs>

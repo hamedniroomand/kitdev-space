@@ -2,11 +2,11 @@
 import { formatRelativeTime, formatUtcDate, parseTimestamp } from '#shared/utils/dev/timestamp'
 
 const input = ref(String(Math.floor(Date.now() / 1000)))
-const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
 
 useToolSeo('timestamp')
 
 const parsedDate = computed(() => parseTimestamp(input.value))
+useLiveTool(parsedDate)
 
 const formattedUtc = computed(() => {
   if (!parsedDate.value) {
@@ -41,13 +41,6 @@ function setNow() {
 
 function handleClear() {
   input.value = ''
-}
-
-async function copyValue(val: string, key: string) {
-  if (!val) {
-    return
-  }
-  await copy(val, key)
 }
 </script>
 
@@ -95,28 +88,12 @@ async function copyValue(val: string, key: string) {
       v-else-if="items.length > 0"
       class="space-y-3"
     >
-      <div
+      <ToolResultRow
         v-for="item in items"
         :key="item.id"
-        class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-[12px] border border-default bg-elevated p-4"
-      >
-        <div class="min-w-0 flex-1">
-          <p class="font-mono text-xs font-medium text-muted uppercase">
-            {{ item.label }}
-          </p>
-          <p class="mt-1 font-mono text-sm break-all text-highlighted">
-            {{ item.value }}
-          </p>
-        </div>
-        <UButton
-          :label="copyLabel(item.id)"
-          size="xs"
-          :color="copyColor(item.id)"
-          variant="subtle"
-          :icon="copyIcon(item.id)"
-          @click="copyValue(item.value, item.id)"
-        />
-      </div>
+        :label="item.label"
+        :value="item.value"
+      />
     </div>
 
     <template #docs>

@@ -29,3 +29,25 @@ export async function getCodeMirrorValue(page: Page, label: string): Promise<str
   await editor.waitFor({ state: 'visible' })
   return (await editor.textContent()) ?? ''
 }
+
+/**
+ * Simulate dropping a text or data file onto an element.
+ */
+export async function dropFile(
+  page: Page,
+  selector: string,
+  file: { name: string, mimeType: string, content: string },
+) {
+  const dataTransfer = await page.evaluateHandle(
+    ({ content, name, mimeType }) => {
+      const dt = new DataTransfer()
+      const blob = new Blob([content], { type: mimeType })
+      const f = new File([blob], name, { type: mimeType })
+      dt.items.add(f)
+      return dt
+    },
+    { content: file.content, name: file.name, mimeType: file.mimeType },
+  )
+
+  await page.dispatchEvent(selector, 'drop', { dataTransfer })
+}

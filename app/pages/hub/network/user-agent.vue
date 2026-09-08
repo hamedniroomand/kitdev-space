@@ -36,6 +36,7 @@ const presets = [
 ]
 
 const parsed = computed(() => parseUserAgent(input.value))
+useLiveTool(parsed)
 
 function handlePreset(getter: () => string) {
   input.value = getter()
@@ -78,17 +79,14 @@ function handleClear() {
       </div>
 
       <!-- Input -->
-      <div class="space-y-2">
-        <label class="block text-sm font-medium text-default">
-          User Agent String
-        </label>
+      <UFormField label="User Agent String">
         <UTextarea
           v-model="input"
           :rows="3"
           placeholder="Paste user agent string here..."
           class="font-mono text-sm w-full"
         />
-      </div>
+      </UFormField>
 
       <!-- Analysis Results -->
       <div
@@ -97,62 +95,27 @@ function handleClear() {
       >
         <!-- Overview Grid -->
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <div class="p-4 border border-default rounded-xl bg-elevated/40 text-center">
-            <div class="text-xs text-muted">
-              Browser
-            </div>
-            <div class="text-xl font-bold mt-1 text-primary">
-              {{ parsed.browser.name }}
-            </div>
-            <div
-              v-if="parsed.browser.version"
-              class="text-xs text-muted font-mono mt-0.5"
-            >
-              v{{ parsed.browser.version }}
-            </div>
-          </div>
-
-          <div class="p-4 border border-default rounded-xl bg-elevated/40 text-center">
-            <div class="text-xs text-muted">
-              Operating System
-            </div>
-            <div class="text-xl font-bold mt-1">
-              {{ parsed.os.name }}
-            </div>
-            <div
-              v-if="parsed.os.version"
-              class="text-xs text-muted font-mono mt-0.5"
-            >
-              {{ parsed.os.version }}
-            </div>
-          </div>
-
-          <div class="p-4 border border-default rounded-xl bg-elevated/40 text-center">
-            <div class="text-xs text-muted">
-              Device Type
-            </div>
-            <div class="text-xl font-bold mt-1 capitalize">
-              {{ parsed.device.type }}
-            </div>
-            <div
-              v-if="parsed.device.model"
-              class="text-xs text-muted font-mono mt-0.5"
-            >
-              {{ parsed.device.model }}
-            </div>
-          </div>
-
-          <div class="p-4 border border-default rounded-xl bg-elevated/40 text-center">
-            <div class="text-xs text-muted">
-              Client Type
-            </div>
-            <div
-              class="text-xl font-bold mt-1"
-              :class="parsed.isBot ? 'text-warning' : 'text-success'"
-            >
-              {{ parsed.isBot ? 'Bot / Crawler' : 'User Browser' }}
-            </div>
-          </div>
+          <StatCard
+            label="Browser"
+            :value="parsed.browser.name"
+            :description="parsed.browser.version ? `v${parsed.browser.version}` : undefined"
+            color="primary"
+          />
+          <StatCard
+            label="Operating System"
+            :value="parsed.os.name"
+            :description="parsed.os.version ? parsed.os.version : undefined"
+          />
+          <StatCard
+            label="Device Type"
+            :value="parsed.device.type"
+            :description="parsed.device.model ? parsed.device.model : undefined"
+          />
+          <StatCard
+            label="Client Type"
+            :value="parsed.isBot ? 'Bot / Crawler' : 'User Browser'"
+            :color="parsed.isBot ? 'warning' : 'success'"
+          />
         </div>
 
         <!-- Details Table -->

@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { useOnline } from '@vueuse/core'
+import { tools } from '#shared/utils/tools'
+
 /**
  * Standard frame for a tool page.
  *
@@ -13,6 +16,13 @@ defineProps<{
   title?: string
   description?: string
 }>()
+
+const route = useRoute()
+const isOnline = useOnline()
+
+const currentTool = computed(() => {
+  return tools.find(t => t.route === route.path || route.path.startsWith(`${t.route}/`))
+})
 </script>
 
 <template>
@@ -23,6 +33,16 @@ defineProps<{
         :description="description"
       />
     </slot>
+
+    <UAlert
+      v-if="currentTool?.serverRequired && !isOnline"
+      color="warning"
+      variant="subtle"
+      icon="i-lucide-wifi-off"
+      title="Offline mode"
+      description="This tool needs a network connection to run on the server. Connect to the internet to use this tool."
+      class="mb-6"
+    />
 
     <UCard class="work-surface rounded-xl" :ui="{ body: 'space-y-6 p-4 sm:p-6' }">
       <slot />

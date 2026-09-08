@@ -22,6 +22,7 @@ const input = ref(sampleValidYaml)
 const { copy, label, color, icon } = useCopyFeedback()
 
 const result = computed(() => validateYaml(input.value))
+useLiveTool(result)
 
 function handleLoadValid() {
   input.value = sampleValidYaml

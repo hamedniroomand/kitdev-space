@@ -15,5 +15,12 @@ test.describe('Tar Explorer Tool', () => {
       await page.getByRole('button', { name: 'Inspect' }).click()
       await expect(page.getByText('Choose a tar or tar.gz file before you run the tool.')).toBeVisible()
     })
+
+    await test.step('uploads a real tar fixture and inspects its entries', async () => {
+      await page.locator('input[type="file"]').setInputFiles('tests/fixtures/pax.tar')
+      await page.getByRole('button', { name: 'Inspect' }).click()
+      await expect(page.getByText('Archive size')).toBeVisible({ timeout: 10_000 })
+      await expect(page.getByText('entries', { exact: false })).toBeVisible()
+    })
   })
 })

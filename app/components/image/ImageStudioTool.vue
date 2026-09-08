@@ -4,6 +4,7 @@ import type { ImageEncodeFormat, ImageFilter, ImageFit, ImagePresetId } from '#s
 import { formatBytes } from '#shared/utils/format'
 import { readImageMetadata } from '#shared/utils/image/exif'
 import { imageExtensionFor } from '#shared/utils/image/format'
+import { PRESET_SIZES } from '#shared/utils/image/presets'
 import { readImageResponse } from '#shared/utils/image/response'
 import { cropImageFile } from '~/utils/image/crop-file'
 import { canProcessInBrowser, processImageInBrowser } from '~/utils/image/process-browser'
@@ -30,13 +31,6 @@ const cropAspectItems: { label: string, value: CropAspectMode }[] = [
   { label: 'Standard (4:3)', value: '4:3' },
   { label: 'Photo (3:2)', value: '3:2' },
 ]
-
-const PRESET_SIZES: Record<ImagePresetId, { width: number, height: number }> = {
-  'twitter-banner': { width: 1500, height: 500 },
-  'instagram-square': { width: 1080, height: 1080 },
-  'open-graph': { width: 1200, height: 630 },
-  'favicon': { width: 32, height: 32 },
-}
 
 const sizeItems = [
   { label: 'Keep the original size', value: 'original' },

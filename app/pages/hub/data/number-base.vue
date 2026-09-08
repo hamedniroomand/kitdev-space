@@ -12,6 +12,13 @@ const error = ref<string | null>(null)
 
 const { copy, label, color, icon } = useCopyFeedback()
 
+useLiveTool(() => {
+  if (error.value) {
+    throw new Error(error.value)
+  }
+  return { decimal: decimalVal.value, hex: hexVal.value, binary: binaryVal.value, octal: octalVal.value }
+})
+
 function updateFrom(val: string, base: NumberBase) {
   if (!val.trim()) {
     error.value = null
@@ -99,106 +106,98 @@ function handleCopy(text: string, key: string) {
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <!-- Decimal (Base 10) -->
         <div class="p-4 rounded-xl border border-default bg-elevated/40 space-y-2">
-          <div class="flex items-center justify-between">
-            <label class="text-xs font-semibold text-highlighted flex items-center gap-1.5">
-              <span class="px-1.5 py-0.5 rounded bg-default text-[10px] font-mono text-primary">DEC</span>
-              Decimal (Base 10)
-            </label>
-            <UButton
-              :label="label('dec')"
-              :color="color('dec')"
-              :icon="icon('dec')"
-              size="xs"
-              variant="ghost"
-              :disabled="!decimalVal"
-              @click="handleCopy(decimalVal, 'dec')"
+          <UFormField label="Decimal (Base 10)">
+            <template #hint>
+              <UButton
+                :label="label('dec')"
+                :color="color('dec')"
+                :icon="icon('dec')"
+                size="xs"
+                variant="ghost"
+                :disabled="!decimalVal"
+                @click="handleCopy(decimalVal, 'dec')"
+              />
+            </template>
+            <UInput
+              v-model="decimalVal"
+              placeholder="0"
+              size="lg"
+              class="font-mono text-sm"
+              @update:model-value="updateFrom(decimalVal, 10)"
             />
-          </div>
-          <UInput
-            v-model="decimalVal"
-            placeholder="0"
-            size="lg"
-            class="font-mono text-sm"
-            @update:model-value="updateFrom(decimalVal, 10)"
-          />
+          </UFormField>
         </div>
 
         <!-- Hexadecimal (Base 16) -->
         <div class="p-4 rounded-xl border border-default bg-elevated/40 space-y-2">
-          <div class="flex items-center justify-between">
-            <label class="text-xs font-semibold text-highlighted flex items-center gap-1.5">
-              <span class="px-1.5 py-0.5 rounded bg-default text-[10px] font-mono text-primary">HEX</span>
-              Hexadecimal (Base 16)
-            </label>
-            <UButton
-              :label="label('hex')"
-              :color="color('hex')"
-              :icon="icon('hex')"
-              size="xs"
-              variant="ghost"
-              :disabled="!hexVal"
-              @click="handleCopy(hexVal, 'hex')"
+          <UFormField label="Hexadecimal (Base 16)">
+            <template #hint>
+              <UButton
+                :label="label('hex')"
+                :color="color('hex')"
+                :icon="icon('hex')"
+                size="xs"
+                variant="ghost"
+                :disabled="!hexVal"
+                @click="handleCopy(hexVal, 'hex')"
+              />
+            </template>
+            <UInput
+              v-model="hexVal"
+              placeholder="0"
+              size="lg"
+              class="font-mono text-sm"
+              @update:model-value="updateFrom(hexVal, 16)"
             />
-          </div>
-          <UInput
-            v-model="hexVal"
-            placeholder="0"
-            size="lg"
-            class="font-mono text-sm"
-            @update:model-value="updateFrom(hexVal, 16)"
-          />
+          </UFormField>
         </div>
 
         <!-- Binary (Base 2) -->
         <div class="p-4 rounded-xl border border-default bg-elevated/40 space-y-2">
-          <div class="flex items-center justify-between">
-            <label class="text-xs font-semibold text-highlighted flex items-center gap-1.5">
-              <span class="px-1.5 py-0.5 rounded bg-default text-[10px] font-mono text-primary">BIN</span>
-              Binary (Base 2)
-            </label>
-            <UButton
-              :label="label('bin')"
-              :color="color('bin')"
-              :icon="icon('bin')"
-              size="xs"
-              variant="ghost"
-              :disabled="!binaryVal"
-              @click="handleCopy(binaryVal, 'bin')"
+          <UFormField label="Binary (Base 2)">
+            <template #hint>
+              <UButton
+                :label="label('bin')"
+                :color="color('bin')"
+                :icon="icon('bin')"
+                size="xs"
+                variant="ghost"
+                :disabled="!binaryVal"
+                @click="handleCopy(binaryVal, 'bin')"
+              />
+            </template>
+            <UInput
+              v-model="binaryVal"
+              placeholder="0"
+              size="lg"
+              class="font-mono text-sm"
+              @update:model-value="updateFrom(binaryVal, 2)"
             />
-          </div>
-          <UInput
-            v-model="binaryVal"
-            placeholder="0"
-            size="lg"
-            class="font-mono text-sm"
-            @update:model-value="updateFrom(binaryVal, 2)"
-          />
+          </UFormField>
         </div>
 
         <!-- Octal (Base 8) -->
         <div class="p-4 rounded-xl border border-default bg-elevated/40 space-y-2">
-          <div class="flex items-center justify-between">
-            <label class="text-xs font-semibold text-highlighted flex items-center gap-1.5">
-              <span class="px-1.5 py-0.5 rounded bg-default text-[10px] font-mono text-primary">OCT</span>
-              Octal (Base 8)
-            </label>
-            <UButton
-              :label="label('oct')"
-              :color="color('oct')"
-              :icon="icon('oct')"
-              size="xs"
-              variant="ghost"
-              :disabled="!octalVal"
-              @click="handleCopy(octalVal, 'oct')"
+          <UFormField label="Octal (Base 8)">
+            <template #hint>
+              <UButton
+                :label="label('oct')"
+                :color="color('oct')"
+                :icon="icon('oct')"
+                size="xs"
+                variant="ghost"
+                :disabled="!octalVal"
+                @click="handleCopy(octalVal, 'oct')"
+              />
+            </template>
+            <UInput
+              v-model="octalVal"
+              placeholder="0"
+              size="lg"
+              class="font-mono text-sm"
+              @update:model-value="updateFrom(octalVal, 8)"
             />
-          </div>
-          <UInput
-            v-model="octalVal"
-            placeholder="0"
-            size="lg"
-            class="font-mono text-sm"
-            @update:model-value="updateFrom(octalVal, 8)"
-          />
+          </UFormField>
         </div>
       </div>
     </div>

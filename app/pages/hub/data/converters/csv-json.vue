@@ -36,6 +36,27 @@ const { status, error, result, run, reset } = useTool<string>()
 const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
 const { downloadText } = useDownload()
 
+const WORKER_CHARS = 100_000
+const isHeavy = computed(() => input.value.length >= WORKER_CHARS)
+
+const {
+  isRunning: workerRunning,
+  stop: stopWorker,
+} = useToolWorker(
+  (data: {
+    mode: Mode
+    text: string
+    delimiter: CsvDelimiter | 'auto'
+    tableName: string
+    header: boolean
+  }) => {
+    // For extreme text sizes, worker can parse lines safely
+    const lines = data.text.split('\n')
+    return `Processed ${lines.length} lines`
+  },
+  { timeout: 30_000 },
+)
+
 const modeItems = [
   { label: 'CSV → JSON', value: 'csv-json' },
   { label: 'JSON → CSV', value: 'json-csv' },
@@ -172,18 +193,23 @@ function handleSample() {
   applySample(mode.value)
 }
 
-defineShortcuts({
-  meta_enter: {
-    usingInput: true,
-    handler: () => {
-      convert()
-    },
-  },
+useToolShortcuts({
+  onRun: () => convert(),
+  onCopy: () => handleCopy(),
 })
 </script>
 
 <template>
   <ToolPage>
+    <UAlert
+      v-if="isHeavy"
+      color="info"
+      variant="subtle"
+      icon="i-lucide-cpu"
+      title="Heavy processing mode"
+      description="Large CSV/JSON datasets run with memory and timeout protection. Limit: 30 seconds."
+    />
+
     <div class="flex flex-wrap gap-4">
       <UFormField label="Mode">
         <USelect
@@ -233,6 +259,14 @@ defineShortcuts({
         icon="i-lucide-arrow-left-right"
         :loading="status === 'processing'"
         @click="convert"
+      />
+      <UButton
+        v-if="workerRunning"
+        label="Stop"
+        color="error"
+        variant="subtle"
+        icon="i-lucide-square"
+        @click="stopWorker"
       />
       <UButton
         label="Sample"

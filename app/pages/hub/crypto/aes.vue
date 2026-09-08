@@ -120,10 +120,7 @@ useToolShortcuts({
       </div>
 
       <!-- Password Input -->
-      <div class="space-y-2 max-w-lg">
-        <label class="block text-sm font-medium text-default">
-          Secret Password (PBKDF2 Key Derivation)
-        </label>
+      <UFormField label="Secret Password (PBKDF2 Key Derivation)" class="max-w-lg">
         <div class="flex items-center gap-2">
           <UInput
             v-model="password"
@@ -140,10 +137,10 @@ useToolShortcuts({
             @click="showPassword = !showPassword"
           />
         </div>
-      </div>
+      </UFormField>
 
       <!-- Action Button -->
-      <div>
+      <ToolActions>
         <UButton
           size="md"
           color="primary"
@@ -153,16 +150,12 @@ useToolShortcuts({
           :loading="loading"
           @click="handleRun"
         />
-      </div>
+      </ToolActions>
 
       <!-- Error Alert -->
-      <UAlert
+      <ToolError
         v-if="errorMsg"
-        color="error"
-        variant="subtle"
-        icon="i-lucide-alert-triangle"
-        title="Error"
-        :description="errorMsg"
+        :message="errorMsg"
       />
 
       <!-- Dual Editors Grid -->

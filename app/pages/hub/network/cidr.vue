@@ -28,6 +28,7 @@ const calculation = computed(() => {
     }
   }
 })
+useLiveTool(calculation)
 
 function handlePreset(val: string) {
   input.value = val
@@ -54,27 +55,18 @@ function handlePreset(val: string) {
       </div>
 
       <!-- Input -->
-      <div class="space-y-2">
-        <label class="block text-sm font-medium text-default">
-          IP Address & CIDR Prefix
-        </label>
-        <div class="max-w-md">
-          <UInput
-            v-model="input"
-            placeholder="e.g. 192.168.1.0/24"
-            class="font-mono text-base"
-          />
-        </div>
-      </div>
+      <UFormField label="IP Address & CIDR Prefix" class="max-w-md">
+        <UInput
+          v-model="input"
+          placeholder="e.g. 192.168.1.0/24"
+          class="font-mono text-base"
+        />
+      </UFormField>
 
       <!-- Error Alert -->
-      <UAlert
+      <ToolError
         v-if="calculation.error"
-        color="error"
-        variant="subtle"
-        icon="i-lucide-alert-triangle"
-        title="Invalid CIDR Input"
-        :description="calculation.error"
+        :message="calculation.error"
       />
 
       <!-- Calculation Results -->
@@ -84,41 +76,24 @@ function handlePreset(val: string) {
       >
         <!-- Top Stats Grid -->
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <div class="p-4 border border-default rounded-xl bg-elevated/40 text-center">
-            <div class="text-xs text-muted">
-              Usable Hosts
-            </div>
-            <div class="text-2xl font-bold font-mono mt-1 text-primary">
-              {{ calculation.data.usableHosts.toLocaleString() }}
-            </div>
-          </div>
-          <div class="p-4 border border-default rounded-xl bg-elevated/40 text-center">
-            <div class="text-xs text-muted">
-              Total Addresses
-            </div>
-            <div class="text-2xl font-bold font-mono mt-1">
-              {{ calculation.data.totalHosts.toLocaleString() }}
-            </div>
-          </div>
-          <div class="p-4 border border-default rounded-xl bg-elevated/40 text-center">
-            <div class="text-xs text-muted">
-              IP Class
-            </div>
-            <div class="text-2xl font-bold font-mono mt-1">
-              Class {{ calculation.data.ipClass }}
-            </div>
-          </div>
-          <div class="p-4 border border-default rounded-xl bg-elevated/40 text-center">
-            <div class="text-xs text-muted">
-              Scope
-            </div>
-            <div
-              class="text-2xl font-bold font-mono mt-1"
-              :class="calculation.data.isPrivate || calculation.data.isLinkLocal ? 'text-warning' : 'text-success'"
-            >
-              {{ calculation.data.isPrivate ? 'Private (RFC 1918)' : calculation.data.isLinkLocal ? 'Link-Local' : calculation.data.isLoopback ? 'Loopback' : 'Public' }}
-            </div>
-          </div>
+          <StatCard
+            label="Usable Hosts"
+            :value="calculation.data.usableHosts"
+            color="primary"
+          />
+          <StatCard
+            label="Total Addresses"
+            :value="calculation.data.totalHosts"
+          />
+          <StatCard
+            label="IP Class"
+            :value="`Class ${calculation.data.ipClass}`"
+          />
+          <StatCard
+            label="Scope"
+            :value="calculation.data.isPrivate ? 'Private (RFC 1918)' : calculation.data.isLinkLocal ? 'Link-Local' : calculation.data.isLoopback ? 'Loopback' : 'Public'"
+            :color="calculation.data.isPrivate || calculation.data.isLinkLocal ? 'warning' : 'success'"
+          />
         </div>
 
         <!-- Details Table -->

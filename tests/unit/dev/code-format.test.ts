@@ -2,18 +2,20 @@ import { describe, expect, it } from 'vitest'
 import { canFormatInBrowser, formatInBrowser, minifyHtml } from '#shared/utils/dev/code-format'
 
 describe('canFormatInBrowser', () => {
-  it('accepts json, html minify, and css minify', () => {
+  it('accepts all beautify, and json, html, css minify', () => {
     expect(canFormatInBrowser('json', 'minify')).toBe(true)
     expect(canFormatInBrowser('json', 'beautify')).toBe(true)
     expect(canFormatInBrowser('html', 'minify')).toBe(true)
+    expect(canFormatInBrowser('html', 'beautify')).toBe(true)
     expect(canFormatInBrowser('css', 'minify')).toBe(true)
+    expect(canFormatInBrowser('css', 'beautify')).toBe(true)
+    expect(canFormatInBrowser('javascript', 'beautify')).toBe(true)
+    expect(canFormatInBrowser('typescript', 'beautify')).toBe(true)
   })
 
-  it('rejects the work that needs the server', () => {
+  it('rejects js/ts minify that needs the server', () => {
     expect(canFormatInBrowser('javascript', 'minify')).toBe(false)
     expect(canFormatInBrowser('typescript', 'minify')).toBe(false)
-    expect(canFormatInBrowser('html', 'beautify')).toBe(false)
-    expect(canFormatInBrowser('css', 'beautify')).toBe(false)
   })
 })
 
@@ -40,6 +42,12 @@ describe('formatInBrowser', () => {
     const result = await formatInBrowser('{"a":1}', 'json', 'beautify')
     expect(result.engine).toBe('json')
     expect(result.code).toContain('"a": 1')
+  })
+
+  it('beautifies javascript with prettier', async () => {
+    const result = await formatInBrowser('const a=1+2;', 'javascript', 'beautify')
+    expect(result.engine).toBe('prettier')
+    expect(result.code).toContain('const a = 1 + 2;')
   })
 
   it('minifies css with csso', async () => {

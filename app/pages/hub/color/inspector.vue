@@ -32,13 +32,8 @@ function handleClear() {
   reset()
 }
 
-defineShortcuts({
-  meta_enter: {
-    usingInput: true,
-    handler: () => {
-      inspect()
-    },
-  },
+useToolShortcuts({
+  onRun: () => inspect(),
 })
 
 onMounted(() => {

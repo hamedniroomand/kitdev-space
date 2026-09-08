@@ -84,8 +84,8 @@ Do not call `useToolAnalytics` in a page for the standard events. The shared com
 | --- | --- | --- |
 | `tool_open` | `useToolSeo` | defaults only |
 | `tool_select` | sidebar, palette, hub cards, category pages, `RelatedTools`, home | `source` |
-| `tool_execute` | `useTool.run` | `duration_ms`, `input_bytes_bucket`, `run_location` for a mixed tool, `option` |
-| `tool_error` | `useTool.run`, `useCopyFeedback` | `error_kind` |
+| `tool_execute` | `useTool.run`, `useLiveTool` | `duration_ms`, `input_bytes_bucket`, `run_location` for a mixed tool, `option` |
+| `tool_error` | `useTool.run`, `useLiveTool`, `useCopyFeedback` | `error_kind` |
 | `tool_copy` | `useCopyFeedback` | `target` |
 | `tool_download` | `useDownload` | `file_format` |
 | `tool_search` | palette open | defaults only |
@@ -95,6 +95,8 @@ Do not call `useToolAnalytics` in a page for the standard events. The shared com
 
 Every tool event carries `tool_id`, `tool_category`, `run_location`, and `tool_variant_of` when the
 tool is a variant. The values come from the registry.
+
+Tools that calculate output live in computed values use `useLiveTool`. It watches the computation with `watchDebounced` at a 400 ms interval. It sends `tool_execute` once after user input settles. It sends `tool_error` when the calculation throws an error. It does not send events on raw keystrokes.
 
 Every parameter value comes from a fixed list in code or is a size bucket. An event never carries
 the input, the output, a file name, a URL, a search query, or an error message. `error_kind` comes

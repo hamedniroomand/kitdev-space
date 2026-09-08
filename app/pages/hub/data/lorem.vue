@@ -51,12 +51,9 @@ watch(mode, (next) => {
   count.value = next === 'paragraphs' ? 3 : 50
 })
 
-defineShortcuts({
-  meta_enter: {
-    handler: () => {
-      generate()
-    },
-  },
+useToolShortcuts({
+  onRun: () => generate(),
+  onCopy: () => handleCopy(),
 })
 </script>
 

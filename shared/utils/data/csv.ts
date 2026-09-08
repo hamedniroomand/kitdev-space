@@ -1,4 +1,5 @@
 import { DataError } from './errors'
+import { sqlLiteral } from './sql'
 
 export type CsvDelimiter = ',' | ';' | '\t'
 
@@ -218,15 +219,6 @@ export function csvToJson(
   })
 }
 
-function escapeCsvField(value: string, delimiter: CsvDelimiter): string {
-  const needsQuotes = value.includes('"')
-    || value.includes('\n')
-    || value.includes('\r')
-    || value.includes(delimiter)
-  const escaped = value.replaceAll('"', '""')
-  return needsQuotes ? `"${escaped}"` : escaped
-}
-
 function cellToString(value: unknown): string {
   if (value === null || value === undefined) {
     return ''
@@ -238,6 +230,26 @@ function cellToString(value: unknown): string {
     return String(value)
   }
   return JSON.stringify(value)
+}
+
+export function escapeCsvField(value: unknown, delimiter: CsvDelimiter = ','): string {
+  const text = cellToString(value)
+  const needsQuotes = text.includes('"')
+    || text.includes('\n')
+    || text.includes('\r')
+    || text.includes(delimiter)
+  const escaped = text.replaceAll('"', '""')
+  return needsQuotes ? `"${escaped}"` : escaped
+}
+
+export function formatCsvRow(row: unknown[], delimiter: CsvDelimiter = ','): string {
+  return row.map(cell => escapeCsvField(cell, delimiter)).join(delimiter)
+}
+
+export function formatCsv(columns: string[], rows: unknown[][], delimiter: CsvDelimiter = ','): string {
+  const header = formatCsvRow(columns, delimiter)
+  const lines = rows.map(row => formatCsvRow(row, delimiter))
+  return [header, ...lines].join('\n')
 }
 
 export function jsonToCsv(
@@ -318,20 +330,6 @@ function toSqlColumnIdent(name: string, index: number): string {
     value = `col_${value}`
   }
   return value
-}
-
-function sqlLiteral(value: unknown): string {
-  if (value === null || value === undefined) {
-    return 'NULL'
-  }
-  if (typeof value === 'number') {
-    return Number.isFinite(value) ? String(value) : 'NULL'
-  }
-  if (typeof value === 'boolean') {
-    return value ? 'TRUE' : 'FALSE'
-  }
-  const text = typeof value === 'string' ? value : JSON.stringify(value)
-  return `'${text.replaceAll('\'', '\'\'')}'`
 }
 
 export function csvToSqlInsert(

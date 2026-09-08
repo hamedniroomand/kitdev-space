@@ -1,5 +1,6 @@
 import { BlockList, isIPv4, isIPv6 } from 'node:net'
 import { createError } from 'h3'
+import { classifyIp } from '#shared/utils/network/ip-classify'
 
 const ALLOWED_PROTOCOLS = new Set(['http:', 'https:'])
 const BLOCKED_HOSTS = new Set([
@@ -55,6 +56,15 @@ function deny(message: string): never {
 }
 
 function isBlockedAddress(address: string, family?: 4 | 6): boolean {
+  try {
+    const classification = classifyIp(address)
+    if (classification.type !== 'public') {
+      return true
+    }
+  }
+  catch {
+    return true
+  }
   if (family === 4 || isIPv4(address)) {
     return blocked.check(address, 'ipv4')
   }

@@ -103,13 +103,9 @@ function handleReset() {
   ]
 }
 
-defineShortcuts({
-  meta_enter: {
-    usingInput: true,
-    handler: () => {
-      copyCss()
-    },
-  },
+useToolShortcuts({
+  onRun: () => copyCss(),
+  onCopy: () => copyCss(),
 })
 </script>
 
