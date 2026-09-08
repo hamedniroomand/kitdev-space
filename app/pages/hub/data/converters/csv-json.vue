@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import type { CsvDelimiter } from '#shared/utils/data/csv'
+import type { ColumnDataType, ColumnSchema } from '#shared/utils/data/csv-preview'
+import { useFileDialog } from '@vueuse/core'
 import { convertCsvJsonSql, CSV_DELIMITERS } from '#shared/utils/data/csv'
+import { extractPreviewData } from '#shared/utils/data/csv-preview'
 import { DataError } from '#shared/utils/data/errors'
 import { getTextStats } from '#shared/utils/data/stats'
 
@@ -193,17 +196,91 @@ function handleDownload() {
   downloadText(downloadName.value, output.value, downloadMime.value)
 }
 
+const customColumnTypes = ref<Record<string, ColumnDataType>>({})
+
 function handleClear() {
   input.value = ''
   output.value = ''
   statusMeta.value = ''
   detectedDelimiter.value = null
   excludeInvalidRows.value = false
+  customColumnTypes.value = {}
   reset()
+}
+
+const toast = useToast()
+
+const { open: openFileDialog, onChange: onFileChange } = useFileDialog({
+  accept: '.csv,.tsv,.json,text/csv,application/json,text/plain',
+  multiple: false,
+})
+
+async function handleFileLoaded(file: File) {
+  try {
+    const text = await file.text()
+    input.value = text
+    reportInput('file')
+    toast.add({
+      title: `Loaded ${file.name}`,
+      color: 'success',
+    })
+  }
+  catch {
+    toast.add({
+      title: 'Failed to read file',
+      color: 'error',
+    })
+  }
+}
+
+onFileChange(async (files) => {
+  if (!files || files.length === 0) {
+    return
+  }
+  const file = files[0]
+  if (file) {
+    await handleFileLoaded(file)
+  }
+})
+
+const previewData = computed(() => {
+  if (!input.value.trim()) {
+    return { columns: [], rows: [], totalRows: 0 }
+  }
+  try {
+    const isJsonMode = mode.value === 'json-csv'
+    const data = extractPreviewData(input.value, isJsonMode ? 'json' : 'csv', 50)
+    const columns: ColumnSchema[] = data.columns.map((col) => {
+      const customType = customColumnTypes.value[col.name]
+      return {
+        name: col.name,
+        type: customType ?? col.type,
+      }
+    })
+    return {
+      columns,
+      rows: data.rows,
+      totalRows: data.totalRows,
+    }
+  }
+  catch {
+    return { columns: [], rows: [], totalRows: 0 }
+  }
+})
+
+function handleUpdateColumnType(index: number, newType: ColumnDataType) {
+  const col = previewData.value.columns[index]
+  if (col) {
+    customColumnTypes.value = {
+      ...customColumnTypes.value,
+      [col.name]: newType,
+    }
+  }
 }
 
 watch(input, () => {
   excludeInvalidRows.value = false
+  customColumnTypes.value = {}
 })
 
 watch(mode, (newMode) => {
@@ -273,6 +350,8 @@ useToolShortcuts({
       :label="inputLabel"
       :placeholder="mode === 'json-csv' ? 'Paste JSON array here' : 'Paste CSV here'"
       :lang="inputLang"
+      accept=".csv,.tsv,.json,text/csv,application/json,text/plain"
+      @file-loaded="handleFileLoaded"
     />
 
     <ToolActions>
@@ -281,6 +360,13 @@ useToolShortcuts({
         icon="i-lucide-arrow-left-right"
         :loading="status === 'processing'"
         @click="convert"
+      />
+      <UButton
+        label="Open File"
+        color="neutral"
+        variant="subtle"
+        icon="i-lucide-folder-open"
+        @click="openFileDialog()"
       />
       <UButton
         v-if="workerRunning"
@@ -345,6 +431,14 @@ useToolShortcuts({
         @click="handleExcludeInvalidRows"
       />
     </div>
+
+    <CsvPreviewTable
+      v-if="previewData.columns.length > 0"
+      :columns="previewData.columns"
+      :rows="previewData.rows"
+      :total-rows="previewData.totalRows"
+      @update-type="handleUpdateColumnType"
+    />
 
     <LazyToolEditor
       v-model="output"
