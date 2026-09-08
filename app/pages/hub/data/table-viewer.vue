@@ -19,7 +19,9 @@ const sampleJson = JSON.stringify([
   { id: 104, product: 'USB-C Cable Pack', category: 'Accessories', price: 15.00, inStock: true },
 ], null, 2)
 
-const input = ref(sampleCsv)
+const { consumeHandoffData } = useTableViewerHandoff()
+const handoffInput = consumeHandoffData()
+const input = ref(handoffInput || sampleCsv)
 const searchQuery = ref('')
 const sortColumn = ref<string | null>(null)
 const sortAsc = ref(true)

@@ -289,6 +289,17 @@ function handleDownloadFiltered() {
   downloadText(getDownloadFilename(mode.value, true), filteredOutput, downloadMime.value)
 }
 
+const { setHandoffData } = useTableViewerHandoff()
+
+function handleOpenInTableViewer() {
+  const data = input.value.trim()
+  if (!data) {
+    return
+  }
+  setHandoffData(data)
+  navigateTo('/hub/data/table-viewer')
+}
+
 function handleClear() {
   input.value = ''
   output.value = ''
@@ -486,6 +497,14 @@ useToolShortcuts({
         icon="i-lucide-filter"
         :disabled="!output || !isFiltered"
         @click="handleDownloadFiltered"
+      />
+      <UButton
+        label="Open in Table Viewer"
+        color="neutral"
+        variant="subtle"
+        icon="i-lucide-table"
+        :disabled="!input.trim()"
+        @click="handleOpenInTableViewer"
       />
       <UButton
         label="Clear"
