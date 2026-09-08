@@ -30,6 +30,64 @@ useToolSeo(props.toolId)
 const inputLang = computed(() => (from.value === 'json' || from.value === 'json5' ? 'json' : 'text'))
 const outputLang = computed(() => (to.value === 'json' || to.value === 'json5' ? 'json' : 'text'))
 
+const downloadFilename = computed(() => {
+  const base = props.downloadName.replace(/\.[^.]+$/, '') || 'converted'
+  return `${base}.${to.value}`
+})
+
+const downloadMimeType = computed(() => {
+  switch (to.value) {
+    case 'json':
+      return 'application/json'
+    case 'yaml':
+      return 'text/yaml'
+    case 'toml':
+      return 'application/toml'
+    case 'xml':
+      return 'application/xml'
+    case 'json5':
+      return 'application/json5'
+    default:
+      return props.downloadMime || 'text/plain'
+  }
+})
+
+const editorAccept = computed(() => {
+  const exts = props.formats.map(f => `.${f.value}`)
+  if (props.formats.some(f => f.value === 'yaml')) {
+    exts.push('.yml')
+  }
+  return `${exts.join(',')},text/*`
+})
+
+function onFileLoaded(file: File) {
+  const name = file.name.toLowerCase()
+  let targetFormat: Exclude<DataFormat, 'typescript'> | null = null
+  if (name.endsWith('.yaml') || name.endsWith('.yml')) {
+    targetFormat = 'yaml'
+  }
+  else if (name.endsWith('.toml')) {
+    targetFormat = 'toml'
+  }
+  else if (name.endsWith('.json')) {
+    targetFormat = 'json'
+  }
+  else if (name.endsWith('.xml')) {
+    targetFormat = 'xml'
+  }
+  else if (name.endsWith('.json5')) {
+    targetFormat = 'json5'
+  }
+
+  if (targetFormat && props.formats.some(f => f.value === targetFormat)) {
+    from.value = targetFormat
+    const alternate = props.formats.find(f => f.value !== targetFormat)
+    if (alternate) {
+      to.value = alternate.value
+    }
+  }
+}
+
 async function convert() {
   await run(() => convertInBrowser(input.value, from.value, to.value), 'The convert operation failed.', { option: `${from.value}_to_${to.value}` })
 
@@ -51,7 +109,7 @@ function handleDownload() {
   if (!output.value) {
     return
   }
-  downloadText(props.downloadName, output.value, props.downloadMime)
+  downloadText(downloadFilename.value, output.value, downloadMimeType.value)
 }
 
 function handleClear() {
@@ -90,6 +148,8 @@ useToolShortcuts({
       label="Input"
       placeholder="Paste data here"
       :lang="inputLang"
+      :accept="editorAccept"
+      @file-loaded="onFileLoaded"
     />
 
     <ToolActions>

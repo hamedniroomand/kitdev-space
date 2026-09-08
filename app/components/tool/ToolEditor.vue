@@ -24,6 +24,10 @@ const props = withDefaults(defineProps<{
   accept: 'text/*,.*',
 })
 
+const emit = defineEmits<{
+  fileLoaded: [file: File]
+}>()
+
 /**
  * The frame of a code editor: the label, the height, and the expand button.
  * The CodeMirror code sits in `ToolCodeMirror`, which loads only in the
@@ -86,6 +90,7 @@ async function loadFile(file: File) {
     const text = await file.text()
     model.value = text
     reportInput('file')
+    emit('fileLoaded', file)
   }
   catch {
     fileError.value = 'Failed to read file.'
