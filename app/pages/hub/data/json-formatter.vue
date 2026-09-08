@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { formatJson, minifyJson, validateJson } from '#shared/utils/data/json'
+import { detectJsonWarnings, formatJson, minifyJson, validateJson } from '#shared/utils/data/json'
 import { getTextStats } from '#shared/utils/data/stats'
 
 const WORKER_CHARS = 100_000
@@ -8,6 +8,7 @@ const input = ref('{\n  "name": "KitDev",\n  "ready": true\n}')
 const output = ref('')
 const statusMessage = ref('')
 const statusMeta = ref('')
+const warnings = ref<string[]>([])
 const { buildShareUrl, canShare } = useToolQuery({ input })
 const { status, error, result, run, reset } = useTool<string>()
 const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
@@ -48,8 +49,13 @@ function setStats(text: string) {
   statusMeta.value = `${stats.characters} characters · ${stats.lines} lines · ${stats.bytes} bytes`
 }
 
+function checkWarnings() {
+  warnings.value = detectJsonWarnings(input.value).map(w => w.message)
+}
+
 async function format() {
   validateFeedback.reset()
+  checkWarnings()
   await run(async () => {
     if (input.value.length >= WORKER_CHARS) {
       try {
@@ -71,6 +77,7 @@ async function format() {
 
 async function minify() {
   validateFeedback.reset()
+  checkWarnings()
   await run(async () => {
     if (input.value.length >= WORKER_CHARS) {
       try {
@@ -90,6 +97,7 @@ async function minify() {
 }
 
 async function validate() {
+  checkWarnings()
   await run(() => {
     const next = validateJson(input.value)
     if (!next.ok) {
@@ -126,6 +134,7 @@ function handleClear() {
   output.value = ''
   statusMessage.value = ''
   statusMeta.value = ''
+  warnings.value = []
   validateFeedback.reset()
   reset()
 }
@@ -230,6 +239,20 @@ useToolShortcuts({
       v-if="error"
       :message="error"
     />
+
+    <div
+      v-if="warnings.length > 0"
+      class="space-y-2"
+    >
+      <UAlert
+        v-for="(warning, idx) in warnings"
+        :key="idx"
+        color="warning"
+        variant="subtle"
+        icon="i-lucide-triangle-alert"
+        :title="warning"
+      />
+    </div>
 
     <LazyToolEditor
       v-model="output"

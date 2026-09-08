@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { DataError } from '#shared/utils/data/errors'
 import {
+  detectJsonWarnings,
   formatJson,
   minifyJson,
   parseJson,
@@ -45,5 +46,52 @@ describe('json core', () => {
       const dataErr = err as DataError
       expect(dataErr.line !== undefined || dataErr.position !== undefined).toBe(true)
     }
+  })
+
+  describe('detectJsonWarnings', () => {
+    it('warns when an integer exceeds 2^53 - 1', () => {
+      const warnings = detectJsonWarnings('{"id": 9007199254740993}')
+      expect(warnings).toHaveLength(1)
+      expect(warnings[0]?.type).toBe('precision')
+      expect(warnings[0]?.message).toContain('9007199254740993')
+    })
+
+    it('warns when a negative integer exceeds -(2^53 - 1)', () => {
+      const warnings = detectJsonWarnings('{"id": -9007199254740993}')
+      expect(warnings).toHaveLength(1)
+      expect(warnings[0]?.type).toBe('precision')
+      expect(warnings[0]?.message).toContain('-9007199254740993')
+    })
+
+    it('does not warn for safe integers', () => {
+      const warnings = detectJsonWarnings('{"max": 9007199254740991, "min": -9007199254740991, "zero": 0, "pi": 3.14159}')
+      expect(warnings).toHaveLength(0)
+    })
+
+    it('warns on duplicate keys in the same object', () => {
+      const warnings = detectJsonWarnings('{"a": 1, "b": 2, "a": 3}')
+      expect(warnings).toHaveLength(1)
+      expect(warnings[0]?.type).toBe('duplicate_key')
+      expect(warnings[0]?.message).toContain('"a"')
+    })
+
+    it('warns on duplicate keys in nested objects', () => {
+      const warnings = detectJsonWarnings('{"nested": {"x": 1, "x": 2}}')
+      expect(warnings).toHaveLength(1)
+      expect(warnings[0]?.type).toBe('duplicate_key')
+      expect(warnings[0]?.message).toContain('"x"')
+    })
+
+    it('does not warn when same key exists in different objects or scopes', () => {
+      const warnings = detectJsonWarnings('{"a": {"x": 1}, "b": {"x": 2}, "x": 3}')
+      expect(warnings).toHaveLength(0)
+    })
+
+    it('warns on unquoted duplicate keys in JSON5', () => {
+      const warnings = detectJsonWarnings('{ foo: 1, bar: 2, foo: 3 }')
+      expect(warnings).toHaveLength(1)
+      expect(warnings[0]?.type).toBe('duplicate_key')
+      expect(warnings[0]?.message).toContain('"foo"')
+    })
   })
 })
