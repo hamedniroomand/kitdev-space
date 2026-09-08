@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { SqlDialect, SqlIndent, SqlKeywordCase } from '#shared/utils/data/sql'
+import { useFileDialog } from '@vueuse/core'
 import { createSqlLinter, formatSql, validateSql } from '#shared/utils/data/sql'
 import { getTextStats } from '#shared/utils/data/stats'
 
@@ -26,9 +27,9 @@ const keywordCaseItems = [
   { label: 'Preserve', value: 'preserve' },
 ]
 
-const dialect = ref<SqlDialect>('sql')
-const indent = ref<SqlIndent>('2')
-const keywordCase = ref<SqlKeywordCase>('upper')
+const dialect = useToolOption<SqlDialect>('dialect', 'sql')
+const indent = useToolOption<SqlIndent>('indent', '2')
+const keywordCase = useToolOption<SqlKeywordCase>('keyword-case', 'upper')
 
 const input = ref(SAMPLE_QUERY)
 const output = ref('')
@@ -141,6 +142,41 @@ function handleDownload() {
   downloadText('query.sql', output.value, 'text/x-sql')
 }
 
+const toast = useToast()
+
+const { open: openFileDialog, onChange: onFileChange } = useFileDialog({
+  accept: '.sql,text/x-sql,text/plain',
+  multiple: false,
+})
+
+async function handleFileLoaded(file: File) {
+  try {
+    const text = await file.text()
+    input.value = text
+    reportInput('file')
+    toast.add({
+      title: `Loaded ${file.name}`,
+      color: 'success',
+    })
+  }
+  catch {
+    toast.add({
+      title: 'Failed to read file',
+      color: 'error',
+    })
+  }
+}
+
+onFileChange(async (files) => {
+  if (!files || files.length === 0) {
+    return
+  }
+  const file = files[0]
+  if (file) {
+    await handleFileLoaded(file)
+  }
+})
+
 function handleClear() {
   input.value = ''
   output.value = ''
@@ -206,7 +242,9 @@ useToolShortcuts({
       label="Input"
       placeholder="Paste SQL query here"
       lang="sql"
+      accept=".sql,text/x-sql,text/plain"
       :extensions="[linterExtension]"
+      @file-loaded="handleFileLoaded"
     />
 
     <ToolActions>
@@ -215,6 +253,13 @@ useToolShortcuts({
         icon="i-lucide-align-left"
         :loading="status === 'processing'"
         @click="format"
+      />
+      <UButton
+        label="Open File"
+        color="neutral"
+        variant="subtle"
+        icon="i-lucide-folder-open"
+        @click="openFileDialog()"
       />
       <UButton
         v-if="workerRunning"

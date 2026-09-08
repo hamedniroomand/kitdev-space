@@ -114,4 +114,10 @@ describe('validateSql', () => {
     const result = validateSql(query, 'sql')
     expect(result.valid).toBe(true)
   })
+
+  it('handles standard .sql file formats with multiple statements', () => {
+    const multiSql = 'CREATE TABLE test (id INT); INSERT INTO test VALUES (1);'
+    const result = validateSql(multiSql, 'sql')
+    expect(result.valid).toBe(true)
+  })
 })
