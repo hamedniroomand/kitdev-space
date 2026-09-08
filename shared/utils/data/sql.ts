@@ -1,7 +1,7 @@
 import type { Diagnostic } from '@codemirror/lint'
 import type { Extension } from '@codemirror/state'
 import type { Parser, SyntaxNodeRef } from '@lezer/common'
-import { MySQL, PostgreSQL, sql, SQLite } from '@codemirror/lang-sql'
+import { MSSQL, MySQL, PostgreSQL, sql, SQLite } from '@codemirror/lang-sql'
 import { linter } from '@codemirror/lint'
 import { format } from 'sql-formatter'
 import { DataError, positionToLineColumn } from './errors'
@@ -32,6 +32,7 @@ function resolveDialectParser(dialect: SqlDialect = 'sql'): Parser {
     case 'sqlite':
       return SQLite.language.parser
     case 'transactsql':
+      return MSSQL.language.parser
     case 'sql':
     default:
       return sql().language.parser

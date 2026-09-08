@@ -50,19 +50,19 @@ const { status, error, result, run, reset } = useTool<string>()
 const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
 const validateFeedback = useActionFeedback({
   idle: {
-    label: 'Validate',
+    label: 'Validate Syntax',
     icon: 'i-lucide-circle-check',
     color: 'neutral',
     variant: 'subtle',
   },
   success: {
-    label: 'Valid',
+    label: 'Valid Syntax',
     icon: 'i-lucide-check',
     color: 'success',
     variant: 'subtle',
   },
   error: {
-    label: 'Invalid',
+    label: 'Syntax Error',
     icon: 'i-lucide-x',
     color: 'error',
     variant: 'subtle',
@@ -108,7 +108,7 @@ async function validate() {
   })
 
   if (status.value === 'success') {
-    statusMessage.value = 'Valid SQL syntax'
+    statusMessage.value = 'Valid SQL syntax (grammar parsed, not live database validated)'
     setStats(input.value)
     validateFeedback.flashSuccess()
   }
@@ -158,6 +158,13 @@ useToolShortcuts({
 
 <template>
   <ToolPage>
+    <UAlert
+      color="neutral"
+      variant="subtle"
+      title="Syntax parsing only"
+      description="Validation checks statement structure against dialect grammar rules. It does not validate against live databases, schemas, or tables."
+    />
+
     <UAlert
       v-if="isHeavy"
       color="info"
@@ -289,7 +296,7 @@ useToolShortcuts({
             You can also transform keywords to UPPERCASE or lowercase.
           </p>
           <p>
-            Syntax checking validates statement structure against the grammar rules of the selected SQL dialect. It checks syntax only and does not validate against a live database, schema, or table catalog.
+            Syntax checks are syntax parsing only, not live database validation. The tool parses statement structure and grammar tokens using Lezer SQL dialect parsers, including Transact-SQL (T-SQL). It checks grammar only and does not validate against live database connections, schemas, tables, or column catalogs.
           </p>
           <p>
             Select Format or press <UKbd value="meta" /> + <UKbd value="enter" /> to run the formatter.

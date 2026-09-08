@@ -94,4 +94,24 @@ describe('validateSql', () => {
     const result = validateSql('   ')
     expect(result.valid).toBe(true)
   })
+
+  it('validates Transact-SQL dialect syntax with MSSQL Lezer parser', () => {
+    const tsql = 'SELECT TOP 10 [id], [username] FROM [dbo].[users] WHERE [active] = 1;'
+    const result = validateSql(tsql, 'transactsql')
+    expect(result.valid).toBe(true)
+    expect(result.error).toBeUndefined()
+  })
+
+  it('detects syntax errors in Transact-SQL statements', () => {
+    const brokenTsql = 'SELECT [id] FROM [dbo].[users] WHERE ([active] = ;'
+    const result = validateSql(brokenTsql, 'transactsql')
+    expect(result.valid).toBe(false)
+    expect(result.error).toBeDefined()
+  })
+
+  it('performs syntax parsing without requiring live database schema validation', () => {
+    const query = 'SELECT col_a, col_b FROM phantom_schema.non_existent_table_999 WHERE col_c > 10;'
+    const result = validateSql(query, 'sql')
+    expect(result.valid).toBe(true)
+  })
 })
