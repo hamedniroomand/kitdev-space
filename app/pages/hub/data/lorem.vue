@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import { generateLoremParagraphs, generateLoremWords } from '#shared/utils/data/lorem'
+import type { LoremMode } from '#shared/utils/data/lorem'
+import { generateLorem } from '#shared/utils/data/lorem'
 
-type LoremMode = 'paragraphs' | 'words'
-
-const mode = ref<LoremMode>('paragraphs')
-const count = ref(3)
+const mode = useToolOption<LoremMode>('lorem-mode', 'paragraphs')
+const count = useToolOption<number>('lorem-count', 3)
 const output = ref('')
 const { status, error, result, run, reset } = useTool<string>()
 const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
@@ -12,16 +11,46 @@ const { downloadText } = useDownload()
 
 const modeItems = [
   { label: 'Paragraphs', value: 'paragraphs' },
+  { label: 'Sentences', value: 'sentences' },
   { label: 'Words', value: 'words' },
 ]
+
+const countLabel = computed(() => {
+  switch (mode.value) {
+    case 'words':
+      return 'Words'
+    case 'sentences':
+      return 'Sentences'
+    default:
+      return 'Paragraphs'
+  }
+})
+
+const maxCount = computed(() => {
+  switch (mode.value) {
+    case 'words':
+      return 5000
+    case 'sentences':
+      return 500
+    default:
+      return 50
+  }
+})
+
+watch(mode, () => {
+  if (count.value > maxCount.value) {
+    count.value = maxCount.value
+  }
+  else if (count.value < 1) {
+    count.value = 1
+  }
+})
 
 useToolSeo('lorem')
 
 async function generate() {
   await run(() => {
-    return mode.value === 'paragraphs'
-      ? generateLoremParagraphs(count.value)
-      : generateLoremWords(count.value)
+    return generateLorem(mode.value, count.value)
   })
   if (status.value === 'success' && result.value !== null) {
     output.value = result.value
@@ -47,10 +76,6 @@ function handleClear() {
   reset()
 }
 
-watch(mode, (next) => {
-  count.value = next === 'paragraphs' ? 3 : 50
-})
-
 useToolShortcuts({
   onRun: () => generate(),
   onCopy: () => handleCopy(),
@@ -74,12 +99,12 @@ useToolShortcuts({
           class="w-56"
         />
       </UFormField>
-      <UFormField :label="mode === 'words' ? 'Words' : 'Paragraphs'">
+      <UFormField :label="countLabel">
         <UInput
           v-model.number="count"
           type="number"
           :min="1"
-          :max="mode === 'words' ? 5000 : 50"
+          :max="maxCount"
           class="w-28"
         />
       </UFormField>
@@ -134,7 +159,7 @@ useToolShortcuts({
       <ToolDocs title="About Lorem Ipsum">
         <div class="space-y-4 text-muted">
           <p>
-            Use this tool to generate placeholder text in paragraphs or words for layout drafts.
+            Use this tool to generate placeholder text in paragraphs, sentences, or words for layout drafts.
           </p>
           <p>
             For structured test records, mock users, or database fixtures, use the

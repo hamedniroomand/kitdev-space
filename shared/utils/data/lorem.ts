@@ -93,6 +93,8 @@ function sentence(wordCount: number): string {
   return `${words.join(' ')}.`
 }
 
+export type LoremMode = 'paragraphs' | 'sentences' | 'words'
+
 export function generateLoremWords(count: number): string {
   const n = Math.floor(count)
   if (n < 1 || n > 5000) {
@@ -103,6 +105,19 @@ export function generateLoremWords(count: number): string {
     words.push(pick(LOREM_WORDS))
   }
   return words.join(' ')
+}
+
+export function generateLoremSentences(count: number): string {
+  const n = Math.floor(count)
+  if (n < 1 || n > 500) {
+    throw new Error('Choose a sentence count between 1 and 500.')
+  }
+  const sentences: string[] = []
+  for (let i = 0; i < n; i += 1) {
+    const len = 6 + randomInt(10)
+    sentences.push(sentence(len))
+  }
+  return sentences.join(' ')
 }
 
 export function generateLoremParagraphs(count: number, wordsPerParagraph = 40): string {
@@ -122,4 +137,15 @@ export function generateLoremParagraphs(count: number, wordsPerParagraph = 40): 
     paragraphs.push(sentences.join(' '))
   }
   return paragraphs.join('\n\n')
+}
+
+export function generateLorem(mode: LoremMode, count: number): string {
+  switch (mode) {
+    case 'paragraphs':
+      return generateLoremParagraphs(count)
+    case 'sentences':
+      return generateLoremSentences(count)
+    case 'words':
+      return generateLoremWords(count)
+  }
 }
