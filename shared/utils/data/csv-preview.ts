@@ -8,6 +8,85 @@ export interface ColumnSchema {
   type: ColumnDataType
 }
 
+export interface ColumnSortState {
+  columnIndex: number
+  direction: 'asc' | 'desc'
+}
+
+export function filterRows(
+  rows: string[][],
+  columnFilters: Record<number, string>,
+): string[][] {
+  const activeFilters = Object.entries(columnFilters)
+    .map(([idx, text]) => ({ index: Number(idx), text: text.trim().toLowerCase() }))
+    .filter(f => f.text.length > 0)
+
+  if (activeFilters.length === 0) {
+    return rows
+  }
+
+  return rows.filter((row) => {
+    return activeFilters.every((filter) => {
+      const cell = (row[filter.index] ?? '').toLowerCase()
+      return cell.includes(filter.text)
+    })
+  })
+}
+
+export function sortRows(
+  rows: string[][],
+  sort: ColumnSortState | null,
+  columnType: ColumnDataType = 'text',
+): string[][] {
+  if (!sort) {
+    return rows
+  }
+
+  const { columnIndex, direction } = sort
+  const factor = direction === 'desc' ? -1 : 1
+
+  return [...rows].sort((a, b) => {
+    const valA = a[columnIndex] ?? ''
+    const valB = b[columnIndex] ?? ''
+
+    if (columnType === 'number') {
+      const numA = Number(valA)
+      const numB = Number(valB)
+      const validA = Number.isFinite(numA)
+      const validB = Number.isFinite(numB)
+      if (validA && validB) {
+        return (numA - numB) * factor
+      }
+      if (validA)
+        return -1 * factor
+      if (validB)
+        return 1 * factor
+    }
+    else if (columnType === 'date') {
+      const timeA = Date.parse(valA)
+      const timeB = Date.parse(valB)
+      const validA = !Number.isNaN(timeA)
+      const validB = !Number.isNaN(timeB)
+      if (validA && validB) {
+        return (timeA - timeB) * factor
+      }
+      if (validA)
+        return -1 * factor
+      if (validB)
+        return 1 * factor
+    }
+    else if (columnType === 'boolean') {
+      const boolA = valA.trim().toLowerCase() === 'true'
+      const boolB = valB.trim().toLowerCase() === 'true'
+      if (boolA !== boolB) {
+        return (boolA ? 1 : -1) * factor
+      }
+    }
+
+    return valA.localeCompare(valB, undefined, { numeric: true, sensitivity: 'base' }) * factor
+  })
+}
+
 export interface CsvPreviewData {
   columns: ColumnSchema[]
   rows: string[][]

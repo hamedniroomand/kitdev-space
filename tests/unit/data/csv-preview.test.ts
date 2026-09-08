@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import {
   extractPreviewData,
+  filterRows,
   inferColumnType,
   isLeadingZeroIdentifier,
+  sortRows,
 } from '#shared/utils/data/csv-preview'
 
 describe('csv preview and column type detection', () => {
@@ -69,5 +71,47 @@ describe('csv preview and column type detection', () => {
       { name: 'active', type: 'boolean' },
       { name: 'registered', type: 'date' },
     ])
+  })
+})
+
+describe('csv preview filterRows and sortRows', () => {
+  const sampleRows = [
+    ['1', 'Ada', '36', 'true', '2020-01-01'],
+    ['2', 'Grace', '45', 'false', '2015-06-15'],
+    ['3', 'Alan', '41', 'true', '2022-10-31'],
+    ['4', 'Margaret', '28', 'false', '2024-03-01'],
+  ]
+
+  it('filters rows by column text values case-insensitively', () => {
+    const filtered = filterRows(sampleRows, { 1: 'ar' })
+    expect(filtered).toEqual([['4', 'Margaret', '28', 'false', '2024-03-01']])
+    const filteredAlan = filterRows(sampleRows, { 1: 'alan' })
+    expect(filteredAlan).toEqual([['3', 'Alan', '41', 'true', '2022-10-31']])
+  })
+
+  it('combines multiple column filters', () => {
+    const filtered = filterRows(sampleRows, { 1: 'a', 3: 'true' })
+    expect(filtered).toEqual([
+      ['1', 'Ada', '36', 'true', '2020-01-01'],
+      ['3', 'Alan', '41', 'true', '2022-10-31'],
+    ])
+  })
+
+  it('sorts rows numerically when column type is number', () => {
+    const sortedAsc = sortRows(sampleRows, { columnIndex: 2, direction: 'asc' }, 'number')
+    expect(sortedAsc.map(r => r[1])).toEqual(['Margaret', 'Ada', 'Alan', 'Grace']) // 28, 36, 41, 45
+
+    const sortedDesc = sortRows(sampleRows, { columnIndex: 2, direction: 'desc' }, 'number')
+    expect(sortedDesc.map(r => r[1])).toEqual(['Grace', 'Alan', 'Ada', 'Margaret'])
+  })
+
+  it('sorts rows by date when column type is date', () => {
+    const sortedAsc = sortRows(sampleRows, { columnIndex: 4, direction: 'asc' }, 'date')
+    expect(sortedAsc.map(r => r[1])).toEqual(['Grace', 'Ada', 'Alan', 'Margaret']) // 2015, 2020, 2022, 2024
+  })
+
+  it('sorts rows alphabetically for text columns', () => {
+    const sortedAsc = sortRows(sampleRows, { columnIndex: 1, direction: 'asc' }, 'text')
+    expect(sortedAsc.map(r => r[1])).toEqual(['Ada', 'Alan', 'Grace', 'Margaret'])
   })
 })
