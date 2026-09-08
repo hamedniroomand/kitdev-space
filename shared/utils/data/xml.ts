@@ -40,10 +40,42 @@ function getParser(): DOMParser {
 
 // ---------- XML -> JSON ----------
 
-function elementToValue(element: Element): unknown {
+export interface ParseXmlOptions {
+  strict?: boolean
+}
+
+function elementToValue(
+  element: Element,
+  options: ParseXmlOptions = {},
+  parentNamespaces: Map<string, string> = new Map(),
+): unknown {
+  const currentNamespaces = new Map(parentNamespaces)
+  for (const attribute of Array.from(element.attributes)) {
+    if (attribute.name === 'xmlns' || attribute.name.startsWith('xmlns:')) {
+      const prefix = attribute.name === 'xmlns' ? '' : attribute.name.slice(6)
+      const uri = attribute.value
+      if (options.strict && parentNamespaces.has(prefix)) {
+        const existingUri = parentNamespaces.get(prefix)
+        if (existingUri && existingUri !== uri) {
+          throw new DataError(
+            `Namespace prefix "${prefix || 'default'}" in element <${element.nodeName}> has conflicting URIs: "${existingUri}" and "${uri}".`,
+          )
+        }
+      }
+      currentNamespaces.set(prefix, uri)
+    }
+  }
+
   const out: Record<string, unknown> = {}
+  const seenAttributeNames = new Set<string>()
 
   for (const attribute of Array.from(element.attributes)) {
+    if (options.strict) {
+      if (seenAttributeNames.has(attribute.name)) {
+        throw new DataError(`Conflicting attribute name "${attribute.name}" in element <${element.nodeName}>.`)
+      }
+      seenAttributeNames.add(attribute.name)
+    }
     out[`@${attribute.name}`] = attribute.value
   }
 
@@ -53,7 +85,7 @@ function elementToValue(element: Element): unknown {
     if (node.nodeType === 1) {
       hasElementChild = true
       const child = node as Element
-      const value = elementToValue(child)
+      const value = elementToValue(child, options, currentNamespaces)
       const existing = out[child.nodeName]
       if (existing === undefined) {
         out[child.nodeName] = value
@@ -74,6 +106,12 @@ function elementToValue(element: Element): unknown {
   const trimmed = text.trim()
   const hasAttributes = element.attributes.length > 0
 
+  if (options.strict && hasElementChild && trimmed.length > 0) {
+    throw new DataError(
+      `Cannot convert mixed content in element <${element.nodeName}> to JSON.\n\nThe element contains both text and child elements.`,
+    )
+  }
+
   if (!hasElementChild && !hasAttributes) {
     return trimmed
   }
@@ -83,7 +121,7 @@ function elementToValue(element: Element): unknown {
   return out
 }
 
-export function parseXml(text: string): unknown {
+export function parseXml(text: string, options: ParseXmlOptions = {}): unknown {
   const document = getParser().parseFromString(text, 'application/xml')
   const failure = document.querySelector('parsererror')
   if (failure) {
@@ -94,7 +132,7 @@ export function parseXml(text: string): unknown {
   if (!root) {
     throw new DataError('Invalid XML.\n\nThe document has no root element.')
   }
-  return { [root.nodeName]: elementToValue(root) }
+  return { [root.nodeName]: elementToValue(root, options) }
 }
 
 // ---------- JSON -> XML ----------

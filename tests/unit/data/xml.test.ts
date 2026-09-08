@@ -121,3 +121,26 @@ describe('parseXml structural fixtures', () => {
     expect(footer['#text']).toBe('Copyright 2026  Inc.')
   })
 })
+
+describe('parseXml error reporting', () => {
+  it('rejects conflicting namespace URIs in strict mode', () => {
+    const xml = '<root xmlns:ns="https://example.com/v1"><child xmlns:ns="https://example.com/v2"><ns:item/></child></root>'
+    expect(() => parseXml(xml, { strict: true })).toThrowError(
+      'Namespace prefix "ns" in element <child> has conflicting URIs: "https://example.com/v1" and "https://example.com/v2".',
+    )
+  })
+
+  it('identifies the specific node name when mixed content cannot convert in strict mode', () => {
+    const xml = '<root><paragraph>Text before <em>highlight</em> text after.</paragraph></root>'
+    expect(() => parseXml(xml, { strict: true })).toThrowError(
+      'Cannot convert mixed content in element <paragraph> to JSON.\n\nThe element contains both text and child elements.',
+    )
+  })
+
+  it('identifies nested node name for mixed content in strict mode', () => {
+    const xml = '<root><clean><item>value</item></clean><dirty>Some text <span>inline</span></dirty></root>'
+    expect(() => parseXml(xml, { strict: true })).toThrowError(
+      'Cannot convert mixed content in element <dirty> to JSON.',
+    )
+  })
+})
