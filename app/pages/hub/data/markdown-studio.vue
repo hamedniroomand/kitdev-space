@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { generateHtmlDocument, parseMarkdown } from '#shared/utils/data/markdown'
+import { useFileDialog } from '@vueuse/core'
+import { deriveMarkdownFilename, extractMarkdownHeading, generateHtmlDocument, parseMarkdown } from '#shared/utils/data/markdown'
 import { formatReadingTime, getTextStats } from '#shared/utils/data/stats'
 
 const sampleMarkdown = `# Markdown Live Studio
@@ -38,6 +39,38 @@ const toast = useToast()
 const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
 const { downloadText } = useDownload()
 
+const { open: openFileDialog, onChange: onFileChange } = useFileDialog({
+  accept: '.md,text/markdown,text/plain',
+  multiple: false,
+})
+
+onFileChange(async (files) => {
+  if (!files || files.length === 0) {
+    return
+  }
+  const file = files[0]
+  if (file) {
+    await handleFileLoaded(file)
+  }
+})
+
+async function handleFileLoaded(file: File) {
+  try {
+    const text = await file.text()
+    input.value = text
+    toast.add({
+      title: `Loaded ${file.name}`,
+      color: 'success',
+    })
+  }
+  catch {
+    toast.add({
+      title: 'Failed to read file',
+      color: 'error',
+    })
+  }
+}
+
 useToolSeo('markdown-studio')
 
 const compiledHtml = computed(() => parseMarkdown(input.value))
@@ -62,10 +95,13 @@ function handleDownload() {
   if (!compiledHtml.value) {
     return
   }
-  const documentHtml = generateHtmlDocument(compiledHtml.value, 'Markdown Document')
-  downloadText('document.html', documentHtml, 'text/html')
+  const heading = extractMarkdownHeading(input.value)
+  const title = heading || 'Markdown Document'
+  const filename = deriveMarkdownFilename(input.value, 'html', 'document')
+  const documentHtml = generateHtmlDocument(compiledHtml.value, title)
+  downloadText(filename, documentHtml, 'text/html')
   toast.add({
-    title: 'Downloaded HTML file',
+    title: `Downloaded ${filename}`,
     color: 'success',
   })
 }
@@ -104,6 +140,8 @@ function handleClear() {
         placeholder="Type or paste markdown here"
         :rows="18"
         lang="markdown"
+        accept=".md,text/markdown,text/plain"
+        @file-loaded="handleFileLoaded"
       />
 
       <div class="flex flex-col">
@@ -140,6 +178,13 @@ function handleClear() {
     </div>
 
     <ToolActions>
+      <UButton
+        label="Open File"
+        color="neutral"
+        variant="subtle"
+        icon="i-lucide-folder-open"
+        @click="openFileDialog()"
+      />
       <UButton
         label="Download HTML"
         icon="i-lucide-download"

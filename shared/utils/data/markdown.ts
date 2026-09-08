@@ -77,6 +77,47 @@ export function parseMarkdown(input: string): string {
   }
 }
 
+export function extractMarkdownHeading(markdown: string): string | null {
+  if (!markdown || typeof markdown !== 'string') {
+    return null
+  }
+  const lines = markdown.split(/\r?\n/)
+  for (const rawLine of lines) {
+    const line = rawLine.trim()
+    if (line.startsWith('#') && !line.startsWith('##')) {
+      const heading = line
+        .replace(/^#+\s*/, '')
+        .replace(/\s+#+$/, '')
+        .replace(/[*_`~]/g, '')
+        .trim()
+      if (heading) {
+        return heading
+      }
+    }
+  }
+  return null
+}
+
+export function deriveMarkdownFilename(
+  markdown: string,
+  extension = 'html',
+  defaultName = 'document',
+): string {
+  const heading = extractMarkdownHeading(markdown)
+  const ext = extension.startsWith('.') ? extension : `.${extension}`
+  if (!heading) {
+    return `${defaultName}${ext}`
+  }
+  const slug = heading
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+
+  return `${slug || defaultName}${ext}`
+}
+
 export function generateHtmlDocument(bodyHtml: string, title = 'Markdown Document'): string {
   return `<!DOCTYPE html>
 <html lang="en">
