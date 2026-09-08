@@ -1,6 +1,13 @@
 <script setup lang="ts">
-import { useFileDialog, useStorage } from '@vueuse/core'
-import { deriveMarkdownFilename, extractMarkdownHeading, generateHtmlDocument, parseMarkdown } from '#shared/utils/data/markdown'
+import type { MarkdownHeadingItem } from '#shared/utils/data/markdown'
+import { useEventListener, useFileDialog, useStorage } from '@vueuse/core'
+import {
+  deriveMarkdownFilename,
+  extractMarkdownHeading,
+  extractMarkdownHeadings,
+  generateHtmlDocument,
+  parseMarkdown,
+} from '#shared/utils/data/markdown'
 import { formatReadingTime, getTextStats } from '#shared/utils/data/stats'
 
 const DRAFT_KEY = 'kitdev:markdown-studio:draft'
@@ -147,6 +154,81 @@ function handleClearDraft() {
     color: 'neutral',
   })
 }
+
+const headings = computed(() => extractMarkdownHeadings(input.value))
+const showOutline = ref(true)
+const syncScroll = useToolOption<boolean>('sync-scroll', true)
+
+const previewRef = ref<HTMLDivElement | null>(null)
+const editorContainerRef = ref<HTMLDivElement | null>(null)
+
+let isJumping = false
+let rafId: number | null = null
+
+function onEditorScroll() {
+  if (!syncScroll.value || isJumping) {
+    return
+  }
+  if (rafId !== null) {
+    cancelAnimationFrame(rafId)
+  }
+  rafId = requestAnimationFrame(() => {
+    rafId = null
+    const editorScroller = editorContainerRef.value?.querySelector('.cm-scroller') as HTMLElement | null
+    const previewEl = previewRef.value
+    if (!editorScroller || !previewEl) {
+      return
+    }
+    const maxEditor = editorScroller.scrollHeight - editorScroller.clientHeight
+    if (maxEditor <= 0) {
+      return
+    }
+    const ratio = Math.min(Math.max(editorScroller.scrollTop / maxEditor, 0), 1)
+    const maxPreview = previewEl.scrollHeight - previewEl.clientHeight
+    if (maxPreview > 0) {
+      previewEl.scrollTop = ratio * maxPreview
+    }
+  })
+}
+
+useEventListener(editorContainerRef, 'scroll', onEditorScroll, { capture: true, passive: true })
+
+function jumpToHeading(item: MarkdownHeadingItem) {
+  isJumping = true
+
+  // Jump editor
+  const scroller = editorContainerRef.value?.querySelector('.cm-scroller') as HTMLElement | null
+  if (scroller) {
+    const totalLines = (input.value.match(/\n/g)?.length ?? 0) + 1
+    const lineRatio = Math.max(0, (item.line - 1) / Math.max(totalLines - 1, 1))
+    const maxScroll = scroller.scrollHeight - scroller.clientHeight
+    if (maxScroll > 0) {
+      scroller.scrollTo({
+        top: lineRatio * maxScroll,
+        behavior: 'smooth',
+      })
+    }
+  }
+
+  // Jump preview
+  const previewEl = previewRef.value
+  if (previewEl) {
+    const targetEl = previewEl.querySelector(`#${item.slug}`) as HTMLElement | null
+    if (targetEl) {
+      const previewRect = previewEl.getBoundingClientRect()
+      const targetRect = targetEl.getBoundingClientRect()
+      const topOffset = targetRect.top - previewRect.top + previewEl.scrollTop
+      previewEl.scrollTo({
+        top: topOffset,
+        behavior: 'smooth',
+      })
+    }
+  }
+
+  setTimeout(() => {
+    isJumping = false
+  }, 400)
+}
 </script>
 
 <template>
@@ -167,48 +249,99 @@ function handleClearDraft() {
     </div>
 
     <div class="flex flex-wrap items-center justify-between gap-4 rounded-lg border border-default bg-muted/20 p-3 text-sm">
-      <div class="flex items-center gap-3">
+      <div class="flex flex-wrap items-center gap-4">
+        <div class="flex items-center gap-3">
+          <USwitch
+            v-model="autoSaveDraft"
+            label="Save draft locally in browser"
+          />
+          <UBadge
+            v-if="autoSaveDraft"
+            color="neutral"
+            variant="subtle"
+            size="xs"
+          >
+            Draft saved
+          </UBadge>
+        </div>
         <USwitch
-          v-model="autoSaveDraft"
-          label="Save draft locally in browser"
+          v-model="syncScroll"
+          label="Sync scroll"
         />
-        <UBadge
-          v-if="autoSaveDraft"
+      </div>
+      <div class="flex items-center gap-2">
+        <UButton
+          :label="showOutline ? 'Hide Outline' : 'Show Outline'"
           color="neutral"
           variant="subtle"
           size="xs"
-        >
-          Draft saved
+          icon="i-lucide-list"
+          @click="showOutline = !showOutline"
+        />
+        <UButton
+          v-if="autoSaveDraft || hasStoredDraft"
+          label="Clear Draft"
+          color="neutral"
+          variant="ghost"
+          size="xs"
+          icon="i-lucide-trash-2"
+          :disabled="!hasStoredDraft"
+          @click="handleClearDraft"
+        />
+      </div>
+    </div>
+
+    <div
+      v-if="showOutline"
+      class="rounded-lg border border-default bg-elevated p-3"
+    >
+      <div class="flex items-center justify-between border-b border-default pb-2 mb-2">
+        <div class="flex items-center gap-2">
+          <UIcon name="i-lucide-list" class="size-4 text-muted" />
+          <span class="text-xs font-semibold uppercase tracking-wider text-muted">Document Outline</span>
+        </div>
+        <UBadge color="neutral" variant="subtle" size="xs">
+          {{ headings.length }} {{ headings.length === 1 ? 'heading' : 'headings' }}
         </UBadge>
       </div>
-      <UButton
-        v-if="autoSaveDraft || hasStoredDraft"
-        label="Clear Draft"
-        color="neutral"
-        variant="ghost"
-        size="xs"
-        icon="i-lucide-trash-2"
-        :disabled="!hasStoredDraft"
-        @click="handleClearDraft"
-      />
+      <div v-if="headings.length > 0" class="max-h-40 overflow-y-auto space-y-0.5 text-xs">
+        <button
+          v-for="h in headings"
+          :key="h.slug"
+          type="button"
+          class="flex w-full items-center gap-2 rounded px-2 py-1 text-left transition hover:bg-muted/50 focus:outline-none focus:ring-1 focus:ring-primary"
+          :style="{ paddingLeft: `${(h.level - 1) * 0.75 + 0.5}rem` }"
+          @click="jumpToHeading(h)"
+        >
+          <span class="text-[10px] font-mono font-semibold text-muted shrink-0">H{{ h.level }}</span>
+          <span class="truncate text-default">{{ h.text }}</span>
+          <span class="ms-auto text-[10px] font-mono text-muted shrink-0">L{{ h.line }}</span>
+        </button>
+      </div>
+      <p v-else class="text-xs text-muted py-1">
+        No headings found. Add headings with # to build an outline.
+      </p>
     </div>
 
     <div class="grid gap-4 lg:grid-cols-2">
-      <LazyToolEditor
-        v-model="input"
-        hydrate-on-idle
-        label="Markdown Input"
-        placeholder="Type or paste markdown here"
-        :rows="18"
-        lang="markdown"
-        accept=".md,text/markdown,text/plain"
-        @file-loaded="handleFileLoaded"
-      />
+      <div ref="editorContainerRef" class="h-full">
+        <LazyToolEditor
+          v-model="input"
+          hydrate-on-idle
+          label="Markdown Input"
+          placeholder="Type or paste markdown here"
+          :rows="18"
+          lang="markdown"
+          accept=".md,text/markdown,text/plain"
+          @file-loaded="handleFileLoaded"
+        />
+      </div>
 
       <div class="flex flex-col">
         <UFormField label="HTML Preview">
           <ClientOnly>
             <div
+              ref="previewRef"
               class="markdown-preview min-h-[445px] w-full overflow-auto rounded-md bg-elevated p-4 ring ring-inset ring-accented text-sm leading-relaxed"
             >
               <div

@@ -31,6 +31,24 @@ function safeUrl(href: string): string | null {
   return SAFE_SCHEME.test(value) ? value : null
 }
 
+export interface MarkdownHeadingItem {
+  level: number
+  text: string
+  slug: string
+  line: number
+}
+
+export function slugifyHeading(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '') || 'heading'
+}
+
+let headingSlugCounts = new Map<string, number>()
+
 /**
  * `marked` passes raw HTML in the source straight through, and the preview
  * renders the result with `v-html`. Escape every HTML block and inline HTML
@@ -38,9 +56,25 @@ function safeUrl(href: string): string | null {
  * image targets that carry an executable scheme.
  */
 marked.use({
+  hooks: {
+    preprocess(markdown) {
+      headingSlugCounts = new Map()
+      return markdown
+    },
+  },
   renderer: {
     html({ text }: { text: string }): string {
       return escapeHtml(text)
+    },
+
+    heading({ tokens, depth }): string {
+      const text = this.parser.parseInline(tokens)
+      const plainText = text.replace(/<[^>]+>/g, '').replace(/[*_`~]/g, '').trim()
+      const baseSlug = slugifyHeading(plainText)
+      const count = headingSlugCounts.get(baseSlug) ?? 0
+      headingSlugCounts.set(baseSlug, count + 1)
+      const slug = count === 0 ? baseSlug : `${baseSlug}-${count}`
+      return `<h${depth} id="${slug}">${text}</h${depth}>\n`
     },
 
     link({ href, title, tokens }): string {
@@ -96,6 +130,51 @@ export function extractMarkdownHeading(markdown: string): string | null {
     }
   }
   return null
+}
+
+export function extractMarkdownHeadings(markdown: string): MarkdownHeadingItem[] {
+  if (!markdown || typeof markdown !== 'string') {
+    return []
+  }
+  const lines = markdown.split(/\r?\n/)
+  const headings: MarkdownHeadingItem[] = []
+  const slugCounts = new Map<string, number>()
+  let inCodeBlock = false
+
+  for (let i = 0; i < lines.length; i++) {
+    const rawLine = lines[i]!
+    const line = rawLine.trim()
+    if (line.startsWith('```') || line.startsWith('~~~')) {
+      inCodeBlock = !inCodeBlock
+      continue
+    }
+    if (inCodeBlock) {
+      continue
+    }
+
+    const match = line.match(/^(#{1,6})\s+(\S.*)$/)
+    if (match) {
+      const level = match[1]!.length
+      const rawText = match[2]!.replace(/#+$/, '').trim()
+      const cleanText = rawText.replace(/[*_`~]/g, '').trim()
+      if (!cleanText) {
+        continue
+      }
+      const baseSlug = slugifyHeading(cleanText)
+      const count = slugCounts.get(baseSlug) ?? 0
+      slugCounts.set(baseSlug, count + 1)
+      const slug = count === 0 ? baseSlug : `${baseSlug}-${count}`
+
+      headings.push({
+        level,
+        text: cleanText,
+        slug,
+        line: i + 1,
+      })
+    }
+  }
+
+  return headings
 }
 
 export function deriveMarkdownFilename(

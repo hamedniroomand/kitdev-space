@@ -3,14 +3,16 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import {
   deriveMarkdownFilename,
   extractMarkdownHeading,
+  extractMarkdownHeadings,
   generateHtmlDocument,
   parseMarkdown,
+  slugifyHeading,
 } from '#shared/utils/data/markdown'
 
 describe('parseMarkdown', () => {
-  it('converts standard markdown headings and bold text', () => {
+  it('converts standard markdown headings with slug IDs and bold text', () => {
     const html = parseMarkdown('# Heading 1\n\n**bold text**')
-    expect(html).toContain('<h1>Heading 1</h1>')
+    expect(html).toContain('<h1 id="heading-1">Heading 1</h1>')
     expect(html).toContain('<strong>bold text</strong>')
   })
 
@@ -145,5 +147,79 @@ describe('markdown local draft storage', () => {
 
     clearDraft()
     expect(localStorage.getItem(DRAFT_KEY)).toBeNull()
+  })
+})
+
+describe('slugifyHeading', () => {
+  it('converts plain heading text into url-safe hyphenated slug', () => {
+    expect(slugifyHeading('Getting Started!')).toBe('getting-started')
+    expect(slugifyHeading('User Guide & API Reference')).toBe('user-guide-api-reference')
+    expect(slugifyHeading('')).toBe('heading')
+  })
+})
+
+describe('extractMarkdownHeadings', () => {
+  it('extracts table of contents outline items with level, slug, and line number', () => {
+    const md = `# Overview
+Some text
+
+## Architecture
+Details
+
+### Components
+More info`
+    const outline = extractMarkdownHeadings(md)
+    expect(outline).toHaveLength(3)
+    expect(outline[0]).toEqual({
+      level: 1,
+      text: 'Overview',
+      slug: 'overview',
+      line: 1,
+    })
+    expect(outline[1]).toEqual({
+      level: 2,
+      text: 'Architecture',
+      slug: 'architecture',
+      line: 4,
+    })
+    expect(outline[2]).toEqual({
+      level: 3,
+      text: 'Components',
+      slug: 'components',
+      line: 7,
+    })
+  })
+
+  it('disambiguates duplicate heading titles with numbered suffixes', () => {
+    const md = `# Introduction
+Text
+## Section
+Text
+## Section
+Text`
+    const outline = extractMarkdownHeadings(md)
+    expect(outline[1]?.slug).toBe('section')
+    expect(outline[2]?.slug).toBe('section-1')
+
+    const html = parseMarkdown(md)
+    expect(html).toContain('<h2 id="section">Section</h2>')
+    expect(html).toContain('<h2 id="section-1">Section</h2>')
+  })
+
+  it('ignores headings located inside code blocks', () => {
+    const md = `# Top Heading
+\`\`\`bash
+# Not a heading
+echo "hi"
+\`\`\`
+## Next Heading`
+    const outline = extractMarkdownHeadings(md)
+    expect(outline).toHaveLength(2)
+    expect(outline[0]?.text).toBe('Top Heading')
+    expect(outline[1]?.text).toBe('Next Heading')
+  })
+
+  it('handles empty or non-string inputs safely', () => {
+    expect(extractMarkdownHeadings('')).toEqual([])
   })
 })
