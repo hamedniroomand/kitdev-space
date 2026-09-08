@@ -22,7 +22,20 @@ interface Shape {
   name: string
 }
 
-export function jsonToTypeScript(value: unknown, rootName = 'Root'): string {
+export interface TypeScriptOptions {
+  rootName?: string
+  declarationType?: 'interface' | 'type'
+}
+
+export function jsonToTypeScript(
+  value: unknown,
+  optionsOrRootName: string | TypeScriptOptions = 'Root',
+): string {
+  const options: TypeScriptOptions = typeof optionsOrRootName === 'string'
+    ? { rootName: optionsOrRootName }
+    : optionsOrRootName
+  const rootName = options.rootName?.trim() || 'Root'
+  const declarationType = options.declarationType ?? 'interface'
   const shapesBySignature = new Map<string, Shape>()
 
   function typesOf(samples: unknown[], path: string[], fromArray: boolean): TypeNode[] {
@@ -109,7 +122,12 @@ export function jsonToTypeScript(value: unknown, rootName = 'Root'): string {
         const lines = node.shape.fields.map(field =>
           `  ${fieldName(field.key)}${field.optional ? '?' : ''}: ${render(field.types)}`,
         )
-        blocks.push(`interface ${node.shape.name} {\n${lines.join('\n')}\n}`)
+        if (declarationType === 'type') {
+          blocks.push(`type ${node.shape.name} = {\n${lines.join('\n')}\n}`)
+        }
+        else {
+          blocks.push(`interface ${node.shape.name} {\n${lines.join('\n')}\n}`)
+        }
       }
     }
   }

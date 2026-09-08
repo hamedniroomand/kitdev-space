@@ -23,6 +23,30 @@ describe('jsonToTypeScript', () => {
     expect(output).toContain('id: number')
     expect(output).toContain('name: string')
   })
+
+  it('supports custom root type name via options', () => {
+    const input = { id: 1, title: 'Test' }
+    const output = jsonToTypeScript(input, { rootName: 'Article' })
+    expect(output).toContain('interface Article {')
+    expect(output).toContain('id: number')
+    expect(output).toContain('title: string')
+  })
+
+  it('supports type alias declaration syntax', () => {
+    const input = { id: 1, name: 'KitDev' }
+    const output = jsonToTypeScript(input, { rootName: 'User', declarationType: 'type' })
+    expect(output).toContain('type User = {')
+    expect(output).not.toContain('interface User')
+    expect(output).toContain('id: number')
+    expect(output).toContain('name: string')
+  })
+
+  it('supports interface declaration syntax explicitly', () => {
+    const input = { id: 1, name: 'KitDev' }
+    const output = jsonToTypeScript(input, { rootName: 'User', declarationType: 'interface' })
+    expect(output).toContain('interface User {')
+    expect(output).toContain('id: number')
+  })
 })
 
 describe('jsonToTypeScript naming', () => {

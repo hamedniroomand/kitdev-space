@@ -6,6 +6,8 @@ import { jsonToTypeScript } from '#shared/utils/data/typescript'
 const input = ref('{\n  "id": 10,\n  "name": "Hamed",\n  "active": true\n}')
 const output = ref('')
 const statusMeta = ref('')
+const rootName = useToolOption('root-name', 'Root')
+const declarationType = useToolOption<'interface' | 'type'>('declaration-type', 'interface')
 const { status, error, result, run, reset } = useTool<string>()
 const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
 const { downloadText } = useDownload()
@@ -13,7 +15,10 @@ const { downloadText } = useDownload()
 useToolSeo('json-to-typescript')
 
 async function convert() {
-  await run(() => jsonToTypeScript(parseJson(input.value)))
+  await run(() => jsonToTypeScript(parseJson(input.value), {
+    rootName: rootName.value || 'Root',
+    declarationType: declarationType.value,
+  }))
   if (status.value === 'success' && result.value !== null) {
     output.value = result.value
     const stats = getTextStats(output.value)
@@ -50,6 +55,27 @@ useToolShortcuts({
 
 <template>
   <ToolPage>
+    <div class="flex flex-wrap items-center gap-4">
+      <UFormField label="Root Type Name">
+        <UInput
+          v-model="rootName"
+          placeholder="Root"
+          class="w-48"
+        />
+      </UFormField>
+
+      <UFormField label="Declaration Syntax">
+        <USelect
+          v-model="declarationType"
+          :items="[
+            { label: 'Interface', value: 'interface' },
+            { label: 'Type Alias', value: 'type' },
+          ]"
+          class="w-36"
+        />
+      </UFormField>
+    </div>
+
     <LazyToolEditor
       v-model="input"
       hydrate-on-idle
