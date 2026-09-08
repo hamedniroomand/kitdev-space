@@ -49,10 +49,191 @@ export function slugifyHeading(text: string): string {
 
 let headingSlugCounts = new Map<string, number>()
 
+interface ImageAttributes {
+  src: string
+  alt?: string
+  title?: string
+  width?: string
+  height?: string
+  loading?: 'lazy' | 'eager'
+}
+
+function parseImageAttributes(raw: string): ImageAttributes | null {
+  let i = 0
+  const len = raw.length
+  let src: string | null = null
+  let alt: string | undefined
+  let title: string | undefined
+  let width: string | undefined
+  let height: string | undefined
+  let loading: 'lazy' | 'eager' | undefined
+
+  while (i < len) {
+    while (i < len && (raw.charCodeAt(i) <= 32 || raw[i] === '/')) {
+      i++
+    }
+    if (i >= len) {
+      break
+    }
+
+    const nameStart = i
+    while (i < len && raw[i] !== '=' && raw.charCodeAt(i) > 32 && raw[i] !== '/' && raw[i] !== '>') {
+      i++
+    }
+    const attrName = raw.slice(nameStart, i).toLowerCase()
+
+    while (i < len && raw.charCodeAt(i) <= 32) {
+      i++
+    }
+
+    let attrValue = ''
+    if (i < len && raw[i] === '=') {
+      i++
+      while (i < len && raw.charCodeAt(i) <= 32) {
+        i++
+      }
+      if (i < len) {
+        const quote = raw[i]
+        if (quote === '"' || quote === '\'') {
+          i++
+          const valStart = i
+          while (i < len && raw[i] !== quote) {
+            i++
+          }
+          attrValue = raw.slice(valStart, i)
+          if (i < len) {
+            i++
+          }
+        }
+        else {
+          const valStart = i
+          while (i < len && raw.charCodeAt(i) > 32 && raw[i] !== '>') {
+            i++
+          }
+          attrValue = raw.slice(valStart, i)
+        }
+      }
+    }
+
+    if (attrName === 'src') {
+      const validated = safeUrl(attrValue)
+      if (!validated) {
+        return null
+      }
+      src = validated
+    }
+    else if (attrName === 'alt') {
+      alt = attrValue
+    }
+    else if (attrName === 'title') {
+      title = attrValue
+    }
+    else if (attrName === 'width') {
+      if (!/^\d+(?:px|%)?$/i.test(attrValue)) {
+        return null
+      }
+      width = attrValue
+    }
+    else if (attrName === 'height') {
+      if (!/^\d+(?:px|%)?$/i.test(attrValue)) {
+        return null
+      }
+      height = attrValue
+    }
+    else if (attrName === 'loading') {
+      if (attrValue !== 'lazy' && attrValue !== 'eager') {
+        return null
+      }
+      loading = attrValue
+    }
+    else {
+      return null
+    }
+  }
+
+  if (!src) {
+    return null
+  }
+  return { src, alt, title, width, height, loading }
+}
+
+function sanitizeHtmlTag(fullTag: string): string {
+  const isClosing = fullTag.startsWith('</')
+  const inside = fullTag.slice(isClosing ? 2 : 1, -1).trim()
+  const spaceIdx = inside.search(/\s/)
+  const tagName = (spaceIdx === -1 ? inside : inside.slice(0, spaceIdx)).replace(/\/$/, '').toLowerCase()
+  const rawAttrs = spaceIdx === -1 ? '' : inside.slice(spaceIdx).trim()
+
+  if (isClosing) {
+    if (['details', 'summary', 'kbd'].includes(tagName) && !rawAttrs) {
+      return `</${tagName}>`
+    }
+    return escapeHtml(fullTag)
+  }
+
+  if (tagName === 'details') {
+    if (!rawAttrs) {
+      return '<details>'
+    }
+    if (rawAttrs.toLowerCase() === 'open') {
+      return '<details open>'
+    }
+    return escapeHtml(fullTag)
+  }
+
+  if (tagName === 'summary') {
+    if (!rawAttrs) {
+      return '<summary>'
+    }
+    return escapeHtml(fullTag)
+  }
+
+  if (tagName === 'kbd') {
+    if (!rawAttrs) {
+      return '<kbd>'
+    }
+    return escapeHtml(fullTag)
+  }
+
+  if (tagName === 'img') {
+    const parsed = parseImageAttributes(rawAttrs)
+    if (!parsed) {
+      return escapeHtml(fullTag)
+    }
+    let tag = `<img src="${escapeHtml(parsed.src)}"`
+    if (parsed.alt !== undefined) {
+      tag += ` alt="${escapeHtml(parsed.alt)}"`
+    }
+    if (parsed.title !== undefined) {
+      tag += ` title="${escapeHtml(parsed.title)}"`
+    }
+    if (parsed.width !== undefined) {
+      tag += ` width="${escapeHtml(parsed.width)}"`
+    }
+    if (parsed.height !== undefined) {
+      tag += ` height="${escapeHtml(parsed.height)}"`
+    }
+    if (parsed.loading !== undefined) {
+      tag += ` loading="${escapeHtml(parsed.loading)}"`
+    }
+    tag += '>'
+    return tag
+  }
+
+  return escapeHtml(fullTag)
+}
+
+export function sanitizeHtml(rawHtml: string): string {
+  if (!rawHtml || typeof rawHtml !== 'string') {
+    return ''
+  }
+  return rawHtml.replace(/<\/?[a-z0-9-][^>]*>/gi, match => sanitizeHtmlTag(match))
+}
+
 /**
  * `marked` passes raw HTML in the source straight through, and the preview
- * renders the result with `v-html`. Escape every HTML block and inline HTML
- * span so markup in the input shows as text and never runs, and drop link and
+ * renders the result with `v-html`. Escape dangerous HTML and scripts,
+ * allow verified safe tags (details, summary, kbd, img), and drop link and
  * image targets that carry an executable scheme.
  */
 marked.use({
@@ -64,7 +245,7 @@ marked.use({
   },
   renderer: {
     html({ text }: { text: string }): string {
-      return escapeHtml(text)
+      return sanitizeHtml(text)
     },
 
     heading({ tokens, depth }): string {
