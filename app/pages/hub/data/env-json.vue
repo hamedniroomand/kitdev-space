@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { envToJson, jsonToEnv } from '#shared/utils/data/env-parser'
+import { envToExample, envToJson, envToJsonWithDiagnostics, jsonToEnv } from '#shared/utils/data/env-parser'
 
 useToolSeo('env-json')
 
@@ -31,33 +31,43 @@ const SAMPLES: Record<ConversionMode, string> = {
 
 const mode = ref<ConversionMode>('env-to-json')
 const input = ref(sampleEnv)
+const maskValues = ref(false)
 
 const { copy, label, color, icon } = useCopyFeedback()
 const { holdsSample, applySample } = useSampleInput(input, SAMPLES)
 
 const conversion = computed(() => {
   if (!input.value.trim())
-    return { output: '', error: null }
+    return { output: '', error: null, diagnostics: [] }
 
   try {
     if (mode.value === 'env-to-json') {
-      const parsed = envToJson(input.value)
-      return { output: JSON.stringify(parsed, null, 2), error: null }
+      const result = envToJsonWithDiagnostics(input.value)
+      const displayData = maskValues.value
+        ? Object.fromEntries(Object.entries(result.data).map(([k]) => [k, '***']))
+        : result.data
+      return {
+        output: JSON.stringify(displayData, null, 2),
+        error: null,
+        diagnostics: result.diagnostics,
+      }
     }
     else {
-      return { output: jsonToEnv(input.value), error: null }
+      return { output: jsonToEnv(input.value), error: null, diagnostics: [] }
     }
   }
   catch (err) {
     return {
       output: '',
       error: err instanceof Error ? err.message : 'Conversion failed.',
+      diagnostics: [],
     }
   }
 })
 
 const output = computed(() => conversion.value.output)
 const parseError = computed(() => conversion.value.error)
+const diagnostics = computed(() => conversion.value.diagnostics)
 useLiveTool(conversion)
 
 function handleModeChange(newMode: ConversionMode) {
@@ -90,6 +100,39 @@ function handleCopy() {
   if (output.value) {
     copy(output.value)
   }
+}
+
+function downloadAs(content: string, filename: string, mimeType = 'text/plain') {
+  const blob = new Blob([content], { type: mimeType })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
+function handleDownloadEnv() {
+  if (!input.value.trim() || mode.value !== 'env-to-json') {
+    return
+  }
+  // Re-serialize the parsed data as .env so masking has no effect on download
+  const parsed = envToJson(input.value)
+  downloadAs(jsonToEnv(parsed), 'output.env')
+}
+
+function handleDownloadJson() {
+  if (!output.value) {
+    return
+  }
+  downloadAs(output.value, 'output.json', 'application/json')
+}
+
+function handleDownloadExample() {
+  if (!input.value.trim() || mode.value !== 'env-to-json') {
+    return
+  }
+  downloadAs(envToExample(input.value), '.env.example')
 }
 </script>
 
@@ -127,6 +170,19 @@ function handleCopy() {
         </div>
 
         <div class="flex items-center gap-2">
+          <!-- Masking toggle (only for env-to-json) -->
+          <div
+            v-if="mode === 'env-to-json'"
+            class="flex items-center gap-1.5"
+          >
+            <UToggle
+              v-model="maskValues"
+              aria-label="Mask secret values"
+              size="xs"
+            />
+            <span class="text-xs text-muted">Mask values</span>
+          </div>
+
           <UButton
             :label="label()"
             :color="color()"
@@ -148,6 +204,37 @@ function handleCopy() {
         </div>
       </div>
 
+      <!-- Download Actions (env-to-json only) -->
+      <div
+        v-if="mode === 'env-to-json' && output"
+        class="flex flex-wrap gap-2"
+      >
+        <UButton
+          label="Download .env"
+          icon="i-lucide-download"
+          size="xs"
+          color="neutral"
+          variant="subtle"
+          @click="handleDownloadEnv"
+        />
+        <UButton
+          label="Download .json"
+          icon="i-lucide-download"
+          size="xs"
+          color="neutral"
+          variant="subtle"
+          @click="handleDownloadJson"
+        />
+        <UButton
+          label="Download .env.example"
+          icon="i-lucide-file-code"
+          size="xs"
+          color="neutral"
+          variant="subtle"
+          @click="handleDownloadExample"
+        />
+      </div>
+
       <!-- Error Message -->
       <UAlert
         v-if="parseError"
@@ -157,6 +244,28 @@ function handleCopy() {
         title="Conversion Error"
         :description="parseError"
       />
+
+      <!-- Diagnostics -->
+      <div
+        v-if="diagnostics.length"
+        class="rounded-xl border border-warning/40 bg-warning/5 p-3 space-y-1"
+        role="alert"
+        aria-label="Parse diagnostics"
+      >
+        <p class="text-xs font-semibold text-warning uppercase tracking-wide">
+          {{ diagnostics.length }} diagnostic{{ diagnostics.length === 1 ? '' : 's' }}
+        </p>
+        <ul class="space-y-1">
+          <li
+            v-for="d in diagnostics"
+            :key="d.line + d.message"
+            class="text-xs font-mono"
+            :class="d.severity === 'error' ? 'text-error' : 'text-warning'"
+          >
+            {{ d.message }}
+          </li>
+        </ul>
+      </div>
 
       <!-- Editors Grid -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -188,7 +297,27 @@ function handleCopy() {
             This tool converts a .env file to JSON, and JSON back to a .env file. A deployment platform often asks for one form when your project holds the other.
           </p>
           <p>
-            The parser keeps a quoted value together, and it ignores a comment line. Every JSON value becomes a string, because a .env file holds text only.
+            <strong>Quote handling:</strong>
+            Single-quoted values are taken literally. Double-quoted values unescape <code>\n</code>, <code>\r</code>, <code>\t</code>, <code>\"</code>, and <code>\\</code>.
+            An inline comment after a space and <code>#</code> is removed from unquoted values.
+          </p>
+          <p>
+            <strong>Variable handling:</strong>
+            The tool does not expand <code>${VAR}</code> references or run shell commands.
+            The <code>export</code> prefix is stripped on parse.
+          </p>
+          <p>
+            <strong>Diagnostics:</strong>
+            The tool reports line numbers for duplicate keys and for lines that have no <code>=</code> sign or an unclosed quote.
+            No lines are dropped silently.
+          </p>
+          <p>
+            <strong>Value masking:</strong>
+            Enable the "Mask values" toggle to replace all values with <code>***</code> in the output. The original input stays unchanged.
+          </p>
+          <p>
+            <strong>.env.example:</strong>
+            The "Download .env.example" action strips all values while keeping keys, comments, and blank lines. The example file is safe to commit.
           </p>
           <p>
             Paste your file, then change the direction. The tool moves the result into the input when you change the direction, so your work is not lost. Nothing is uploaded.

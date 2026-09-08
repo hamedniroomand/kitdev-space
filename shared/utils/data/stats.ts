@@ -6,6 +6,8 @@ export interface TextStatistics {
   paragraphs: number
   sentences: number
   bytes: number
+  codePoints: number
+  graphemes: number
   readingTimeMinutes: number
   speakingTimeMinutes: number
 }
@@ -20,6 +22,8 @@ export function getTextStats(text: string): TextStatistics {
       paragraphs: 0,
       sentences: 0,
       bytes: 0,
+      codePoints: 0,
+      graphemes: 0,
       readingTimeMinutes: 0,
       speakingTimeMinutes: 0,
     }
@@ -50,6 +54,16 @@ export function getTextStats(text: string): TextStatistics {
 
   const bytes = new TextEncoder().encode(text).length
 
+  // Count Unicode code points (spread handles surrogates correctly)
+  const codePoints = [...text].length
+
+  // Count grapheme clusters using Intl.Segmenter
+  let graphemes = codePoints
+  if (typeof Intl !== 'undefined' && 'Segmenter' in Intl) {
+    const segmenter = new Intl.Segmenter(undefined, { granularity: 'grapheme' })
+    graphemes = [...segmenter.segment(text)].length
+  }
+
   const readingTimeMinutes = Math.ceil(words / 200)
   const speakingTimeMinutes = Math.ceil(words / 130)
 
@@ -61,6 +75,8 @@ export function getTextStats(text: string): TextStatistics {
     paragraphs,
     sentences,
     bytes,
+    codePoints,
+    graphemes,
     readingTimeMinutes,
     speakingTimeMinutes,
   }

@@ -71,3 +71,101 @@ export function convertFromBase(value: string, base: NumberBase): NumberBases {
     hex: n.toString(16).toUpperCase(),
   }
 }
+
+/**
+ * Returns an array of character validation results for the given input string.
+ * Each element is `true` when the character is valid for the given base.
+ */
+export function validateDigits(value: string, base: NumberBase): boolean[] {
+  const clean = value.trim().toLowerCase()
+  const isNeg = clean.startsWith('-')
+  const body = isNeg ? clean.slice(1) : clean
+
+  // Strip common prefixes before validating digits
+  let start = 0
+  if (base === 2 && body.startsWith('0b'))
+    start = 2
+  if (base === 8 && body.startsWith('0o'))
+    start = 2
+  if (base === 16 && body.startsWith('0x'))
+    start = 2
+
+  const validChar: Record<NumberBase, (ch: string) => boolean> = {
+    2: ch => ch === '0' || ch === '1',
+    8: ch => ch >= '0' && ch <= '7',
+    10: ch => ch >= '0' && ch <= '9',
+    16: ch => /^[0-9a-f]$/i.test(ch),
+  }
+
+  return [...value].map((ch, i) => {
+    if (ch === '-' && i === 0) {
+      return true
+    }
+    // Characters that form a prefix (0b, 0x, 0o) are always valid at their offset
+    const bodyIndex = isNeg ? i - 1 : i
+    if (bodyIndex < start) {
+      return true
+    }
+    return validChar[base](ch.toLowerCase())
+  })
+}
+
+/**
+ * Inserts separator characters into a digit string for readability.
+ * Binary groups by 4, others by 3 for decimal or groups of 2 for hex/octal.
+ */
+export function groupDigits(value: string, base: NumberBase, separator = '_'): string {
+  const clean = value.trim()
+  if (!clean || clean === '-') {
+    return clean
+  }
+
+  const isNeg = clean.startsWith('-')
+  const body = isNeg ? clean.slice(1) : clean
+
+  // Determine group size
+  const groupSize = base === 2 ? 4 : base === 16 ? 2 : 3
+
+  // Group from right to left
+  let grouped = ''
+  let count = 0
+  for (let i = body.length - 1; i >= 0; i--) {
+    if (count > 0 && count % groupSize === 0) {
+      grouped = separator + grouped
+    }
+    grouped = body[i] + grouped
+    count++
+  }
+
+  return (isNeg ? '-' : '') + grouped
+}
+
+export type TwosComplementWidth = 8 | 16 | 32 | 64
+
+/**
+ * Returns the two's complement representation of a decimal integer
+ * for the given bit width. Returns null if the value is out of range.
+ */
+export function twosComplement(decimalValue: string, width: TwosComplementWidth): string | null {
+  let n: bigint
+  try {
+    n = BigInt(decimalValue.trim())
+  }
+  catch {
+    return null
+  }
+
+  const bits = BigInt(width)
+  const mask = (1n << bits) - 1n
+
+  // Clamp n to the signed two's complement range
+  const maxPos = (1n << (bits - 1n)) - 1n
+  const minNeg = -(1n << (bits - 1n))
+
+  if (n > maxPos || n < minNeg) {
+    return null
+  }
+
+  const twos = n < 0n ? (n + (1n << bits)) & mask : n & mask
+  return twos.toString(16).toUpperCase().padStart(Number(bits / 4n), '0')
+}

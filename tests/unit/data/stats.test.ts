@@ -58,3 +58,42 @@ describe('getTextStats reading and speaking time', () => {
     expect(stats.speakingTimeMinutes).toBe(4)
   })
 })
+
+describe('getTextStats grapheme and code point counts', () => {
+  it('counts ASCII characters identically for codePoints and graphemes', () => {
+    const stats = getTextStats('hello')
+    expect(stats.codePoints).toBe(5)
+    expect(stats.graphemes).toBe(5)
+  })
+
+  it('counts a multi-code-point emoji family sequence as one grapheme', () => {
+    // 👨‍👩‍👧 is one visible character but multiple code points
+    const family = '\u{1F468}\u200D\u{1F469}\u200D\u{1F467}'
+    const stats = getTextStats(family)
+    expect(stats.graphemes).toBe(1)
+    expect(stats.codePoints).toBeGreaterThan(1)
+    expect(stats.codePoints).toBeLessThan(stats.characters) // surrogates inflate .length
+  })
+
+  it('counts each combining character sequence as one grapheme', () => {
+    // é composed via combining grave: e + combining accent
+    const combining = 'e\u0301'
+    const stats = getTextStats(combining)
+    expect(stats.codePoints).toBe(2)
+    expect(stats.graphemes).toBe(1)
+  })
+
+  it('counts ZWJ emoji flag sequence correctly', () => {
+    // 🇺🇸 US flag (2 regional indicator letters = 1 grapheme)
+    const flag = '\u{1F1FA}\u{1F1F8}'
+    const stats = getTextStats(flag)
+    expect(stats.graphemes).toBe(1)
+    expect(stats.codePoints).toBe(2)
+  })
+
+  it('returns 0 for empty string', () => {
+    const stats = getTextStats('')
+    expect(stats.graphemes).toBe(0)
+    expect(stats.codePoints).toBe(0)
+  })
+})
