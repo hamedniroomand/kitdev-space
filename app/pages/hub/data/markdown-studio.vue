@@ -1,7 +1,12 @@
 <script setup lang="ts">
-import { useFileDialog } from '@vueuse/core'
+import { useFileDialog, useStorage } from '@vueuse/core'
 import { deriveMarkdownFilename, extractMarkdownHeading, generateHtmlDocument, parseMarkdown } from '#shared/utils/data/markdown'
 import { formatReadingTime, getTextStats } from '#shared/utils/data/stats'
+
+const DRAFT_KEY = 'kitdev:markdown-studio:draft'
+const autoSaveDraft = useToolOption<boolean>('autosave-draft', false)
+const savedDraft = useStorage<string>(DRAFT_KEY, '')
+const hasStoredDraft = computed(() => Boolean(savedDraft.value))
 
 const sampleMarkdown = `# Markdown Live Studio
 
@@ -113,6 +118,35 @@ function handleLoadSample() {
 function handleClear() {
   input.value = ''
 }
+
+onMounted(() => {
+  if (autoSaveDraft.value && savedDraft.value) {
+    input.value = savedDraft.value
+  }
+})
+
+watch(input, (val) => {
+  if (autoSaveDraft.value) {
+    savedDraft.value = val
+  }
+})
+
+watch(autoSaveDraft, (enabled) => {
+  if (enabled) {
+    savedDraft.value = input.value
+  }
+  else {
+    savedDraft.value = ''
+  }
+})
+
+function handleClearDraft() {
+  savedDraft.value = ''
+  toast.add({
+    title: 'Local draft cleared',
+    color: 'neutral',
+  })
+}
 </script>
 
 <template>
@@ -130,6 +164,33 @@ function handleClear() {
       <StatCard label="Characters" :value="stats.characters" />
       <StatCard label="Words" :value="stats.words" />
       <StatCard label="Estimated Read Time" :value="formatReadingTime(stats.readingTimeMinutes)" />
+    </div>
+
+    <div class="flex flex-wrap items-center justify-between gap-4 rounded-lg border border-default bg-muted/20 p-3 text-sm">
+      <div class="flex items-center gap-3">
+        <USwitch
+          v-model="autoSaveDraft"
+          label="Save draft locally in browser"
+        />
+        <UBadge
+          v-if="autoSaveDraft"
+          color="neutral"
+          variant="subtle"
+          size="xs"
+        >
+          Draft saved
+        </UBadge>
+      </div>
+      <UButton
+        v-if="autoSaveDraft || hasStoredDraft"
+        label="Clear Draft"
+        color="neutral"
+        variant="ghost"
+        size="xs"
+        icon="i-lucide-trash-2"
+        :disabled="!hasStoredDraft"
+        @click="handleClearDraft"
+      />
     </div>
 
     <div class="grid gap-4 lg:grid-cols-2">

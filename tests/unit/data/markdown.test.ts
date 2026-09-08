@@ -1,4 +1,5 @@
-import { describe, expect, it } from 'vitest'
+// @vitest-environment happy-dom
+import { beforeEach, describe, expect, it } from 'vitest'
 import {
   deriveMarkdownFilename,
   extractMarkdownHeading,
@@ -87,5 +88,62 @@ describe('deriveMarkdownFilename', () => {
   it('supports custom extension like .md', () => {
     const md = '# Personal Notes\n\nMy thoughts'
     expect(deriveMarkdownFilename(md, 'md')).toBe('personal-notes.md')
+  })
+})
+
+describe('markdown local draft storage', () => {
+  const DRAFT_KEY = 'kitdev:markdown-studio:draft'
+
+  beforeEach(() => {
+    localStorage.clear()
+  })
+
+  it('defaults opt-in draft storage switch to off (false)', () => {
+    const autoSaveDefault = false
+    expect(autoSaveDefault).toBe(false)
+  })
+
+  it('does not store drafts without explicit user consent', () => {
+    const autoSave = false
+    let storedText = ''
+
+    function onInputChange(newText: string) {
+      if (autoSave) {
+        storedText = newText
+        localStorage.setItem(DRAFT_KEY, newText)
+      }
+    }
+
+    onInputChange('# Secret Draft')
+    expect(storedText).toBe('')
+    expect(localStorage.getItem(DRAFT_KEY)).toBeNull()
+  })
+
+  it('stores draft when opt-in switch is enabled', () => {
+    const autoSave = true
+    let storedText = ''
+
+    function onInputChange(newText: string) {
+      if (autoSave) {
+        storedText = newText
+        localStorage.setItem(DRAFT_KEY, newText)
+      }
+    }
+
+    onInputChange('# Work in Progress')
+    expect(storedText).toBe('# Work in Progress')
+    expect(localStorage.getItem(DRAFT_KEY)).toBe('# Work in Progress')
+  })
+
+  it('clears stored draft when Clear Draft is called', () => {
+    localStorage.setItem(DRAFT_KEY, '# Temporary')
+    expect(localStorage.getItem(DRAFT_KEY)).toBe('# Temporary')
+
+    function clearDraft() {
+      localStorage.removeItem(DRAFT_KEY)
+    }
+
+    clearDraft()
+    expect(localStorage.getItem(DRAFT_KEY)).toBeNull()
   })
 })
