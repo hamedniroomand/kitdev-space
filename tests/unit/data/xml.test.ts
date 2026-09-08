@@ -1,6 +1,7 @@
 import { Window } from 'happy-dom'
 import { describe, expect, it } from 'vitest'
 import { isXmlElementName, parseXml, stringifyXml } from '#shared/utils/data/xml'
+import { mixedContentXml, namespaceXml, repeatedChildrenXml } from './fixtures-xml'
 
 // The parser reads `DOMParser` from `window`. A happy-dom window gives the
 // tests one. happy-dom flags CDATA as an error, so the browser test covers it.
@@ -73,5 +74,50 @@ describe('isXmlElementName', () => {
     expect(isXmlElementName('@key')).toBe(false)
     expect(isXmlElementName('#text')).toBe(false)
     expect(isXmlElementName('1abc')).toBe(false)
+  })
+})
+
+describe('parseXml structural fixtures', () => {
+  it('handles XML namespaces and prefixes', () => {
+    const result = parseXml(namespaceXml) as Record<string, unknown>
+    const feed = result.feed as Record<string, unknown>
+    expect(feed['@xmlns']).toBe('http://www.w3.org/2005/Atom')
+    expect(feed['@xmlns:dc']).toBe('http://purl.org/dc/elements/1.1/')
+    expect(feed.title).toBe('KitDev Updates')
+    const entry = feed.entry as Record<string, unknown>
+    expect(entry.title).toBe('Version 2.0')
+    expect(entry['dc:creator']).toBe('Hamed')
+    expect(entry['dc:date']).toBe('2026-09-08')
+  })
+
+  it('handles repeated child elements and multiple lists', () => {
+    const result = parseXml(repeatedChildrenXml) as Record<string, unknown>
+    const store = result.store as Record<string, unknown>
+    expect(store['@name']).toBe('Bookstore')
+    expect(Array.isArray(store.book)).toBe(true)
+    const books = store.book as Array<Record<string, unknown>>
+    expect(books).toHaveLength(2)
+    expect(books[0]!['@category']).toBe('fiction')
+    expect(books[0]!.title).toBe('Great Novel')
+    expect(books[0]!.author).toEqual(['Author One', 'Author Two'])
+    expect(books[1]!['@category']).toBe('tech')
+    expect(books[1]!.author).toBe('Tech Writer')
+  })
+
+  it('handles mixed text and child elements', () => {
+    const result = parseXml(mixedContentXml) as Record<string, unknown>
+    const article = result.article as Record<string, unknown>
+    expect(article.title).toBe('Getting Started')
+    const content = article.content as Record<string, unknown>
+    expect(content.b).toBe('KitDev')
+    expect(content.i).toBe('fast')
+    expect(content.u).toBe('private')
+    expect(content['#text']).toContain('Welcome to')
+    expect(content['#text']).toContain('the')
+    expect(content['#text']).toContain('and')
+    expect(content['#text']).toContain('tool suite.')
+    const footer = article.footer as Record<string, unknown>
+    expect(footer.strong).toBe('KitDev')
+    expect(footer['#text']).toBe('Copyright 2026  Inc.')
   })
 })
