@@ -7,6 +7,7 @@ const input = ref('{\n  "id": 10,\n  "name": "Hamed",\n  "active": true\n}')
 const output = ref('')
 const statusMeta = ref('')
 const rootName = useToolOption('root-name', 'Root')
+const exportMode = useToolOption<'typescript' | 'zod'>('export-mode', 'typescript')
 const declarationType = useToolOption<'interface' | 'type'>('declaration-type', 'interface')
 const widenNull = useToolOption('widen-null', false)
 const exportModifier = useToolOption('export-modifier', false)
@@ -21,6 +22,7 @@ async function convert() {
   await run(() => jsonToTypeScript(parseJson(input.value), {
     rootName: rootName.value || 'Root',
     declarationType: declarationType.value,
+    exportMode: exportMode.value,
     widenNull: widenNull.value,
     exportModifier: exportModifier.value,
     readonlyModifier: readonlyModifier.value,
@@ -43,7 +45,8 @@ function handleDownload() {
   if (!output.value) {
     return
   }
-  downloadText('types.ts', output.value, 'text/typescript')
+  const filename = exportMode.value === 'zod' ? 'schema.ts' : 'types.ts'
+  downloadText(filename, output.value, 'text/typescript')
 }
 
 function handleClear() {
@@ -70,7 +73,21 @@ useToolShortcuts({
         />
       </UFormField>
 
-      <UFormField label="Declaration Syntax">
+      <UFormField label="Output Format">
+        <USelect
+          v-model="exportMode"
+          :items="[
+            { label: 'TypeScript', value: 'typescript' },
+            { label: 'Zod Schema', value: 'zod' },
+          ]"
+          class="w-36"
+        />
+      </UFormField>
+
+      <UFormField
+        v-if="exportMode === 'typescript'"
+        label="Declaration Syntax"
+      >
         <USelect
           v-model="declarationType"
           :items="[
@@ -147,7 +164,7 @@ useToolShortcuts({
       hydrate-on-idle
       label="Output"
       readonly
-      placeholder="TypeScript appears here"
+      :placeholder="exportMode === 'zod' ? 'Zod schema appears here' : 'TypeScript appears here'"
       lang="typescript"
     />
 
