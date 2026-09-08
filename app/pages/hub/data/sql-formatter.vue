@@ -186,6 +186,17 @@ function handleClear() {
   reset()
 }
 
+const sqliteHandoffQuery = useState<string>('kitdev:sqlite:handoff-query', () => '')
+
+function openInSQLiteStudio() {
+  const query = output.value.trim() || input.value.trim()
+  if (!query) {
+    return
+  }
+  sqliteHandoffQuery.value = query
+  navigateTo('/hub/data/sqlite-studio')
+}
+
 useToolShortcuts({
   onRun: () => format(),
   onCopy: () => handleCopy(),
@@ -298,6 +309,14 @@ useToolShortcuts({
         icon="i-lucide-download"
         :disabled="!output"
         @click="handleDownload"
+      />
+      <UButton
+        v-if="dialect === 'sqlite'"
+        label="Open in SQLite Studio"
+        color="neutral"
+        variant="subtle"
+        icon="i-lucide-database"
+        @click="openInSQLiteStudio"
       />
       <UButton
         label="Clear"

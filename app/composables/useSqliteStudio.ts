@@ -66,7 +66,13 @@ export function useSqliteStudio() {
           databaseSizeBytes.value = response.sizeBytes
           error.value = null
           if (response.tables.length > 0) {
-            selectTable(response.tables[0]!.name)
+            if (isCustomQuery.value) {
+              activeTable.value = response.tables[0]!.name
+              tableQuery.value = initialTableQuery(response.tables[0]!.name, 100)
+            }
+            else {
+              selectTable(response.tables[0]!.name)
+            }
           }
           break
 
@@ -289,6 +295,16 @@ export function useSqliteStudio() {
     schemaSql.value = null
     queryResult.value = null
     error.value = null
+  }
+
+  if (typeof useState === 'function') {
+    const sqliteHandoffQuery = useState<string>('kitdev:sqlite:handoff-query', () => '')
+    if (sqliteHandoffQuery.value) {
+      activeQuery.value = sqliteHandoffQuery.value
+      isCustomQuery.value = true
+      sqliteHandoffQuery.value = ''
+      createBlankDatabase()
+    }
   }
 
   return {
