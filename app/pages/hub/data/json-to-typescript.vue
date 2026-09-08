@@ -8,6 +8,9 @@ const output = ref('')
 const statusMeta = ref('')
 const rootName = useToolOption('root-name', 'Root')
 const declarationType = useToolOption<'interface' | 'type'>('declaration-type', 'interface')
+const widenNull = useToolOption('widen-null', false)
+const exportModifier = useToolOption('export-modifier', false)
+const readonlyModifier = useToolOption('readonly-modifier', false)
 const { status, error, result, run, reset } = useTool<string>()
 const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
 const { downloadText } = useDownload()
@@ -18,6 +21,9 @@ async function convert() {
   await run(() => jsonToTypeScript(parseJson(input.value), {
     rootName: rootName.value || 'Root',
     declarationType: declarationType.value,
+    widenNull: widenNull.value,
+    exportModifier: exportModifier.value,
+    readonlyModifier: readonlyModifier.value,
   }))
   if (status.value === 'success' && result.value !== null) {
     output.value = result.value
@@ -74,6 +80,21 @@ useToolShortcuts({
           class="w-36"
         />
       </UFormField>
+
+      <div class="flex flex-wrap items-center gap-4 pt-6">
+        <UCheckbox
+          v-model="exportModifier"
+          label="Export"
+        />
+        <UCheckbox
+          v-model="readonlyModifier"
+          label="Readonly"
+        />
+        <UCheckbox
+          v-model="widenNull"
+          label="Widen null"
+        />
+      </div>
     </div>
 
     <LazyToolEditor

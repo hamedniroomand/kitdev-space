@@ -90,6 +90,53 @@ describe('jsonToTypeScript', () => {
     expect(output).toContain('UPPER_CASE: number')
     expect(output).toContain('\'kebab-case-prop\': number')
   })
+
+  it('keeps null type by default', () => {
+    const input = { nullable: null }
+    const output = jsonToTypeScript(input, 'Root')
+    expect(output).toContain('nullable: null')
+  })
+
+  it('widens null values to null | unknown when widenNull is enabled', () => {
+    const input = { nullable: null }
+    const output = jsonToTypeScript(input, { widenNull: true })
+    expect(output).toContain('nullable: null | unknown')
+  })
+
+  it('adds export modifier to interfaces, types, and root aliases when exportModifier is enabled', () => {
+    const obj = { id: 1 }
+    const outputObj = jsonToTypeScript(obj, { exportModifier: true, rootName: 'User' })
+    expect(outputObj).toContain('export interface User {')
+
+    const outputType = jsonToTypeScript(obj, { exportModifier: true, declarationType: 'type', rootName: 'User' })
+    expect(outputType).toContain('export type User = {')
+
+    const arr = [{ id: 1 }]
+    const outputArr = jsonToTypeScript(arr, { exportModifier: true, rootName: 'Users' })
+    expect(outputArr).toContain('export interface UsersItem {')
+    expect(outputArr).toContain('export type Users = UsersItem[]')
+  })
+
+  it('adds readonly modifier to fields when readonlyModifier is enabled', () => {
+    const input = { id: 1, name: 'KitDev' }
+    const output = jsonToTypeScript(input, { readonlyModifier: true, rootName: 'User' })
+    expect(output).toContain('readonly id: number')
+    expect(output).toContain('readonly name: string')
+  })
+
+  it('combines export, readonly, and widenNull modifiers', () => {
+    const input = { id: 1, tag: null }
+    const output = jsonToTypeScript(input, {
+      exportModifier: true,
+      readonlyModifier: true,
+      widenNull: true,
+      declarationType: 'type',
+      rootName: 'Item',
+    })
+    expect(output).toContain('export type Item = {')
+    expect(output).toContain('readonly id: number')
+    expect(output).toContain('readonly tag: null | unknown')
+  })
 })
 
 describe('jsonToTypeScript naming', () => {

@@ -25,6 +25,9 @@ interface Shape {
 export interface TypeScriptOptions {
   rootName?: string
   declarationType?: 'interface' | 'type'
+  widenNull?: boolean
+  exportModifier?: boolean
+  readonlyModifier?: boolean
 }
 
 export function jsonToTypeScript(
@@ -36,6 +39,10 @@ export function jsonToTypeScript(
     : optionsOrRootName
   const rootName = options.rootName?.trim() || 'Root'
   const declarationType = options.declarationType ?? 'interface'
+  const widenNull = options.widenNull ?? false
+  const exportModifier = options.exportModifier ?? false
+  const readonlyModifier = options.readonlyModifier ?? false
+  const exportPrefix = exportModifier ? 'export ' : ''
   const shapesBySignature = new Map<string, Shape>()
 
   function typesOf(samples: unknown[], path: string[], fromArray: boolean): TypeNode[] {
@@ -54,7 +61,9 @@ export function jsonToTypeScript(
         objects.push(sample as Record<string, unknown>)
       }
       else {
-        const text = sample === null ? 'null' : primitiveText(sample)
+        const text = sample === null
+          ? (widenNull ? 'null | unknown' : 'null')
+          : primitiveText(sample)
         if (!seen.has(text)) {
           seen.add(text)
           nodes.push({ kind: 'primitive', text })
@@ -119,14 +128,15 @@ export function jsonToTypeScript(
         for (const field of node.shape.fields) {
           emit(field.types)
         }
+        const prefix = readonlyModifier ? 'readonly ' : ''
         const lines = node.shape.fields.map(field =>
-          `  ${fieldName(field.key)}${field.optional ? '?' : ''}: ${render(field.types)}`,
+          `  ${prefix}${fieldName(field.key)}${field.optional ? '?' : ''}: ${render(field.types)}`,
         )
         if (declarationType === 'type') {
-          blocks.push(`type ${node.shape.name} = {\n${lines.join('\n')}\n}`)
+          blocks.push(`${exportPrefix}type ${node.shape.name} = {\n${lines.join('\n')}\n}`)
         }
         else {
-          blocks.push(`interface ${node.shape.name} {\n${lines.join('\n')}\n}`)
+          blocks.push(`${exportPrefix}interface ${node.shape.name} {\n${lines.join('\n')}\n}`)
         }
       }
     }
@@ -136,7 +146,7 @@ export function jsonToTypeScript(
   if (rootShape) {
     return `${blocks.join('\n\n')}\n`
   }
-  const alias = `type ${rootName} = ${render(rootTypes)}\n`
+  const alias = `${exportPrefix}type ${rootName} = ${render(rootTypes)}\n`
   return blocks.length === 0 ? alias : `${blocks.join('\n\n')}\n\n${alias}`
 }
 
