@@ -92,3 +92,47 @@ describe('convertCsvJsonSql', () => {
     expect(JSON.parse(result.output)).toEqual([{ name: 'Ada', role: 'Engineer' }])
   })
 })
+
+describe('csv parse error reporting and row exclusion', () => {
+  it('reports specific row number for unclosed quotes', () => {
+    expect(() => parseCsv('name,city\nAda,"London')).toThrow('CSV has an unclosed quote on row 2.')
+  })
+
+  it('reports specific row number for mismatched column count', () => {
+    const csv = 'id,name,role\n1,Ada,Engineer\n2,Grace\n3,Alan,Mathematician'
+    expect(() => parseCsv(csv)).toThrow('Row 3 has 2 columns, expected 3.')
+  })
+
+  it('never mistakenly treats invalid JSON as CSV', () => {
+    const invalidJson = '[{"name": "Ada",}]'
+    expect(() => parseCsv(invalidJson)).toThrow(/Invalid JSON input/)
+  })
+
+  it('allows excluding invalid rows from dataset when excludeInvalidRows is enabled', () => {
+    const csv = 'id,name,role\n1,Ada,Engineer\n2,Grace\n3,Alan,Mathematician'
+    const result = parseCsv(csv, { excludeInvalidRows: true })
+    expect(result).toEqual([
+      ['id', 'name', 'role'],
+      ['1', 'Ada', 'Engineer'],
+      ['3', 'Alan', 'Mathematician'],
+    ])
+  })
+
+  it('reports excluded count in convertCsvJsonSql when excluding invalid rows', () => {
+    const csv = 'id,name,role\n1,Ada,Engineer\n2,Grace\n3,Alan,Mathematician'
+    const result = convertCsvJsonSql({
+      mode: 'csv-json',
+      text: csv,
+      excludeInvalidRows: true,
+    })
+    expect(result.excludedRowCount).toBe(1)
+    const json = JSON.parse(result.output)
+    expect(json).toHaveLength(2)
+    expect(json[0].name).toBe('Ada')
+    expect(json[1].name).toBe('Alan')
+  })
+
+  it('rejects invalid JSON in jsonToCsv with informative error', () => {
+    expect(() => jsonToCsv('{ invalid }')).toThrow('Invalid JSON syntax')
+  })
+})

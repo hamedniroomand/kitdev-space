@@ -68,17 +68,56 @@ export function detectDelimiter(input: string): CsvDelimiter {
   return best
 }
 
-export function parseCsv(input: string, delimiter: CsvDelimiter | 'auto' = 'auto'): string[][] {
+export interface ParseCsvOptions {
+  delimiter?: CsvDelimiter | 'auto'
+  validateColumns?: boolean
+  excludeInvalidRows?: boolean
+}
+
+export interface ParseCsvResult {
+  rows: string[][]
+  excludedCount: number
+}
+
+export function parseCsvDetailed(
+  input: string,
+  optionsOrDelimiter: CsvDelimiter | 'auto' | ParseCsvOptions = 'auto',
+): ParseCsvResult {
+  const options: ParseCsvOptions = typeof optionsOrDelimiter === 'string'
+    ? { delimiter: optionsOrDelimiter }
+    : optionsOrDelimiter
+
   const text = input.replace(/^\uFEFF/, '')
   if (!text.trim()) {
     throw new DataError('Enter CSV text.')
   }
 
-  const sep = delimiter === 'auto' ? detectDelimiter(text) : delimiter
-  const rows: string[][] = []
-  let row: string[] = []
+  const trimmed = text.trim()
+  if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+    try {
+      JSON.parse(trimmed)
+      throw new DataError('Input is JSON, not CSV. Switch mode to JSON → CSV.')
+    }
+    catch (cause) {
+      if (cause instanceof DataError) {
+        throw cause
+      }
+      const message = (cause as Error).message || 'Invalid JSON syntax'
+      throw new DataError(`Invalid JSON input: ${message}. JSON input cannot be processed as CSV.`, { cause })
+    }
+  }
+
+  const sep = options.delimiter === undefined || options.delimiter === 'auto'
+    ? detectDelimiter(text)
+    : options.delimiter
+
+  const rawRows: { rowNumber: number, cells: string[] }[] = []
+  let currentRow: string[] = []
   let field = ''
   let inQuotes = false
+  let quoteStartRow = 1
+  let currentRowNumber = 1
+  let rowStartNumber = 1
 
   for (let i = 0; i < text.length; i += 1) {
     const char = text[i]
@@ -96,17 +135,21 @@ export function parseCsv(input: string, delimiter: CsvDelimiter | 'auto' = 'auto
       }
       else {
         field += char
+        if (char === '\n') {
+          currentRowNumber += 1
+        }
       }
       continue
     }
 
     if (char === '"') {
       inQuotes = true
+      quoteStartRow = currentRowNumber
       continue
     }
 
     if (char === sep) {
-      row.push(field)
+      currentRow.push(field)
       field = ''
       continue
     }
@@ -116,10 +159,12 @@ export function parseCsv(input: string, delimiter: CsvDelimiter | 'auto' = 'auto
     }
 
     if (char === '\n') {
-      row.push(field)
-      rows.push(row)
-      row = []
+      currentRow.push(field)
+      rawRows.push({ rowNumber: rowStartNumber, cells: currentRow })
+      currentRow = []
       field = ''
+      currentRowNumber += 1
+      rowStartNumber = currentRowNumber
       continue
     }
 
@@ -127,28 +172,78 @@ export function parseCsv(input: string, delimiter: CsvDelimiter | 'auto' = 'auto
   }
 
   if (inQuotes) {
-    throw new DataError('CSV has an unclosed quote.')
+    throw new DataError(`CSV has an unclosed quote on row ${quoteStartRow}.`, { line: quoteStartRow })
   }
 
-  if (field.length > 0 || row.length > 0) {
-    row.push(field)
-    rows.push(row)
+  if (field.length > 0 || currentRow.length > 0) {
+    currentRow.push(field)
+    rawRows.push({ rowNumber: rowStartNumber, cells: currentRow })
   }
 
-  while (rows.length > 0) {
-    const last = rows[rows.length - 1]!
-    if (last.length === 1 && last[0] === '') {
-      rows.pop()
+  while (rawRows.length > 0) {
+    const last = rawRows[rawRows.length - 1]!
+    if (last.cells.length === 1 && last.cells[0] === '') {
+      rawRows.pop()
       continue
     }
     break
   }
 
-  if (rows.length === 0) {
+  if (rawRows.length === 0) {
     throw new DataError('Enter CSV text.')
   }
 
-  return rows
+  const expectedColumns = rawRows[0]!.cells.length
+  const validateColumns = options.validateColumns !== false
+
+  if (validateColumns && expectedColumns > 0) {
+    const validRows: string[][] = []
+    const invalidRows: { rowNumber: number, columns: number, expected: number }[] = []
+
+    for (const r of rawRows) {
+      if (r.cells.length !== expectedColumns) {
+        invalidRows.push({
+          rowNumber: r.rowNumber,
+          columns: r.cells.length,
+          expected: expectedColumns,
+        })
+      }
+      else {
+        validRows.push(r.cells)
+      }
+    }
+
+    if (invalidRows.length > 0) {
+      if (options.excludeInvalidRows) {
+        return {
+          rows: validRows,
+          excludedCount: invalidRows.length,
+        }
+      }
+      const first = invalidRows[0]!
+      throw new DataError(
+        `Row ${first.rowNumber} has ${first.columns} columns, expected ${first.expected}.`,
+        { line: first.rowNumber },
+      )
+    }
+
+    return {
+      rows: validRows,
+      excludedCount: 0,
+    }
+  }
+
+  return {
+    rows: rawRows.map(r => r.cells),
+    excludedCount: 0,
+  }
+}
+
+export function parseCsv(
+  input: string,
+  optionsOrDelimiter: CsvDelimiter | 'auto' | ParseCsvOptions = 'auto',
+): string[][] {
+  return parseCsvDetailed(input, optionsOrDelimiter).rows
 }
 
 function uniqueHeaders(headers: string[]): string[] {
@@ -193,9 +288,15 @@ export function csvToJson(
     delimiter?: CsvDelimiter | 'auto'
     header?: boolean
     coerce?: boolean
+    validateColumns?: boolean
+    excludeInvalidRows?: boolean
   } = {},
 ): unknown[] {
-  const rows = parseCsv(input, options.delimiter ?? 'auto')
+  const rows = parseCsv(input, {
+    delimiter: options.delimiter ?? 'auto',
+    validateColumns: options.validateColumns,
+    excludeInvalidRows: options.excludeInvalidRows,
+  })
   if (rows.length === 0) {
     return []
   }
@@ -256,7 +357,19 @@ export function jsonToCsv(
   input: string | unknown,
   options: { delimiter?: CsvDelimiter } = {},
 ): string {
-  const data = typeof input === 'string' ? JSON.parse(input) as unknown : input
+  let data: unknown
+  if (typeof input === 'string') {
+    try {
+      data = JSON.parse(input)
+    }
+    catch (cause) {
+      const message = (cause as Error).message || 'Invalid JSON syntax'
+      throw new DataError(`Invalid JSON syntax: ${message}`, { cause })
+    }
+  }
+  else {
+    data = input
+  }
   const delimiter = options.delimiter ?? ','
 
   if (!Array.isArray(data)) {
@@ -338,10 +451,16 @@ export function csvToSqlInsert(
   options: {
     delimiter?: CsvDelimiter | 'auto'
     header?: boolean
+    validateColumns?: boolean
+    excludeInvalidRows?: boolean
   } = {},
 ): string {
   const table = quoteIdent(tableName)
-  const rows = parseCsv(input, options.delimiter ?? 'auto')
+  const rows = parseCsv(input, {
+    delimiter: options.delimiter ?? 'auto',
+    validateColumns: options.validateColumns,
+    excludeInvalidRows: options.excludeInvalidRows,
+  })
   if (rows.length === 0) {
     throw new DataError('Enter CSV text.')
   }
@@ -383,15 +502,41 @@ export function convertCsvJsonSql(input: {
   delimiter?: CsvDelimiter | 'auto'
   tableName?: string
   header?: boolean
-}): { output: string, delimiter?: CsvDelimiter } {
+  validateColumns?: boolean
+  excludeInvalidRows?: boolean
+}): { output: string, delimiter?: CsvDelimiter, excludedRowCount?: number } {
   const delimiter = input.delimiter ?? 'auto'
 
   if (input.mode === 'csv-json') {
     const detected = delimiter === 'auto' ? detectDelimiter(input.text) : delimiter
-    const data = csvToJson(input.text, { delimiter, header: input.header })
+    const detailed = parseCsvDetailed(input.text, {
+      delimiter,
+      validateColumns: input.validateColumns,
+      excludeInvalidRows: input.excludeInvalidRows,
+    })
+    const rows = detailed.rows
+    let data: unknown[]
+    const header = input.header !== false
+    if (!header) {
+      data = rows.map(row => row.map(cell => coerceCell(cell)))
+    }
+    else {
+      const headers = uniqueHeaders(rows[0] ?? [])
+      data = rows.slice(1).map((row) => {
+        const record: Record<string, unknown> = {}
+        for (let i = 0; i < headers.length; i += 1) {
+          const key = headers[i]!
+          const raw = row[i] ?? ''
+          record[key] = coerceCell(raw)
+        }
+        return record
+      })
+    }
+
     return {
       output: JSON.stringify(data, null, 2),
       delimiter: detected,
+      excludedRowCount: detailed.excludedCount,
     }
   }
 
@@ -404,11 +549,19 @@ export function convertCsvJsonSql(input: {
   }
 
   const detected = delimiter === 'auto' ? detectDelimiter(input.text) : delimiter
+  const detailed = parseCsvDetailed(input.text, {
+    delimiter,
+    validateColumns: input.validateColumns,
+    excludeInvalidRows: input.excludeInvalidRows,
+  })
   return {
     output: csvToSqlInsert(input.text, input.tableName ?? 'table_name', {
       delimiter,
       header: input.header,
+      validateColumns: input.validateColumns,
+      excludeInvalidRows: input.excludeInvalidRows,
     }),
     delimiter: detected,
+    excludedRowCount: detailed.excludedCount,
   }
 }

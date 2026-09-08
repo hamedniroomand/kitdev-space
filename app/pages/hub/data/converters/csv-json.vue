@@ -127,6 +127,16 @@ const outputLang = computed(() => {
   return 'text'
 })
 
+const excludeInvalidRows = ref(false)
+const canExcludeInvalidRows = computed(() => {
+  return Boolean(error.value && /Row \d+ has \d+ columns, expected \d+/i.test(error.value))
+})
+
+function handleExcludeInvalidRows() {
+  excludeInvalidRows.value = true
+  convert()
+}
+
 async function convert() {
   await run(() => {
     try {
@@ -136,8 +146,12 @@ async function convert() {
         delimiter: delimiter.value,
         tableName: tableName.value,
         header: header.value,
+        excludeInvalidRows: excludeInvalidRows.value,
       })
       detectedDelimiter.value = next.delimiter ?? null
+      if (next.excludedRowCount && next.excludedRowCount > 0) {
+        statusMeta.value = `Excluded ${next.excludedRowCount} invalid row${next.excludedRowCount > 1 ? 's' : ''}`
+      }
       return next.output
     }
     catch (cause) {
@@ -155,6 +169,9 @@ async function convert() {
     output.value = result.value
     const stats = getTextStats(output.value)
     const parts = [`${stats.lines} lines`]
+    if (statusMeta.value.startsWith('Excluded')) {
+      parts.unshift(statusMeta.value)
+    }
     if (mode.value !== 'json-csv' && detectedDelimiter.value) {
       parts.push(`delimiter: ${delimiterLabel.value}`)
     }
@@ -181,8 +198,13 @@ function handleClear() {
   output.value = ''
   statusMeta.value = ''
   detectedDelimiter.value = null
+  excludeInvalidRows.value = false
   reset()
 }
+
+watch(input, () => {
+  excludeInvalidRows.value = false
+})
 
 watch(mode, (newMode) => {
   syncSample(newMode)
@@ -304,6 +326,25 @@ useToolShortcuts({
       v-if="error"
       :message="error"
     />
+
+    <div
+      v-if="canExcludeInvalidRows"
+      class="flex items-center gap-3 p-3 rounded-lg border border-warning/30 bg-warning/10 text-sm"
+    >
+      <UIcon
+        name="i-lucide-filter-x"
+        class="w-5 h-5 text-warning shrink-0"
+      />
+      <span class="flex-1 text-muted">You can exclude invalid rows and convert the valid rows.</span>
+      <UButton
+        label="Exclude Invalid Rows"
+        color="warning"
+        variant="subtle"
+        size="xs"
+        icon="i-lucide-filter-x"
+        @click="handleExcludeInvalidRows"
+      />
+    </div>
 
     <LazyToolEditor
       v-model="output"
