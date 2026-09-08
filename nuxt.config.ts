@@ -114,6 +114,10 @@ export default defineNuxtConfig({
     },
     autoInjectServerSentry: 'top-level-import',
     telemetry: false,
+    // Both Sentry configs send errors only. Remove unused tracing code.
+    bundleSizeOptimizations: {
+      excludeTracing: true,
+    },
   },
 
   sourcemap: { client: 'hidden' },
@@ -125,6 +129,11 @@ export default defineNuxtConfig({
   },
 
   css: ['~/assets/css/main.css'],
+
+  // Include CSS in the HTML so the first paint needs no stylesheet request.
+  features: {
+    inlineStyles: true,
+  },
 
   site: {
     url: 'https://kitdev.space',

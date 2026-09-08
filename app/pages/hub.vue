@@ -373,6 +373,6 @@ onMounted(revealActiveTool)
     </div>
 
     <!-- Command Palette for quick search -->
-    <AppCommandPalette v-model:open="searchOpen" />
+    <LazyAppCommandPalette v-if="searchOpen" v-model:open="searchOpen" />
   </div>
 </template>

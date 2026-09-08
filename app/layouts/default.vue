@@ -25,6 +25,6 @@ defineShortcuts({
       <slot />
     </UMain>
     <AppFooter />
-    <AppCommandPalette v-model:open="searchOpen" />
+    <LazyAppCommandPalette v-if="searchOpen" v-model:open="searchOpen" />
   </div>
 </template>
