@@ -136,3 +136,97 @@ describe('csv parse error reporting and row exclusion', () => {
     expect(() => jsonToCsv('{ invalid }')).toThrow('Invalid JSON syntax')
   })
 })
+
+describe('csv null, empty, and missing value handling', () => {
+  const datasetWithNullAndEmpty = [
+    { id: 1, name: 'Ada', notes: null },
+    { id: 2, name: 'Grace', notes: '' },
+    { id: 3, name: 'Alan' }, // notes is missing
+  ]
+
+  it('exports null as "null" and empty string as quoted by default in jsonToCsv', () => {
+    const csv = jsonToCsv(datasetWithNullAndEmpty)
+    expect(csv).toBe('id,name,notes\n1,Ada,null\n2,Grace,""\n3,Alan,null')
+  })
+
+  it('supports NULL representation for null and missing fields in jsonToCsv', () => {
+    const csv = jsonToCsv(datasetWithNullAndEmpty, {
+      nullValue: 'NULL',
+      emptyStringValue: 'empty',
+    })
+    expect(csv).toBe('id,name,notes\n1,Ada,NULL\n2,Grace,\n3,Alan,NULL')
+  })
+
+  it('supports \\N representation for null values', () => {
+    const csv = jsonToCsv(datasetWithNullAndEmpty, {
+      nullValue: '\\N',
+      emptyStringValue: 'quoted',
+    })
+    expect(csv).toBe('id,name,notes\n1,Ada,\\N\n2,Grace,""\n3,Alan,\\N')
+  })
+
+  it('supports empty string representation for missing fields when configured', () => {
+    const csv = jsonToCsv(datasetWithNullAndEmpty, {
+      nullValue: 'NULL',
+      emptyStringValue: 'quoted',
+      missingFieldValue: 'empty',
+    })
+    expect(csv).toBe('id,name,notes\n1,Ada,NULL\n2,Grace,""\n3,Alan,""')
+  })
+
+  it('quotes literal string "null" to preserve distinction from null value', () => {
+    const data = [
+      { id: 1, text: 'null' },
+      { id: 2, text: null },
+    ]
+    const csv = jsonToCsv(data, { nullValue: 'null' })
+    expect(csv).toBe('id,text\n1,"null"\n2,null')
+  })
+
+  it('distinguishes empty string from null in csvToJson', () => {
+    const csv = 'id,name,notes\n1,Ada,null\n2,Grace,""\n3,Alan,'
+    // Default: null is null, quoted "" is empty string, unquoted empty is empty string
+    const json1 = csvToJson(csv)
+    expect(json1).toEqual([
+      { id: 1, name: 'Ada', notes: null },
+      { id: 2, name: 'Grace', notes: '' },
+      { id: 3, name: 'Alan', notes: '' },
+    ])
+
+    // With nullValue: 'empty', unquoted empty is parsed as null, while quoted "" stays empty string
+    const json2 = csvToJson(csv, { nullValue: 'empty' })
+    expect(json2).toEqual([
+      { id: 1, name: 'Ada', notes: null },
+      { id: 2, name: 'Grace', notes: '' },
+      { id: 3, name: 'Alan', notes: null },
+    ])
+  })
+
+  it('preserves distinction between null and empty string in csvToSqlInsert', () => {
+    const csv = 'id,name,bio\n1,Ada,null\n2,Grace,""\n3,Alan,'
+    const sql = csvToSqlInsert(csv, 'users')
+    expect(sql).toBe(
+      'INSERT INTO users (id, name, bio) VALUES (1, \'Ada\', NULL);\n'
+      + 'INSERT INTO users (id, name, bio) VALUES (2, \'Grace\', \'\');\n'
+      + 'INSERT INTO users (id, name, bio) VALUES (3, \'Alan\', \'\');',
+    )
+
+    const sqlEmptyAsNull = csvToSqlInsert(csv, 'users', { nullValue: 'empty' })
+    expect(sqlEmptyAsNull).toBe(
+      'INSERT INTO users (id, name, bio) VALUES (1, \'Ada\', NULL);\n'
+      + 'INSERT INTO users (id, name, bio) VALUES (2, \'Grace\', \'\');\n'
+      + 'INSERT INTO users (id, name, bio) VALUES (3, \'Alan\', NULL);',
+    )
+  })
+
+  it('forwards null and empty value options in convertCsvJsonSql', () => {
+    const result = convertCsvJsonSql({
+      mode: 'json-csv',
+      text: JSON.stringify(datasetWithNullAndEmpty),
+      nullValue: 'NULL',
+      emptyStringValue: 'quoted',
+      missingFieldValue: 'empty',
+    })
+    expect(result.output).toBe('id,name,notes\n1,Ada,NULL\n2,Grace,""\n3,Alan,""')
+  })
+})

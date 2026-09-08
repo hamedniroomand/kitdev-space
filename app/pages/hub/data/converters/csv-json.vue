@@ -1,5 +1,10 @@
 <script setup lang="ts">
-import type { CsvDelimiter } from '#shared/utils/data/csv'
+import type {
+  CsvDelimiter,
+  CsvEmptyRepresentation,
+  CsvMissingFieldHandling,
+  CsvNullRepresentation,
+} from '#shared/utils/data/csv'
 import type { ColumnDataType, ColumnSchema } from '#shared/utils/data/csv-preview'
 import { useFileDialog } from '@vueuse/core'
 import { convertCsvJsonSql, CSV_DELIMITERS } from '#shared/utils/data/csv'
@@ -33,6 +38,9 @@ const output = ref('')
 const delimiter = ref<CsvDelimiter | 'auto'>('auto')
 const tableName = ref('users')
 const header = ref(true)
+const nullValue = useToolOption<CsvNullRepresentation>('csv-null-val', 'null')
+const emptyStringValue = useToolOption<CsvEmptyRepresentation>('csv-empty-val', 'quoted')
+const missingFieldValue = useToolOption<CsvMissingFieldHandling>('csv-missing-val', 'null')
 const statusMeta = ref('')
 const detectedDelimiter = ref<CsvDelimiter | null>(null)
 const { status, error, result, run, reset } = useTool<string>()
@@ -59,6 +67,23 @@ const {
   },
   { timeout: 30_000 },
 )
+
+const nullValueItems = [
+  { label: 'null', value: 'null' },
+  { label: 'NULL', value: 'NULL' },
+  { label: '\\N', value: '\\N' },
+  { label: 'Empty', value: 'empty' },
+]
+
+const emptyStringItems = [
+  { label: 'Quoted ("")', value: 'quoted' },
+  { label: 'Empty ()', value: 'empty' },
+]
+
+const missingFieldItems = [
+  { label: 'Treat as null', value: 'null' },
+  { label: 'Treat as empty', value: 'empty' },
+]
 
 const modeItems = [
   { label: 'CSV → JSON', value: 'csv-json' },
@@ -150,6 +175,9 @@ async function convert() {
         tableName: tableName.value,
         header: header.value,
         excludeInvalidRows: excludeInvalidRows.value,
+        nullValue: nullValue.value,
+        emptyStringValue: emptyStringValue.value,
+        missingFieldValue: missingFieldValue.value,
       })
       detectedDelimiter.value = next.delimiter ?? null
       if (next.excludedRowCount && next.excludedRowCount > 0) {
@@ -335,6 +363,30 @@ useToolShortcuts({
           :ui="{ base: 'font-mono' }"
         />
       </UFormField>
+      <UFormField label="Null value">
+        <USelect
+          v-model="nullValue"
+          :items="nullValueItems"
+          class="w-36"
+        />
+      </UFormField>
+      <UFormField label="Empty string">
+        <USelect
+          v-model="emptyStringValue"
+          :items="emptyStringItems"
+          class="w-36"
+        />
+      </UFormField>
+      <UFormField
+        v-if="mode === 'json-csv'"
+        label="Missing fields"
+      >
+        <USelect
+          v-model="missingFieldValue"
+          :items="missingFieldItems"
+          class="w-36"
+        />
+      </UFormField>
       <UFormField
         v-if="mode !== 'json-csv'"
         label="Header row"
@@ -466,6 +518,12 @@ useToolShortcuts({
           </p>
           <p>
             Auto-detect chooses comma, semicolon, or tab from the first rows.
+          </p>
+          <p>
+            Select how to export null values, empty strings, and missing fields.
+          </p>
+          <p>
+            Quoted empty strings preserve the difference between null values and empty strings.
           </p>
           <p>
             This tool does not store your input.

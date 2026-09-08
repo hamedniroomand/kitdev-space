@@ -68,6 +68,16 @@ export function detectDelimiter(input: string): CsvDelimiter {
   return best
 }
 
+export type CsvNullRepresentation = 'null' | 'NULL' | '\\N' | 'empty'
+export type CsvEmptyRepresentation = 'empty' | 'quoted'
+export type CsvMissingFieldHandling = 'null' | 'empty'
+
+export interface CsvNullOptions {
+  nullValue?: CsvNullRepresentation
+  emptyStringValue?: CsvEmptyRepresentation
+  missingFieldValue?: CsvMissingFieldHandling
+}
+
 export interface ParseCsvOptions {
   delimiter?: CsvDelimiter | 'auto'
   validateColumns?: boolean
@@ -76,6 +86,7 @@ export interface ParseCsvOptions {
 
 export interface ParseCsvResult {
   rows: string[][]
+  cellQuoted: boolean[][]
   excludedCount: number
 }
 
@@ -111,10 +122,12 @@ export function parseCsvDetailed(
     ? detectDelimiter(text)
     : options.delimiter
 
-  const rawRows: { rowNumber: number, cells: string[] }[] = []
+  const rawRows: { rowNumber: number, cells: string[], cellQuoted: boolean[] }[] = []
   let currentRow: string[] = []
+  let currentQuoted: boolean[] = []
   let field = ''
   let inQuotes = false
+  let fieldHadQuotes = false
   let quoteStartRow = 1
   let currentRowNumber = 1
   let rowStartNumber = 1
@@ -144,13 +157,16 @@ export function parseCsvDetailed(
 
     if (char === '"') {
       inQuotes = true
+      fieldHadQuotes = true
       quoteStartRow = currentRowNumber
       continue
     }
 
     if (char === sep) {
       currentRow.push(field)
+      currentQuoted.push(fieldHadQuotes)
       field = ''
+      fieldHadQuotes = false
       continue
     }
 
@@ -160,9 +176,12 @@ export function parseCsvDetailed(
 
     if (char === '\n') {
       currentRow.push(field)
-      rawRows.push({ rowNumber: rowStartNumber, cells: currentRow })
+      currentQuoted.push(fieldHadQuotes)
+      rawRows.push({ rowNumber: rowStartNumber, cells: currentRow, cellQuoted: currentQuoted })
       currentRow = []
+      currentQuoted = []
       field = ''
+      fieldHadQuotes = false
       currentRowNumber += 1
       rowStartNumber = currentRowNumber
       continue
@@ -175,14 +194,15 @@ export function parseCsvDetailed(
     throw new DataError(`CSV has an unclosed quote on row ${quoteStartRow}.`, { line: quoteStartRow })
   }
 
-  if (field.length > 0 || currentRow.length > 0) {
+  if (field.length > 0 || currentRow.length > 0 || fieldHadQuotes) {
     currentRow.push(field)
-    rawRows.push({ rowNumber: rowStartNumber, cells: currentRow })
+    currentQuoted.push(fieldHadQuotes)
+    rawRows.push({ rowNumber: rowStartNumber, cells: currentRow, cellQuoted: currentQuoted })
   }
 
   while (rawRows.length > 0) {
     const last = rawRows[rawRows.length - 1]!
-    if (last.cells.length === 1 && last.cells[0] === '') {
+    if (last.cells.length === 1 && last.cells[0] === '' && !last.cellQuoted[0]) {
       rawRows.pop()
       continue
     }
@@ -198,6 +218,7 @@ export function parseCsvDetailed(
 
   if (validateColumns && expectedColumns > 0) {
     const validRows: string[][] = []
+    const validQuoted: boolean[][] = []
     const invalidRows: { rowNumber: number, columns: number, expected: number }[] = []
 
     for (const r of rawRows) {
@@ -210,6 +231,7 @@ export function parseCsvDetailed(
       }
       else {
         validRows.push(r.cells)
+        validQuoted.push(r.cellQuoted)
       }
     }
 
@@ -217,6 +239,7 @@ export function parseCsvDetailed(
       if (options.excludeInvalidRows) {
         return {
           rows: validRows,
+          cellQuoted: validQuoted,
           excludedCount: invalidRows.length,
         }
       }
@@ -229,12 +252,14 @@ export function parseCsvDetailed(
 
     return {
       rows: validRows,
+      cellQuoted: validQuoted,
       excludedCount: 0,
     }
   }
 
   return {
     rows: rawRows.map(r => r.cells),
+    cellQuoted: rawRows.map(r => r.cellQuoted),
     excludedCount: 0,
   }
 }
@@ -256,14 +281,29 @@ function uniqueHeaders(headers: string[]): string[] {
   })
 }
 
-function coerceCell(value: string): string | number | boolean | null {
+export function coerceCell(
+  value: string,
+  options: CsvNullOptions = {},
+  wasQuoted = false,
+): string | number | boolean | null {
+  if (wasQuoted) {
+    return value
+  }
+
   const trimmed = value.trim()
+  const nullVal = options.nullValue ?? 'null'
+
   if (trimmed === '') {
+    if (nullVal === 'empty') {
+      return null
+    }
     return ''
   }
-  if (/^null$/i.test(trimmed)) {
+
+  if (/^null$/i.test(trimmed) || trimmed === '\\N') {
     return null
   }
+
   if (/^true$/i.test(trimmed)) {
     return true
   }
@@ -290,13 +330,15 @@ export function csvToJson(
     coerce?: boolean
     validateColumns?: boolean
     excludeInvalidRows?: boolean
-  } = {},
+  } & CsvNullOptions = {},
 ): unknown[] {
-  const rows = parseCsv(input, {
+  const detailed = parseCsvDetailed(input, {
     delimiter: options.delimiter ?? 'auto',
     validateColumns: options.validateColumns,
     excludeInvalidRows: options.excludeInvalidRows,
   })
+  const rows = detailed.rows
+  const cellQuoted = detailed.cellQuoted
   if (rows.length === 0) {
     return []
   }
@@ -305,57 +347,115 @@ export function csvToJson(
   const coerce = options.coerce !== false
 
   if (!header) {
-    return rows.map(row => row.map(cell => (coerce ? coerceCell(cell) : cell)))
+    return rows.map((row, rIdx) => {
+      const rowQuoted = cellQuoted[rIdx] ?? []
+      return row.map((cell, cIdx) => (coerce ? coerceCell(cell, options, rowQuoted[cIdx] ?? false) : cell))
+    })
   }
 
   const headers = uniqueHeaders(rows[0] ?? [])
-  return rows.slice(1).map((row) => {
+  return rows.slice(1).map((row, rIdx) => {
     const record: Record<string, unknown> = {}
+    const rowQuoted = cellQuoted[rIdx + 1] ?? []
     for (let i = 0; i < headers.length; i += 1) {
       const key = headers[i]!
       const raw = row[i] ?? ''
-      record[key] = coerce ? coerceCell(raw) : raw
+      const wasQuoted = rowQuoted[i] ?? false
+      record[key] = coerce ? coerceCell(raw, options, wasQuoted) : raw
     }
     return record
   })
 }
 
-function cellToString(value: unknown): string {
-  if (value === null || value === undefined) {
-    return ''
+export function escapeCsvField(
+  value: unknown,
+  delimiter: CsvDelimiter = ',',
+  options: CsvNullOptions = {},
+): string {
+  const nullValue = options.nullValue ?? 'null'
+  const emptyStringValue = options.emptyStringValue ?? 'quoted'
+  const missingFieldValue = options.missingFieldValue ?? 'null'
+
+  if (value === null) {
+    if (nullValue === 'empty') {
+      return ''
+    }
+    if (nullValue === 'NULL') {
+      return 'NULL'
+    }
+    if (nullValue === '\\N') {
+      return '\\N'
+    }
+    return 'null'
   }
+
+  if (value === undefined) {
+    if (missingFieldValue === 'empty') {
+      return emptyStringValue === 'quoted' ? '""' : ''
+    }
+    if (nullValue === 'empty') {
+      return ''
+    }
+    if (nullValue === 'NULL') {
+      return 'NULL'
+    }
+    if (nullValue === '\\N') {
+      return '\\N'
+    }
+    return 'null'
+  }
+
+  if (value === '') {
+    return emptyStringValue === 'quoted' ? '""' : ''
+  }
+
+  let text: string
   if (typeof value === 'string') {
-    return value
+    text = value
   }
-  if (typeof value === 'number' || typeof value === 'boolean') {
+  else if (typeof value === 'number' || typeof value === 'boolean') {
     return String(value)
   }
-  return JSON.stringify(value)
-}
+  else {
+    text = JSON.stringify(value)
+  }
 
-export function escapeCsvField(value: unknown, delimiter: CsvDelimiter = ','): string {
-  const text = cellToString(value)
-  const needsQuotes = text.includes('"')
+  const isNullMarker = (nullValue === 'null' && text.toLowerCase() === 'null')
+    || (nullValue === 'NULL' && text.toLowerCase() === 'null')
+    || (nullValue === '\\N' && text === '\\N')
+
+  const needsQuotes = isNullMarker
+    || text.includes('"')
     || text.includes('\n')
     || text.includes('\r')
     || text.includes(delimiter)
+
   const escaped = text.replaceAll('"', '""')
   return needsQuotes ? `"${escaped}"` : escaped
 }
 
-export function formatCsvRow(row: unknown[], delimiter: CsvDelimiter = ','): string {
-  return row.map(cell => escapeCsvField(cell, delimiter)).join(delimiter)
+export function formatCsvRow(
+  row: unknown[],
+  delimiter: CsvDelimiter = ',',
+  options: CsvNullOptions = {},
+): string {
+  return row.map(cell => escapeCsvField(cell, delimiter, options)).join(delimiter)
 }
 
-export function formatCsv(columns: string[], rows: unknown[][], delimiter: CsvDelimiter = ','): string {
-  const header = formatCsvRow(columns, delimiter)
-  const lines = rows.map(row => formatCsvRow(row, delimiter))
+export function formatCsv(
+  columns: string[],
+  rows: unknown[][],
+  delimiter: CsvDelimiter = ',',
+  options: CsvNullOptions = {},
+): string {
+  const header = formatCsvRow(columns, delimiter, options)
+  const lines = rows.map(row => formatCsvRow(row, delimiter, options))
   return [header, ...lines].join('\n')
 }
 
 export function jsonToCsv(
   input: string | unknown,
-  options: { delimiter?: CsvDelimiter } = {},
+  options: { delimiter?: CsvDelimiter } & CsvNullOptions = {},
 ): string {
   let data: unknown
   if (typeof input === 'string') {
@@ -385,7 +485,7 @@ export function jsonToCsv(
       if (!Array.isArray(row)) {
         throw new DataError('Every row must be an array when the first row is an array.')
       }
-      return row.map(cell => escapeCsvField(cellToString(cell), delimiter)).join(delimiter)
+      return row.map(cell => escapeCsvField(cell, delimiter, options)).join(delimiter)
     }).join('\n')
   }
 
@@ -408,10 +508,13 @@ export function jsonToCsv(
   }
 
   const lines = [
-    keys.map(key => escapeCsvField(key, delimiter)).join(delimiter),
+    keys.map(key => escapeCsvField(key, delimiter, options)).join(delimiter),
     ...data.map((item) => {
       const record = item as Record<string, unknown>
-      return keys.map(key => escapeCsvField(cellToString(record[key]), delimiter)).join(delimiter)
+      return keys.map((key) => {
+        const val = Object.hasOwn(record, key) ? record[key] : undefined
+        return escapeCsvField(val, delimiter, options)
+      }).join(delimiter)
     }),
   ]
 
@@ -453,14 +556,16 @@ export function csvToSqlInsert(
     header?: boolean
     validateColumns?: boolean
     excludeInvalidRows?: boolean
-  } = {},
+  } & CsvNullOptions = {},
 ): string {
   const table = quoteIdent(tableName)
-  const rows = parseCsv(input, {
+  const detailed = parseCsvDetailed(input, {
     delimiter: options.delimiter ?? 'auto',
     validateColumns: options.validateColumns,
     excludeInvalidRows: options.excludeInvalidRows,
   })
+  const rows = detailed.rows
+  const cellQuoted = detailed.cellQuoted
   if (rows.length === 0) {
     throw new DataError('Enter CSV text.')
   }
@@ -468,16 +573,19 @@ export function csvToSqlInsert(
   const header = options.header !== false
   let columns: string[]
   let dataRows: string[][]
+  let dataQuoted: boolean[][]
 
   if (header) {
     columns = uniqueHeaders(rows[0] ?? []).map((name, index) => toSqlColumnIdent(name, index))
     columns = uniqueHeaders(columns)
     dataRows = rows.slice(1)
+    dataQuoted = cellQuoted.slice(1)
   }
   else {
     const width = Math.max(...rows.map(row => row.length), 0)
     columns = Array.from({ length: width }, (_, index) => `column_${index + 1}`)
     dataRows = rows
+    dataQuoted = cellQuoted
   }
 
   if (columns.length === 0) {
@@ -490,8 +598,14 @@ export function csvToSqlInsert(
 
   const columnList = columns.join(', ')
 
-  return dataRows.map((row) => {
-    const values = columns.map((_, index) => sqlLiteral(coerceCell(row[index] ?? '')))
+  return dataRows.map((row, rIdx) => {
+    const rowQuoted = dataQuoted[rIdx] ?? []
+    const values = columns.map((_, index) => {
+      const raw = row[index] ?? ''
+      const wasQuoted = rowQuoted[index] ?? false
+      const val = coerceCell(raw, options, wasQuoted)
+      return sqlLiteral(val)
+    })
     return `INSERT INTO ${table} (${columnList}) VALUES (${values.join(', ')});`
   }).join('\n')
 }
@@ -504,7 +618,7 @@ export function convertCsvJsonSql(input: {
   header?: boolean
   validateColumns?: boolean
   excludeInvalidRows?: boolean
-}): { output: string, delimiter?: CsvDelimiter, excludedRowCount?: number } {
+} & CsvNullOptions): { output: string, delimiter?: CsvDelimiter, excludedRowCount?: number } {
   const delimiter = input.delimiter ?? 'auto'
 
   if (input.mode === 'csv-json') {
@@ -515,19 +629,25 @@ export function convertCsvJsonSql(input: {
       excludeInvalidRows: input.excludeInvalidRows,
     })
     const rows = detailed.rows
+    const cellQuoted = detailed.cellQuoted
     let data: unknown[]
     const header = input.header !== false
     if (!header) {
-      data = rows.map(row => row.map(cell => coerceCell(cell)))
+      data = rows.map((row, rIdx) => {
+        const rowQuoted = cellQuoted[rIdx] ?? []
+        return row.map((cell, cIdx) => coerceCell(cell, input, rowQuoted[cIdx] ?? false))
+      })
     }
     else {
       const headers = uniqueHeaders(rows[0] ?? [])
-      data = rows.slice(1).map((row) => {
+      data = rows.slice(1).map((row, rIdx) => {
         const record: Record<string, unknown> = {}
+        const rowQuoted = cellQuoted[rIdx + 1] ?? []
         for (let i = 0; i < headers.length; i += 1) {
           const key = headers[i]!
           const raw = row[i] ?? ''
-          record[key] = coerceCell(raw)
+          const wasQuoted = rowQuoted[i] ?? false
+          record[key] = coerceCell(raw, input, wasQuoted)
         }
         return record
       })
@@ -543,7 +663,12 @@ export function convertCsvJsonSql(input: {
   if (input.mode === 'json-csv') {
     const sep = delimiter === 'auto' ? ',' : delimiter
     return {
-      output: jsonToCsv(input.text, { delimiter: sep }),
+      output: jsonToCsv(input.text, {
+        delimiter: sep,
+        nullValue: input.nullValue,
+        emptyStringValue: input.emptyStringValue,
+        missingFieldValue: input.missingFieldValue,
+      }),
       delimiter: sep,
     }
   }
@@ -560,6 +685,9 @@ export function convertCsvJsonSql(input: {
       header: input.header,
       validateColumns: input.validateColumns,
       excludeInvalidRows: input.excludeInvalidRows,
+      nullValue: input.nullValue,
+      emptyStringValue: input.emptyStringValue,
+      missingFieldValue: input.missingFieldValue,
     }),
     delimiter: detected,
     excludedRowCount: detailed.excludedCount,
