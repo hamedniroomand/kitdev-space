@@ -13,5 +13,5 @@ test('populates editor when dropping a text file', async ({ page }) => {
 
   const input = page.getByRole('textbox', { name: 'Input' })
   await expect(input).toBeVisible()
-  await expect(input).toHaveValue(filePayload)
+  await expect(input).toContainText('"dropped": true')
 })

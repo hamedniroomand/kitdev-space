@@ -2,7 +2,7 @@
 import { detectJsonWarnings, formatJson, minifyJson, validateJson } from '#shared/utils/data/json'
 import { getTextStats } from '#shared/utils/data/stats'
 
-const WORKER_CHARS = 100_000
+const WORKER_BYTES = 1_000_000
 
 const input = ref('{\n  "name": "KitDev",\n  "ready": true\n}')
 const output = ref('')
@@ -66,7 +66,7 @@ const { execute: workerFormat, isRunning: workerRunning, stop: stopWorker } = us
   { timeout: 30_000 },
 )
 
-const isHeavy = computed(() => input.value.length >= WORKER_CHARS)
+const isHeavy = computed(() => input.value.length >= WORKER_BYTES)
 
 const validateFeedback = useActionFeedback({
   idle: {
@@ -105,7 +105,7 @@ async function format() {
   validateFeedback.reset()
   checkWarnings()
   await run(async () => {
-    if (input.value.length >= WORKER_CHARS) {
+    if (input.value.length >= WORKER_BYTES) {
       try {
         return await workerFormat({ text: input.value, space: indent.value, sort: sortKeysOption.value })
       }
@@ -127,7 +127,7 @@ async function minify() {
   validateFeedback.reset()
   checkWarnings()
   await run(async () => {
-    if (input.value.length >= WORKER_CHARS) {
+    if (input.value.length >= WORKER_BYTES) {
       try {
         return await workerFormat({ text: input.value, space: 'compact', sort: sortKeysOption.value })
       }
@@ -235,6 +235,8 @@ useToolShortcuts({
       label="Input"
       placeholder="Paste JSON here"
       lang="json"
+      :max-file-size="30 * 1024 * 1024"
+      accept="application/json,text/*,.json"
     />
 
     <ToolActions>
