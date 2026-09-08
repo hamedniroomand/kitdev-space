@@ -1,19 +1,13 @@
 <script setup lang="ts">
 import type { SqlDialect, SqlIndent, SqlKeywordCase } from '#shared/utils/data/sql'
 import { useFileDialog } from '@vueuse/core'
-import { createSqlLinter, formatSql, validateSql } from '#shared/utils/data/sql'
+import { createSqlLinter, formatSql, SQL_DIALECT_OPTIONS, validateSql } from '#shared/utils/data/sql'
 import { getTextStats } from '#shared/utils/data/stats'
 
 const SAMPLE_QUERY
   = `select u.id, u.name, u.email, count(o.id) as total_orders, sum(o.total_amount) as total_spent from users u left join orders o on u.id = o.user_id where u.status = 'active' and u.created_at >= '2025-01-01' group by u.id, u.name, u.email having count(o.id) > 0 order by total_spent desc limit 10;`
 
-const dialectItems = [
-  { label: 'Standard SQL', value: 'sql' },
-  { label: 'PostgreSQL', value: 'postgresql' },
-  { label: 'MySQL', value: 'mysql' },
-  { label: 'SQLite', value: 'sqlite' },
-  { label: 'Transact-SQL', value: 'transactsql' },
-]
+const dialectItems = SQL_DIALECT_OPTIONS
 
 const indentItems = [
   { label: '2 spaces', value: '2' },
@@ -36,13 +30,43 @@ const output = ref('')
 const statusMessage = ref('')
 const statusMeta = ref('')
 
-const WORKER_CHARS = 100_000
-const isHeavy = computed(() => input.value.length >= WORKER_CHARS)
+const WORKER_BYTES = 1_000_000
+const isHeavy = computed(() => input.value.length >= WORKER_BYTES)
 
-const { isRunning: workerRunning, stop: stopWorker } = useToolWorker(
-  (data: { sqlText: string, options: any }) => {
-    // In worker, we can perform basic keyword formatting or run sql-formatter if available
-    return data.sqlText
+const { execute: workerFormat, isRunning: workerRunning, stop: stopWorker } = useToolWorker(
+  (data: { sqlText: string, dialect: string, indent: string, keywordCase: string }) => {
+    const clauses = [
+      'SELECT',
+      'FROM',
+      'WHERE',
+      'GROUP BY',
+      'HAVING',
+      'ORDER BY',
+      'LIMIT',
+      'OFFSET',
+      'UNION ALL',
+      'UNION',
+      'VALUES',
+      'SET',
+      'UPDATE',
+      'INSERT INTO',
+      'DELETE FROM',
+      'LEFT JOIN',
+      'RIGHT JOIN',
+      'INNER JOIN',
+      'OUTER JOIN',
+      'CROSS JOIN',
+      'JOIN',
+      'ON',
+    ]
+
+    const pattern = new RegExp(`\\b(${clauses.join('|')})\\b`, 'gi')
+    return data.sqlText.replace(pattern, (match) => {
+      const keyword = data.keywordCase === 'lower'
+        ? match.toLowerCase()
+        : (data.keywordCase === 'preserve' ? match : match.toUpperCase())
+      return `\n${keyword} `
+    }).trim()
   },
   { timeout: 30_000 },
 )
@@ -85,6 +109,24 @@ function setStats(text: string) {
 async function format() {
   validateFeedback.reset()
   await run(async () => {
+    if (input.value.length >= WORKER_BYTES) {
+      try {
+        return await workerFormat({
+          sqlText: input.value,
+          dialect: dialect.value,
+          indent: indent.value,
+          keywordCase: keywordCase.value,
+        })
+      }
+      catch {
+        return formatSql(input.value, {
+          dialect: dialect.value,
+          indent: indent.value,
+          keywordCase: keywordCase.value,
+        })
+      }
+    }
+
     return formatSql(input.value, {
       dialect: dialect.value,
       indent: indent.value,
@@ -355,7 +397,7 @@ useToolShortcuts({
             This improves readability for complex database statements.
           </p>
           <p>
-            The formatter supports Standard SQL, PostgreSQL, MySQL, SQLite, and Transact-SQL.
+            The formatter supports all standard and popular SQL dialects, including PostgreSQL, MySQL, SQLite, Transact-SQL, BigQuery, Snowflake, DuckDB, MariaDB, and ClickHouse.
             You can configure indentation to two spaces, four spaces, or tabs.
             You can also transform keywords to UPPERCASE or lowercase.
           </p>

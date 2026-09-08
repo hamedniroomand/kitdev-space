@@ -1,12 +1,39 @@
 import type { Diagnostic } from '@codemirror/lint'
 import type { Extension } from '@codemirror/state'
 import type { Parser, SyntaxNodeRef } from '@lezer/common'
+import type { SqlLanguage } from 'sql-formatter'
 import { MSSQL, MySQL, PostgreSQL, sql, SQLite } from '@codemirror/lang-sql'
 import { linter } from '@codemirror/lint'
-import { format } from 'sql-formatter'
+import { format, supportedDialects } from 'sql-formatter'
 import { DataError, positionToLineColumn } from './errors'
 
-export type SqlDialect = 'sql' | 'postgresql' | 'mysql' | 'sqlite' | 'transactsql'
+export type SqlDialect = SqlLanguage
+export { supportedDialects }
+
+export const SQL_DIALECT_OPTIONS: Array<{ label: string, value: SqlDialect }> = [
+  { label: 'Standard SQL', value: 'sql' },
+  { label: 'PostgreSQL', value: 'postgresql' },
+  { label: 'MySQL', value: 'mysql' },
+  { label: 'SQLite', value: 'sqlite' },
+  { label: 'Transact-SQL', value: 'transactsql' },
+  { label: 'Amazon Redshift', value: 'redshift' },
+  { label: 'Apache Hive', value: 'hive' },
+  { label: 'BigQuery', value: 'bigquery' },
+  { label: 'ClickHouse', value: 'clickhouse' },
+  { label: 'Couchbase N1QL', value: 'n1ql' },
+  { label: 'DuckDB', value: 'duckdb' },
+  { label: 'IBM DB2', value: 'db2' },
+  { label: 'IBM DB2 for i', value: 'db2i' },
+  { label: 'MariaDB', value: 'mariadb' },
+  { label: 'Oracle PL/SQL', value: 'plsql' },
+  { label: 'SingleStoreDB', value: 'singlestoredb' },
+  { label: 'Snowflake', value: 'snowflake' },
+  { label: 'Spark SQL', value: 'spark' },
+  { label: 'T-SQL', value: 'tsql' },
+  { label: 'TiDB', value: 'tidb' },
+  { label: 'Trino', value: 'trino' },
+]
+
 export type SqlIndent = '2' | '4' | 'tab'
 export type SqlKeywordCase = 'upper' | 'lower' | 'preserve'
 
@@ -26,12 +53,17 @@ export interface SqlValidationResult {
 function resolveDialectParser(dialect: SqlDialect = 'sql'): Parser {
   switch (dialect) {
     case 'postgresql':
+    case 'redshift':
       return PostgreSQL.language.parser
     case 'mysql':
+    case 'mariadb':
+    case 'singlestoredb':
+    case 'tidb':
       return MySQL.language.parser
     case 'sqlite':
       return SQLite.language.parser
     case 'transactsql':
+    case 'tsql':
       return MSSQL.language.parser
     case 'sql':
     default:

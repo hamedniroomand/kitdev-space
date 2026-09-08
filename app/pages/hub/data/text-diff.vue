@@ -1,3 +1,4 @@
+<script setup lang="ts">
 import type { DiffOptions, DiffResult } from '#shared/utils/data/diff'
 import { diffTexts, formatUnifiedDiff } from '#shared/utils/data/diff'
 import { applyWordDiff, diffLineWords, diffTokens, mergeSpans, tokenizeWords } from '#shared/utils/data/word-diff'

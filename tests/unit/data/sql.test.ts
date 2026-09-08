@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatSql, validateSql } from '#shared/utils/data/sql'
+import { formatSql, SQL_DIALECT_OPTIONS, supportedDialects, validateSql } from '#shared/utils/data/sql'
 
 describe('formatSql', () => {
   it('formats simple SELECT query with default options', () => {
@@ -119,5 +119,23 @@ describe('validateSql', () => {
     const multiSql = 'CREATE TABLE test (id INT); INSERT INTO test VALUES (1);'
     const result = validateSql(multiSql, 'sql')
     expect(result.valid).toBe(true)
+  })
+})
+
+describe('sql dialects support', () => {
+  it('exposes all dialects supported by sql-formatter', () => {
+    expect(supportedDialects.length).toBeGreaterThanOrEqual(21)
+    const optionValues = SQL_DIALECT_OPTIONS.map(opt => opt.value)
+    for (const dialect of supportedDialects) {
+      expect(optionValues).toContain(dialect)
+    }
+  })
+
+  it('formats queries across all supported dialects', () => {
+    for (const option of SQL_DIALECT_OPTIONS) {
+      const formatted = formatSql('select a, b from t where x = 1;', { dialect: option.value })
+      expect(formatted).toContain('SELECT')
+      expect(formatted).toContain('FROM')
+    }
   })
 })
