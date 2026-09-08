@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { DiffResult } from '#shared/utils/data/diff'
+import type { DiffOptions, DiffResult } from '#shared/utils/data/diff'
 import { diffTexts, formatUnifiedDiff } from '#shared/utils/data/diff'
 
 const WORKER_CHARS = 80_000
@@ -16,6 +16,28 @@ const diff = ref<DiffResult | null>(null)
 const unified = ref('')
 const leftFileName = ref('')
 const rightFileName = ref('')
+
+const ignoreWhitespace = useToolOption<boolean>('ignore-whitespace', false)
+const ignoreTrailingWhitespace = useToolOption<boolean>('ignore-trailing-whitespace', false)
+const ignoreCase = useToolOption<boolean>('ignore-case', false)
+const ignoreBlankLines = useToolOption<boolean>('ignore-blank-lines', false)
+const ignoreLineEndings = useToolOption<boolean>('ignore-line-endings', true)
+
+const diffOptions = computed<DiffOptions>(() => ({
+  ignoreWhitespace: ignoreWhitespace.value,
+  ignoreTrailingWhitespace: ignoreTrailingWhitespace.value,
+  ignoreCase: ignoreCase.value,
+  ignoreBlankLines: ignoreBlankLines.value,
+  ignoreLineEndings: ignoreLineEndings.value,
+}))
+
+watch(
+  [ignoreWhitespace, ignoreTrailingWhitespace, ignoreCase, ignoreBlankLines, ignoreLineEndings],
+  () => {
+    compare()
+  },
+)
+
 const { status, error, run, reset } = useTool<DiffResult>()
 const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
 const { downloadText } = useDownload()
@@ -25,7 +47,7 @@ const {
   isRunning: workerRunning,
   stop: stopWorker,
 } = useToolWorker(
-  (input: { left: string, right: string }) => diffTexts(input.left, input.right),
+  (input: { left: string, right: string, options?: DiffOptions }) => diffTexts(input.left, input.right, input.options),
   {
     timeout: 30_000,
     localDependencies: [diffTexts],
@@ -48,9 +70,10 @@ const statusMeta = computed(() => {
 async function compare() {
   await run(async () => {
     const size = left.value.length + right.value.length
+    const options = diffOptions.value
     const next = size >= WORKER_CHARS
-      ? await workerCompare({ left: left.value, right: right.value })
-      : diffTexts(left.value, right.value)
+      ? await workerCompare({ left: left.value, right: right.value, options })
+      : diffTexts(left.value, right.value, options)
 
     diff.value = next
     const oldPath = leftFileName.value ? `a/${leftFileName.value}` : 'original'
@@ -146,6 +169,29 @@ useToolShortcuts({
       title="Processed locally"
       description="This tool runs in the browser. Large texts use a web worker."
     />
+
+    <div class="flex flex-wrap items-center gap-x-6 gap-y-3 rounded-lg border border-default bg-muted/20 p-3 text-sm">
+      <USwitch
+        v-model="ignoreWhitespace"
+        label="Ignore whitespace"
+      />
+      <USwitch
+        v-model="ignoreTrailingWhitespace"
+        label="Ignore trailing whitespace"
+      />
+      <USwitch
+        v-model="ignoreCase"
+        label="Ignore case"
+      />
+      <USwitch
+        v-model="ignoreBlankLines"
+        label="Ignore blank lines"
+      />
+      <USwitch
+        v-model="ignoreLineEndings"
+        label="Ignore line endings"
+      />
+    </div>
 
     <div class="grid gap-4 lg:grid-cols-2">
       <LazyToolEditor

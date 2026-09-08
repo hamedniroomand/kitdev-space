@@ -16,22 +16,61 @@ export interface DiffResult {
   hasNewNewline?: boolean
 }
 
+export interface DiffOptions {
+  ignoreWhitespace?: boolean
+  ignoreTrailingWhitespace?: boolean
+  ignoreCase?: boolean
+  ignoreBlankLines?: boolean
+  ignoreLineEndings?: boolean
+}
+
 /**
  * Compare two texts by line with Myers O(ND) diff.
  * Strips a shared prefix and suffix first so long similar texts stay fast.
  * Helpers stay nested so this function can run in a web worker.
  */
-export function diffTexts(left: string, right: string): DiffResult {
+export function diffTexts(
+  left: string,
+  right: string,
+  options: DiffOptions = {},
+): DiffResult {
   interface Part { type: DiffOp, text: string }
+
+  function normalizeLine(line: string): string {
+    let result = line
+    if (options.ignoreWhitespace) {
+      result = result.replace(/\s+/g, '')
+    }
+    else if (options.ignoreTrailingWhitespace) {
+      result = result.replace(/\s+$/, '')
+    }
+    if (options.ignoreCase) {
+      result = result.toLowerCase()
+    }
+    return result
+  }
+
+  function areLinesEqual(a: string, b: string): boolean {
+    if (a === b) {
+      return true
+    }
+    return normalizeLine(a) === normalizeLine(b)
+  }
 
   function splitLines(text: string): { lines: string[], hasNewline: boolean } {
     if (text.length === 0) {
       return { lines: [], hasNewline: false }
     }
-    const normalized = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
+    const normalized = (options.ignoreLineEndings ?? true)
+      ? text.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
+      : text
     const hasNewline = normalized.endsWith('\n')
     const content = hasNewline ? normalized.slice(0, -1) : normalized
-    return { lines: content.split('\n'), hasNewline }
+    let lines = content.split('\n')
+    if (options.ignoreBlankLines) {
+      lines = lines.filter(line => line.trim().length > 0)
+    }
+    return { lines, hasNewline }
   }
 
   function backtrack(
@@ -119,7 +158,7 @@ export function diffTexts(left: string, right: string): DiffResult {
         }
 
         let y = x - k
-        while (x < n && y < m && a[x] === b[y]) {
+        while (x < n && y < m && areLinesEqual(a[x]!, b[y]!)) {
           x++
           y++
         }
@@ -144,13 +183,13 @@ export function diffTexts(left: string, right: string): DiffResult {
     const bLen = b.length
     const minLen = Math.min(aLen, bLen)
 
-    while (start < minLen && a[start] === b[start]) {
+    while (start < minLen && areLinesEqual(a[start]!, b[start]!)) {
       start++
     }
 
     let endA = aLen
     let endB = bLen
-    while (endA > start && endB > start && a[endA - 1] === b[endB - 1]) {
+    while (endA > start && endB > start && areLinesEqual(a[endA - 1]!, b[endB - 1]!)) {
       endA--
       endB--
     }

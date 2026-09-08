@@ -84,3 +84,80 @@ describe('formatUnifiedDiff', () => {
     expect(unified).toContain('+x')
   })
 })
+
+describe('diff comparison options', () => {
+  it('ignores all whitespace differences when ignoreWhitespace is true', () => {
+    const left = 'const   a   =   1;'
+    const right = 'const a = 1;'
+
+    const withoutOption = diffTexts(left, right)
+    expect(withoutOption.added).toBe(1)
+    expect(withoutOption.removed).toBe(1)
+
+    const withOption = diffTexts(left, right, { ignoreWhitespace: true })
+    expect(withOption.added).toBe(0)
+    expect(withOption.removed).toBe(0)
+    expect(withOption.unchanged).toBe(1)
+    expect(withOption.lines[0]?.text).toBe(left)
+  })
+
+  it('ignores trailing whitespace when ignoreTrailingWhitespace is true', () => {
+    const left = 'line with trailing space   '
+    const right = 'line with trailing space'
+
+    const withoutOption = diffTexts(left, right)
+    expect(withoutOption.added).toBe(1)
+    expect(withoutOption.removed).toBe(1)
+
+    const withOption = diffTexts(left, right, { ignoreTrailingWhitespace: true })
+    expect(withOption.added).toBe(0)
+    expect(withOption.removed).toBe(0)
+    expect(withOption.unchanged).toBe(1)
+
+    const internalDiff = diffTexts('a   b', 'a b', { ignoreTrailingWhitespace: true })
+    expect(internalDiff.added).toBe(1)
+    expect(internalDiff.removed).toBe(1)
+  })
+
+  it('ignores character case when ignoreCase is true', () => {
+    const left = 'Hello World'
+    const right = 'hello world'
+
+    const withoutOption = diffTexts(left, right)
+    expect(withoutOption.added).toBe(1)
+    expect(withoutOption.removed).toBe(1)
+
+    const withOption = diffTexts(left, right, { ignoreCase: true })
+    expect(withOption.added).toBe(0)
+    expect(withOption.removed).toBe(0)
+    expect(withOption.unchanged).toBe(1)
+    expect(withOption.lines[0]?.text).toBe(left)
+  })
+
+  it('ignores blank lines when ignoreBlankLines is true', () => {
+    const left = 'first\n\nsecond\n\nthird'
+    const right = 'first\nsecond\nthird'
+
+    const withoutOption = diffTexts(left, right)
+    expect(withoutOption.removed).toBe(2)
+
+    const withOption = diffTexts(left, right, { ignoreBlankLines: true })
+    expect(withOption.added).toBe(0)
+    expect(withOption.removed).toBe(0)
+    expect(withOption.unchanged).toBe(3)
+  })
+
+  it('distinguishes or ignores line endings based on ignoreLineEndings', () => {
+    const left = 'first\r\nsecond\r\n'
+    const right = 'first\nsecond\n'
+
+    const withIgnore = diffTexts(left, right, { ignoreLineEndings: true })
+    expect(withIgnore.added).toBe(0)
+    expect(withIgnore.removed).toBe(0)
+    expect(withIgnore.unchanged).toBe(2)
+
+    const withoutIgnore = diffTexts(left, right, { ignoreLineEndings: false })
+    expect(withoutIgnore.added).toBe(2)
+    expect(withoutIgnore.removed).toBe(2)
+  })
+})
