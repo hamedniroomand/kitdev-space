@@ -18,7 +18,7 @@ export function tokenizeWords(text: string): string[] {
   return tokens
 }
 
-function mergeSpans(parts: Array<{ type: DiffOp, text: string }>): DiffSpan[] {
+export function mergeSpans(parts: Array<{ type: DiffOp, text: string }>): DiffSpan[] {
   const spans: DiffSpan[] = []
 
   for (const part of parts) {
@@ -131,6 +131,10 @@ export function diffLineWords(
 }
 
 export function applyWordDiff(lines: DiffLine[]): DiffLine[] {
+  if (lines.length > 5_000) {
+    return lines
+  }
+
   let i = 0
 
   while (i < lines.length) {

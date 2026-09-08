@@ -20,6 +20,7 @@ export interface DiffResult {
   unchanged: number
   hasOldNewline?: boolean
   hasNewNewline?: boolean
+  warning?: string
 }
 
 export interface DiffOptions {
@@ -79,10 +80,15 @@ export function diffTexts(
     return { lines, hasNewline }
   }
 
+  interface TraceStep {
+    snap: Int32Array
+    start: number
+  }
+
   function backtrack(
     a: string[],
     b: string[],
-    trace: Int32Array[],
+    trace: TraceStep[],
     offset: number,
   ): Part[] {
     const parts: Part[] = []
@@ -90,18 +96,22 @@ export function diffTexts(
     let y = b.length
 
     for (let d = trace.length - 1; d >= 0; d--) {
-      const v = trace[d]!
+      const { snap, start: sStart } = trace[d]!
       const k = x - y
+      const readSnap = (idx: number) => {
+        const vIdx = offset + idx
+        return (vIdx < sStart || vIdx >= sStart + snap.length) ? -1 : snap[vIdx - sStart]!
+      }
 
       let prevK: number
-      if (k === -d || (k !== d && v[offset + k - 1]! < v[offset + k + 1]!)) {
+      if (k === -d || (k !== d && readSnap(k - 1) < readSnap(k + 1))) {
         prevK = k + 1
       }
       else {
         prevK = k - 1
       }
 
-      const prevX = v[offset + prevK]!
+      const prevX = readSnap(prevK)
       const prevY = prevX - prevK
 
       while (x > prevX && y > prevY) {
@@ -140,18 +150,41 @@ export function diffTexts(
       return a.map(text => ({ type: 'delete' as const, text }))
     }
 
+    // Memory guard: check for divergence on large inputs
+    if (n > 500 || m > 500) {
+      const setB = new Set(b.map(normalizeLine))
+      let common = 0
+      for (let i = 0; i < n; i++) {
+        if (setB.has(normalizeLine(a[i]!))) {
+          common++
+          if (common >= 10) {
+            break
+          }
+        }
+      }
+      if (common === 0) {
+        return [
+          ...a.map(text => ({ type: 'delete' as const, text })),
+          ...b.map(text => ({ type: 'insert' as const, text })),
+        ]
+      }
+    }
+
     const max = n + m
     const offset = max
-    // ponytail: full Myers trace is O((N+M)*D) memory; if divergent multi-10k-line diffs get heavy, switch to Hirschberg or chunked diff.
+    // Cap maximum edit distance to protect memory against divergent inputs
+    const maxD = Math.min(max, 3_000)
     const v = new Int32Array(2 * max + 1)
     v.fill(-1)
     v[offset + 1] = 0
 
-    const trace: Int32Array[] = []
+    const trace: TraceStep[] = []
 
-    for (let d = 0; d <= max; d++) {
-      const snapshot = new Int32Array(v)
-      trace.push(snapshot)
+    for (let d = 0; d <= maxD; d++) {
+      // Store compact snapshot bounded to active k range to prevent memory blowup
+      const start = Math.max(0, offset - d - 1)
+      const end = Math.min(v.length, offset + d + 2)
+      trace.push({ snap: v.slice(start, end), start })
 
       for (let k = -d; k <= d; k += 2) {
         let x: number
@@ -279,11 +312,16 @@ export function diffTexts(
       unchanged: parts.length,
       hasOldNewline: hasNewline,
       hasNewNewline: hasNewline,
+      warning: parts.length > 100_000 ? 'Input exceeds 100,000 lines. Comparison can take more time.' : undefined,
     }
   }
 
   const { lines: aLines, hasNewline: aNewline } = splitLines(left)
   const { lines: bLines, hasNewline: bNewline } = splitLines(right)
+  const maxLines = Math.max(aLines.length, bLines.length)
+  const warning = maxLines > 100_000
+    ? 'Input exceeds 100,000 lines. Comparison can take more time.'
+    : undefined
   const diff = diffArrays(aLines, bLines)
   const linesWithSpans = applyWordDiff(diff.lines)
   return {
@@ -291,6 +329,7 @@ export function diffTexts(
     lines: linesWithSpans,
     hasOldNewline: aNewline,
     hasNewNewline: bNewline,
+    warning,
   }
 }
 

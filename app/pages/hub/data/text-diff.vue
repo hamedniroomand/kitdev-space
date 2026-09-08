@@ -1,8 +1,10 @@
 import type { DiffOptions, DiffResult } from '#shared/utils/data/diff'
 import { diffTexts, formatUnifiedDiff } from '#shared/utils/data/diff'
-import { applyWordDiff, diffLineWords, diffTokens, tokenizeWords } from '#shared/utils/data/word-diff'
+import { applyWordDiff, diffLineWords, diffTokens, mergeSpans, tokenizeWords } from '#shared/utils/data/word-diff'
 
-const WORKER_CHARS = 80_000
+const WORKER_CHARS = 40_000
+const WORKER_LINES = 500
+const MAX_LINES_WARNING = 100_000
 
 const left = ref(`function greet(name) {
   return "Hello, " + name
@@ -16,6 +18,11 @@ const diff = ref<DiffResult | null>(null)
 const unified = ref('')
 const leftFileName = ref('')
 const rightFileName = ref('')
+
+const leftLines = computed(() => (left.value ? (left.value.match(/\n/g)?.length ?? 0) + 1 : 0))
+const rightLines = computed(() => (right.value ? (right.value.match(/\n/g)?.length ?? 0) + 1 : 0))
+const lineCount = computed(() => Math.max(leftLines.value, rightLines.value))
+const exceedsLineLimit = computed(() => lineCount.value > MAX_LINES_WARNING || (leftLines.value + rightLines.value) > MAX_LINES_WARNING)
 
 const ignoreWhitespace = useToolOption<boolean>('ignore-whitespace', false)
 const ignoreTrailingWhitespace = useToolOption<boolean>('ignore-trailing-whitespace', false)
@@ -56,6 +63,7 @@ const {
       diffLineWords,
       diffTokens,
       tokenizeWords,
+      mergeSpans,
     ],
   },
 )
@@ -76,10 +84,22 @@ const statusMeta = computed(() => {
 async function compare() {
   await run(async () => {
     const size = left.value.length + right.value.length
+    const totalLines = leftLines.value + rightLines.value
     const options = diffOptions.value
-    const next = size >= WORKER_CHARS
-      ? await workerCompare({ left: left.value, right: right.value, options })
-      : diffTexts(left.value, right.value, options)
+    const shouldUseWorker = size >= WORKER_CHARS || totalLines >= WORKER_LINES
+
+    let next: DiffResult
+    if (shouldUseWorker) {
+      try {
+        next = await workerCompare({ left: left.value, right: right.value, options })
+      }
+      catch {
+        next = diffTexts(left.value, right.value, options)
+      }
+    }
+    else {
+      next = diffTexts(left.value, right.value, options)
+    }
 
     diff.value = next
     const oldPath = leftFileName.value ? `a/${leftFileName.value}` : 'original'
@@ -174,6 +194,15 @@ useToolShortcuts({
       variant="subtle"
       title="Processed locally"
       description="This tool runs in the browser. Large texts use a web worker."
+    />
+
+    <UAlert
+      v-if="exceedsLineLimit || diff?.warning"
+      color="warning"
+      variant="subtle"
+      icon="i-lucide-alert-triangle"
+      title="Large input warning"
+      :description="diff?.warning || 'Input exceeds 100,000 lines. Comparison can take more time.'"
     />
 
     <div class="flex flex-wrap items-center gap-x-6 gap-y-3 rounded-lg border border-default bg-muted/20 p-3 text-sm">

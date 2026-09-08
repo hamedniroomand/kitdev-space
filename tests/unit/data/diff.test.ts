@@ -173,3 +173,38 @@ describe('diff comparison options', () => {
     expect(withoutIgnore.removed).toBe(2)
   })
 })
+
+describe('diff memory guard and limits', () => {
+  it('compares two 50,000-line divergent inputs without crashing or timeout', () => {
+    const left = Array.from({ length: 50_000 }, (_, i) => `alpha-${i}`).join('\n')
+    const right = Array.from({ length: 50_000 }, (_, i) => `beta-${i}`).join('\n')
+
+    const start = performance.now()
+    const result = diffTexts(left, right)
+    const elapsed = performance.now() - start
+
+    expect(result.added).toBe(50_000)
+    expect(result.removed).toBe(50_000)
+    expect(result.unchanged).toBe(0)
+    expect(elapsed).toBeLessThan(2_000)
+  })
+
+  it('safely handles large near-divergent inputs with memory guard', () => {
+    const left = Array.from({ length: 10_000 }, (_, i) => (i === 5_000 ? 'shared-line' : `left-${i}`)).join('\n')
+    const right = Array.from({ length: 10_000 }, (_, i) => (i === 5_000 ? 'shared-line' : `right-${i}`)).join('\n')
+
+    const start = performance.now()
+    const result = diffTexts(left, right)
+    const elapsed = performance.now() - start
+
+    expect(result.lines.length).toBeGreaterThan(0)
+    expect(elapsed).toBeLessThan(2_000)
+  })
+
+  it('sets warning when input exceeds 100,000 lines', () => {
+    const input = Array.from({ length: 100_001 }, (_, i) => `line-${i}`).join('\n')
+    const result = diffTexts(input, input)
+
+    expect(result.warning).toBe('Input exceeds 100,000 lines. Comparison can take more time.')
+  })
+})
