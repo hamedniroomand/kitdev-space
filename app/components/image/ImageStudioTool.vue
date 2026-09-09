@@ -209,6 +209,16 @@ function setHeight(value: number) {
   }
 }
 
+/**
+ * A new quality value updates the result. The debounce stops one encode for
+ * each tick of the slider, and only a browser run re-encodes.
+ */
+watchDebounced(quality, () => {
+  if (outputBlob.value && !runsOnServer.value) {
+    process()
+  }
+}, { debounce: 300 })
+
 function setResult(blob: Blob, resultWidth: number | null, resultHeight: number | null) {
   inputBytes.value = file.value?.size ?? null
   outputBytes.value = blob.size
@@ -530,7 +540,7 @@ function handleClear() {
 
     <div
       v-if="sourceUrl && source"
-      class="grid gap-4 sm:grid-cols-2"
+      class="space-y-4"
     >
       <div class="space-y-2 rounded-md border border-default bg-elevated/40 p-4">
         <p class="text-sm font-medium text-highlighted">
@@ -550,7 +560,7 @@ function handleClear() {
           alt="Source image with a crop box"
         />
         <img
-          v-else
+          v-else-if="!outputBlob"
           :src="sourceUrl"
           alt="Source image preview"
           class="max-h-80 w-full rounded bg-default object-contain"
@@ -559,10 +569,13 @@ function handleClear() {
 
       <ImageResult
         :blob="outputBlob"
+        :input-blob="file"
         :input-bytes="inputBytes"
         :output-bytes="outputBytes"
         :width="outWidth"
         :height="outHeight"
+        :input-width="source.width"
+        :input-height="source.height"
         :filename="filename"
       />
     </div>

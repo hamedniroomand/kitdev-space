@@ -88,6 +88,7 @@ test('converts a JPEG to WebP in the browser with no server request', async ({ p
   // Default format is WebP, which processes in the browser
   await page.getByRole('button', { name: 'Process' }).click()
   await expect(page.getByText('Image Result')).toBeVisible({ timeout: 15_000 })
+  await expect(page.getByLabel('Comparison split position')).toBeVisible()
 
   expect(apiCalls).toEqual([])
 })

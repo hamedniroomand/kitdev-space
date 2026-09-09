@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useObjectUrl } from '@vueuse/core'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { formatBytes } from '#shared/utils/format'
 import { useDownload } from '../../composables/useDownload'
 
@@ -36,6 +36,8 @@ const emit = defineEmits<{
 const previewUrl = useObjectUrl(() => props.blob)
 const inputPreviewUrl = useObjectUrl(() => props.inputBlob)
 const { downloadBlob } = useDownload()
+/** The position of the split, in percent from the left edge. */
+const split = ref(50)
 
 const delta = computed(() => {
   if (props.inputBytes == null || props.outputBytes == null || props.inputBytes <= 0) {
@@ -96,38 +98,45 @@ function download() {
       </UButton>
     </div>
 
-    <!-- Comparison Grid if inputBlob provided, otherwise single card -->
+    <!-- A split slider when both images exist, otherwise the result alone -->
     <div
       v-if="inputBlob && blob"
-      class="grid grid-cols-1 md:grid-cols-2 gap-4"
+      class="space-y-2"
     >
-      <div class="space-y-2 rounded-lg border border-default bg-default p-3">
-        <div class="flex items-center justify-between text-xs text-muted">
-          <span class="font-medium">Original</span>
-          <span v-if="inputBytes">{{ formatBytes(inputBytes) }}</span>
-          <span v-if="inputWidth && inputHeight">{{ inputWidth }} × {{ inputHeight }}</span>
-        </div>
+      <div class="relative overflow-hidden rounded-lg border border-default bg-default">
         <img
           v-if="inputPreviewUrl"
           :src="inputPreviewUrl"
           alt="Original image preview"
-          class="max-h-80 w-full rounded object-contain bg-elevated/20"
+          class="block max-h-80 w-full object-contain"
         >
-      </div>
-
-      <div class="space-y-2 rounded-lg border border-default bg-default p-3">
-        <div class="flex items-center justify-between text-xs text-muted">
-          <span class="font-medium">Result</span>
-          <span v-if="outputBytes">{{ formatBytes(outputBytes) }}</span>
-          <span v-if="width && height">{{ width }} × {{ height }}</span>
-        </div>
         <img
           v-if="previewUrl"
           :src="previewUrl"
           alt="Processed image preview"
-          class="max-h-80 w-full rounded object-contain bg-elevated/20"
+          class="absolute inset-0 block size-full object-contain"
+          :style="{ clipPath: `inset(0 0 0 ${split}%)` }"
         >
+        <span class="absolute left-2 top-2 rounded bg-default/80 px-2 py-0.5 text-xs text-muted">
+          Original
+          <template v-if="inputWidth && inputHeight">· {{ inputWidth }} × {{ inputHeight }}</template>
+          <template v-if="inputBytes">· {{ formatBytes(inputBytes) }}</template>
+        </span>
+        <span class="absolute right-2 top-2 rounded bg-default/80 px-2 py-0.5 text-xs text-muted">
+          Result
+          <template v-if="width && height">· {{ width }} × {{ height }}</template>
+          <template v-if="outputBytes">· {{ formatBytes(outputBytes) }}</template>
+        </span>
       </div>
+      <input
+        v-model.number="split"
+        type="range"
+        min="0"
+        max="100"
+        step="1"
+        aria-label="Comparison split position"
+        class="w-full accent-primary"
+      >
     </div>
 
     <div
