@@ -20,6 +20,9 @@ test.describe('SVG to PNG / WebP converter tool', () => {
     // One zip download holds every scale
     await expect(main.getByRole('button', { name: 'Download ZIP' })).toBeVisible()
 
+    // Each card reports the output size in bytes
+    await expect(main.getByText('bytes').first()).toBeVisible()
+
     // Clear
     await main.getByRole('button', { name: 'Clear' }).click()
     await expect(main.getByRole('button', { name: 'Download 1x' })).not.toBeVisible()

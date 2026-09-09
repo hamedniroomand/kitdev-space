@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { SvgExportFormat, SvgScale } from '~/utils/image/svg-browser'
 import type { ZipEntries } from '~/utils/image/zip'
+import { formatBytes } from '#shared/utils/format'
 import { imageExtensionFor } from '#shared/utils/image/format'
 import { rasterizeSvgInBrowser } from '~/utils/image/svg-browser'
 import { blobToBytes, zipInBrowser } from '~/utils/image/zip'
@@ -300,6 +301,12 @@ useToolShortcuts({
               >
                 {{ card.meta.width }} × {{ card.meta.height }}
               </p>
+              <p
+                v-if="card.blob"
+                class="text-xs text-muted"
+              >
+                {{ formatBytes(card.blob.size) }} · {{ card.blob.size }} bytes
+              </p>
             </div>
             <UButton
               size="sm"
@@ -322,12 +329,26 @@ useToolShortcuts({
 
     <template #docs>
       <ToolDocs title="About SVG conversion">
-        <p class="text-sm leading-relaxed text-muted">
-          The tool renders SVG markup to HTML canvas and exports PNG or WebP in your browser.
-        </p>
-        <p class="text-sm leading-relaxed text-muted">
-          Your SVG data never leaves your device.
-        </p>
+        <div class="space-y-4 text-sm leading-relaxed text-muted">
+          <p>
+            The tool renders the SVG on a canvas and exports PNG, WebP, or JPEG in your browser. Your SVG data never leaves your device.
+          </p>
+          <p>
+            Give a width, a height, or both to set the size at 1x. Each selected scale multiplies that size. The lock keeps the ratio of the vector, and the raster fits inside the width and height box. Unlock it to stretch the vector to the exact box.
+          </p>
+          <p>
+            JPEG has no alpha channel. The tool fills the background with the color that you select, so a transparent area does not become black. PNG and WebP keep the transparency.
+          </p>
+          <p>
+            The browser renders the SVG as an image, and an image loads no external file. A font in a <code>@font-face</code> rule does not load. The browser uses a font that your device holds instead, so the width of the text can change. Use a common font, or convert the text to paths in your editor.
+          </p>
+          <p>
+            The browser also blocks an external image, an external stylesheet, and a script inside the SVG. An <code>&lt;image&gt;</code> element with a remote link stays empty in the output. Embed the image as a data URI to keep it. The tool makes no network request for the SVG.
+          </p>
+          <p>
+            Each card shows the pixel size and the file size of the output.
+          </p>
+        </div>
         <RelatedTools
           :items="[
             { label: 'Image Studio', to: '/hub/image/studio' },
