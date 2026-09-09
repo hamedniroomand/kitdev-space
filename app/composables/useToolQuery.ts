@@ -49,6 +49,12 @@ export function useToolQuery<T extends Record<string, any>>(config: UseToolQuery
   })
 
   const { reportInput } = useToolInput()
+
+  // The router drops the URL fragment while it starts, so the share hash comes
+  // from the plugin that read it before the app booted.
+  const shareHash = useNuxtApp().$shareHash as (() => string) | undefined
+  const initialHash = shareHash?.() ?? ''
+
   const searchParams = useUrlSearchParams('history')
 
   // Synchronize options with query string
@@ -115,7 +121,7 @@ export function useToolQuery<T extends Record<string, any>>(config: UseToolQuery
     if (typeof window === 'undefined') {
       return false
     }
-    const hash = window.location.hash
+    const hash = window.location.hash || initialHash
     if (!hash || hash.length <= 1) {
       return false
     }
