@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { ShadeKey, TailwindShade } from '#shared/utils/color/tailwind'
+import { contrastRatio, wcagLevel } from '#shared/utils/color/contrast'
 import {
   DEFAULT_ANCHOR,
   formatAsCssVars,
@@ -43,6 +44,23 @@ const palette = computed<TailwindShade[]>(() => {
     return []
   }
 })
+
+const WHITE = '#ffffff'
+const BLACK = '#000000'
+
+/** Each step with its WCAG AA result for white text and for black text. */
+const chips = computed(() => palette.value.map((shade) => {
+  const onWhite = contrastRatio(shade.hex, WHITE)
+  const onBlack = contrastRatio(shade.hex, BLACK)
+  return {
+    ...shade,
+    foreground: onWhite >= onBlack ? WHITE : BLACK,
+    white: WHITE,
+    black: BLACK,
+    whiteAa: wcagLevel(onWhite).aa,
+    blackAa: wcagLevel(onBlack).aa,
+  }
+}))
 
 const codeOutput = computed(() => {
   if (palette.value.length === 0)
@@ -168,27 +186,50 @@ useToolShortcuts({
         </span>
         <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-11 gap-2">
           <div
-            v-for="s in palette"
+            v-for="s in chips"
             :key="s.shade"
             class="group relative"
           >
             <button
               type="button"
-              class="w-full rounded-xl p-3 text-center transition-transform hover:scale-105 shadow-xs border border-default/20 flex flex-col items-center justify-between min-h-24 cursor-pointer"
-              :style="{ backgroundColor: s.hex }"
+              class="w-full rounded-xl p-3 text-center transition-transform hover:scale-105 shadow-xs border border-default/20 flex flex-col items-center justify-between gap-1 min-h-24 cursor-pointer"
+              :style="{ backgroundColor: s.hex, color: s.foreground }"
               :aria-label="`Copy shade ${s.shade}`"
               @click="copy(s.hex)"
             >
-              <span
-                class="font-bold text-xs font-mono"
-                :class="s.isDark ? 'text-white' : 'text-zinc-900'"
-              >
+              <span class="font-bold text-xs font-mono">
                 {{ s.shade }}
               </span>
-              <span
-                class="text-[11px] font-mono tracking-tight opacity-90 group-hover:opacity-100"
-                :class="s.isDark ? 'text-white/90' : 'text-zinc-900/90'"
-              >
+
+              <!-- Which text color reads on this shade. A cross means it fails WCAG AA. -->
+              <span class="flex items-center gap-1.5 text-[10px] font-bold leading-none">
+                <span
+                  role="img"
+                  class="inline-flex items-center"
+                  :style="{ color: s.white }"
+                  :aria-label="`White text ${s.whiteAa ? 'passes' : 'fails'} WCAG AA`"
+                >
+                  A
+                  <UIcon
+                    :name="s.whiteAa ? 'i-lucide-check' : 'i-lucide-x'"
+                    class="size-2.5"
+                  />
+                </span>
+                <span
+                  role="img"
+                  class="inline-flex items-center"
+                  :style="{ color: s.black }"
+                  :aria-label="`Black text ${s.blackAa ? 'passes' : 'fails'} WCAG AA`"
+                >
+                  A
+                  <UIcon
+                    :name="s.blackAa ? 'i-lucide-check' : 'i-lucide-x'"
+                    class="size-2.5"
+                  />
+                </span>
+              </span>
+
+              <span class="text-[11px] font-mono tracking-tight opacity-90 group-hover:opacity-100">
                 {{ s.hex }}
               </span>
             </button>

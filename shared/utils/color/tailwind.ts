@@ -5,7 +5,6 @@ import { parseColor, rgbToHex } from './parse'
 export interface TailwindShade {
   shade: string
   hex: string
-  isDark: boolean
 }
 
 export type TailwindPalette = Record<string, string>
@@ -76,7 +75,7 @@ export function generateTailwindPalette(
 
   return SHADE_KEYS.map((shade, index) => {
     if (index === anchorIndex) {
-      return { shade, hex: parsed.hex.toLowerCase(), isDark: base.l < 60 }
+      return { shade, hex: parsed.hex.toLowerCase() }
     }
 
     const step = REFERENCE_RAMP[index]!
@@ -89,7 +88,7 @@ export function generateTailwindPalette(
       h: (base.h + step.h - anchor.h + 360) % 360,
     })
 
-    return { shade, hex: rgbToHex(oklchToRgb(color)), isDark: lightness < 60 }
+    return { shade, hex: rgbToHex(oklchToRgb(color)) }
   })
 }
 
