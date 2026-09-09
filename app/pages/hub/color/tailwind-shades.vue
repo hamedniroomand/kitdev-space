@@ -29,9 +29,15 @@ const presets = [
   { label: 'Violet', hex: '#8b5cf6' },
 ]
 
+/** A hex value that replaces one generated step. The key is the shade step. */
+const overrides = ref<Record<string, string>>({})
+
 const palette = computed<TailwindShade[]>(() => {
   try {
-    return generateTailwindPalette(inputColor.value, anchorShade.value)
+    return generateTailwindPalette(inputColor.value, anchorShade.value).map((shade) => {
+      const override = overrides.value[shade.shade]
+      return override ? { ...shade, hex: override } : shade
+    })
   }
   catch {
     return []
@@ -53,6 +59,16 @@ const codeOutput = computed(() => {
 
 function handlePreset(hex: string) {
   inputColor.value = hex
+}
+
+// An override survives every other change. Only the user clears it.
+function setOverride(shade: string, hex: string) {
+  overrides.value = { ...overrides.value, [shade]: hex }
+}
+
+function clearOverride(shade: string) {
+  const { [shade]: _removed, ...rest } = overrides.value
+  overrides.value = rest
 }
 
 function handleCopyCode() {
@@ -151,27 +167,58 @@ useToolShortcuts({
           Generated 50–950 Shade Scale (Click any swatch to copy hex)
         </span>
         <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-11 gap-2">
-          <button
+          <div
             v-for="s in palette"
             :key="s.shade"
-            type="button"
-            class="group rounded-xl p-3 text-center transition-transform hover:scale-105 shadow-xs border border-default/20 flex flex-col items-center justify-between min-h-24 cursor-pointer"
-            :style="{ backgroundColor: s.hex }"
-            @click="copy(s.hex)"
+            class="group relative"
           >
-            <span
-              class="font-bold text-xs font-mono"
-              :class="s.isDark ? 'text-white' : 'text-zinc-900'"
+            <button
+              type="button"
+              class="w-full rounded-xl p-3 text-center transition-transform hover:scale-105 shadow-xs border border-default/20 flex flex-col items-center justify-between min-h-24 cursor-pointer"
+              :style="{ backgroundColor: s.hex }"
+              :aria-label="`Copy shade ${s.shade}`"
+              @click="copy(s.hex)"
             >
-              {{ s.shade }}
+              <span
+                class="font-bold text-xs font-mono"
+                :class="s.isDark ? 'text-white' : 'text-zinc-900'"
+              >
+                {{ s.shade }}
+              </span>
+              <span
+                class="text-[11px] font-mono tracking-tight opacity-90 group-hover:opacity-100"
+                :class="s.isDark ? 'text-white/90' : 'text-zinc-900/90'"
+              >
+                {{ s.hex }}
+              </span>
+            </button>
+
+            <!-- The color input covers the icon, so the chip keeps one clear affordance. -->
+            <span class="absolute top-1 right-1 inline-flex size-5 items-center justify-center rounded-md bg-default/80 shadow-xs">
+              <UIcon
+                name="i-lucide-pencil"
+                class="size-3 text-default"
+              />
+              <input
+                type="color"
+                :value="s.hex"
+                :aria-label="`Override shade ${s.shade}`"
+                class="absolute inset-0 size-full cursor-pointer opacity-0"
+                @input="setOverride(s.shade, ($event.target as HTMLInputElement).value)"
+              >
             </span>
-            <span
-              class="text-[11px] font-mono tracking-tight opacity-90 group-hover:opacity-100"
-              :class="s.isDark ? 'text-white/90' : 'text-zinc-900/90'"
-            >
-              {{ s.hex }}
-            </span>
-          </button>
+
+            <UButton
+              v-if="overrides[s.shade]"
+              icon="i-lucide-rotate-ccw"
+              size="xs"
+              color="neutral"
+              variant="solid"
+              class="absolute bottom-1 right-1"
+              :aria-label="`Reset shade ${s.shade}`"
+              @click="clearOverride(s.shade)"
+            />
+          </div>
         </div>
       </div>
 
