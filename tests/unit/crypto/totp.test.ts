@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   base32Decode,
   base32Encode,
+  buildTotpUri,
   generateTotp,
   generateTotpSecret,
   parseTotpUri,
@@ -37,7 +38,50 @@ describe('parseTotpUri', () => {
   })
 })
 
+describe('buildTotpUri', () => {
+  it('percent-encodes the issuer and the account', () => {
+    const uri = buildTotpUri({
+      secret: 'JBSWY3DPEHPK3PXP',
+      issuer: 'Kit Dev',
+      account: 'admin@example.com',
+      digits: 8,
+      period: 60,
+      algorithm: 'SHA-256',
+    })
+
+    expect(uri).toBe(
+      'otpauth://totp/Kit%20Dev:admin%40example.com'
+      + '?secret=JBSWY3DPEHPK3PXP&issuer=Kit%20Dev&algorithm=SHA256&digits=8&period=60',
+    )
+  })
+
+  it('round-trips through parseTotpUri', () => {
+    const uri = buildTotpUri({ secret: 'JBSWY3DPEHPK3PXP', issuer: 'KitDev', account: 'admin@example.com' })
+
+    expect(parseTotpUri(uri)).toEqual({
+      secret: 'JBSWY3DPEHPK3PXP',
+      issuer: 'KitDev',
+      label: 'KitDev:admin@example.com',
+      period: 30,
+      digits: 6,
+      algorithm: 'SHA-1',
+    })
+  })
+
+  it('omits the issuer when none is given', () => {
+    expect(buildTotpUri({ secret: 'JBSWY3DPEHPK3PXP', account: 'admin' })).toBe(
+      'otpauth://totp/admin?secret=JBSWY3DPEHPK3PXP&algorithm=SHA1&digits=6&period=30',
+    )
+  })
+})
+
 describe('generateTotp', () => {
+  it('gives the same code for a fixed time', async () => {
+    const first = await generateTotp('JBSWY3DPEHPK3PXP', { time: 1700000000000 })
+    const second = await generateTotp('JBSWY3DPEHPK3PXP', { time: 1700000000000 })
+    expect(second).toEqual(first)
+  })
+
   it('generates predictable TOTP code for known timestamp', async () => {
     const secret = 'JBSWY3DPEHPK3PXP'
     const res = await generateTotp(secret, { time: 1700000000000 })

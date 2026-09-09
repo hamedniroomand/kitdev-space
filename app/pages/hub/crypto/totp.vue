@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { TotpAlgorithm, TotpOptions } from '#shared/utils/crypto/totp'
 import { useIntervalFn } from '@vueuse/core'
-import { generateTotp, generateTotpSecret, parseTotpUri, TOTP_ALGORITHMS } from '#shared/utils/crypto/totp'
+import { buildTotpUri, generateTotp, generateTotpSecret, parseTotpUri, TOTP_ALGORITHMS } from '#shared/utils/crypto/totp'
 
 useToolSeo('totp')
 
@@ -10,20 +10,50 @@ const digits = ref(6)
 const period = ref(30)
 const algorithm = ref<TotpAlgorithm>('SHA-1')
 
+const issuer = ref('KitDev')
+const account = ref('admin@example.com')
+/** Empty means "use the clock of this device". A value freezes the clock for a repeatable test. */
+const fixedTime = ref('')
+
 const code = ref('')
 const remainingSeconds = ref(30)
 const progress = ref(0)
 const errorMessage = ref<string | null>(null)
-const parsedUriDetails = ref<{ issuer?: string, label?: string } | null>(null)
 
 const { copy, label, color, icon } = useCopyFeedback()
+
+const frozenMs = computed(() => {
+  if (!fixedTime.value) {
+    return null
+  }
+  const parsed = Date.parse(fixedTime.value)
+  return Number.isNaN(parsed) ? null : parsed
+})
+
+const base32Secret = computed(() => {
+  const trimmed = secretInput.value.trim()
+  return parseTotpUri(trimmed)?.secret ?? trimmed
+})
+
+const totpUri = computed(() => {
+  if (!base32Secret.value) {
+    return ''
+  }
+  return buildTotpUri({
+    secret: base32Secret.value,
+    account: account.value.trim(),
+    issuer: issuer.value.trim() || undefined,
+    digits: digits.value,
+    period: period.value,
+    algorithm: algorithm.value,
+  })
+})
 
 async function updateTotp() {
   const trimmed = secretInput.value.trim()
   if (!trimmed) {
     code.value = ''
     errorMessage.value = null
-    parsedUriDetails.value = null
     return
   }
 
@@ -32,6 +62,7 @@ async function updateTotp() {
       digits: digits.value,
       period: period.value,
       algorithm: algorithm.value,
+      ...(frozenMs.value === null ? {} : { time: frozenMs.value }),
     }
 
     const res = await generateTotp(trimmed, options)
@@ -47,35 +78,38 @@ async function updateTotp() {
 }
 
 watch(secretInput, (newVal) => {
-  const trimmed = newVal.trim()
-  if (!trimmed) {
-    parsedUriDetails.value = null
+  const uriMatch = parseTotpUri(newVal.trim())
+  if (!uriMatch) {
     return
   }
-  const uriMatch = parseTotpUri(trimmed)
-  if (uriMatch) {
-    parsedUriDetails.value = {
-      issuer: uriMatch.issuer,
-      label: uriMatch.label,
-    }
-    if (uriMatch.digits)
-      digits.value = uriMatch.digits
-    if (uriMatch.period)
-      period.value = uriMatch.period
-    if (uriMatch.algorithm)
-      algorithm.value = uriMatch.algorithm
-  }
-  else {
-    parsedUriDetails.value = null
-  }
+  if (uriMatch.digits)
+    digits.value = uriMatch.digits
+  if (uriMatch.period)
+    period.value = uriMatch.period
+  if (uriMatch.algorithm)
+    algorithm.value = uriMatch.algorithm
+  if (uriMatch.issuer)
+    issuer.value = uriMatch.issuer
+  if (uriMatch.label)
+    account.value = uriMatch.label.split(':').pop() ?? uriMatch.label
 }, { immediate: true })
 
 // VueUse useIntervalFn to update every 1 second
-useIntervalFn(() => {
+const { pause, resume } = useIntervalFn(() => {
   updateTotp()
 }, 1000)
 
-watch([secretInput, digits, period, algorithm], () => {
+// A frozen clock must not tick, or the countdown moves under a fixed time.
+watch(frozenMs, (value) => {
+  if (value === null) {
+    resume()
+  }
+  else {
+    pause()
+  }
+})
+
+watch([secretInput, digits, period, algorithm, fixedTime], () => {
   updateTotp()
 })
 
@@ -189,20 +223,65 @@ function handleClear() {
         />
       </UFormField>
 
-      <!-- URI Metadata info if detected -->
-      <div
-        v-if="parsedUriDetails"
-        class="p-3 border border-default rounded-xl bg-elevated/20 flex flex-wrap gap-4 text-xs"
-      >
-        <div v-if="parsedUriDetails.issuer">
-          <span class="text-muted">Issuer:</span>
-          <span class="ml-1 font-semibold text-default">{{ parsedUriDetails.issuer }}</span>
-        </div>
-        <div v-if="parsedUriDetails.label">
-          <span class="text-muted">Account:</span>
-          <span class="ml-1 font-mono text-default">{{ parsedUriDetails.label }}</span>
-        </div>
+      <!-- URI fields and the fixed test time -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <UFormField label="Issuer">
+          <UInput
+            v-model="issuer"
+            placeholder="KitDev"
+            class="w-full"
+          />
+        </UFormField>
+        <UFormField label="Account">
+          <UInput
+            v-model="account"
+            placeholder="admin@example.com"
+            class="w-full"
+          />
+        </UFormField>
+        <UFormField
+          label="Fixed test time"
+          help="Set a time to freeze the clock. Leave it empty to follow this device."
+        >
+          <div class="flex items-center gap-2">
+            <UInput
+              v-model="fixedTime"
+              type="datetime-local"
+              step="1"
+              class="w-full"
+            />
+            <UButton
+              icon="i-lucide-timer-reset"
+              size="sm"
+              color="neutral"
+              variant="ghost"
+              aria-label="Follow the clock of this device"
+              :disabled="!fixedTime"
+              @click="fixedTime = ''"
+            />
+          </div>
+        </UFormField>
       </div>
+
+      <!-- otpauth URI -->
+      <UFormField
+        v-if="totpUri"
+        label="otpauth URI"
+      >
+        <template #hint>
+          <UButton
+            :label="label('uri')"
+            :color="color('uri')"
+            :icon="icon('uri')"
+            size="xs"
+            variant="subtle"
+            @click="copy(totpUri, 'uri', 'field')"
+          />
+        </template>
+        <p class="break-all rounded-md border border-default bg-elevated/40 p-3 font-mono text-xs text-highlighted">
+          {{ totpUri }}
+        </p>
+      </UFormField>
 
       <!-- Error Alert -->
       <ToolError
@@ -236,7 +315,7 @@ function handleClear() {
             />
           </div>
           <div class="flex justify-between items-center text-xs text-muted">
-            <span>Updates in real time</span>
+            <span>{{ frozenMs === null ? 'Updates in real time' : 'The clock is frozen' }}</span>
             <span
               class="font-mono font-semibold"
               :class="remainingSeconds <= 5 ? 'text-error' : 'text-default'"
@@ -267,6 +346,12 @@ function handleClear() {
           </p>
           <p>
             Give a Base32 secret or a full otpauth:// URI. The tool shows the current code and the seconds until the next code. Use it to test a login flow or to check that your server and your app agree.
+          </p>
+          <p>
+            Set a fixed test time to freeze the clock. The tool then gives the same code each time, so you can repeat a test. Clear the field to follow the clock of this device again.
+          </p>
+          <p>
+            The tool also shows the otpauth URI for the current settings. Copy the URI and give it to an authenticator app or to a test script. The tool builds the URI in the browser and sends the secret to no other host.
           </p>
           <p>
             The tool supports SHA-1, SHA-256, and SHA-512. SHA-1 is the default, because almost every authenticator app uses it. Change the algorithm only when your server asks for a different one.

@@ -98,6 +98,34 @@ export function parseTotpUri(uri: string): {
   }
 }
 
+export interface TotpUriParams {
+  secret: string
+  account: string
+  issuer?: string
+  digits?: number
+  period?: number
+  algorithm?: TotpAlgorithm
+}
+
+/** Builds an otpauth URI. The Key Uri Format asks for the label `issuer:account`. */
+export function buildTotpUri(params: TotpUriParams): string {
+  const { secret, account, issuer, digits = 6, period = 30, algorithm = 'SHA-1' } = params
+
+  const label = issuer
+    ? `${encodeURIComponent(issuer)}:${encodeURIComponent(account)}`
+    : encodeURIComponent(account)
+
+  const query = [
+    `secret=${encodeURIComponent(secret.toUpperCase().replace(/\s+/g, ''))}`,
+    ...(issuer ? [`issuer=${encodeURIComponent(issuer)}`] : []),
+    `algorithm=${algorithm.replace('-', '')}`,
+    `digits=${digits}`,
+    `period=${period}`,
+  ]
+
+  return `otpauth://totp/${label}?${query.join('&')}`
+}
+
 export async function generateTotp(
   secretInput: string,
   options: TotpOptions = {},

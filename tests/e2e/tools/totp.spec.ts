@@ -26,6 +26,18 @@ test('generates time-based one-time passwords', { tag: '@smoke' }, async ({ page
     expect(digits.replace(/\s+/g, '')).toMatch(/^\d{8}$/)
   })
 
+  await test.step('shows the otpauth uri', async () => {
+    await expect(page.getByText(/^otpauth:\/\/totp\//).first()).toBeVisible()
+  })
+
+  await test.step('freezes the clock at a fixed test time', async () => {
+    await page.getByLabel('Fixed test time').fill('2026-01-01T00:00:30')
+    const frozen = (await codeContainer.textContent()) ?? ''
+    await expect(page.getByText('The clock is frozen')).toBeVisible()
+    await page.waitForTimeout(1500)
+    expect((await codeContainer.textContent()) ?? '').toBe(frozen)
+  })
+
   await test.step('generates random secret and clears', async () => {
     await page.getByRole('button', { name: 'Generate Random Secret' }).click()
     const digits = (await codeContainer.textContent()) ?? ''
