@@ -40,14 +40,10 @@ const gradient = computed(() => ({
   interpolation: interpolation.value,
 }))
 
-const cssValue = computed(() => {
-  try {
-    return formatGradientCss(gradient.value)
-  }
-  catch {
-    return ''
-  }
-})
+const { result: cssValue, error: cssError } = useLiveTool(
+  () => formatGradientCss(gradient.value),
+  { option: () => type.value },
+)
 
 const cssDeclaration = computed(() => (cssValue.value ? formatGradientDeclaration(gradient.value) : ''))
 
@@ -249,6 +245,14 @@ useToolShortcuts({
           <span class="w-12 font-mono text-sm text-muted">{{ angle }}°</span>
         </div>
       </UFormField>
+      <UFormField label="Interpolation">
+        <USwitch
+          :model-value="interpolation === 'oklch'"
+          label="in oklch"
+          class="h-9 items-center"
+          @update:model-value="interpolation = $event ? 'oklch' : 'srgb'"
+        />
+      </UFormField>
       <UFormField label="Text color">
         <div class="flex items-center gap-2">
           <input
@@ -379,6 +383,11 @@ useToolShortcuts({
       Sample text on gradient
     </div>
 
+    <ToolError
+      v-if="cssError"
+      :message="cssError"
+    />
+
     <ToolActions>
       <UButton
         :label="copyLabel('default', 'Copy CSS')"
@@ -452,6 +461,9 @@ useToolShortcuts({
           </p>
           <p>
             Paste a CSS gradient to load its stops and its angle. The tool reads one gradient layer. It does not read conic or repeating gradients.
+          </p>
+          <p>
+            Turn on "in oklch" to interpolate in the OKLCH color space. The browser then mixes the stops with an even perceived lightness, so the middle of the gradient does not go gray.
           </p>
           <p>
             Contrast is sampled at each explicit color stop and their average color. It estimates readability at those points, but does not test every interpolated point across the rendered gradient canvas.

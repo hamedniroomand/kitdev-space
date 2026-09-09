@@ -27,6 +27,14 @@ test('designs CSS gradients and shows code declaration', { tag: '@smoke' }, asyn
     await expect(pre).not.toContainText('#f59e0b')
   })
 
+  await test.step('interpolates in oklch', async () => {
+    const oklch = page.getByRole('switch', { name: 'in oklch' })
+    await oklch.click()
+    await expect(pre).toContainText('linear-gradient(135deg in oklch, #7c3aed 0%, #06b6d4 100%)')
+    await oklch.click()
+    await expect(pre).toContainText('linear-gradient(135deg, #7c3aed 0%, #06b6d4 100%)')
+  })
+
   await test.step('loads stops from pasted CSS', async () => {
     await page.getByRole('textbox', { name: 'Paste CSS gradient' })
       .fill('linear-gradient(to right, red 0%, rgb(0, 0, 255) 100%)')
