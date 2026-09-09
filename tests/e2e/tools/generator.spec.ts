@@ -24,6 +24,14 @@ test('generates random IDs and tokens', { tag: '@smoke' }, async ({ page }) => {
     expect(text.trim().length).toBe(16)
   })
 
+  await test.step('excludes ambiguous characters', async () => {
+    await page.getByRole('checkbox', { name: /Exclude ambiguous/ }).click()
+    await page.getByRole('button', { name: 'Generate' }).click()
+
+    const text = (await getItems().first().textContent()) ?? ''
+    expect(text.trim()).not.toMatch(/[0Ol1I]/)
+  })
+
   await test.step('clears generated items', async () => {
     await page.getByRole('button', { name: 'Clear' }).click()
     await expect(list).not.toBeVisible()

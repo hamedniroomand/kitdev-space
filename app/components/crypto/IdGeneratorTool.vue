@@ -3,7 +3,7 @@ import type { DicewareCapitalize } from '#shared/utils/crypto/diceware'
 import type { RandomCharset } from '#shared/utils/crypto/random-string'
 import type { IdType } from '#shared/utils/crypto/uuid'
 import { createDicewarePassphrase, estimateDicewareEntropyBits } from '#shared/utils/crypto/diceware'
-import { createRandomString } from '#shared/utils/crypto/random-string'
+import { createRandomString, randomStringAlphabet } from '#shared/utils/crypto/random-string'
 import { createId } from '#shared/utils/crypto/uuid'
 
 type Kind = 'id' | 'string' | 'passphrase'
@@ -50,6 +50,8 @@ const nanoIdLength = ref(21)
 
 const stringLength = ref(32)
 const charset = ref<RandomCharset>('alnum')
+const includeSymbols = ref(false)
+const excludeAmbiguous = ref(false)
 
 const wordCount = ref(6)
 const separator = ref('-')
@@ -62,20 +64,24 @@ const { downloadText } = useDownload()
 
 useToolSeo(props.toolId)
 
-// Each random string character carries log2(alphabet) bits.
-const CHARSET_BITS: Record<RandomCharset, number> = {
-  alnum: Math.log2(62),
-  alpha: Math.log2(52),
-  numeric: Math.log2(10),
-  hex: 4,
-}
+// A symbol or an ambiguous character changes the size of the hex and digit sets,
+// so both toggles apply to the letter sets only.
+const supportsExtraCharacters = computed(() => charset.value === 'alnum' || charset.value === 'alpha')
+
+const stringOptions = computed(() => ({
+  length: stringLength.value,
+  charset: charset.value,
+  includeSymbols: supportsExtraCharacters.value && includeSymbols.value,
+  excludeAmbiguous: supportsExtraCharacters.value && excludeAmbiguous.value,
+}))
 
 const entropyBits = computed(() => {
   if (kind.value === 'passphrase') {
     return Math.round(estimateDicewareEntropyBits(wordCount.value))
   }
   if (kind.value === 'string') {
-    return Math.round(stringLength.value * CHARSET_BITS[charset.value])
+    // Each character carries log2(alphabet) bits.
+    return Math.round(stringLength.value * Math.log2(randomStringAlphabet(stringOptions.value).length))
   }
   if (idType.value === 'nanoid') {
     return Math.round(nanoIdLength.value * Math.log2(64))
@@ -103,7 +109,7 @@ function makeOne(): string {
     return createId(idType.value, { nanoIdLength: nanoIdLength.value })
   }
   if (kind.value === 'string') {
-    return createRandomString({ length: stringLength.value, charset: charset.value })
+    return createRandomString(stringOptions.value)
   }
   return createDicewarePassphrase({
     wordCount: wordCount.value,
@@ -142,7 +148,7 @@ function handleClear() {
   reset()
 }
 
-watch([kind, idType, charset], () => {
+watch([kind, idType, charset, includeSymbols, excludeAmbiguous], () => {
   values.value = []
   reset()
 })
@@ -216,6 +222,19 @@ onMounted(() => {
             class="w-full"
           />
         </UFormField>
+        <div
+          v-if="supportsExtraCharacters"
+          class="flex flex-wrap gap-4 sm:col-span-3"
+        >
+          <UCheckbox
+            v-model="includeSymbols"
+            label="Include symbols"
+          />
+          <UCheckbox
+            v-model="excludeAmbiguous"
+            label="Exclude ambiguous characters (0 O l 1 I)"
+          />
+        </div>
       </template>
 
       <template v-else>
