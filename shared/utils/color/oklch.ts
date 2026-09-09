@@ -43,7 +43,8 @@ export function rgbToOklch({ r, g, b }: Rgb): Oklch {
   }
 }
 
-export function oklchToRgb({ l, c, h }: Oklch): Rgb {
+/** Linear sRGB channels, 0 to 1. A value outside that range is outside the gamut. */
+function oklchToLinearSrgb({ l, c, h }: Oklch): [number, number, number] {
   const lightness = l / 100
   const radians = (h * Math.PI) / 180
   const a = c * Math.cos(radians)
@@ -53,31 +54,42 @@ export function oklchToRgb({ l, c, h }: Oklch): Rgb {
   const medium = (lightness - 0.1055613458 * a - 0.0638541728 * bAxis) ** 3
   const short = (lightness - 0.0894841775 * a - 1.2914855480 * bAxis) ** 3
 
-  return {
-    r: toSrgb(4.0767416621 * long - 3.3077115913 * medium + 0.2309699292 * short),
-    g: toSrgb(-1.2684380046 * long + 2.6097574011 * medium - 0.3413193965 * short),
-    b: toSrgb(-0.0041960863 * long - 0.7034186147 * medium + 1.7076147010 * short),
-  }
-}
-
-/** True when the OKLCH color is outside the sRGB gamut. */
-export function isOutOfSrgbGamut({ l, c, h }: Oklch): boolean {
-  const lightness = l / 100
-  const radians = (h * Math.PI) / 180
-  const a = c * Math.cos(radians)
-  const bAxis = c * Math.sin(radians)
-
-  const long = (lightness + 0.3963377774 * a + 0.2158037573 * bAxis) ** 3
-  const medium = (lightness - 0.1055613458 * a - 0.0638541728 * bAxis) ** 3
-  const short = (lightness - 0.0894841775 * a - 1.2914855480 * bAxis) ** 3
-
-  const channels = [
+  return [
     4.0767416621 * long - 3.3077115913 * medium + 0.2309699292 * short,
     -1.2684380046 * long + 2.6097574011 * medium - 0.3413193965 * short,
     -0.0041960863 * long - 0.7034186147 * medium + 1.7076147010 * short,
   ]
+}
 
-  return channels.some(value => value < -0.0001 || value > 1.0001)
+/** Linear sRGB to linear Display P3. @see https://www.w3.org/TR/css-color-4/#color-conversion-code */
+function linearSrgbToLinearP3([r, g, b]: [number, number, number]): [number, number, number] {
+  return [
+    0.8224621 * r + 0.1775380 * g,
+    0.0331941 * r + 0.9668058 * g,
+    0.0170827 * r + 0.0723974 * g + 0.9105199 * b,
+  ]
+}
+
+// Rounding noise puts an in-gamut channel a little outside 0 to 1.
+const GAMUT_TOLERANCE = 0.0001
+
+function isInUnitRange(channels: [number, number, number]): boolean {
+  return channels.every(value => value >= -GAMUT_TOLERANCE && value <= 1 + GAMUT_TOLERANCE)
+}
+
+export function oklchToRgb(oklch: Oklch): Rgb {
+  const [r, g, b] = oklchToLinearSrgb(oklch)
+  return { r: toSrgb(r), g: toSrgb(g), b: toSrgb(b) }
+}
+
+/** True when the OKLCH color is outside the sRGB gamut. */
+export function isOutOfSrgbGamut(oklch: Oklch): boolean {
+  return !isInUnitRange(oklchToLinearSrgb(oklch))
+}
+
+/** True when the OKLCH color is outside the Display P3 gamut, which is wider than sRGB. */
+export function isOutOfP3Gamut(oklch: Oklch): boolean {
+  return !isInUnitRange(linearSrgbToLinearP3(oklchToLinearSrgb(oklch)))
 }
 
 export function toOklchString({ l, c, h, a }: Oklch): string {

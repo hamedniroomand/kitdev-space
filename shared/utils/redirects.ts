@@ -59,7 +59,10 @@ export const legacyRedirects: Record<string, string> = {
 
   // Color tools
   '/color/converter': '/hub/color/converter',
-  '/color/inspector': '/hub/color/inspector',
+
+  // The color inspector merged into the color converter.
+  '/color/inspector': '/hub/color/converter',
+  '/hub/color/inspector': '/hub/color/converter',
 
   // Image tools
   '/hub/image/exif-stripper': '/hub/image/exif-remover',

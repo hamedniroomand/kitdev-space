@@ -12,6 +12,8 @@ describe('legacy redirects', () => {
     expect(legacyRedirects['/crypto/hash']).toBe('/hub/crypto/hash-generator')
     expect(legacyRedirects['/color/contrast']).toBe('/hub/color/contrast-checker')
     expect(legacyRedirects['/color/palette']).toBe('/hub/color/palette-generator')
+    expect(legacyRedirects['/color/inspector']).toBe('/hub/color/converter')
+    expect(legacyRedirects['/hub/color/inspector']).toBe('/hub/color/converter')
   })
 
   it('resolves exact legacy paths', () => {
@@ -40,6 +42,8 @@ describe('legacy redirects', () => {
     expect(resolveLegacyRedirect('/data/csv-studio')).toBe('/hub/data/csv-studio')
     expect(resolveLegacyRedirect('/data/converters/csv-json')).toBe('/hub/data/csv-studio')
     expect(resolveLegacyRedirect('/data/table-viewer')).toBe('/hub/data/csv-studio')
+    expect(resolveLegacyRedirect('/color/inspector')).toBe('/hub/color/converter')
+    expect(resolveLegacyRedirect('/hub/color/inspector')).toBe('/hub/color/converter')
   })
 
   it('handles paths with trailing slashes', () => {

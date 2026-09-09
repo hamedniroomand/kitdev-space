@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { isOutOfSrgbGamut, oklchToRgb, rgbToOklch, toOklchString } from '#shared/utils/color/oklch'
+import { isOutOfP3Gamut, isOutOfSrgbGamut, oklchToRgb, rgbToOklch, toOklchString } from '#shared/utils/color/oklch'
 import { parseColor } from '#shared/utils/color/parse'
 
 describe('rgbToOklch', () => {
@@ -44,6 +44,24 @@ describe('isOutOfSrgbGamut', () => {
 
   it('reports a chroma that sRGB cannot show', () => {
     expect(isOutOfSrgbGamut({ l: 70, c: 0.4, h: 150 })).toBe(true)
+  })
+})
+
+describe('isOutOfP3Gamut', () => {
+  it('accepts a color inside sRGB, which P3 contains', () => {
+    expect(isOutOfP3Gamut(rgbToOklch({ r: 124, g: 58, b: 237 }))).toBe(false)
+    expect(isOutOfP3Gamut(rgbToOklch({ r: 255, g: 0, b: 0 }))).toBe(false)
+  })
+
+  it('accepts a green that only Display P3 can show', () => {
+    // A saturated green outside sRGB, but inside the wider P3 gamut.
+    const wideGreen = { l: 86.6, c: 0.295, h: 142.5 }
+    expect(isOutOfSrgbGamut(wideGreen)).toBe(true)
+    expect(isOutOfP3Gamut(wideGreen)).toBe(false)
+  })
+
+  it('reports a chroma that P3 cannot show either', () => {
+    expect(isOutOfP3Gamut({ l: 70, c: 0.6, h: 150 })).toBe(true)
   })
 })
 
