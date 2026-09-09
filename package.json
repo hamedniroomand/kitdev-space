@@ -112,7 +112,7 @@
     "typescript": "^6",
     "vitest": "^5.0.0",
     "vue-tsc": "^3.3.11",
-    "zod": "^4.5.4"
+    "zod": "^4.6.0"
   },
   "lint-staged": {
     "*.{ts,mts,cts,js,mjs,cjs,vue}": "bun lint --fix"
