@@ -24,6 +24,12 @@ test.describe('Image Cropper tool', () => {
       await expect(page.getByText('1 × 1')).toBeVisible()
     })
 
+    await test.step('shows the crop coordinate fields', async () => {
+      await expect(page.getByLabel('Crop x')).toHaveValue('0')
+      await expect(page.getByLabel('Crop width')).toHaveValue('1')
+      await expect(page.getByLabel('Crop height')).toHaveValue('1')
+    })
+
     await test.step('processes image crop', async () => {
       await page.getByRole('button', { name: 'Process' }).click()
       await expect(page.getByText('Image Result')).toBeVisible({ timeout: 15_000 })

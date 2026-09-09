@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { initialCrop, MIN_CROP_SIZE, moveCrop, resizeCrop } from '#shared/utils/image/crop'
+import { clampCrop, initialCrop, MIN_CROP_SIZE, moveCrop, resizeCrop } from '#shared/utils/image/crop'
 
 describe('crop math', () => {
   it('starts with the whole image when there is no aspect', () => {
@@ -32,6 +32,17 @@ describe('crop math', () => {
     const rect = { x: 100, y: 100, width: 200, height: 100 }
     expect(resizeCrop(rect, 'se', 10000, 10000, 800, 600)).toEqual({ x: 100, y: 100, width: 700, height: 500 })
     expect(resizeCrop(rect, 'se', -10000, -10000, 800, 600)).toEqual({ x: 100, y: 100, width: MIN_CROP_SIZE, height: MIN_CROP_SIZE })
+  })
+
+  it('clamps a typed box to the image', () => {
+    expect(clampCrop({ x: 10, y: 20, width: 100, height: 50 }, 800, 600))
+      .toEqual({ x: 10, y: 20, width: 100, height: 50 })
+    expect(clampCrop({ x: -50, y: -50, width: 100, height: 50 }, 800, 600))
+      .toEqual({ x: 0, y: 0, width: 100, height: 50 })
+    expect(clampCrop({ x: 700, y: 500, width: 5000, height: 5000 }, 800, 600))
+      .toEqual({ x: 0, y: 0, width: 800, height: 600 })
+    expect(clampCrop({ x: 0, y: 0, width: 1, height: 1 }, 800, 600))
+      .toEqual({ x: 0, y: 0, width: MIN_CROP_SIZE, height: MIN_CROP_SIZE })
   })
 
   it('keeps the aspect during a resize', () => {

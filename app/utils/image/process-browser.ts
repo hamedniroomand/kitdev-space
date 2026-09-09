@@ -14,6 +14,8 @@ export interface BrowserImageProcessOptions {
   grayscale?: boolean
   format: ImageEncodeFormat
   quality?: number
+  /** The fill behind a transparent image. JPEG has no alpha, so it needs one. */
+  background?: string
 }
 
 export interface BrowserImageProcessResult {
@@ -28,31 +30,41 @@ export function canProcessInBrowser(format: ImageEncodeFormat): boolean {
   return format === 'webp' || format === 'jpeg' || format === 'png'
 }
 
+/**
+ * Decodes the file to learn if the browser can read it, and to get the size
+ * after the EXIF orientation applies. Null means the browser cannot decode the
+ * file, so the run needs the server. HEIC, TIFF, and most SVG files land here.
+ */
+export async function probeImageInBrowser(file: Blob): Promise<{ width: number, height: number } | null> {
+  try {
+    const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' })
+    const size = { width: bitmap.width, height: bitmap.height }
+    bitmap.close()
+    return size
+  }
+  catch {
+    return null
+  }
+}
+
 export async function processImageInBrowser(
   file: Blob,
   options: BrowserImageProcessOptions,
 ): Promise<BrowserImageProcessResult> {
   let bitmap: ImageBitmap
   try {
-    if (options.cropRect) {
-      bitmap = await createImageBitmap(
-        file,
-        options.cropRect.x,
-        options.cropRect.y,
-        options.cropRect.width,
-        options.cropRect.height,
-      )
-    }
-    else {
-      bitmap = await createImageBitmap(file)
-    }
+    // `from-image` applies the EXIF orientation, so the pixels match the image
+    // that the browser shows and that the crop box measures.
+    bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' })
   }
   catch {
     throw new Error('The browser cannot decode this image.')
   }
 
-  let destWidth = bitmap.width
-  let destHeight = bitmap.height
+  const crop = options.cropRect ?? { x: 0, y: 0, width: bitmap.width, height: bitmap.height }
+
+  let destWidth = crop.width
+  let destHeight = crop.height
 
   if (options.resizes && options.width && options.height) {
     const targetW = options.width
@@ -64,14 +76,14 @@ export async function processImageInBrowser(
     }
     else {
       // fit === 'inside'
-      if (options.withoutEnlargement && bitmap.width <= targetW && bitmap.height <= targetH) {
-        destWidth = bitmap.width
-        destHeight = bitmap.height
+      if (options.withoutEnlargement && crop.width <= targetW && crop.height <= targetH) {
+        destWidth = crop.width
+        destHeight = crop.height
       }
       else {
-        const scale = Math.min(targetW / bitmap.width, targetH / bitmap.height)
-        destWidth = Math.max(1, Math.round(bitmap.width * scale))
-        destHeight = Math.max(1, Math.round(bitmap.height * scale))
+        const scale = Math.min(targetW / crop.width, targetH / crop.height)
+        destWidth = Math.max(1, Math.round(crop.width * scale))
+        destHeight = Math.max(1, Math.round(crop.height * scale))
       }
     }
   }
@@ -103,6 +115,12 @@ export async function processImageInBrowser(
   ctx.imageSmoothingEnabled = true
   ctx.imageSmoothingQuality = 'high'
 
+  // A transparent pixel on a JPEG canvas turns black. The fill stops that.
+  if (options.format === 'jpeg') {
+    ctx.fillStyle = options.background ?? '#ffffff'
+    ctx.fillRect(0, 0, canvasWidth, canvasHeight)
+  }
+
   ctx.save()
   ctx.translate(canvasWidth / 2, canvasHeight / 2)
 
@@ -119,7 +137,17 @@ export async function processImageInBrowser(
     ctx.filter = 'grayscale(100%)'
   }
 
-  ctx.drawImage(bitmap, -destWidth / 2, -destHeight / 2, destWidth, destHeight)
+  ctx.drawImage(
+    bitmap,
+    crop.x,
+    crop.y,
+    crop.width,
+    crop.height,
+    -destWidth / 2,
+    -destHeight / 2,
+    destWidth,
+    destHeight,
+  )
   ctx.restore()
   bitmap.close()
 

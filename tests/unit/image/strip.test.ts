@@ -1,7 +1,8 @@
+import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { readImageMetadata } from '#shared/utils/image/exif'
 import { canStripInPlace, stripImageMetadata } from '#shared/utils/image/strip'
-import { buildJpeg, buildPng, buildWebp } from './fixtures'
+import { buildCmykJpeg, buildJpeg, buildPng, buildWebp, crc32 } from './fixtures'
 
 function scanData(bytes: Uint8Array) {
   // The bytes after the start of scan marker hold the pixels.
@@ -126,6 +127,144 @@ describe('stripImageMetadata with a WebP', () => {
   it('corrects the RIFF size', () => {
     const view = new DataView(result.bytes.buffer, result.bytes.byteOffset, result.bytes.byteLength)
     expect(view.getUint32(4, true)).toBe(result.bytes.length - 8)
+  })
+})
+
+describe('stripImageMetadata with keepOrientation', () => {
+  const input = new Uint8Array(readFileSync('tests/fixtures/images/orientation-6.jpg'))
+
+  it('keeps the rotation of an orientation-6 JPEG', () => {
+    const before = readImageMetadata(input)
+    const result = stripImageMetadata(input, { keepOrientation: true })!
+    const after = readImageMetadata(result.bytes)
+
+    expect(before.tags.find(item => item.name === 'Orientation')?.value).toBe('Rotate 90°')
+    expect(after.tags.find(item => item.name === 'Orientation')?.value).toBe('Rotate 90°')
+    expect(result.kept).toContain('Orientation')
+  })
+
+  it('keeps the frame size and does not recompress the pixels', () => {
+    const result = stripImageMetadata(input, { keepOrientation: true })!
+    const after = readImageMetadata(result.bytes)
+
+    expect(after.width).toBe(100)
+    expect(after.height).toBe(50)
+    expect(scanData(result.bytes)).toEqual(scanData(input))
+  })
+
+  it('removes every other tag', () => {
+    const result = stripImageMetadata(input, { keepOrientation: true })!
+    const after = readImageMetadata(result.bytes)
+
+    expect(after.tags).toHaveLength(1)
+    expect(after.gps).toBeNull()
+  })
+
+  it('drops the orientation when the option is off', () => {
+    const after = readImageMetadata(stripImageMetadata(input)!.bytes)
+    expect(after.tags).toEqual([])
+  })
+})
+
+describe('stripImageMetadata with a CMYK JPEG', () => {
+  const input = buildCmykJpeg()
+  const result = stripImageMetadata(input, { keepOrientation: true })!
+
+  it('keeps the ICC color profile', () => {
+    expect(readImageMetadata(input).colorProfile).toBe('ICC profile')
+    expect(readImageMetadata(result.bytes).colorProfile).toBe('ICC profile')
+  })
+
+  it('keeps the Adobe APP14 color transform', () => {
+    const hasApp14 = result.bytes.some((byte, index) => byte === 0xFF && result.bytes[index + 1] === 0xEE)
+    expect(hasApp14).toBe(true)
+  })
+
+  it('removes the EXIF and keeps the pixels byte for byte', () => {
+    const after = readImageMetadata(result.bytes)
+    expect(result.removed).toContain('EXIF')
+    expect(after.gps).toBeNull()
+    expect(after.width).toBe(40)
+    expect(after.height).toBe(30)
+    expect(scanData(result.bytes)).toEqual(scanData(input))
+  })
+})
+
+describe('stripImageMetadata with the GPS option', () => {
+  it('removes the GPS block of a JPEG and keeps the camera settings', () => {
+    const result = stripImageMetadata(buildJpeg(), { exif: 'gps' })!
+    const after = readImageMetadata(result.bytes)
+
+    expect(result.removed).toContain('GPS')
+    expect(after.gps).toBeNull()
+    expect(after.blocks).toContain('EXIF')
+    expect(after.tags.find(item => item.name === 'Make')?.value).toBe('TestCam')
+    expect(after.tags.find(item => item.name === 'Model')?.value).toBe('Model X')
+    expect(after.tags.find(item => item.name === 'ISO')?.value).toBe('400')
+    expect(after.tags.some(item => item.group === 'GPS')).toBe(false)
+  })
+
+  it('removes the GPS block of a PNG and writes a valid chunk CRC', () => {
+    const result = stripImageMetadata(buildPng(), { exif: 'gps' })!
+    const after = readImageMetadata(result.bytes)
+
+    expect(after.gps).toBeNull()
+    expect(after.blocks).toContain('EXIF')
+    expect(after.tags.find(item => item.name === 'Make')?.value).toBe('TestCam')
+
+    // A decoder rejects a chunk with a wrong CRC, so check the stored value.
+    const view = new DataView(result.bytes.buffer, result.bytes.byteOffset, result.bytes.byteLength)
+    let offset = 8
+    let checked = false
+
+    while (offset + 8 <= result.bytes.length) {
+      const length = view.getUint32(offset, false)
+      const name = String.fromCharCode(...result.bytes.subarray(offset + 4, offset + 8))
+      if (name === 'eXIf') {
+        const body = [...result.bytes.subarray(offset + 4, offset + 8 + length)]
+        expect(view.getUint32(offset + 8 + length, false)).toBe(crc32(body))
+        checked = true
+      }
+      offset += 12 + length
+    }
+
+    expect(checked).toBe(true)
+  })
+
+  it('removes the GPS block of a WebP and keeps the EXIF chunk', () => {
+    const result = stripImageMetadata(buildWebp(), { exif: 'gps' })!
+    const after = readImageMetadata(result.bytes)
+
+    expect(after.gps).toBeNull()
+    expect(after.blocks).toEqual(['EXIF'])
+    expect(after.tags.find(item => item.name === 'Make')?.value).toBe('TestCam')
+    expect(result.removed).toContain('XMP')
+  })
+})
+
+describe('stripImageMetadata with the block options off', () => {
+  it('keeps the comment of a JPEG', () => {
+    const result = stripImageMetadata(buildJpeg(), { comments: false })!
+    const after = readImageMetadata(result.bytes)
+
+    expect(after.tags.find(item => item.name === 'Comment')?.value).toBe('private note')
+    expect(result.removed).toContain('EXIF')
+  })
+
+  it('keeps the XMP packet of a WebP', () => {
+    const result = stripImageMetadata(buildWebp(), { xmp: false })!
+    const after = readImageMetadata(result.bytes)
+
+    expect(after.blocks).toEqual(['XMP'])
+    expect(result.removed).toEqual(['EXIF'])
+  })
+
+  it('keeps the text chunk of a PNG', () => {
+    const result = stripImageMetadata(buildPng(), { comments: false })!
+    const after = readImageMetadata(result.bytes)
+
+    expect(after.tags.find(item => item.name === 'Author')?.value).toBe('Jane')
+    expect(result.removed).toEqual(['EXIF'])
   })
 })
 

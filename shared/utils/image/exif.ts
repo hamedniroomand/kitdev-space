@@ -15,7 +15,7 @@ export interface GpsPosition {
   longitude: number
 }
 
-export type ImageContainer = 'jpeg' | 'png' | 'webp' | 'gif' | 'avif' | 'unknown'
+export type ImageContainer = 'jpeg' | 'png' | 'webp' | 'gif' | 'avif' | 'tiff' | 'unknown'
 
 export interface ImageMetadata {
   container: ImageContainer
@@ -26,6 +26,8 @@ export interface ImageMetadata {
   gps: GpsPosition | null
   /** Names of the blocks that hold the metadata, such as "EXIF" or "XMP". */
   blocks: string[]
+  /** The color profile that the file holds, such as "ICC profile". Null when it holds none. */
+  colorProfile: string | null
 }
 
 // A malformed file must not make the parser read a large range.
@@ -45,6 +47,11 @@ const TYPE_SIZES: Record<number, number> = {
   10: 8,
   11: 4,
   12: 8,
+}
+
+/** The byte count of a TIFF entry value. Zero when the type is not known. */
+export function tiffValueSize(type: number, count: number): number {
+  return (TYPE_SIZES[type] ?? 0) * count
 }
 
 function ascii(view: DataView, offset: number, length: number): string {
@@ -318,6 +325,31 @@ export function parseTiffBlock(
   return { tags, gps }
 }
 
+/**
+ * Reads the Orientation tag of a TIFF block. A strip that keeps this tag keeps
+ * the rotation that a viewer applies to the pixels.
+ */
+export function readTiffOrientation(view: DataView, tiffStart: number): number | null {
+  if (tiffStart + 8 > view.byteLength) {
+    return null
+  }
+
+  const order = view.getUint16(tiffStart, false)
+  if (order !== 0x4949 && order !== 0x4D4D) {
+    return null
+  }
+
+  const little = order === 0x4949
+  if (view.getUint16(tiffStart + 2, little) !== 42) {
+    return null
+  }
+
+  const ifd0 = readIfd(view, tiffStart, tiffStart + view.getUint32(tiffStart + 4, little), little)
+  const entry = ifd0.entries.find(item => item.tag === 0x0112)
+  const value = entry?.values[0]
+  return typeof value === 'number' ? value : null
+}
+
 export function detectContainer(bytes: Uint8Array): ImageContainer {
   if (bytes.length >= 3 && bytes[0] === 0xFF && bytes[1] === 0xD8 && bytes[2] === 0xFF) {
     return 'jpeg'
@@ -339,6 +371,13 @@ export function detectContainer(bytes: Uint8Array): ImageContainer {
   }
   if (bytes.length >= 6 && bytes[0] === 0x47 && bytes[1] === 0x49 && bytes[2] === 0x46) {
     return 'gif'
+  }
+  if (bytes.length >= 8) {
+    const little = bytes[0] === 0x49 && bytes[1] === 0x49 && bytes[2] === 0x2A && bytes[3] === 0x00
+    const big = bytes[0] === 0x4D && bytes[1] === 0x4D && bytes[2] === 0x00 && bytes[3] === 0x2A
+    if (little || big) {
+      return 'tiff'
+    }
   }
   return 'unknown'
 }
@@ -395,6 +434,9 @@ function readJpeg(view: DataView, result: ImageMetadata) {
       result.blocks.push('Comment')
       result.tags.push({ group: 'Text', name: 'Comment', value: ascii(view, payload, payloadLength), private: true })
     }
+    else if (marker === 0xE2 && startsWith(view, payload, 'ICC_PROFILE\0')) {
+      result.colorProfile = 'ICC profile'
+    }
 
     offset = payload + payloadLength
   }
@@ -448,6 +490,12 @@ function readPng(view: DataView, bytes: Uint8Array, result: ImageMetadata) {
         private: true,
       })
     }
+    else if (type === 'iCCP') {
+      result.colorProfile = 'ICC profile'
+    }
+    else if (type === 'sRGB') {
+      result.colorProfile = result.colorProfile ?? 'sRGB'
+    }
     else if (type === 'IDAT' || type === 'IEND') {
       break
     }
@@ -484,9 +532,203 @@ function readWebp(view: DataView, result: ImageMetadata) {
       result.blocks.push('XMP')
       result.tags.push({ group: 'XMP', name: 'XMP packet', value: `${length} bytes`, private: true })
     }
+    else if (type === 'ICCP') {
+      result.colorProfile = 'ICC profile'
+    }
 
     // Each RIFF chunk has even padding.
     offset = payload + length + (length % 2)
+  }
+}
+
+/** A TIFF file is one TIFF block. The header sits at offset 0. */
+function readTiff(view: DataView, result: ImageMetadata) {
+  const block = parseTiffBlock(view, 0)
+  if (block.tags.length === 0) {
+    return
+  }
+
+  result.blocks.push('EXIF')
+  result.tags.push(...block.tags)
+  result.gps = block.gps
+
+  const size = (name: string) => {
+    const value = Number(block.tags.find(item => item.name === name)?.value)
+    return Number.isFinite(value) ? value : null
+  }
+  result.width = size('ImageWidth')
+  result.height = size('ImageHeight')
+}
+
+/** Reads a big-endian integer of one to eight bytes. */
+function intAt(view: DataView, offset: number, size: number): number {
+  let value = 0
+  for (let index = 0; index < size; index += 1) {
+    value = value * 256 + view.getUint8(offset + index)
+  }
+  return value
+}
+
+/**
+ * Walks the boxes of an ISO base media file. AVIF, HEIC, and MP4 share this
+ * structure. The visitor gets the start and the end of each box payload.
+ */
+function walkBoxes(
+  view: DataView,
+  start: number,
+  end: number,
+  visit: (type: string, payload: number, payloadEnd: number) => void,
+) {
+  let offset = start
+
+  while (offset + 8 <= end) {
+    let size = view.getUint32(offset, false)
+    let payload = offset + 8
+
+    if (size === 1) {
+      if (offset + 16 > end) {
+        return
+      }
+      // A 64-bit size. A metadata box never needs the high word.
+      size = intAt(view, offset + 8, 8)
+      payload = offset + 16
+    }
+    else if (size === 0) {
+      size = end - offset
+    }
+
+    const boxEnd = offset + size
+    if (size < 8 || boxEnd > end || payload > boxEnd) {
+      return
+    }
+
+    visit(fourCC(view, offset + 4), payload, boxEnd)
+    offset = boxEnd
+  }
+}
+
+/** The place of one item inside the file, from the iloc box. */
+interface ItemExtent {
+  offset: number
+  length: number
+}
+
+function readItemInfo(view: DataView, payload: number, end: number): Map<number, string> {
+  const types = new Map<number, string>()
+  const version = view.getUint8(payload)
+  // Version 0 counts the entries in two bytes. Every later version uses four.
+  const listAt = payload + 4 + (version === 0 ? 2 : 4)
+
+  walkBoxes(view, listAt, end, (type, itemPayload) => {
+    if (type !== 'infe') {
+      return
+    }
+    const itemVersion = view.getUint8(itemPayload)
+    const idSize = itemVersion >= 3 ? 4 : 2
+    const id = intAt(view, itemPayload + 4, idSize)
+    types.set(id, fourCC(view, itemPayload + 4 + idSize + 2))
+  })
+
+  return types
+}
+
+function readItemLocations(view: DataView, payload: number): Map<number, ItemExtent> {
+  const places = new Map<number, ItemExtent>()
+  const version = view.getUint8(payload)
+  const sizes = view.getUint8(payload + 4)
+  const bases = view.getUint8(payload + 5)
+  const offsetSize = sizes >> 4
+  const lengthSize = sizes & 0x0F
+  const baseSize = bases >> 4
+  const indexSize = version === 1 || version === 2 ? bases & 0x0F : 0
+  const idSize = version === 2 ? 4 : 2
+
+  let at = payload + 6 + (version === 2 ? 4 : 2)
+  const count = version === 2 ? view.getUint32(payload + 6, false) : view.getUint16(payload + 6, false)
+
+  for (let index = 0; index < count; index += 1) {
+    if (at + idSize + 4 > view.byteLength) {
+      break
+    }
+    const id = intAt(view, at, idSize)
+    at += idSize + (version === 1 || version === 2 ? 2 : 0) + 2
+    const base = intAt(view, at, baseSize)
+    at += baseSize
+    const extents = view.getUint16(at, false)
+    at += 2
+
+    for (let extent = 0; extent < extents; extent += 1) {
+      at += indexSize
+      const offset = intAt(view, at, offsetSize)
+      const length = intAt(view, at + offsetSize, lengthSize)
+      at += offsetSize + lengthSize
+      if (extent === 0) {
+        places.set(id, { offset: base + offset, length })
+      }
+    }
+  }
+
+  return places
+}
+
+/**
+ * Reads the meta box of an AVIF file. The EXIF item holds a TIFF block after a
+ * four byte offset field.
+ */
+function readAvif(view: DataView, result: ImageMetadata) {
+  let types = new Map<number, string>()
+  let places = new Map<number, ItemExtent>()
+
+  walkBoxes(view, 0, view.byteLength, (topType, topPayload, topEnd) => {
+    if (topType !== 'meta') {
+      return
+    }
+
+    walkBoxes(view, topPayload + 4, topEnd, (type, payload, payloadEnd) => {
+      if (type === 'iinf') {
+        types = readItemInfo(view, payload, payloadEnd)
+      }
+      else if (type === 'iloc') {
+        places = readItemLocations(view, payload)
+      }
+      else if (type === 'iprp') {
+        walkBoxes(view, payload, payloadEnd, (propType, propPayload, propEnd) => {
+          if (propType !== 'ipco') {
+            return
+          }
+          walkBoxes(view, propPayload, propEnd, (itemType, itemPayload) => {
+            if (itemType === 'ispe') {
+              result.width = view.getUint32(itemPayload + 4, false)
+              result.height = view.getUint32(itemPayload + 8, false)
+            }
+            else if (itemType === 'colr') {
+              const kind = fourCC(view, itemPayload)
+              result.colorProfile = kind === 'rICC' || kind === 'prof' ? 'ICC profile' : 'nclx'
+            }
+          })
+        })
+      }
+    })
+  })
+
+  for (const [id, type] of types) {
+    const place = places.get(id)
+    if (!place || place.length < 8 || place.offset + place.length > view.byteLength) {
+      continue
+    }
+
+    if (type === 'Exif') {
+      result.blocks.push('EXIF')
+      // The first four bytes give the offset of the TIFF header inside the item.
+      const start = place.offset + 4 + view.getUint32(place.offset, false)
+      const block = parseTiffBlock(view, startsWith(view, start, 'Exif\0\0') ? start + 6 : start)
+      result.tags.push(...block.tags)
+      result.gps = result.gps ?? block.gps
+    }
+    else if (type === 'mime') {
+      result.blocks.push('XMP')
+      result.tags.push({ group: 'XMP', name: 'XMP packet', value: `${place.length} bytes`, private: true })
+    }
   }
 }
 
@@ -501,6 +743,7 @@ export function readImageMetadata(bytes: Uint8Array): ImageMetadata {
     tags: [],
     gps: null,
     blocks: [],
+    colorProfile: null,
   }
 
   try {
@@ -512,6 +755,12 @@ export function readImageMetadata(bytes: Uint8Array): ImageMetadata {
     }
     else if (result.container === 'webp') {
       readWebp(view, result)
+    }
+    else if (result.container === 'tiff') {
+      readTiff(view, result)
+    }
+    else if (result.container === 'avif') {
+      readAvif(view, result)
     }
   }
   catch {

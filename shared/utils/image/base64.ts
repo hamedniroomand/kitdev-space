@@ -1,3 +1,6 @@
+/** A larger image can exhaust browser memory during decode. */
+export const IMAGE_BASE64_MAX_BYTES = 10 * 1024 * 1024
+
 export interface DataUriInfo {
   mimeType: string
   base64: string
@@ -38,6 +41,32 @@ export function parseDataUri(input: string): DataUriInfo {
     base64: trimmed,
     isDataUri: false,
   }
+}
+
+/** Base64 writes 4 characters for each 3 bytes. */
+export function base64ByteLength(base64: string): number {
+  const clean = base64.replace(/\s/g, '')
+  const padding = clean.endsWith('==') ? 2 : clean.endsWith('=') ? 1 : 0
+  return Math.floor(clean.length / 4) * 3 - padding
+}
+
+/** Returns an error message, or `null` when the input is Base64 within the size limit. */
+export function validateImageBase64(input: string): string | null {
+  const clean = parseDataUri(input).base64.replace(/\s/g, '')
+
+  if (!clean) {
+    return 'Add a Base64 string or a data URI.'
+  }
+  if (base64ByteLength(clean) > IMAGE_BASE64_MAX_BYTES) {
+    return 'This image is larger than 10 MB. Use a smaller image.'
+  }
+  try {
+    atob(clean)
+  }
+  catch {
+    return 'This is not valid Base64 data. Check the input for a missing or an extra character.'
+  }
+  return null
 }
 
 export function formatAsHtmlImg(dataUri: string, alt = 'Embedded image'): string {

@@ -10,6 +10,7 @@ const props = withDefaults(
     prompt?: string
     multiple?: boolean
     maxBytes?: number
+    maxFiles?: number
   }>(),
   {
     modelValue: null,
@@ -18,6 +19,7 @@ const props = withDefaults(
     prompt: undefined,
     multiple: false,
     maxBytes: 25 * 1024 * 1024, // 25 MB
+    maxFiles: undefined,
   },
 )
 
@@ -91,6 +93,12 @@ function validateFile(file: File): boolean {
 
 function handleIncomingFiles(files: File[], method: 'drop' | 'file' | 'paste') {
   validationError.value = null
+
+  if (props.multiple && props.maxFiles && files.length > props.maxFiles) {
+    validationError.value = `Select ${props.maxFiles} files or fewer. You selected ${files.length}.`
+    return
+  }
+
   const validFiles: File[] = []
   for (const f of files) {
     if (validateFile(f)) {

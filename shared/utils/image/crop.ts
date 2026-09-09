@@ -48,6 +48,22 @@ export function initialCrop(imageWidth: number, imageHeight: number, aspect?: nu
   })
 }
 
+/**
+ * Keeps the box inside the image. A number field can hold any value, so each
+ * side gets a limit and the position follows the size.
+ */
+export function clampCrop(rect: CropRect, imageWidth: number, imageHeight: number): CropRect {
+  const width = clamp(rect.width, MIN_CROP_SIZE, imageWidth)
+  const height = clamp(rect.height, MIN_CROP_SIZE, imageHeight)
+
+  return round({
+    x: clamp(rect.x, 0, imageWidth - width),
+    y: clamp(rect.y, 0, imageHeight - height),
+    width,
+    height,
+  })
+}
+
 /** Moves the box and keeps it inside the image. */
 export function moveCrop(rect: CropRect, dx: number, dy: number, imageWidth: number, imageHeight: number): CropRect {
   return round({

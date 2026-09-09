@@ -26,6 +26,13 @@
             Download the clean image and share that copy. Download the report if you want a record of
             the data that the original file held.
           </p>
+          <p>
+            Choose which segments go. The default removes every EXIF tag, the XMP packet, the IPTC
+            block, and the comments. The GPS only option removes the position and keeps the camera
+            settings. The browser option always keeps the ICC color profile and the orientation marker,
+            so the photo keeps its color and its rotation. A removal covers these segments only. It
+            cannot promise that no private detail stays in the pixels of the image.
+          </p>
         </div>
         <RelatedTools
           class="mt-8"

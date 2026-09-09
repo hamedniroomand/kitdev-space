@@ -6,7 +6,28 @@ test('shows the Image Studio dropzone', { tag: '@smoke' }, async ({ page }) => {
   await page.goto('/hub/image/studio')
 
   await expect(page.getByRole('heading', { name: 'Image Studio', level: 1 })).toBeVisible()
-  await expect(page.getByText('Drop an image here, or click to choose a file.')).toBeVisible()
+  await expect(page.getByText('Drop images here, or click to choose files.')).toBeVisible()
+})
+
+test('processes a batch of images into one zip', async ({ page }) => {
+  await gotoHydrated(page, '/hub/image/studio')
+
+  const pngBuffer = Buffer.from(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+    'base64',
+  )
+
+  await page.locator('input[type="file"]').setInputFiles([
+    { name: 'one.png', mimeType: 'image/png', buffer: pngBuffer },
+    { name: 'two.png', mimeType: 'image/png', buffer: pngBuffer },
+  ])
+
+  await expect(page.getByText('2 files selected')).toBeVisible()
+
+  await page.getByRole('button', { name: 'Process' }).click()
+
+  await expect(page.getByText('Batch of 2 files')).toBeVisible({ timeout: 15_000 })
+  await expect(page.getByRole('button', { name: 'Download the zip' })).toBeVisible()
 })
 
 test('redirects the merged transform route to the studio', async ({ page }) => {
@@ -35,6 +56,26 @@ test('redirects the exif stripper to the exif remover', async ({ page }) => {
   await page.goto('/hub/image/exif-stripper')
   await expect(page).toHaveURL(/\/hub\/image\/exif-remover$/)
   await expect(page.getByRole('heading', { name: 'Remove EXIF Data from a Photo', level: 1 })).toBeVisible()
+})
+
+test('warns about an animated GIF and offers the metadata toggle', async ({ page }) => {
+  await gotoHydrated(page, '/hub/image/studio')
+
+  // A 1×1 GIF with two frames and the NETSCAPE loop block.
+  const gifBuffer = Buffer.from(
+    'R0lGODlhAQABAIAAAAAAAP///yH/C05FVFNDQVBFMi4wAwEAAAAh+QQJAAAAACwAAAAAAQABAAAC'
+    + 'AkQBACH5BAkAAAAALAAAAAABAAEAAAICRAEAOw==',
+    'base64',
+  )
+
+  await page.locator('input[type="file"]').setInputFiles({
+    name: 'loop.gif',
+    mimeType: 'image/gif',
+    buffer: gifBuffer,
+  })
+
+  await expect(page.getByText('This file has more than one frame')).toBeVisible()
+  await expect(page.getByText('Keep the metadata')).toBeVisible()
 })
 
 test('converts a JPEG to WebP in the browser with no server request', async ({ page }) => {
@@ -68,6 +109,7 @@ test('converts a JPEG to WebP in the browser with no server request', async ({ p
   // Default format is WebP, which processes in the browser
   await page.getByRole('button', { name: 'Process' }).click()
   await expect(page.getByText('Image Result')).toBeVisible({ timeout: 15_000 })
+  await expect(page.getByLabel('Comparison split position')).toBeVisible()
 
   expect(apiCalls).toEqual([])
 })

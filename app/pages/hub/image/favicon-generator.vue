@@ -1,11 +1,19 @@
 <script setup lang="ts">
-import type { FaviconPackageResult } from '#shared/utils/image/favicon'
+import type { FaviconFit, FaviconPackageResult } from '#shared/utils/image/favicon'
 import { generateFaviconPackageInBrowser } from '~/utils/image/favicon-browser'
+
+const FIT_ITEMS: { label: string, value: FaviconFit }[] = [
+  { label: 'Contain with padding', value: 'contain' },
+  { label: 'Cover crop', value: 'cover' },
+]
 
 const file = ref<File | null>(null)
 const appName = ref('My Application')
 const shortName = ref('App')
 const themeColor = ref('#ffffff')
+const backgroundColor = ref('')
+const fit = ref<FaviconFit>('contain')
+const pathPrefix = ref('/')
 
 const { status, error, result, run, reset } = useTool<FaviconPackageResult>()
 const { copy: copyHtml, label: htmlCopyLabel, icon: htmlCopyIcon, color: htmlCopyColor } = useCopyFeedback()
@@ -16,7 +24,7 @@ useToolSeo('favicon-generator')
 const { reportInput } = useToolInput()
 
 // Sample SVG icon for quick testing
-const sampleSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+const sampleSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
   <rect width="100" height="100" rx="20" fill="#2563eb" />
   <circle cx="50" cy="50" r="28" fill="#ffffff" />
   <path d="M40 35 L65 50 L40 65 Z" fill="#2563eb" />
@@ -36,21 +44,22 @@ async function generate() {
       appName: appName.value,
       shortName: shortName.value,
       themeColor: themeColor.value,
+      backgroundColor: backgroundColor.value,
+      fit: fit.value,
+      pathPrefix: pathPrefix.value,
     })
-  }, 'The favicon generation failed.')
+  }, 'The favicon generation failed.', { option: fit.value })
 }
 
 function downloadZip() {
-  if (!result.value?.zipBase64)
+  if (!result.value?.zipBlob)
     return
-  const binaryString = atob(result.value.zipBase64)
-  const len = binaryString.length
-  const bytes = new Uint8Array(len)
-  for (let i = 0; i < len; i++) {
-    bytes[i] = binaryString.charCodeAt(i)
-  }
+  downloadBlob('favicon_package.zip', result.value.zipBlob)
+}
 
-  downloadBlob('favicon_package.zip', new Blob([bytes], { type: 'application/zip' }))
+/** The rendered icon of one size, for the platform mockups. */
+function previewUrl(name: string) {
+  return result.value?.previews.find(item => item.name === name)?.dataUrl
 }
 
 function handleReset() {
@@ -132,6 +141,50 @@ function handleReset() {
             </UFormField>
           </div>
 
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <UFormField
+              label="Icon Fit"
+              help="Contain keeps the whole icon. Cover crops it to a square. Neither distorts the source."
+            >
+              <UTabs
+                v-model="fit"
+                :items="FIT_ITEMS"
+                :content="false"
+                size="sm"
+                class="w-full"
+              />
+            </UFormField>
+            <UFormField
+              v-if="fit === 'contain'"
+              label="Padding Background"
+              help="Leave empty to keep the padding transparent."
+            >
+              <div class="flex items-center gap-2">
+                <input
+                  v-model="backgroundColor"
+                  type="color"
+                  aria-label="Padding background color picker"
+                  class="w-8 h-8 rounded border border-default cursor-pointer bg-transparent"
+                >
+                <UInput
+                  v-model="backgroundColor"
+                  placeholder="Transparent"
+                  class="flex-1 font-mono text-xs"
+                />
+              </div>
+            </UFormField>
+            <UFormField
+              label="Path Prefix"
+              help="The folder that serves the icons."
+            >
+              <UInput
+                v-model="pathPrefix"
+                placeholder="/static/icons/"
+                class="w-full font-mono text-xs"
+              />
+            </UFormField>
+          </div>
+
           <div class="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-default">
             <div class="text-xs text-muted">
               Generates 16px, 32px, 48px, 180px, 192px, 512px, and favicon.ico
@@ -198,6 +251,77 @@ function handleReset() {
             label="Download Package (.ZIP)"
             @click="downloadZip"
           />
+        </div>
+
+        <!-- Platform Mockups -->
+        <div class="p-4 border border-default rounded-xl bg-elevated/20 space-y-3">
+          <h3 class="text-sm font-semibold text-default flex items-center gap-2">
+            <UIcon
+              name="i-lucide-monitor-smartphone"
+              class="w-4 h-4 text-primary"
+            />
+            Platform Previews
+          </h3>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+            <!-- Browser tab -->
+            <div class="space-y-2">
+              <div class="text-[11px] font-semibold text-muted">
+                Browser tab
+              </div>
+              <div class="rounded-t-lg bg-accented pt-2 px-2">
+                <div class="flex items-center gap-2 rounded-t-md bg-default px-2 py-1.5">
+                  <img
+                    v-if="previewUrl('favicon-32x32.png')"
+                    :src="previewUrl('favicon-32x32.png')"
+                    alt="Browser tab favicon preview"
+                    class="w-4 h-4 shrink-0"
+                  >
+                  <span class="text-[11px] text-default truncate">{{ appName || 'My Application' }}</span>
+                  <UIcon
+                    name="i-lucide-x"
+                    class="w-3 h-3 ml-auto shrink-0 text-muted"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- iOS home screen -->
+            <div class="space-y-2">
+              <div class="text-[11px] font-semibold text-muted">
+                iOS home screen
+              </div>
+              <div class="rounded-lg bg-inverted flex flex-col items-center gap-1.5 py-4">
+                <img
+                  v-if="previewUrl('apple-touch-icon.png')"
+                  :src="previewUrl('apple-touch-icon.png')"
+                  alt="iOS home screen icon preview"
+                  class="w-14 h-14 rounded-[22%] shadow-md"
+                >
+                <span class="text-[10px] text-inverted truncate max-w-full px-2">{{ shortName || 'App' }}</span>
+              </div>
+            </div>
+
+            <!-- Android launcher -->
+            <div class="space-y-2">
+              <div class="text-[11px] font-semibold text-muted">
+                Android launcher
+              </div>
+              <div class="rounded-lg bg-inverted flex flex-col items-center gap-1.5 py-4">
+                <img
+                  v-if="previewUrl('android-chrome-192x192.png')"
+                  :src="previewUrl('android-chrome-192x192.png')"
+                  alt="Android launcher icon preview"
+                  class="w-14 h-14 rounded-full shadow-md"
+                >
+                <span class="text-[10px] text-inverted truncate max-w-full px-2">{{ shortName || 'App' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <p class="text-[11px] text-muted">
+            An iOS home screen rounds the corners. An Android launcher can crop a maskable icon into a circle. Keep the important part of the icon in the middle.
+          </p>
         </div>
 
         <!-- Generated Icons Grid Preview -->
@@ -309,6 +433,12 @@ function handleReset() {
           </p>
           <p>
             Use a square source image of 512 pixels or more. A simple shape reads better than a detailed one, because the icon is often shown at 16 pixels.
+          </p>
+          <p>
+            The ZIP file is flat. Put every file of it in one folder, then give the path of that folder in "Path Prefix". Each <code>&lt;link&gt;</code> tag, the manifest reference, and each icon in the manifest then use that path. The tool removes each character that a URL path cannot hold.
+          </p>
+          <p>
+            A source image that is not square needs a fit mode. "Contain with padding" keeps the whole image and adds padding on two sides. Give a padding background color, or leave the field empty to keep the padding transparent. "Cover crop" fills the square and cuts the long edges. Neither mode changes the aspect ratio of the source.
           </p>
         </div>
         <RelatedTools
