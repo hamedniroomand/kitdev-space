@@ -20,9 +20,8 @@ export function envToJsonWithDiagnostics(envText: string): EnvParseResult {
 
   const lines = envText.split('\n')
 
-  for (let i = 0; i < lines.length; i++) {
-    const lineNum = i + 1
-    const raw = lines[i]
+  for (const [index, raw] of lines.entries()) {
+    const lineNum = index + 1
     const trimmed = raw.trim()
 
     // Skip blanks and comments
