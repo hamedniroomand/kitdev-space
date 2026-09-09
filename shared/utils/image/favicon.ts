@@ -33,11 +33,31 @@ export interface FaviconItemPreview {
 }
 
 export interface FaviconPackageResult {
-  zipBase64: string
+  zipBlob: Blob
   previews: FaviconItemPreview[]
   htmlSnippet: string
   webmanifest: string
 }
+
+/** One rendered PNG icon of the package. */
+export interface FaviconRenderedIcon {
+  name: string
+  size: number
+  bytes: Uint8Array
+}
+
+/** Every PNG size of the package. The HTML snippet and the manifest name these files. */
+export const FAVICON_SIZES: { name: string, size: number }[] = [
+  { name: 'favicon-16x16.png', size: 16 },
+  { name: 'favicon-32x32.png', size: 32 },
+  { name: 'favicon-48x48.png', size: 48 },
+  { name: 'apple-touch-icon.png', size: 180 },
+  { name: 'android-chrome-192x192.png', size: 192 },
+  { name: 'android-chrome-512x512.png', size: 512 },
+]
+
+/** The layers of `favicon.ico`. Windows reads the 48 layer for a desktop shortcut. */
+export const FAVICON_ICO_SIZES = [16, 32, 48]
 
 export function buildIco(images: { width: number, height: number, bytes: Uint8Array }[]): Uint8Array {
   // ICO Header: 6 bytes
@@ -96,6 +116,8 @@ export function buildWebmanifest(options: FaviconOptions): string {
         src: `${prefix}android-chrome-512x512.png`,
         sizes: '512x512',
         type: 'image/png',
+        // An Android launcher crops a maskable icon into its own shape.
+        purpose: 'any maskable',
       },
     ],
     theme_color: options.themeColor?.trim() || '#ffffff',
@@ -118,4 +140,29 @@ export function buildHtmlSnippet(options: FaviconOptions): string {
     `<link rel="manifest" href="${prefix}site.webmanifest">`,
     `<meta name="theme-color" content="${theme}">`,
   ].join('\n')
+}
+
+/**
+ * Collect every file of the favicon package. The zip is flat, so each name
+ * here matches the name that the HTML snippet and the manifest reference.
+ */
+export function buildFaviconZipEntries(
+  icons: FaviconRenderedIcon[],
+  options: FaviconOptions = {},
+): Record<string, Uint8Array> {
+  const entries: Record<string, Uint8Array> = {}
+  for (const icon of icons) {
+    entries[icon.name] = icon.bytes
+  }
+
+  const layers = FAVICON_ICO_SIZES
+    .map(size => icons.find(icon => icon.size === size))
+    .filter((icon): icon is FaviconRenderedIcon => Boolean(icon))
+    .map(icon => ({ width: icon.size, height: icon.size, bytes: icon.bytes }))
+  entries['favicon.ico'] = buildIco(layers)
+
+  const encoder = new TextEncoder()
+  entries['site.webmanifest'] = encoder.encode(buildWebmanifest(options))
+  entries['favicon-tags.html'] = encoder.encode(buildHtmlSnippet(options))
+  return entries
 }

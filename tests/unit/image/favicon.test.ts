@@ -14,6 +14,8 @@ describe('favicon utility', () => {
     expect(manifest.short_name).toBe('Super')
     expect(manifest.theme_color).toBe('#0066ff')
     expect(manifest.icons).toHaveLength(2)
+    expect(manifest.icons[1].sizes).toBe('512x512')
+    expect(manifest.icons[1].purpose).toBe('any maskable')
   })
 
   it('builds an HTML snippet with required link and meta tags', () => {

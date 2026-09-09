@@ -52,16 +52,9 @@ async function generate() {
 }
 
 function downloadZip() {
-  if (!result.value?.zipBase64)
+  if (!result.value?.zipBlob)
     return
-  const binaryString = atob(result.value.zipBase64)
-  const len = binaryString.length
-  const bytes = new Uint8Array(len)
-  for (let i = 0; i < len; i++) {
-    bytes[i] = binaryString.charCodeAt(i)
-  }
-
-  downloadBlob('favicon_package.zip', new Blob([bytes], { type: 'application/zip' }))
+  downloadBlob('favicon_package.zip', result.value.zipBlob)
 }
 
 function handleReset() {

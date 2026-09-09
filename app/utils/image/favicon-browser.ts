@@ -1,6 +1,6 @@
-import type { FaviconItemPreview, FaviconOptions, FaviconPackageResult } from '#shared/utils/image/favicon'
-import { strToU8, zipSync } from 'fflate'
-import { buildHtmlSnippet, buildIco, buildWebmanifest } from '#shared/utils/image/favicon'
+import type { FaviconItemPreview, FaviconOptions, FaviconPackageResult, FaviconRenderedIcon } from '#shared/utils/image/favicon'
+import { buildFaviconZipEntries, buildHtmlSnippet, buildWebmanifest, FAVICON_SIZES } from '#shared/utils/image/favicon'
+import { blobToBytes, zipInBrowser } from '~/utils/image/zip'
 
 async function loadImageSource(file: Blob): Promise<{
   width: number
@@ -44,18 +44,8 @@ export async function generateFaviconPackageInBrowser(
 ): Promise<FaviconPackageResult> {
   const source = await loadImageSource(file)
 
-  const sizes = [
-    { name: 'favicon-16x16.png', size: 16 },
-    { name: 'favicon-32x32.png', size: 32 },
-    { name: 'favicon-48x48.png', size: 48 },
-    { name: 'apple-touch-icon.png', size: 180 },
-    { name: 'android-chrome-192x192.png', size: 192 },
-    { name: 'android-chrome-512x512.png', size: 512 },
-  ]
-
-  const zipFiles: Record<string, Uint8Array> = {}
   const previews: FaviconItemPreview[] = []
-  const renderedImages: { width: number, height: number, bytes: Uint8Array }[] = []
+  const icons: FaviconRenderedIcon[] = []
 
   const srcW = source.width
   const srcH = source.height
@@ -64,7 +54,7 @@ export async function generateFaviconPackageInBrowser(
   const fitDim = options.fit === 'cover' ? Math.min(srcW, srcH) : Math.max(srcW, srcH)
   const background = options.fit === 'cover' ? '' : options.backgroundColor?.trim() || ''
 
-  for (const { name, size } of sizes) {
+  for (const { name, size } of FAVICON_SIZES) {
     let canvas: OffscreenCanvas | HTMLCanvasElement
     let ctx: OffscreenCanvasRenderingContext2D | CanvasRenderingContext2D | null
 
@@ -113,50 +103,16 @@ export async function generateFaviconPackageInBrowser(
       })
     }
 
-    const arrayBuffer = await blob.arrayBuffer()
-    const bytes = new Uint8Array(arrayBuffer)
-
-    zipFiles[name] = bytes
-    renderedImages.push({ width: size, height: size, bytes })
-
-    const dataUrl = URL.createObjectURL(blob)
-    previews.push({
-      name,
-      size,
-      dataUrl,
-    })
+    icons.push({ name, size, bytes: await blobToBytes(blob) })
+    previews.push({ name, size, dataUrl: URL.createObjectURL(blob) })
   }
 
   source.close?.()
 
-  // Create favicon.ico
-  const ico16 = renderedImages.find(img => img.width === 16)!
-  const ico32 = renderedImages.find(img => img.width === 32)!
-  const icoBytes = buildIco([ico16, ico32])
-  zipFiles['favicon.ico'] = icoBytes
-
-  // Add site.webmanifest
-  const webmanifest = buildWebmanifest(options)
-  zipFiles['site.webmanifest'] = strToU8(webmanifest)
-
-  // Add HTML snippet
-  const htmlSnippet = buildHtmlSnippet(options)
-  zipFiles['favicon-tags.html'] = strToU8(htmlSnippet)
-
-  // Create ZIP archive
-  const zipBytes = zipSync(zipFiles)
-
-  let binaryString = ''
-  const chunk = 8192
-  for (let i = 0; i < zipBytes.length; i += chunk) {
-    binaryString += String.fromCharCode(...zipBytes.subarray(i, i + chunk))
-  }
-  const zipBase64 = btoa(binaryString)
-
   return {
-    zipBase64,
+    zipBlob: zipInBrowser(buildFaviconZipEntries(icons, options)),
     previews,
-    htmlSnippet,
-    webmanifest,
+    htmlSnippet: buildHtmlSnippet(options),
+    webmanifest: buildWebmanifest(options),
   }
 }
