@@ -6,6 +6,8 @@ export interface IpInfo {
   version: 4 | 6
   type: IpClassificationType
   isSpecial: boolean
+  matchedRange?: string
+  rfc?: string
   decimal?: string
   hex?: string
   binary?: string
@@ -20,6 +22,8 @@ export function analyzeIp(ipString: string): IpInfo {
     version: classification.version,
     type: classification.type,
     isSpecial: classification.isSpecial,
+    matchedRange: classification.matchedRange,
+    rfc: classification.rfc,
     decimal: classification.decimal,
     hex: classification.hex,
     binary: classification.binary,

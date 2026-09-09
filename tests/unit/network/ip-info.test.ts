@@ -23,6 +23,11 @@ describe('analyzeIp', () => {
     expect(analyzeIp('::1').version).toBe(6)
   })
 
+  it('carries the matched range and the RFC of the classification', () => {
+    expect(analyzeIp('192.168.1.1')).toMatchObject({ matchedRange: '192.168.0.0/16', rfc: 'RFC 1918' })
+    expect(analyzeIp('8.8.8.8').matchedRange).toBeUndefined()
+  })
+
   it('throws on invalid IP formats', () => {
     expect(() => analyzeIp('not-an-ip')).toThrow()
     expect(() => analyzeIp('256.0.0.1')).toThrow()
