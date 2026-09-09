@@ -14,12 +14,17 @@ test.describe('Image to Base64 tool', () => {
     await expect(page.locator('main').getByText('sample.svg')).toBeVisible()
     await expect(page.getByRole('textbox').first()).toHaveValue(/data:image\/svg\+xml;base64/)
 
+    // Overhead callout and exact output length
+    await expect(page.locator('main').getByText('Base64 adds about 33 percent')).toBeVisible()
+    await expect(page.locator('main').getByText(/\d+ characters/)).toBeVisible()
+
     // Switch to Base64 -> Image mode
     await page.getByRole('button', { name: 'Base64 → Image' }).click()
     const textarea = page.getByRole('textbox', { name: 'Base64 String or Data URI' })
     await textarea.fill('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==')
 
     await expect(page.locator('main').getByText('Decoded Image Preview')).toBeVisible()
+    await expect(page.locator('main').getByText('1 × 1 px')).toBeVisible()
 
     // Clear input
     await page.getByRole('button', { name: 'Clear' }).click()

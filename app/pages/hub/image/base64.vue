@@ -28,6 +28,12 @@ const fileName = computed(() => file.value?.name ?? '')
 const fileSize = computed(() => file.value?.size ?? 0)
 const imageWidth = computed(() => previewImage.value?.naturalWidth ?? 0)
 const imageHeight = computed(() => previewImage.value?.naturalHeight ?? 0)
+const dataUriLength = computed(() => dataUri.value?.length ?? 0)
+const overheadPercent = computed(() => {
+  if (!fileSize.value || !dataUriLength.value)
+    return 0
+  return Math.round(((dataUriLength.value - fileSize.value) / fileSize.value) * 100)
+})
 
 function loadSample() {
   reportInput('sample')
@@ -53,6 +59,13 @@ const decodedDataUri = computed(() => {
   return `data:${parsedInput.value.mimeType};base64,${parsedInput.value.base64}`
 })
 useLiveTool(decodedDataUri)
+
+const { state: decodedImage } = useImageElement(
+  () => ({ src: decodedDataUri.value }),
+  { immediate: false },
+)
+const decodedWidth = computed(() => decodedImage.value?.naturalWidth ?? 0)
+const decodedHeight = computed(() => decodedImage.value?.naturalHeight ?? 0)
 
 function handleDownloadDecoded() {
   if (!decodedDataUri.value || !parsedInput.value)
@@ -114,6 +127,16 @@ function handleDownloadDecoded() {
         v-if="mode === 'image-to-base64'"
         class="space-y-6"
       >
+        <UAlert
+          color="info"
+          variant="subtle"
+          icon="i-lucide-info"
+          title="Base64 adds about 33 percent"
+          :description="overheadPercent
+            ? `Base64 writes 4 characters for each 3 bytes. This data URI is ${overheadPercent} percent larger than the file. Use a data URI for a small icon or a placeholder only.`
+            : 'Base64 writes 4 characters for each 3 bytes. A data URI is about 33 percent larger than the file. Use a data URI for a small icon or a placeholder only.'"
+        />
+
         <ImageDropzone
           v-if="!dataUri"
           v-model="file"
@@ -154,7 +177,10 @@ function handleDownloadDecoded() {
               <!-- Data URI -->
               <div class="space-y-1.5">
                 <div class="flex items-center justify-between">
-                  <span class="text-xs font-semibold text-default">Data URI (Full Source)</span>
+                  <span class="text-xs font-semibold text-default">
+                    Data URI (Full Source)
+                    <span class="font-normal text-muted">· {{ dataUriLength.toLocaleString() }} characters</span>
+                  </span>
                   <UButton
                     size="xs"
                     variant="subtle"
@@ -243,6 +269,12 @@ function handleDownloadDecoded() {
               alt="Decoded preview"
               class="max-h-60 object-contain"
             >
+          </div>
+          <div
+            v-if="decodedWidth && decodedHeight"
+            class="text-xs text-muted"
+          >
+            {{ decodedWidth }} × {{ decodedHeight }} px
           </div>
           <div>
             <UButton
