@@ -181,6 +181,16 @@ useToolShortcuts({
       v-if="hash"
       class="grid gap-3 rounded-md border border-default bg-elevated/40 p-4 sm:grid-cols-2"
     >
+      <div class="flex items-start gap-2 text-xs text-muted sm:col-span-2">
+        <UIcon
+          name="i-lucide-server"
+          class="mt-0.5 size-4 shrink-0"
+        />
+        <span>
+          Each time is measured on this server, not your infrastructure. Your own hardware gives a
+          different result.
+        </span>
+      </div>
       <div>
         <dt class="text-xs text-muted">
           Duration
