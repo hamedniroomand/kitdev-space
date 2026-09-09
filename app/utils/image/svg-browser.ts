@@ -1,4 +1,4 @@
-export type SvgScale = 1 | 2 | 4
+export type SvgScale = 1 | 2 | 3
 export type SvgExportFormat = 'png' | 'webp' | 'jpeg'
 
 export interface SvgRasterizeOptions {

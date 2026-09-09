@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import type { SvgExportFormat, SvgScale } from '~/utils/image/svg-browser'
+import type { ZipEntries } from '~/utils/image/zip'
 import { imageExtensionFor } from '#shared/utils/image/format'
 import { rasterizeSvgInBrowser } from '~/utils/image/svg-browser'
+import { blobToBytes, zipInBrowser } from '~/utils/image/zip'
 
 const svgText = ref(`<svg xmlns="http://www.w3.org/2000/svg" width="120" height="80">
   <rect width="120" height="80" fill="#0f766e"/>
@@ -14,15 +16,16 @@ const width = ref<number | null>(null)
 const height = ref<number | null>(null)
 const lockAspect = ref(true)
 const background = ref('#ffffff')
+const selectedScales = ref<SvgScale[]>([1, 2, 3])
 const result1x = ref<Blob | null>(null)
 const result2x = ref<Blob | null>(null)
-const result4x = ref<Blob | null>(null)
+const result3x = ref<Blob | null>(null)
 const meta1x = ref<{ width: number | null, height: number | null } | null>(null)
 const meta2x = ref<{ width: number | null, height: number | null } | null>(null)
-const meta4x = ref<{ width: number | null, height: number | null } | null>(null)
+const meta3x = ref<{ width: number | null, height: number | null } | null>(null)
 const preview1x = useObjectUrl(result1x)
 const preview2x = useObjectUrl(result2x)
-const preview4x = useObjectUrl(result4x)
+const preview3x = useObjectUrl(result3x)
 const { status, error, run, reset } = useTool()
 const { downloadBlob } = useDownload()
 
@@ -32,11 +35,17 @@ const formatItems = [
   { label: 'JPEG', value: 'jpeg' },
 ]
 
+const scaleItems: { label: string, value: SvgScale }[] = [
+  { label: '1x', value: 1 },
+  { label: '2x', value: 2 },
+  { label: '3x', value: 3 },
+]
+
 const scaleCards = computed(() => [
   { scale: 1 as SvgScale, blob: result1x.value, preview: preview1x.value, meta: meta1x.value },
   { scale: 2 as SvgScale, blob: result2x.value, preview: preview2x.value, meta: meta2x.value },
-  { scale: 4 as SvgScale, blob: result4x.value, preview: preview4x.value, meta: meta4x.value },
-])
+  { scale: 3 as SvgScale, blob: result3x.value, preview: preview3x.value, meta: meta3x.value },
+].filter(card => card.blob))
 
 useToolSeo('svg-converter')
 
@@ -65,21 +74,28 @@ async function convertScale(scale: SvgScale) {
     meta2x.value = { width: processed.width, height: processed.height }
   }
   else {
-    result4x.value = processed.blob
-    meta4x.value = { width: processed.width, height: processed.height }
+    result3x.value = processed.blob
+    meta3x.value = { width: processed.width, height: processed.height }
   }
 }
 
-async function handleConvert() {
+function clearResults() {
   result1x.value = null
   result2x.value = null
-  result4x.value = null
+  result3x.value = null
   meta1x.value = null
   meta2x.value = null
-  meta4x.value = null
+  meta3x.value = null
+}
+
+async function handleConvert() {
+  clearResults()
 
   await run(async () => {
-    await Promise.all(([1, 2, 4] as SvgScale[]).map(scale => convertScale(scale)))
+    if (!selectedScales.value.length) {
+      throw new Error('Select at least one scale.')
+    }
+    await Promise.all(selectedScales.value.map(scale => convertScale(scale)))
     return 'ok'
   })
 }
@@ -91,15 +107,24 @@ function downloadScale(scale: SvgScale, blob: Blob | null) {
   downloadBlob(`svg-${scale}x.${imageExtensionFor(format.value)}`, blob)
 }
 
+/** One zip holds every scale, so the user gets one download. */
+async function downloadZip() {
+  const extension = imageExtensionFor(format.value)
+  const entries: ZipEntries = {}
+
+  for (const card of scaleCards.value) {
+    if (card.blob) {
+      entries[`svg-${card.scale}x.${extension}`] = await blobToBytes(card.blob)
+    }
+  }
+
+  downloadBlob('svg-raster.zip', zipInBrowser(entries))
+}
+
 function handleClear() {
   svgText.value = ''
   file.value = null
-  result1x.value = null
-  result2x.value = null
-  result4x.value = null
-  meta1x.value = null
-  meta2x.value = null
-  meta4x.value = null
+  clearResults()
   reset()
 }
 
@@ -207,6 +232,17 @@ useToolShortcuts({
           />
         </div>
       </UFormField>
+      <UFormField
+        label="Scales"
+        class="sm:col-span-2"
+        hint="Each selected scale gives one raster in the zip file."
+      >
+        <UCheckboxGroup
+          v-model="selectedScales"
+          :items="scaleItems"
+          orientation="horizontal"
+        />
+      </UFormField>
     </div>
 
     <ToolActions>
@@ -234,42 +270,53 @@ useToolShortcuts({
     />
 
     <div
-      v-if="scaleCards.some(card => card.blob)"
-      class="grid gap-4 sm:grid-cols-3"
+      v-if="scaleCards.length"
+      class="space-y-4"
     >
-      <div
-        v-for="card in scaleCards"
-        :key="card.scale"
-        class="space-y-3 rounded-md border border-default bg-elevated/40 p-4"
-      >
-        <div class="flex items-center justify-between gap-2">
-          <div>
-            <p class="text-sm font-medium text-highlighted">
-              {{ card.scale }}x
-            </p>
-            <p
-              v-if="card.meta"
-              class="text-xs text-muted"
-            >
-              {{ card.meta.width }} × {{ card.meta.height }}
-            </p>
-          </div>
-          <UButton
-            size="sm"
-            color="primary"
-            icon="i-lucide-download"
-            :disabled="!card.blob"
-            @click="downloadScale(card.scale, card.blob)"
-          >
-            Download
-          </UButton>
-        </div>
-        <img
-          v-if="card.preview"
-          :src="card.preview"
-          :alt="`${card.scale}x SVG preview`"
-          class="max-h-40 w-full rounded object-contain bg-default"
+      <div class="flex justify-end">
+        <UButton
+          color="primary"
+          variant="subtle"
+          icon="i-lucide-file-archive"
+          @click="downloadZip"
         >
+          Download ZIP
+        </UButton>
+      </div>
+      <div class="grid gap-4 sm:grid-cols-3">
+        <div
+          v-for="card in scaleCards"
+          :key="card.scale"
+          class="space-y-3 rounded-md border border-default bg-elevated/40 p-4"
+        >
+          <div class="flex items-center justify-between gap-2">
+            <div>
+              <p class="text-sm font-medium text-highlighted">
+                {{ card.scale }}x
+              </p>
+              <p
+                v-if="card.meta"
+                class="text-xs text-muted"
+              >
+                {{ card.meta.width }} × {{ card.meta.height }}
+              </p>
+            </div>
+            <UButton
+              size="sm"
+              color="primary"
+              icon="i-lucide-download"
+              @click="downloadScale(card.scale, card.blob)"
+            >
+              Download {{ card.scale }}x
+            </UButton>
+          </div>
+          <img
+            v-if="card.preview"
+            :src="card.preview"
+            :alt="`${card.scale}x SVG preview`"
+            class="max-h-40 w-full rounded object-contain bg-default"
+          >
+        </div>
       </div>
     </div>
 
