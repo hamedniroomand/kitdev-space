@@ -62,6 +62,16 @@ describe('generateTailwindPalette', () => {
     expect(deltaE(shades.find(s => s.shade === '700')!.hex, TAILWIND_BLUE[700])).toBeLessThan(2)
   })
 
+  it('anchors the input color to any shade step', () => {
+    const shades = generateTailwindPalette('#1e40af', '800')
+    expect(shades.find(s => s.shade === '800')?.hex).toBe('#1e40af')
+    // The whole scale moves with the anchor, so 500 now holds a lighter step.
+    expect(shades.find(s => s.shade === '500')?.hex).toBe(TAILWIND_BLUE[500])
+    expect(shades.map(s => s.hex)).not.toEqual(
+      generateTailwindPalette('#1e40af').map(s => s.hex),
+    )
+  })
+
   it('formats as Tailwind v4 theme CSS', () => {
     const shades = generateTailwindPalette('#3b82f6')
     const v4 = formatAsTailwindV4(shades, 'brand')

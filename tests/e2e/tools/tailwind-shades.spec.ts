@@ -24,4 +24,11 @@ test('generates Tailwind shades and configuration code', { tag: '@smoke' }, asyn
     await expect(output).toContainText('\'accent\': {')
     await expect(output).toContainText('\'500\': \'#10b981\'')
   })
+
+  await test.step('moves the base color to another shade step', async () => {
+    await page.getByRole('combobox', { name: 'Base shade' }).click()
+    await page.getByRole('option', { name: '800', exact: true }).click()
+
+    await expect(output).toContainText('\'800\': \'#10b981\'')
+  })
 })

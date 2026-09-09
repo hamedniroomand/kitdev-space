@@ -1,17 +1,22 @@
 <script setup lang="ts">
-import type { TailwindShade } from '#shared/utils/color/tailwind'
+import type { ShadeKey, TailwindShade } from '#shared/utils/color/tailwind'
 import {
+  DEFAULT_ANCHOR,
   formatAsCssVars,
   formatAsTailwindV3,
   formatAsTailwindV4,
   generateTailwindPalette,
+  SHADE_KEYS,
 } from '#shared/utils/color/tailwind'
 
 useToolSeo('tailwind-shades')
 
 const inputColor = ref('#3b82f6')
 const colorName = ref('brand')
+const anchorShade = ref<ShadeKey>(DEFAULT_ANCHOR)
 const format = ref<'v4' | 'v3' | 'css'>('v4')
+
+const anchorItems = SHADE_KEYS.map(shade => ({ label: shade, value: shade }))
 
 const { copy, label, color, icon } = useCopyFeedback()
 
@@ -26,7 +31,7 @@ const presets = [
 
 const palette = computed<TailwindShade[]>(() => {
   try {
-    return generateTailwindPalette(inputColor.value)
+    return generateTailwindPalette(inputColor.value, anchorShade.value)
   }
   catch {
     return []
@@ -93,9 +98,12 @@ useToolShortcuts({
       </div>
 
       <!-- Inputs Grid -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <!-- Color Input -->
-        <UFormField label="Base Color">
+        <UFormField
+          label="Base Color"
+          class="lg:col-span-2"
+        >
           <div class="flex items-center gap-3">
             <input
               v-model="inputColor"
@@ -116,6 +124,19 @@ useToolShortcuts({
           <UInput
             v-model="colorName"
             placeholder="e.g. brand, primary, accent"
+            class="font-mono text-sm w-full"
+          />
+        </UFormField>
+
+        <!-- The step that holds the base color. The scale grows around it. -->
+        <UFormField
+          label="Base Shade"
+          help="The step that keeps your color"
+        >
+          <USelect
+            v-model="anchorShade"
+            :items="anchorItems"
+            aria-label="Base shade"
             class="font-mono text-sm w-full"
           />
         </UFormField>
