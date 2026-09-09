@@ -175,7 +175,7 @@ function handleDownloadExample() {
             v-if="mode === 'env-to-json'"
             class="flex items-center gap-1.5"
           >
-            <UToggle
+            <USwitch
               v-model="maskValues"
               aria-label="Mask secret values"
               size="xs"

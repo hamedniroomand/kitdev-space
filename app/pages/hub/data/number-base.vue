@@ -134,7 +134,7 @@ const twosResult = computed(() => {
 
       <!-- Grouping toggle -->
       <div class="flex items-center gap-3">
-        <UToggle
+        <USwitch
           v-model="groupingEnabled"
           aria-label="Enable digit grouping"
           size="sm"
