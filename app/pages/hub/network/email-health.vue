@@ -1,14 +1,27 @@
 <script setup lang="ts">
-import type { EmailHealthResult, HealthIssue, HealthLevel } from '#shared/utils/network/email-health'
+import type { EmailHealthResult, HealthLevel } from '#shared/utils/network/email-health'
 import { DEFAULT_DKIM_SELECTORS } from '#shared/utils/network/email-health'
 
 const domain = ref('')
 const dkimSelectors = ref(DEFAULT_DKIM_SELECTORS.join(', '))
 const { status, error, result, run, reset } = useTool<EmailHealthResult>()
-const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
 
 useToolSeo('email-health')
 const { reportInput } = useToolInput()
+
+const shareOptions = computed(() => ({ dkimSelectors: dkimSelectors.value }))
+
+const policies = computed(() => {
+  const data = result.value
+  if (!data) {
+    return []
+  }
+  return [
+    { title: 'MTA-STS', report: data.mtaSts },
+    { title: 'SMTP TLS Reporting', report: data.tlsRpt },
+    { title: 'BIMI', report: data.bimi },
+  ].filter(item => item.report !== undefined)
+})
 
 function badgeColor(level: HealthLevel) {
   switch (level) {
@@ -21,10 +34,6 @@ function badgeColor(level: HealthLevel) {
     case 'error':
       return 'error'
   }
-}
-
-function badgeLabel(issue: HealthIssue) {
-  return issue.level === 'ok' ? 'OK' : issue.level
 }
 
 async function inspect() {
@@ -40,13 +49,6 @@ async function inspect() {
     })
     return data.result
   }, 'The lookup failed.')
-}
-
-async function handleCopy() {
-  if (status.value !== 'success' || result.value === null) {
-    return
-  }
-  await copy(JSON.stringify(result.value, null, 2))
 }
 
 function handleClear() {
@@ -104,19 +106,19 @@ useToolShortcuts({
         @click="inspect"
       />
       <UButton
-        :label="copyLabel('default', 'Copy JSON')"
-        :color="copyColor()"
-        variant="subtle"
-        :icon="copyIcon()"
-        :disabled="status !== 'success' || !result"
-        @click="handleCopy"
-      />
-      <UButton
         label="Clear"
         color="neutral"
         variant="ghost"
         icon="i-lucide-eraser"
         @click="handleClear"
+      />
+      <ToolResultActions
+        v-if="status === 'success' && result"
+        :result="result"
+        :input="domain"
+        tool-id="email-health"
+        :options="shareOptions"
+        :filename="`email-health-${result.domain}.json`"
       />
     </ToolActions>
 
@@ -129,28 +131,16 @@ useToolShortcuts({
       v-if="status === 'success' && result"
       class="space-y-6"
     >
+      <EmailScoreCard
+        v-if="result.score"
+        :score="result.score"
+      />
+
       <section class="space-y-3">
-        <div class="flex flex-wrap items-center gap-2">
-          <h2 class="text-sm font-medium text-highlighted">
-            SPF
-          </h2>
-          <UBadge
-            v-for="issue in result.spf.issues"
-            :key="`spf-${issue.code}`"
-            :color="badgeColor(issue.level)"
-            variant="subtle"
-            class="capitalize"
-          >
-            {{ badgeLabel(issue) }}
-          </UBadge>
-        </div>
-        <p
-          v-for="issue in result.spf.issues"
-          :key="`spf-msg-${issue.code}`"
-          class="text-sm text-muted"
-        >
-          {{ issue.message }}
-        </p>
+        <h2 class="text-sm font-medium text-highlighted">
+          SPF
+        </h2>
+        <EmailIssueList :issues="result.spf.issues" />
         <ul
           v-if="result.spf.raw.length"
           class="divide-y divide-default rounded-md border border-default"
@@ -185,47 +175,70 @@ useToolShortcuts({
             </li>
           </ul>
         </div>
+        <EmailSpfTrace
+          v-if="result.spf.trace"
+          :trace="result.spf.trace"
+        />
       </section>
 
       <section class="space-y-3">
-        <div class="flex flex-wrap items-center gap-2">
-          <h2 class="text-sm font-medium text-highlighted">
-            DKIM
-          </h2>
-          <UBadge
-            v-for="issue in result.dkim.issues"
-            :key="`dkim-${issue.code}`"
-            :color="badgeColor(issue.level)"
-            variant="subtle"
-            class="capitalize"
-          >
-            {{ badgeLabel(issue) }}
-          </UBadge>
-        </div>
-        <p
-          v-for="issue in result.dkim.issues"
-          :key="`dkim-msg-${issue.code}`"
-          class="text-sm text-muted"
-        >
-          {{ issue.message }}
-        </p>
+        <h2 class="text-sm font-medium text-highlighted">
+          DKIM
+        </h2>
+        <EmailIssueList :issues="result.dkim.issues" />
         <ul class="divide-y divide-default rounded-md border border-default">
           <li
             v-for="selector in result.dkim.selectors"
             :key="selector.selector"
             class="flex flex-wrap items-start justify-between gap-3 px-3 py-2"
           >
-            <div class="space-y-1">
-              <p class="font-mono text-sm text-highlighted">
+            <div class="min-w-0 flex-1 space-y-1">
+              <p class="font-mono text-sm break-all text-highlighted">
                 {{ selector.selector }}._domainkey.{{ result.domain }}
               </p>
               <p
-                v-for="issue in selector.issues"
-                :key="`${selector.selector}-${issue.code}`"
-                class="text-sm text-muted"
+                v-if="selector.cname"
+                class="font-mono text-xs break-all text-muted"
               >
-                {{ issue.message }}
+                CNAME: {{ selector.cname }}
               </p>
+              <div
+                v-if="selector.key"
+                class="flex flex-wrap gap-1"
+              >
+                <UBadge
+                  color="neutral"
+                  variant="subtle"
+                  class="font-mono"
+                >
+                  k={{ selector.key.keyType }}
+                </UBadge>
+                <UBadge
+                  v-if="selector.key.keyBits"
+                  color="neutral"
+                  variant="subtle"
+                  class="font-mono"
+                >
+                  {{ selector.key.keyBits }}-bit
+                </UBadge>
+                <UBadge
+                  v-for="flag in selector.key.flags"
+                  :key="`${selector.selector}-t-${flag}`"
+                  color="warning"
+                  variant="subtle"
+                  class="font-mono"
+                >
+                  t={{ flag }}
+                </UBadge>
+                <UBadge
+                  v-if="selector.key.revoked"
+                  color="error"
+                  variant="subtle"
+                >
+                  Revoked
+                </UBadge>
+              </div>
+              <EmailIssueList :issues="selector.issues" />
             </div>
             <UBadge
               :color="selector.present ? 'success' : 'warning'"
@@ -235,30 +248,35 @@ useToolShortcuts({
             </UBadge>
           </li>
         </ul>
+        <div
+          v-if="result.dkim.skipped?.length"
+          class="space-y-2"
+        >
+          <p class="text-sm font-medium text-highlighted">
+            Not checked
+          </p>
+          <ul class="flex flex-wrap gap-2">
+            <li
+              v-for="item in result.dkim.skipped"
+              :key="`skipped-${item.selector}`"
+            >
+              <UBadge
+                color="neutral"
+                variant="subtle"
+                class="font-mono"
+              >
+                {{ item.selector }} · {{ item.provider }}
+              </UBadge>
+            </li>
+          </ul>
+        </div>
       </section>
 
       <section class="space-y-3">
-        <div class="flex flex-wrap items-center gap-2">
-          <h2 class="text-sm font-medium text-highlighted">
-            DMARC
-          </h2>
-          <UBadge
-            v-for="issue in result.dmarc.issues"
-            :key="`dmarc-${issue.code}`"
-            :color="badgeColor(issue.level)"
-            variant="subtle"
-            class="capitalize"
-          >
-            {{ badgeLabel(issue) }}
-          </UBadge>
-        </div>
-        <p
-          v-for="issue in result.dmarc.issues"
-          :key="`dmarc-msg-${issue.code}`"
-          class="text-sm text-muted"
-        >
-          {{ issue.message }}
-        </p>
+        <h2 class="text-sm font-medium text-highlighted">
+          DMARC
+        </h2>
+        <EmailIssueList :issues="result.dmarc.issues" />
         <ul
           v-if="result.dmarc.raw.length"
           class="divide-y divide-default rounded-md border border-default"
@@ -317,27 +335,10 @@ useToolShortcuts({
       </section>
 
       <section class="space-y-3">
-        <div class="flex flex-wrap items-center gap-2">
-          <h2 class="text-sm font-medium text-highlighted">
-            MX
-          </h2>
-          <UBadge
-            v-for="issue in result.mx.issues"
-            :key="`mx-${issue.code}`"
-            :color="badgeColor(issue.level)"
-            variant="subtle"
-            class="capitalize"
-          >
-            {{ badgeLabel(issue) }}
-          </UBadge>
-        </div>
-        <p
-          v-for="issue in result.mx.issues"
-          :key="`mx-msg-${issue.code}`"
-          class="text-sm text-muted"
-        >
-          {{ issue.message }}
-        </p>
+        <h2 class="text-sm font-medium text-highlighted">
+          MX
+        </h2>
+        <EmailIssueList :issues="result.mx.issues" />
         <div
           v-if="result.mx.records.length"
           class="overflow-x-auto rounded-md border border-default"
@@ -398,6 +399,41 @@ useToolShortcuts({
           No MX records.
         </p>
       </section>
+
+      <section
+        v-if="policies.length"
+        class="space-y-3"
+      >
+        <h2 class="text-sm font-medium text-highlighted">
+          Transport and brand records
+        </h2>
+        <div
+          v-for="policy in policies"
+          :key="policy.title"
+          class="space-y-2"
+        >
+          <div class="flex flex-wrap items-center gap-2">
+            <p class="text-sm font-medium text-highlighted">
+              {{ policy.title }}
+            </p>
+            <span class="font-mono text-xs text-muted">{{ policy.report!.name }}</span>
+            <UBadge
+              :color="policy.report!.present ? 'success' : 'neutral'"
+              variant="subtle"
+            >
+              {{ policy.report!.present ? 'Present' : 'Missing' }}
+            </UBadge>
+          </div>
+          <p
+            v-for="(row, index) in policy.report!.raw"
+            :key="`${policy.title}-raw-${index}`"
+            class="font-mono text-xs break-all text-highlighted"
+          >
+            {{ row }}
+          </p>
+          <EmailIssueList :issues="policy.report!.issues" />
+        </div>
+      </section>
     </div>
 
     <template #docs>
@@ -407,8 +443,33 @@ useToolShortcuts({
             This tool inspects email DNS records for a domain.
           </p>
           <p>
-            It parses SPF permissions, checks DKIM selector records, reads the DMARC policy, and sorts MX
-            hosts by priority.
+            It parses SPF permissions, traces each include and redirect, checks DKIM selector records,
+            reads the DMARC policy, and sorts MX hosts by priority. It also reads the MTA-STS, SMTP TLS
+            Reporting, and BIMI records.
+          </p>
+          <p>
+            Each finding shows the observed DNS string, the effect on delivery, and one step that
+            corrects it.
+          </p>
+          <p>
+            The SPF trace stops at the RFC 7208 limit of 10 DNS lookups. It counts void lookups against
+            the RFC limit of 2, and it flattens the authorized IPv4 and IPv6 ranges.
+          </p>
+          <p>
+            The grade adds points for each check and shows the points of each one. It rates the DNS
+            records only. It does not measure inbox placement, and it gives no delivery guarantee. The
+            tool reads DNS only. It does not fetch the MTA-STS policy file over HTTPS, and it does not
+            send test messages.
+          </p>
+          <p>
+            A DKIM selector is a free label, so DNS gives no way to list every selector of a domain. The
+            tool checks the selectors that you give, plus a short default list. It does not try hundreds
+            of names. Read the s= tag in the DKIM-Signature header of a sent message to find your
+            selector.
+          </p>
+          <p>
+            A failed DNS query and an absent record are not the same. The tool marks a failed query as a
+            warning, because the record status is then unknown.
           </p>
           <p>
             DMARC is the record that mailbox providers use. It tells them what to do when SPF and DKIM
