@@ -13,6 +13,13 @@ test('generates time-based one-time passwords', { tag: '@smoke' }, async ({ page
     expect(digits.replace(/\s+/g, '')).toMatch(/^\d{6}$/)
   })
 
+  await test.step('exposes the countdown to assistive technology', async () => {
+    await expect(codeContainer).toHaveAttribute('aria-live', 'polite')
+    const bar = page.getByRole('progressbar', { name: 'Seconds until the next one-time password' })
+    await expect(bar).toHaveAttribute('aria-valuemax', '30')
+    await expect(bar).toHaveAttribute('aria-valuenow', /^\d+$/)
+  })
+
   await test.step('masks the secret key', async () => {
     const secret = page.getByLabel('Base32 Secret or OTPAuth URI')
     await expect(secret).toHaveAttribute('type', 'password')

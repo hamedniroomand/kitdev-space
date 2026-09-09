@@ -368,8 +368,11 @@ function handleClear() {
           Current One-Time Password
         </div>
 
+        <!-- Only the code is a live region. The countdown must stay outside it. -->
         <div
           aria-label="One-time password"
+          aria-live="polite"
+          aria-atomic="true"
           class="text-4xl sm:text-5xl font-extrabold font-mono tracking-widest text-primary flex items-center justify-center gap-3"
         >
           <span>{{ code.slice(0, Math.ceil(code.length / 2)) }}</span>
@@ -378,7 +381,15 @@ function handleClear() {
 
         <!-- Progress bar and timer -->
         <div class="space-y-1.5 pt-2">
-          <div class="w-full bg-default rounded-full h-2 overflow-hidden border border-default">
+          <div
+            role="progressbar"
+            aria-label="Seconds until the next one-time password"
+            :aria-valuenow="remainingSeconds"
+            aria-valuemin="0"
+            :aria-valuemax="period"
+            :aria-valuetext="`${remainingSeconds} seconds remaining`"
+            class="w-full bg-default rounded-full h-2 overflow-hidden border border-default"
+          >
             <div
               class="h-full bg-primary transition-all duration-300 ease-linear rounded-full"
               :style="{ width: `${progress}%` }"
@@ -416,6 +427,9 @@ function handleClear() {
           </p>
           <p>
             Give a Base32 secret or a full otpauth:// URI. The tool shows the current code and the seconds until the next code. Use it to test a login flow or to check that your server and your app agree.
+          </p>
+          <p>
+            A screen reader reads the new code when the code changes. The progress bar reports the seconds until the next code, but it does not interrupt the user each second.
           </p>
           <p>
             The tool masks the secret key. Use the eye button to show it or to hide it. The tool keeps the secret in the page memory only. It writes no secret to local storage.
