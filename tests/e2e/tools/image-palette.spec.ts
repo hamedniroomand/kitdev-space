@@ -8,3 +8,15 @@ test('extracts color palette from sample image', { tag: '@smoke' }, async ({ pag
 
   await expect(page.getByRole('heading', { name: /Dominant Colors/ })).toBeVisible()
 })
+
+test('changes the minimum color distance', async ({ page }) => {
+  await gotoHydrated(page, '/hub/color/palette-extractor')
+
+  await page.getByRole('button', { name: 'Load Sample Image' }).click()
+  await expect(page.getByRole('heading', { name: /Dominant Colors/ })).toBeVisible()
+
+  const slider = page.getByRole('slider')
+  await expect(slider).toHaveAttribute('aria-valuenow', '32')
+  await slider.press('ArrowRight')
+  await expect(slider).toHaveAttribute('aria-valuenow', '33')
+})

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type { ExtractedColor } from '#shared/utils/color/palette-extractor'
 import { extractPaletteFromPixels } from '#shared/utils/color/palette-extractor'
 
 useToolSeo('image-palette')
@@ -8,7 +7,9 @@ const SAMPLE_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="300" height="
 
 const file = ref<File | null>(null)
 const colorCount = ref(8)
-const palette = ref<ExtractedColor[]>([])
+const minDistance = ref(32)
+const pixels = shallowRef<Uint8ClampedArray | null>(null)
+const anchorHex = ref<string | null>(null)
 const isProcessing = ref(false)
 
 const { copy } = useCopyFeedback()
@@ -38,8 +39,7 @@ function processImage(src: string) {
     canvas.height = h
     ctx.drawImage(img, 0, 0, w, h)
 
-    const imageData = ctx.getImageData(0, 0, w, h)
-    palette.value = extractPaletteFromPixels(imageData.data, colorCount.value)
+    pixels.value = ctx.getImageData(0, 0, w, h).data
     isProcessing.value = false
   }
 
@@ -50,13 +50,20 @@ function processImage(src: string) {
   img.src = src
 }
 
-watch([imageUrl, colorCount], ([src]) => {
+watch(imageUrl, (src) => {
+  anchorHex.value = null
   if (!src) {
-    palette.value = []
+    pixels.value = null
     return
   }
   processImage(src)
 })
+
+const palette = computed(() => (
+  pixels.value ? extractPaletteFromPixels(pixels.value, colorCount.value, minDistance.value) : []
+))
+
+const anchor = computed(() => palette.value.find(c => c.hex === anchorHex.value) ?? palette.value[0] ?? null)
 
 function handleLoadSample() {
   file.value = new File([SAMPLE_SVG], 'sample-spectrum.svg', { type: 'image/svg+xml' })
@@ -113,6 +120,24 @@ useLiveTool(palette)
               @click="handleCountChange(count)"
             />
           </div>
+
+          <UFormField
+            label="Min Distance"
+            class="border-s border-default ps-3"
+            :ui="{ label: 'text-xs text-muted font-medium' }"
+          >
+            <div class="flex w-40 items-center gap-2">
+              <USlider
+                :model-value="minDistance"
+                :min="0"
+                :max="100"
+                :step="1"
+                class="flex-1"
+                @update:model-value="minDistance = Number($event)"
+              />
+              <span class="w-6 font-mono text-xs text-muted">{{ minDistance }}</span>
+            </div>
+          </UFormField>
         </div>
 
         <div class="flex items-center gap-2">
@@ -181,6 +206,25 @@ useLiveTool(palette)
               </div>
             </div>
 
+            <!-- Base Anchor -->
+            <div
+              v-if="anchor"
+              class="flex flex-wrap items-center gap-3 p-3 border border-default rounded-xl bg-elevated/40"
+            >
+              <div
+                class="size-8 rounded-lg border border-default"
+                :style="{ backgroundColor: anchor.hex }"
+              />
+              <div class="text-xs">
+                <div class="font-mono font-semibold text-default">
+                  {{ anchor.hex }}
+                </div>
+                <div class="text-muted">
+                  Base anchor color
+                </div>
+              </div>
+            </div>
+
             <!-- Palette Swatches Grid -->
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div
@@ -188,24 +232,39 @@ useLiveTool(palette)
                 :key="idx"
                 class="rounded-xl border border-default overflow-hidden bg-elevated/30 shadow-xs flex flex-col"
               >
-                <div
-                  class="h-16 w-full cursor-pointer transition-opacity hover:opacity-90 flex items-center justify-center group"
+                <button
+                  type="button"
+                  class="h-16 w-full cursor-pointer transition-opacity hover:opacity-90"
+                  :class="c.hex === anchor?.hex ? 'ring-2 ring-inset ring-primary' : ''"
                   :style="{ backgroundColor: c.hex }"
-                  @click="copy(c.hex)"
-                >
-                  <span
-                    class="opacity-0 group-hover:opacity-100 font-mono text-xs font-bold px-2 py-1 rounded bg-black/50 text-white transition-opacity"
-                  >
-                    Copy
-                  </span>
-                </div>
+                  :aria-label="`Use ${c.hex} as the base anchor color`"
+                  :aria-pressed="c.hex === anchor?.hex"
+                  @click="anchorHex = c.hex"
+                />
                 <div class="p-2.5 space-y-1 text-xs">
                   <div class="flex items-center justify-between font-mono font-semibold text-default">
-                    <span>{{ c.hex }}</span>
+                    <span class="flex items-center gap-1">
+                      <UIcon
+                        v-if="c.hex === anchor?.hex"
+                        name="i-lucide-anchor"
+                        class="size-3 text-primary"
+                      />
+                      {{ c.hex }}
+                    </span>
                     <span class="text-muted text-[11px] font-normal">{{ c.percentage }}%</span>
                   </div>
-                  <div class="text-[11px] text-muted font-mono truncate">
-                    rgb({{ c.rgb.r }}, {{ c.rgb.g }}, {{ c.rgb.b }})
+                  <div class="flex items-center justify-between gap-1">
+                    <span class="text-[11px] text-muted font-mono truncate">
+                      rgb({{ c.rgb.r }}, {{ c.rgb.g }}, {{ c.rgb.b }})
+                    </span>
+                    <UButton
+                      size="xs"
+                      variant="ghost"
+                      color="neutral"
+                      icon="i-lucide-copy"
+                      :aria-label="`Copy ${c.hex}`"
+                      @click="copy(c.hex, c.hex, 'field')"
+                    />
                   </div>
                 </div>
               </div>

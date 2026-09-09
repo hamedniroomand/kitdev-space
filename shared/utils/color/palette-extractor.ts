@@ -9,6 +9,7 @@ export interface ExtractedColor {
 export function extractPaletteFromPixels(
   pixels: Uint8ClampedArray | Uint8Array,
   colorCount = 8,
+  minDistance = 32,
 ): ExtractedColor[] {
   const colorMap = new Map<number, { count: number, r: number, g: number, b: number }>()
   let validCount = 0
@@ -54,10 +55,10 @@ export function extractPaletteFromPixels(
     const avgG = Math.round(item.g / item.count)
     const avgB = Math.round(item.b / item.count)
 
-    // Check color distance against already extracted colors
+    // Merge a color that sits closer than the minimum distance
     const isDuplicate = palette.some((c) => {
       const dist = Math.hypot(c.rgb.r - avgR, c.rgb.g - avgG, c.rgb.b - avgB)
-      return dist < 32
+      return dist < minDistance
     })
 
     if (!isDuplicate) {
