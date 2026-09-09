@@ -16,13 +16,24 @@ test.describe('TLS Certificate Inspector tool', () => {
 
     await page.locator('main').getByRole('button', { name: 'Inspect Certificate' }).click()
 
-    await expect(page.locator('main').getByText('75 days', { exact: true })).toBeVisible()
-    await expect(page.locator('main').getByText('Matches Hostname', { exact: true })).toBeVisible()
-    await expect(page.locator('main').getByText('Trusted CA', { exact: true })).toBeVisible()
+    // Three independent checks, each with its own status.
+    await expect(page.locator('main').getByRole('heading', { name: 'Trust Chain' })).toBeVisible()
+    await expect(page.locator('main').getByRole('heading', { name: 'Hostname Match' })).toBeVisible()
+    await expect(page.locator('main').getByRole('heading', { name: 'Validity Dates' })).toBeVisible()
+    await expect(page.locator('main').getByText('The certificate covers google.com.')).toBeVisible()
+    await expect(page.locator('main').getByText('75 days remain.')).toBeVisible()
     await expect(page.locator('main').getByText('*.google.com').first()).toBeVisible()
+
+    // The chain shows the leaf first and flags the incomplete chain.
+    await expect(page.locator('main').getByText('Leaf (server)')).toBeVisible()
+    await expect(page.locator('main').getByText('Missing intermediate')).toBeVisible()
+
+    // The negotiated cipher and the JSON download.
+    await expect(page.locator('main').getByText('Negotiated Cipher', { exact: true })).toBeVisible()
+    await expect(page.locator('main').getByRole('button', { name: 'Download JSON result file' })).toBeVisible()
 
     // Test clear
     await page.locator('main').getByRole('button', { name: 'Clear' }).click()
-    await expect(page.locator('main').getByText('75 days')).not.toBeVisible()
+    await expect(page.locator('main').getByText('75 days remain.')).not.toBeVisible()
   })
 })
