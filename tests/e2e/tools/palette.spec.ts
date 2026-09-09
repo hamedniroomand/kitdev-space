@@ -4,27 +4,19 @@ import { gotoHydrated } from '../utils'
 test('generates color palette', { tag: '@smoke' }, async ({ page }) => {
   await gotoHydrated(page, '/hub/color/palette-generator')
 
-  const getSwatches = () => page.locator('main').getByRole('button', { name: /^#/ })
+  const output = page.getByRole('textbox', { name: 'Configuration Code' })
+  const swatches = page.locator('main').getByRole('button', { name: /^Copy shade/ })
 
-  await test.step('generates default 5-color palette', async () => {
-    const swatches = getSwatches()
+  await test.step('generates the full scale of the preset color', async () => {
     await expect(swatches.first()).toBeVisible()
-    expect(await swatches.count()).toBe(5)
+    expect(await swatches.count()).toBe(11)
+    await expect(output).toContainText('--brand-500: #7c3aed')
   })
 
-  await test.step('generates custom 8-color palette with new base color', async () => {
+  await test.step('generates a new palette from another base color', async () => {
     await page.getByRole('textbox', { name: 'Base color' }).fill('#059669')
-    await page.getByRole('spinbutton').fill('8')
-    await page.getByRole('button', { name: 'Generate' }).click()
 
-    const swatches = getSwatches()
-    await expect(swatches.first()).toBeVisible()
-    expect(await swatches.count()).toBe(8)
-    await expect(page.getByText('#059669')).toBeVisible()
-  })
-
-  await test.step('clears palette', async () => {
-    await page.getByRole('button', { name: 'Clear' }).click()
-    expect(await getSwatches().count()).toBe(0)
+    await expect(output).toContainText('--brand-500: #059669')
+    expect(await swatches.count()).toBe(11)
   })
 })

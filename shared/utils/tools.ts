@@ -456,6 +456,7 @@ export const tools: Tool[] = [
     serverRequired: false,
     status: 'available',
     seoTitle: 'Color Palette Generator',
+    variantOf: 'tailwind-shades',
   },
   {
     id: 'gradient-studio',

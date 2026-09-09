@@ -1,122 +1,34 @@
-<script setup lang="ts">
-import { createPalette } from '#shared/utils/color/palette'
-
-const base = ref('#7c3aed')
-const count = ref(5)
-const palette = ref<string[]>([])
-const { status, error, run, reset } = useTool<string>()
-const { copy, label: copyLabel, color: copyColor } = useCopyFeedback()
-
-useToolSeo('palette')
-
-async function generate() {
-  await run(() => {
-    palette.value = createPalette(base.value, count.value)
-    return palette.value.join(', ')
-  })
-}
-
-async function copyValue(value: string) {
-  await copy(value, value)
-}
-
-function handleClear() {
-  palette.value = []
-  reset()
-}
-
-useToolShortcuts({
-  onRun: () => generate(),
-})
-
-onMounted(() => {
-  generate()
-})
-</script>
-
 <template>
-  <ToolPage>
-    <div class="flex flex-wrap gap-4">
-      <UFormField label="Base color">
-        <UInput
-          v-model="base"
-          class="w-40"
-        />
-      </UFormField>
-      <UFormField label="Count">
-        <UInput
-          v-model.number="count"
-          type="number"
-          :min="3"
-          :max="12"
-          class="w-24"
-        />
-      </UFormField>
-    </div>
-
-    <ToolActions>
-      <UButton
-        label="Generate"
-        icon="i-lucide-swatch-book"
-        :loading="status === 'processing'"
-        @click="generate"
-      />
-      <UButton
-        label="Clear"
-        color="neutral"
-        variant="ghost"
-        icon="i-lucide-eraser"
-        @click="handleClear"
-      />
-    </ToolActions>
-
-    <ToolError
-      v-if="error"
-      :message="error"
-    />
-
-    <div
-      v-if="palette.length"
-      class="grid grid-cols-2 gap-3 sm:grid-cols-5"
-    >
-      <button
-        v-for="color in palette"
-        :key="color"
-        type="button"
-        class="overflow-hidden rounded-md border border-default text-left"
-        @click="copyValue(color)"
-      >
-        <div
-          class="h-20"
-          :style="{ backgroundColor: color }"
-        />
-        <p
-          class="px-2 py-1 font-mono text-xs"
-          :class="copyColor(color) === 'success' ? 'text-success' : copyColor(color) === 'error' ? 'text-error' : 'text-muted'"
-        >
-          {{ copyLabel(color, color) }}
-        </p>
-      </button>
-    </div>
-
+  <ShadesTool
+    tool-id="palette"
+    base-color="#7c3aed"
+    format="css"
+  >
     <template #docs>
       <ToolDocs title="About palettes">
         <div class="space-y-4 text-muted">
           <p>
-            This tool builds lighter and darker stops from one base color.
+            This tool builds a palette of 11 stops from one base color. The stops go from 50, which is almost white, to 950, which is almost black.
           </p>
           <p>
-            Select a swatch to copy its HEX value.
+            Give the tool your brand color. The tool keeps that color and calculates the other stops around it in OKLCH, so each stop moves in an equal perceptual step.
+          </p>
+          <p>
+            Select a swatch to copy its HEX value. Select "Copy all as CSS variables" for a full set of custom properties, or "Copy all as JSON" for a design token file.
+          </p>
+          <p>
+            Select the pencil on a swatch to set an exact value for one stop. The other stops do not change.
           </p>
         </div>
         <RelatedTools
           class="mt-8"
           :items="[
+            { label: 'Tailwind Shade Generator', to: '/hub/color/tailwind-shades' },
             { label: 'Color Converter', to: '/hub/color/converter' },
             { label: 'Contrast Checker', to: '/hub/color/contrast-checker' },
           ]"
         />
       </ToolDocs>
     </template>
-  </ToolPage>
+  </ShadesTool>
 </template>
