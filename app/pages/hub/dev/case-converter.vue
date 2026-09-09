@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import {
+  convertLines,
   toCamelCase,
   toConstantCase,
   toKebabCase,
@@ -9,26 +10,34 @@ import {
 } from '#shared/utils/dev/case'
 
 const input = ref('hello world developer')
+const lineMode = useToolOption('line-mode', false)
 const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
 
 useToolSeo('case-converter')
 
 const conversions = computed(() => {
   const text = input.value
+  const apply = (convert: (line: string) => string) =>
+    lineMode.value ? convertLines(text, convert) : convert(text)
+
   return [
-    { label: 'camelCase', value: toCamelCase(text), id: 'camel' },
-    { label: 'PascalCase', value: toPascalCase(text), id: 'pascal' },
-    { label: 'snake_case', value: toSnakeCase(text), id: 'snake' },
-    { label: 'kebab-case', value: toKebabCase(text), id: 'kebab' },
-    { label: 'URL slug', value: toSlug(text), id: 'slug' },
-    { label: 'CONSTANT_CASE', value: toConstantCase(text), id: 'constant' },
+    { label: 'camelCase', value: apply(toCamelCase), id: 'camel' },
+    { label: 'PascalCase', value: apply(toPascalCase), id: 'pascal' },
+    { label: 'snake_case', value: apply(toSnakeCase), id: 'snake' },
+    { label: 'kebab-case', value: apply(toKebabCase), id: 'kebab' },
+    { label: 'URL slug', value: apply(toSlug), id: 'slug' },
+    { label: 'CONSTANT_CASE', value: apply(toConstantCase), id: 'constant' },
   ]
 })
-useLiveTool(conversions)
+useLiveTool(conversions, {
+  runLocation: 'browser',
+  option: () => (lineMode.value ? 'independent-lines' : 'whole-text'),
+})
 
 async function copyAll() {
+  // A line-mode value is multiline, so it needs its own block under the label.
   const summary = conversions.value
-    .map(c => `${c.label}: ${c.value}`)
+    .map(c => (lineMode.value ? `${c.label}:\n${c.value}` : `${c.label}: ${c.value}`))
     .join('\n')
   await copy(summary, 'all')
 }
@@ -55,6 +64,14 @@ function handleClear() {
     />
 
     <ToolActions>
+      <div class="flex items-center gap-1.5">
+        <USwitch
+          v-model="lineMode"
+          aria-label="Independent lines"
+          size="xs"
+        />
+        <span class="text-xs text-muted">Independent lines</span>
+      </div>
       <UButton
         :label="copyLabel('all', 'Copy All')"
         :color="copyColor('all')"
@@ -78,7 +95,11 @@ function handleClear() {
         :key="item.id"
         :label="item.label"
         :value="item.value"
-      />
+      >
+        <p class="mt-1 font-mono text-sm break-all whitespace-pre-wrap text-highlighted">
+          {{ item.value || '—' }}
+        </p>
+      </ToolResultRow>
     </div>
 
     <template #docs>
