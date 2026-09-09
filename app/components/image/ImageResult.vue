@@ -73,7 +73,7 @@ function download() {
 
 <template>
   <div
-    v-if="blob || inputBlob"
+    v-if="blob"
     class="space-y-4 rounded-xl border border-default bg-elevated/40 p-4"
   >
     <div class="flex flex-wrap items-center justify-between gap-3">
