@@ -69,6 +69,13 @@ describe('toOklchString', () => {
   it('writes the CSS form', () => {
     expect(toOklchString({ l: 62.8, c: 0.258, h: 29.23 })).toBe('oklch(62.8% 0.258 29.23)')
   })
+
+  it('rounds each channel to the given precision', () => {
+    const violet = { l: 54.134, c: 0.2466, h: 293.01 }
+    expect(toOklchString(violet, 0)).toBe('oklch(54% 0 293)')
+    expect(toOklchString(violet, 2)).toBe('oklch(54.13% 0.25 293.01)')
+    expect(toOklchString({ ...violet, a: 0.4 }, 2)).toBe('oklch(54.13% 0.25 293.01 / 0.4)')
+  })
 })
 
 describe('parseColor with OKLCH', () => {

@@ -1,6 +1,6 @@
 import type { Hsl, Oklch, ParsedColor, Rgb } from './types'
 import { hslToRgb, rgbToHsl } from './convert'
-import { oklchToRgb, rgbToOklch } from './oklch'
+import { oklchToRgb, rgbToOklch, roundTo } from './oklch'
 
 function clampByte(value: number): number {
   return Math.min(255, Math.max(0, Math.round(value)))
@@ -371,9 +371,13 @@ export function toRgbString({ r, g, b, a }: Rgb): string {
   return `rgb(${clampByte(r)}, ${clampByte(g)}, ${clampByte(b)})`
 }
 
-export function toHslString({ h, s, l, a }: Hsl): string {
+/** `precision` sets the decimal places of each channel. */
+export function toHslString({ h, s, l, a }: Hsl, precision = 0): string {
+  const hue = roundTo(h, precision)
+  const sat = roundTo(s, precision)
+  const light = roundTo(l, precision)
   if (a !== undefined && a < 1) {
-    return `hsl(${Math.round(h)} ${Math.round(s)}% ${Math.round(l)}% / ${a})`
+    return `hsl(${hue} ${sat}% ${light}% / ${a})`
   }
-  return `hsl(${Math.round(h)}, ${Math.round(s)}%, ${Math.round(l)}%)`
+  return `hsl(${hue}, ${sat}%, ${light}%)`
 }

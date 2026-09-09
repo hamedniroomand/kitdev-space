@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import type { ParsedColor } from '#shared/utils/color/types'
-import { isOutOfP3Gamut, isOutOfSrgbGamut, toOklchString } from '#shared/utils/color/oklch'
+import { isOutOfP3Gamut, isOutOfSrgbGamut, roundTo, toOklchString } from '#shared/utils/color/oklch'
 import { parseColor, toHslString, toRgbString } from '#shared/utils/color/parse'
 
 const input = ref('#7c3aed')
+const precision = ref(2)
 const color = ref<ParsedColor | null>(null)
 const { status, error, run, reset } = useTool<string>()
+
+const precisionItems = [0, 1, 2, 3, 4].map(value => ({ label: String(value), value }))
 
 useToolSeo('color-converter')
 
@@ -16,8 +19,8 @@ const formats = computed(() => {
   return [
     { label: 'HEX', value: color.value.hex },
     { label: 'RGB', value: toRgbString(color.value.rgb) },
-    { label: 'HSL', value: toHslString(color.value.hsl) },
-    { label: 'OKLCH', value: toOklchString(color.value.oklch) },
+    { label: 'HSL', value: toHslString(color.value.hsl, precision.value) },
+    { label: 'OKLCH', value: toOklchString(color.value.oklch, precision.value) },
   ]
 })
 
@@ -40,14 +43,18 @@ const channels = computed<ChannelGroup[]>(() => {
     {
       group: 'HSL',
       items: [
-        ['H', `${Math.round(hsl.h)}°`],
-        ['S', `${Math.round(hsl.s)}%`],
-        ['L', `${Math.round(hsl.l)}%`],
+        ['H', `${roundTo(hsl.h, precision.value)}°`],
+        ['S', `${roundTo(hsl.s, precision.value)}%`],
+        ['L', `${roundTo(hsl.l, precision.value)}%`],
       ],
     },
     {
       group: 'OKLCH',
-      items: [['L', `${oklch.l}%`], ['C', oklch.c], ['H', `${oklch.h}°`]],
+      items: [
+        ['L', `${roundTo(oklch.l, precision.value)}%`],
+        ['C', roundTo(oklch.c, precision.value)],
+        ['H', `${roundTo(oklch.h, precision.value)}°`],
+      ],
     },
   ]
 })
@@ -56,11 +63,15 @@ const outOfSrgb = computed(() => (color.value ? isOutOfSrgbGamut(color.value.okl
 const outOfP3 = computed(() => (color.value ? isOutOfP3Gamut(color.value.oklch) : false))
 
 async function convert() {
-  await run(() => {
-    const next = parseColor(input.value)
-    color.value = next
-    return next.hex
-  })
+  await run(
+    () => {
+      const next = parseColor(input.value)
+      color.value = next
+      return next.hex
+    },
+    undefined,
+    { option: `precision-${precision.value}` },
+  )
 }
 
 function handleClear() {
@@ -162,6 +173,17 @@ onMounted(() => {
         description="No common screen can show this color. The HEX and the RGB values are the nearest sRGB match."
       />
 
+      <UFormField
+        label="Decimals"
+        help="Sets the decimal places of the HSL and the OKLCH values."
+        class="w-24"
+      >
+        <USelect
+          v-model="precision"
+          :items="precisionItems"
+        />
+      </UFormField>
+
       <div class="space-y-3">
         <ToolResultRow
           v-for="item in formats"
@@ -208,6 +230,10 @@ onMounted(() => {
           <p>
             Each output format keeps the alpha value. An 8-digit hex holds it, and the rgb(), hsl(),
             and oklch() forms hold it after a slash. No output format of this tool discards alpha.
+          </p>
+          <p>
+            The Decimals control sets the decimal places of the HSL and the OKLCH values. HEX uses
+            hexadecimal bytes and RGB uses integer channels, so the control does not change them.
           </p>
           <p>
             OKLCH is a perceptual color space. Two colors with the same L value look equally bright.

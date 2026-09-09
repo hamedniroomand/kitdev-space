@@ -9,6 +9,12 @@ test('converts color formats', { tag: '@smoke' }, async ({ page }) => {
     await expect(page.getByText('#7c3aed').first()).toBeVisible()
   })
 
+  await test.step('rounds the hsl and the oklch values to the selected precision', async () => {
+    await expect(page.getByText('Decimals', { exact: true })).toBeVisible()
+    await expect(page.getByText('hsl(262.12, 83.26%, 57.84%)')).toBeVisible()
+    await expect(page.getByText('oklch(54.13% 0.25 293.01)')).toBeVisible()
+  })
+
   await test.step('displays channel values and gamut badges', async () => {
     await expect(page.getByText('sRGB', { exact: true })).toBeVisible()
     await expect(page.getByText('sRGB: inside', { exact: true })).toBeVisible()

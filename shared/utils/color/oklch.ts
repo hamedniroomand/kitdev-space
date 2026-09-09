@@ -5,6 +5,11 @@ import type { Oklch, Rgb } from './types'
  * @see https://bottosson.github.io/posts/oklab/
  */
 
+/** Rounds a number to a count of decimal places. */
+export function roundTo(value: number, places: number): number {
+  return Number(value.toFixed(places))
+}
+
 function toLinear(value: number): number {
   const channel = value / 255
   return channel <= 0.04045
@@ -92,9 +97,12 @@ export function isOutOfP3Gamut(oklch: Oklch): boolean {
   return !isInUnitRange(linearSrgbToLinearP3(oklchToLinearSrgb(oklch)))
 }
 
-export function toOklchString({ l, c, h, a }: Oklch): string {
+/** `precision` sets the decimal places of each channel. It keeps the full value when it is absent. */
+export function toOklchString({ l, c, h, a }: Oklch, precision?: number): string {
+  const at = (value: number) => (precision === undefined ? value : roundTo(value, precision))
+  const channels = `${at(l)}% ${at(c)} ${at(h)}`
   if (a !== undefined && a < 1) {
-    return `oklch(${l}% ${c} ${h} / ${a})`
+    return `oklch(${channels} / ${a})`
   }
-  return `oklch(${l}% ${c} ${h})`
+  return `oklch(${channels})`
 }

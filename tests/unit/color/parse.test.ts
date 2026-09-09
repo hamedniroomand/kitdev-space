@@ -211,3 +211,17 @@ describe('alpha preservation', () => {
     expect(parseColor('rgb(124 58 237 / 1)').alpha).toBeUndefined()
   })
 })
+
+describe('decimal precision', () => {
+  it('rounds the hsl channels to the given precision', () => {
+    const { hsl } = parseColor('#7c3aed')
+    expect(toHslString(hsl)).toBe('hsl(262, 83%, 58%)')
+    expect(toHslString(hsl, 2)).toBe('hsl(262.12, 83.26%, 57.84%)')
+    expect(toHslString(hsl, 4)).toBe('hsl(262.1229, 83.2558%, 57.8431%)')
+  })
+
+  it('keeps the alpha value at a higher precision', () => {
+    const { hsl } = parseColor('rgba(124, 58, 237, 0.4)')
+    expect(toHslString(hsl, 2)).toBe('hsl(262.12 83.26% 57.84% / 0.4)')
+  })
+})
