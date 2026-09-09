@@ -79,10 +79,7 @@ const errorMessage = computed(() => {
 
 // Only the message reports its size. The secret key never reaches analytics.
 const { reportBytes, clearBytes } = useToolInput()
-watchDebounced(message, value => reportBytes('hmac-message', textBytes(value)), {
-  debounce: 400,
-  immediate: true,
-})
+watchDebounced(message, value => reportBytes('hmac-message', textBytes(value)), { debounce: 400 })
 onUnmounted(() => clearBytes('hmac-message'))
 
 // Byte metrics. The count is the exact input. The tool never trims the message

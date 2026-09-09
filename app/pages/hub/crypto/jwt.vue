@@ -61,7 +61,8 @@ function signatureCheck(): JwtCheck {
 
 function timeCheck(): JwtCheck {
   const label = 'Time validity'
-  const { expired, notBeforeValid } = decoded.value ?? {}
+  const expired = decoded.value?.expired ?? null
+  const notBeforeValid = decoded.value?.notBeforeValid ?? null
   if (expired == null && notBeforeValid == null) {
     return { label, value: 'Not checked', description: 'No exp or nbf claim', color: 'highlighted' }
   }
@@ -125,11 +126,11 @@ async function handleLoadSample() {
   await handleDecode()
 }
 
-async function handleCopy(text: string, key: 'header' | 'payload') {
+async function handleCopy(text: string, target: 'header' | 'payload') {
   if (!text) {
     return
   }
-  await copy(text, key)
+  await copy(text, target)
 }
 
 function handleClear() {
