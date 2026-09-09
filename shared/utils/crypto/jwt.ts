@@ -1,3 +1,5 @@
+import { timingSafeEqual } from './constant-time'
+
 export interface JwtClaims {
   exp?: number
   nbf?: number
@@ -83,17 +85,6 @@ export function decodeJwt(token: string, nowSec = Math.floor(Date.now() / 1000))
     notBeforeValid: nbf == null ? null : nowSec >= nbf,
     algorithm,
   }
-}
-
-function timingSafeEqual(a: Uint8Array, b: Uint8Array): boolean {
-  if (a.byteLength !== b.byteLength) {
-    return false
-  }
-  let diff = 0
-  for (let i = 0; i < a.byteLength; i += 1) {
-    diff |= a[i]! ^ b[i]!
-  }
-  return diff === 0
 }
 
 async function hmacSha256(secret: string, data: string): Promise<Uint8Array> {
