@@ -4,7 +4,7 @@ import type { RandomCharset } from '#shared/utils/crypto/random-string'
 import type { IdType } from '#shared/utils/crypto/uuid'
 import { createDicewarePassphrase, estimateDicewareEntropyBits } from '#shared/utils/crypto/diceware'
 import { createRandomString, randomStringAlphabet } from '#shared/utils/crypto/random-string'
-import { createId } from '#shared/utils/crypto/uuid'
+import { createId, inspectId } from '#shared/utils/crypto/uuid'
 
 type Kind = 'id' | 'string' | 'passphrase'
 
@@ -56,6 +56,16 @@ const excludeAmbiguous = ref(false)
 const wordCount = ref(6)
 const separator = ref('-')
 const capitalize = ref<DicewareCapitalize>('none')
+
+const inspectInput = ref('')
+const { result: inspection, error: inspectError } = useLiveTool(() => {
+  const value = inspectInput.value.trim()
+  return value ? inspectId(value) : null
+})
+
+const inspectedLocalTime = computed(() => (
+  inspection.value ? new Date(inspection.value.timestampMs).toLocaleString() : ''
+))
 
 const values = ref<string[]>([])
 const { error, run, reset } = useTool<string[]>()
@@ -344,6 +354,57 @@ onMounted(() => {
         />
       </li>
     </ul>
+
+    <div
+      v-if="kind === 'id'"
+      class="space-y-3 rounded-md border border-default p-4"
+    >
+      <UFormField
+        label="Inspect an ID"
+        help="Paste a UUID v7 or a ULID to read the time that it holds."
+      >
+        <UInput
+          v-model="inspectInput"
+          placeholder="017f22e2-79b0-7cc3-98c4-dc0c0c07398f"
+          class="w-full font-mono"
+        />
+      </UFormField>
+
+      <ToolError
+        v-if="inspectError"
+        :message="inspectError"
+      />
+
+      <dl
+        v-else-if="inspection"
+        class="grid gap-3 sm:grid-cols-3"
+      >
+        <div>
+          <dt class="text-xs text-muted">
+            Format
+          </dt>
+          <dd class="font-mono text-sm text-highlighted">
+            {{ inspection.format === 'ulid' ? 'ULID' : `UUID v${inspection.version}` }}
+          </dd>
+        </div>
+        <div>
+          <dt class="text-xs text-muted">
+            Time (ISO)
+          </dt>
+          <dd class="font-mono text-sm text-highlighted">
+            {{ inspection.iso }}
+          </dd>
+        </div>
+        <div>
+          <dt class="text-xs text-muted">
+            Time (local)
+          </dt>
+          <dd class="font-mono text-sm text-highlighted">
+            {{ inspectedLocalTime }}
+          </dd>
+        </div>
+      </dl>
+    </div>
 
     <template #docs>
       <slot name="docs" />

@@ -80,3 +80,51 @@ export function createId(type: IdType, options?: { nanoIdLength?: number }): str
       return createUuidV4()
   }
 }
+
+export interface IdInspection {
+  /** The format that the input matches. */
+  format: 'uuidv7' | 'ulid'
+  /** The version nibble of a UUID. A ULID holds no version field. */
+  version: number | null
+  /** The embedded creation time in milliseconds. */
+  timestampMs: number
+  /** The embedded creation time in ISO 8601 format. */
+  iso: string
+}
+
+const UUID_PATTERN = /^([0-9a-f]{8})-([0-9a-f]{4})-([0-9a-f]{4})-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+
+/**
+ * Reads the timestamp that a UUID v7 or a ULID holds.
+ * Both formats keep the time in 48 bits, which stays below Number.MAX_SAFE_INTEGER.
+ */
+export function inspectId(input: string): IdInspection {
+  const value = input.trim()
+  if (!value) {
+    throw new Error('Paste a UUID v7 or a ULID.')
+  }
+
+  const uuid = UUID_PATTERN.exec(value)
+  if (uuid) {
+    const version = Number.parseInt(uuid[3]![0]!, 16)
+    if (version !== 7) {
+      throw new Error(`A UUID v${version} holds no timestamp. Paste a UUID v7 or a ULID.`)
+    }
+    const timestampMs = Number.parseInt(uuid[1]! + uuid[2]!, 16)
+    return { format: 'uuidv7', version, timestampMs, iso: new Date(timestampMs).toISOString() }
+  }
+
+  const ulid = value.toUpperCase()
+  if (ulid.length === 26 && Array.from(ulid).every(char => CROCKFORD_BASE32.includes(char))) {
+    let timestampMs = 0
+    for (const char of ulid.slice(0, 10)) {
+      timestampMs = timestampMs * 32 + CROCKFORD_BASE32.indexOf(char)
+    }
+    if (timestampMs > 0xFFFFFFFFFFFF) {
+      throw new Error('The ULID timestamp is out of range.')
+    }
+    return { format: 'ulid', version: null, timestampMs, iso: new Date(timestampMs).toISOString() }
+  }
+
+  throw new Error('The input is not a UUID v7 or a ULID.')
+}
