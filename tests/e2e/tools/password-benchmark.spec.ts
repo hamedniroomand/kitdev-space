@@ -11,4 +11,5 @@ test('benchmarks password hashing algorithms', { tag: '@smoke' }, async ({ page 
 
   await expect(page.getByText(/Duration/)).toBeVisible({ timeout: 10_000 })
   await expect(page.getByText(/Verified/)).toBeVisible()
+  await expect(page.getByText('Each repetition')).toBeVisible()
 })

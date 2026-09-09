@@ -7,8 +7,10 @@ const memoryCost = ref(4096)
 const timeCost = ref(2)
 const cost = ref(10)
 const verify = ref(true)
+const runs = ref(1)
 const hash = ref('')
 const durationMs = ref<number | null>(null)
+const durations = ref<number[]>([])
 const verified = ref<boolean | null>(null)
 const { status, error, run, reset } = useTool<string>()
 const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
@@ -20,6 +22,7 @@ const SAMPLE = {
   memoryCost: 4096,
   timeCost: 2,
   cost: 10,
+  runs: 3,
 }
 
 const algorithmItems = [
@@ -32,6 +35,7 @@ useToolSeo('password-benchmark')
 async function execute() {
   hash.value = ''
   durationMs.value = null
+  durations.value = []
   verified.value = null
 
   await run(async () => {
@@ -39,6 +43,7 @@ async function execute() {
       result: {
         hash: string
         durationMs: number
+        durations: number[]
         verified?: boolean
         algorithm: PasswordAlgorithm
       }
@@ -51,11 +56,13 @@ async function execute() {
         timeCost: algorithm.value === 'argon2id' ? timeCost.value : undefined,
         cost: algorithm.value === 'bcrypt' ? cost.value : undefined,
         verify: verify.value,
+        runs: runs.value,
       },
     })
 
     hash.value = data.result.hash
     durationMs.value = data.result.durationMs
+    durations.value = data.result.durations
     verified.value = data.result.verified ?? null
     return data.result.hash
   }, 'The benchmark failed.')
@@ -66,6 +73,7 @@ function handleLoadSample() {
   memoryCost.value = SAMPLE.memoryCost
   timeCost.value = SAMPLE.timeCost
   cost.value = SAMPLE.cost
+  runs.value = SAMPLE.runs
   reportInput('sample')
 }
 
@@ -80,6 +88,7 @@ function handleClear() {
   password.value = ''
   hash.value = ''
   durationMs.value = null
+  durations.value = []
   verified.value = null
   reset()
 }
@@ -159,6 +168,18 @@ useToolShortcuts({
       />
     </UFormField>
 
+    <UFormField
+      label="Repetitions (1-3)"
+      help="More repetitions give a more stable median time."
+    >
+      <UInput
+        v-model.number="runs"
+        type="number"
+        :min="1"
+        :max="3"
+      />
+    </UFormField>
+
     <UCheckbox
       v-model="verify"
       label="Verify hash after hashing"
@@ -217,10 +238,18 @@ useToolShortcuts({
       </div>
       <div>
         <dt class="text-xs text-muted">
-          Duration
+          Duration (median)
         </dt>
         <dd class="font-mono text-sm text-highlighted">
           {{ durationMs }} ms
+        </dd>
+      </div>
+      <div v-if="durations.length > 1">
+        <dt class="text-xs text-muted">
+          Each repetition
+        </dt>
+        <dd class="font-mono text-sm text-highlighted">
+          {{ durations.map((value, index) => `#${index + 1} ${value} ms`).join(' · ') }}
         </dd>
       </div>
       <div>
