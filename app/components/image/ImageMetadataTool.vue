@@ -4,6 +4,7 @@ import { formatBytes } from '#shared/utils/format'
 import { readImageMetadata } from '#shared/utils/image/exif'
 import { readImageResponse } from '#shared/utils/image/response'
 import { canStripInPlace, stripImageMetadata } from '#shared/utils/image/strip'
+import { readMetadata } from '~/utils/image/metadata-read'
 
 /**
  * Reads the metadata of an image and removes it. Two paths remove it: the
@@ -77,7 +78,7 @@ watch(file, async (selected) => {
 
   await run(async () => {
     const bytes = new Uint8Array(await selected.arrayBuffer())
-    const result = readImageMetadata(bytes)
+    const result = await readMetadata(bytes)
 
     if (result.container === 'unknown') {
       // The server path can still clean the file, so this is not an error.
@@ -288,12 +289,12 @@ function handleClear() {
       </UAlert>
 
       <UAlert
-        v-else-if="meta.container === 'gif' || meta.container === 'avif'"
+        v-else-if="meta.container === 'gif'"
         color="neutral"
         variant="subtle"
         icon="i-lucide-info"
-        title="Format metadata not parsed in browser"
-        description="GIF and AVIF metadata parsing is not supported in the browser. You can still use the server option to clean this image."
+        title="The browser does not parse GIF metadata"
+        description="Use the server option to clean this image."
       />
 
       <UAlert

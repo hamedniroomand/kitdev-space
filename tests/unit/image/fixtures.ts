@@ -31,7 +31,7 @@ function entry(tag: number, type: number, count: number, value: number[]): TiffE
  * Builds a big-endian TIFF block with IFD0, an EXIF sub block, and a GPS block.
  * The position is 48.8584 N, 2.2945 E.
  */
-export function buildTiffBlock(): number[] {
+export function buildTiffBlock(includeSize = false): number[] {
   // Layout: header(8) IFD0 -> EXIF IFD -> GPS IFD -> value pool.
   const header = [0x4D, 0x4D, ...u16be(42), ...u32be(8)]
 
@@ -39,7 +39,7 @@ export function buildTiffBlock(): number[] {
   const modelText = chars('Model X\0')
 
   // The value pool sits after the three IFDs. Sizes are fixed, so compute them.
-  const ifd0Size = 2 + 5 * 12 + 4
+  const ifd0Size = 2 + (includeSize ? 7 : 5) * 12 + 4
   const exifSize = 2 + 2 * 12 + 4
   const gpsSize = 2 + 5 * 12 + 4
 
@@ -54,7 +54,12 @@ export function buildTiffBlock(): number[] {
   const latAt = exposureAt + 8
   const lonAt = latAt + 24
 
+  const size: TiffEntry[] = includeSize
+    ? [entry(0x0100, 3, 1, u16be(40)), entry(0x0101, 3, 1, u16be(30))]
+    : []
+
   const ifd0: TiffEntry[] = [
+    ...size,
     entry(0x010F, 2, makeText.length, u32be(makeAt)),
     entry(0x0110, 2, modelText.length, u32be(modelAt)),
     entry(0x0112, 3, 1, u16be(6)),
@@ -152,6 +157,14 @@ export function buildJpeg(): Uint8Array {
     0,
     ...scan,
   ])
+}
+
+/**
+ * A TIFF file. The whole file is one TIFF block, so the EXIF block of a JPEG
+ * and the header of a TIFF hold the same structure.
+ */
+export function buildTiff(): Uint8Array {
+  return new Uint8Array(buildTiffBlock(true))
 }
 
 function segment(marker: number, payload: number[]): number[] {
