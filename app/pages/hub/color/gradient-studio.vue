@@ -249,6 +249,7 @@ useToolShortcuts({
         <USwitch
           :model-value="interpolation === 'oklch'"
           label="in oklch"
+          aria-label="Interpolate in oklch"
           class="h-9 items-center"
           @update:model-value="interpolation = $event ? 'oklch' : 'srgb'"
         />

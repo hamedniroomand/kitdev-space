@@ -28,7 +28,7 @@ test('designs CSS gradients and shows code declaration', { tag: '@smoke' }, asyn
   })
 
   await test.step('interpolates in oklch', async () => {
-    const oklch = page.getByRole('switch', { name: 'in oklch' })
+    const oklch = page.getByRole('switch', { name: 'Interpolate in oklch' })
     await oklch.click()
     await expect(pre).toContainText('linear-gradient(135deg in oklch, #7c3aed 0%, #06b6d4 100%)')
     await oklch.click()
