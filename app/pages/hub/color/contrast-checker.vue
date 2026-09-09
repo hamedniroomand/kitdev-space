@@ -15,6 +15,13 @@ const WCAG_TARGETS = [
   { label: 'AAA', target: 7 },
 ] as const
 
+// The three sizes are the WCAG boundaries. The preview keeps the body font.
+const TEXT_SAMPLES = [
+  { label: '14px regular', size: '14px', weight: 400 },
+  { label: '18.66px bold', size: '18.66px', weight: 700 },
+  { label: '24px regular', size: '24px', weight: 400 },
+] as const
+
 const fixes = computed(() => {
   if (ratio.value === null) {
     return []
@@ -87,10 +94,28 @@ onMounted(() => {
     </div>
 
     <div
-      class="rounded-md border border-default p-8 text-lg"
+      class="space-y-4 rounded-md border border-default p-6"
       :style="{ color: foreground, backgroundColor: background }"
     >
-      Sample text for contrast.
+      <p
+        v-for="sample in TEXT_SAMPLES"
+        :key="sample.label"
+        :style="{ fontSize: sample.size, fontWeight: sample.weight }"
+      >
+        {{ sample.label }} — the quick brown fox jumps over the lazy dog.
+      </p>
+      <!-- A span, not a button. The preview has no action, so it must not take focus. -->
+      <span
+        class="inline-block rounded-md border px-4 py-2"
+        :style="{
+          color: foreground,
+          borderColor: foreground,
+          fontSize: '14px',
+          fontWeight: 500,
+        }"
+      >
+        Button label
+      </span>
     </div>
 
     <ToolActions>
@@ -223,6 +248,10 @@ onMounted(() => {
           <p>
             Large text has a lower bar. Text of 24px, or 18.66px in bold, needs 3:1 for AA and 4.5:1
             for AAA. The table shows both results, so you can see where a color pair is usable.
+          </p>
+          <p>
+            The preview shows the pair at 14px regular, 18.66px bold, and 24px regular. It also
+            shows a button. Use it to see the pair at the sizes that the table reports.
           </p>
           <p>
             When a pair fails, the tool suggests the smallest lightness change that makes it pass.
