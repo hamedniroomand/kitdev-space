@@ -35,14 +35,18 @@ async function readPixels(source: File) {
     resizeQuality: 'pixelated',
   })
 
+  // A browser can ignore the resize options, so cap the pixel read again here
+  const w = Math.min(SAMPLE_SIZE, bitmap.width)
+  const h = Math.min(SAMPLE_SIZE, bitmap.height)
+
   try {
-    const canvas = new OffscreenCanvas(bitmap.width, bitmap.height)
+    const canvas = new OffscreenCanvas(w, h)
     const ctx = canvas.getContext('2d')
     if (!ctx) {
       throw new Error('Canvas 2D context is not available.')
     }
-    ctx.drawImage(bitmap, 0, 0)
-    return ctx.getImageData(0, 0, bitmap.width, bitmap.height).data
+    ctx.drawImage(bitmap, 0, 0, w, h)
+    return ctx.getImageData(0, 0, w, h).data
   }
   finally {
     bitmap.close()
