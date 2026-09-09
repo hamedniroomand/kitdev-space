@@ -20,3 +20,12 @@ test('changes the minimum color distance', async ({ page }) => {
   await slider.press('ArrowRight')
   await expect(slider).toHaveAttribute('aria-valuenow', '33')
 })
+
+test('sends the anchor color to the shades tool', async ({ page }) => {
+  await gotoHydrated(page, '/hub/color/palette-extractor')
+
+  await page.getByRole('button', { name: 'Load Sample Image' }).click()
+  await page.getByRole('button', { name: /Open .* in the Tailwind shades tool/ }).click()
+
+  await expect(page).toHaveURL('/hub/color/tailwind-shades')
+})

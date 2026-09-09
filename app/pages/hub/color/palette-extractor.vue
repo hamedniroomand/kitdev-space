@@ -13,6 +13,7 @@ const anchorHex = ref<string | null>(null)
 const isProcessing = ref(false)
 
 const { copy } = useCopyFeedback()
+const { setHandoffColor } = useColorHandoff()
 const { base64: imageUrl } = useBase64(() => file.value ?? undefined)
 const fileName = computed(() => file.value?.name ?? '')
 
@@ -75,6 +76,14 @@ function handleCountChange(count: number) {
 
 function handleClear() {
   file.value = null
+}
+
+/** The color moves in memory, so it never enters the URL. */
+function handleSendTo(path: string) {
+  if (!anchor.value)
+    return
+  setHandoffColor(anchor.value.hex)
+  return navigateTo(path)
 }
 
 const cssVariablesOutput = computed(() => {
@@ -222,6 +231,26 @@ useLiveTool(palette)
                 <div class="text-muted">
                   Base anchor color
                 </div>
+              </div>
+              <div class="flex flex-wrap items-center gap-2 ms-auto">
+                <UButton
+                  size="xs"
+                  variant="subtle"
+                  color="neutral"
+                  icon="i-lucide-swatch-book"
+                  label="Open in Shades"
+                  :aria-label="`Open ${anchor.hex} in the Tailwind shades tool`"
+                  @click="handleSendTo('/hub/color/tailwind-shades')"
+                />
+                <UButton
+                  size="xs"
+                  variant="subtle"
+                  color="neutral"
+                  icon="i-lucide-contrast"
+                  label="Check Contrast"
+                  :aria-label="`Check the contrast of ${anchor.hex}`"
+                  @click="handleSendTo('/hub/color/contrast-checker')"
+                />
               </div>
             </div>
 
