@@ -16,7 +16,7 @@ test.describe('Image to Base64 tool', () => {
 
     // Overhead callout and exact output length
     await expect(page.locator('main').getByText('Base64 adds about 33 percent')).toBeVisible()
-    await expect(page.locator('main').getByText(/\d+ characters/)).toBeVisible()
+    await expect(page.locator('main').getByText(/· \d+ characters/)).toBeVisible()
 
     // Switch to Base64 -> Image mode
     const decodeButton = page.getByRole('button', { name: 'Base64 → Image' })

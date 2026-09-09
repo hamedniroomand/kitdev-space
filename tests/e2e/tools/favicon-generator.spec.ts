@@ -16,7 +16,7 @@ test.describe('Favicon Set Generator tool', () => {
     // Verify results sections
     await expect(page.locator('main').getByText('Favicon Package Ready')).toBeVisible()
     await expect(page.locator('main').getByText('Download Package (.ZIP)')).toBeVisible()
-    await expect(page.locator('main').getByText('favicon-32x32.png')).toBeVisible()
+    await expect(page.locator('main').getByText('favicon-32x32.png', { exact: true })).toBeVisible()
 
     // Platform mockups
     await expect(page.locator('main').getByText('Browser tab', { exact: true })).toBeVisible()
