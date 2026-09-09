@@ -4,11 +4,10 @@ import { describe, expect, it } from 'vitest'
 import {
   auditOgData,
   buildMetaTagSnippet,
-  canExtractOgInBrowser,
-  extractOgInBrowser,
   OG_USER_AGENTS,
   resolveUserAgent,
 } from '#shared/utils/network/og-meta'
+import { canExtractOgInBrowser, extractOgInBrowser } from '~/utils/network/og-dom'
 
 // The same document and the same result run in `tests/bun/network/og.test.ts`
 // against the `HTMLRewriter` path. Both paths must give one result.

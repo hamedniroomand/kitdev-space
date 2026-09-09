@@ -3,9 +3,8 @@ import type { OgImageProbe, OgPreviewData } from '#shared/utils/network/og-meta'
 import {
   auditOgData,
   buildMetaTagSnippet,
-  canExtractOgInBrowser,
-  extractOgInBrowser,
 } from '#shared/utils/network/og-meta'
+import { canExtractOgInBrowser, extractOgInBrowser } from '~/utils/network/og-dom'
 
 interface OgPreviewResult extends Partial<OgPreviewData> {
   charset?: string
