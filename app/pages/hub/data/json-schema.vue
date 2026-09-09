@@ -1,5 +1,10 @@
 <script setup lang="ts">
+import type { EditorView } from '@codemirror/view'
+import type { SchemaValidationError } from '#shared/utils/data/json-schema'
+import { refDebounced } from '@vueuse/core'
+import { findJsonPointerOffset } from '#shared/utils/data/json-pointer'
 import { generateSchemaFromJson, validateJsonSchema } from '#shared/utils/data/json-schema'
+import { captureEditorView, goToOffset } from '#shared/utils/dev/editor-cursor'
 
 useToolSeo('json-schema')
 
@@ -34,10 +39,45 @@ const sampleData = JSON.stringify(
 
 const schemaInput = ref(sampleSchema)
 const dataInput = ref(sampleData)
+const refSchemasInput = ref('')
 const generateError = ref<string | null>(null)
+const showRefPane = ref(false)
 
-const result = computed(() => validateJsonSchema(schemaInput.value, dataInput.value))
+// Compiling a schema on every keystroke is slow, so validation waits 300 ms
+// after the user stops typing.
+const COMPILE_DELAY = 300
+const debouncedSchema = refDebounced(schemaInput, COMPILE_DELAY)
+const debouncedData = refDebounced(dataInput, COMPILE_DELAY)
+const debouncedRefs = refDebounced(refSchemasInput, COMPILE_DELAY)
+
+const result = computed(() =>
+  validateJsonSchema(debouncedSchema.value, debouncedData.value, debouncedRefs.value),
+)
 useLiveTool(result)
+
+const dataView = shallowRef<EditorView | null>(null)
+const schemaView = shallowRef<EditorView | null>(null)
+const captureDataView = captureEditorView((view) => {
+  dataView.value = view
+})
+const captureSchemaView = captureEditorView((view) => {
+  schemaView.value = view
+})
+
+function jump(view: EditorView | null, text: string, pointer: string) {
+  if (!view) {
+    return
+  }
+  const offset = findJsonPointerOffset(text, pointer)
+  if (offset !== null) {
+    goToOffset(view, offset)
+  }
+}
+
+function handleGoToError(err: Pick<SchemaValidationError, 'path' | 'schemaPath'>) {
+  jump(dataView.value, dataInput.value, err.path)
+  jump(schemaView.value, schemaInput.value, err.schemaPath)
+}
 
 function handleLoadSample() {
   schemaInput.value = sampleSchema
@@ -63,6 +103,7 @@ function handleGenerateSchema() {
 function handleClear() {
   schemaInput.value = ''
   dataInput.value = ''
+  refSchemasInput.value = ''
   generateError.value = null
 }
 </script>
@@ -94,6 +135,14 @@ function handleClear() {
             label="Generate Schema from Data"
             :disabled="!dataInput.trim()"
             @click="handleGenerateSchema"
+          />
+          <UButton
+            size="xs"
+            variant="ghost"
+            color="neutral"
+            icon="i-lucide-link"
+            :label="showRefPane ? 'Hide Referenced Schemas' : 'Referenced Schemas'"
+            @click="showRefPane = !showRefPane"
           />
         </div>
 
@@ -155,6 +204,19 @@ function handleClear() {
         />
       </div>
 
+      <div
+        v-if="result.refError"
+        class="space-y-2"
+      >
+        <UAlert
+          color="error"
+          variant="subtle"
+          icon="i-lucide-shield-alert"
+          title="Reference Error"
+          :description="result.refError"
+        />
+      </div>
+
       <!-- Validation Error List -->
       <div
         v-if="!result.isValid && result.errors.length > 0"
@@ -186,7 +248,13 @@ function handleClear() {
               <tr
                 v-for="(err, idx) in result.errors"
                 :key="idx"
-                class="hover:bg-error/10"
+                class="hover:bg-error/10 cursor-pointer"
+                role="button"
+                :tabindex="0"
+                :aria-label="`Go to ${err.path} in the data and schema editors`"
+                @click="handleGoToError(err)"
+                @keydown.enter="handleGoToError(err)"
+                @keydown.space.prevent="handleGoToError(err)"
               >
                 <td class="p-2 font-bold text-default">
                   {{ err.path }}
@@ -200,6 +268,42 @@ function handleClear() {
               </tr>
             </tbody>
           </table>
+        </div>
+      </div>
+
+      <!-- Grouped anyOf / oneOf Failures -->
+      <div
+        v-for="group in result.branchGroups"
+        :key="group.schemaPath"
+        class="border border-warning/40 bg-warning/5 rounded-xl p-4 space-y-3"
+      >
+        <div class="flex flex-wrap items-center gap-2 text-warning text-sm font-semibold">
+          <UIcon
+            name="i-lucide-git-branch"
+            class="w-4 h-4"
+          />
+          <span><code>{{ group.keyword }}</code> at <code>{{ group.path }}</code> matched no branch</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div
+            v-for="branch in group.branches"
+            :key="branch.index"
+            class="border border-default rounded-lg p-3 space-y-1"
+          >
+            <div class="text-xs font-semibold text-default">
+              Branch {{ branch.index }}
+            </div>
+            <button
+              v-for="(err, idx) in branch.errors"
+              :key="idx"
+              type="button"
+              class="block w-full text-left text-xs text-muted hover:text-default"
+              :aria-label="`Go to branch ${branch.index} of ${group.keyword} in the schema editor`"
+              @click="handleGoToError(err)"
+            >
+              {{ err.message }}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -223,6 +327,8 @@ function handleClear() {
           label="JSON Schema"
           lang="json"
           :rows="18"
+          :extensions="[captureSchemaView]"
+          accept=".json,application/json"
           placeholder="Paste JSON Schema definition here..."
         />
 
@@ -232,9 +338,45 @@ function handleClear() {
           label="JSON Data"
           lang="json"
           :rows="18"
+          :extensions="[captureDataView]"
+          accept=".json,application/json"
           placeholder="Paste JSON payload to validate here..."
         />
       </div>
+
+      <!-- Referenced Schemas (local $ref resolution) -->
+      <div
+        v-if="showRefPane"
+        class="space-y-2"
+      >
+        <UAlert
+          color="info"
+          variant="subtle"
+          icon="i-lucide-shield-check"
+          title="Local references only"
+          description="Add each referenced schema here, keyed by its $id. The tool never fetches a schema over the network."
+        />
+        <LazyToolEditor
+          v-model="refSchemasInput"
+          hydrate-on-idle
+          label="Referenced Schemas (by $id)"
+          lang="json"
+          :rows="12"
+          accept=".json,application/json"
+          placeholder="[{ &quot;$id&quot;: &quot;https://example.com/address.json&quot;, &quot;type&quot;: &quot;object&quot; }]"
+        />
+        <p
+          v-if="result.resolvedRefIds.length > 0"
+          class="text-xs text-muted"
+        >
+          Resolved: {{ result.resolvedRefIds.join(', ') }}
+        </p>
+      </div>
+
+      <SchemaTestCases
+        :schema-input="debouncedSchema"
+        :ref-schemas-input="debouncedRefs"
+      />
     </div>
 
     <template #docs>
@@ -247,7 +389,19 @@ function handleClear() {
             Select Generate schema to make a first schema from your data. The tool reads the types of the fields and marks the top-level fields as required. Then correct the result by hand.
           </p>
           <p>
-            Use a schema to check an API response, a configuration file, or a form. The error path, such as user.address.zip, tells you where the problem is in a large document.
+            Use a schema to check an API response, a configuration file, or a form. The error path, such as user.address.zip, tells you where the problem is in a large document. Click an error row to move both editors to that position.
+          </p>
+          <p>
+            <strong>Referenced schemas:</strong>
+            Select Referenced Schemas to add a schema that a <code>$ref</code> points to. Key each one by its <code>$id</code>. The tool resolves every reference in memory and never makes a network request, so a private schema stays in the browser.
+          </p>
+          <p>
+            <strong>Branch failures:</strong>
+            When <code>anyOf</code> or <code>oneOf</code> matches no branch, the tool lists the reason for each branch separately. This shows which branch came closest instead of one flat list of errors.
+          </p>
+          <p>
+            <strong>Test cases:</strong>
+            Add a list of payloads to check many documents against one schema. Set <code>expectValid</code> to false for a payload that must fail. You can download the list as JSON and open it again later.
           </p>
         </div>
         <RelatedTools

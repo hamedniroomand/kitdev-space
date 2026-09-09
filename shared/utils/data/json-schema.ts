@@ -8,12 +8,26 @@ export interface SchemaValidationError {
   schemaPath: string
 }
 
+export interface SchemaErrorBranchGroup {
+  keyword: 'anyOf' | 'oneOf'
+  path: string
+  /** Pointer of the `anyOf` or `oneOf` keyword in the schema. */
+  schemaPath: string
+  message: string
+  branches: Array<{ index: number, errors: SchemaValidationError[] }>
+}
+
 export interface SchemaValidationResult {
   isValid: boolean
   draft?: string
   schemaError?: string
   dataError?: string
+  refError?: string
   errors: SchemaValidationError[]
+  /** `anyOf` and `oneOf` failures, split by the branch that produced each error. */
+  branchGroups: SchemaErrorBranchGroup[]
+  /** The `$id` of each local schema that resolved a `$ref`. */
+  resolvedRefIds: string[]
 }
 
 // The validator walks the schema as an interpreter. It writes no code at run
@@ -101,7 +115,129 @@ function toErrors(units: OutputUnit[]): SchemaValidationError[] {
   }))
 }
 
-export function validateJsonSchema(schemaInput: string, dataInput: string): SchemaValidationResult {
+const BRANCH_KEYWORD = /\/(anyOf|oneOf)\/(\d+)(?=\/|$)/
+
+/**
+ * Splits each `anyOf` and `oneOf` failure by branch. The branch index sits in
+ * the keyword location, such as `#/properties/v/anyOf/1/type`, so a reader can
+ * see why every branch failed instead of one flat list.
+ */
+export function groupBranchErrors(units: OutputUnit[]): SchemaErrorBranchGroup[] {
+  const groups = new Map<string, SchemaErrorBranchGroup>()
+
+  for (const unit of units) {
+    if (unit.keyword !== 'anyOf' && unit.keyword !== 'oneOf') {
+      continue
+    }
+    groups.set(unit.keywordLocation, {
+      keyword: unit.keyword,
+      path: toPath(unit.instanceLocation),
+      schemaPath: unit.keywordLocation,
+      message: unit.error,
+      branches: [],
+    })
+  }
+
+  for (const unit of units) {
+    const match = unit.keywordLocation.match(BRANCH_KEYWORD)
+    if (!match) {
+      continue
+    }
+    const groupPath = unit.keywordLocation.slice(0, match.index! + match[1]!.length + 1)
+    const group = groups.get(groupPath)
+    if (!group || CONTAINER_KEYWORDS.has(unit.keyword)) {
+      continue
+    }
+    const index = Number(match[2])
+    const branch = group.branches.find(b => b.index === index)
+    const error: SchemaValidationError = {
+      path: toPath(unit.instanceLocation),
+      message: unit.error,
+      keyword: unit.keyword,
+      schemaPath: unit.keywordLocation,
+    }
+    if (branch) {
+      branch.errors.push(error)
+    }
+    else {
+      group.branches.push({ index, errors: [error] })
+    }
+  }
+
+  for (const group of groups.values()) {
+    group.branches.sort((a, b) => a.index - b.index)
+  }
+
+  return Array.from(groups.values())
+}
+
+const REMOTE_REF = /^https?:\/\//i
+
+function collectRefs(node: unknown, found: Set<string>): void {
+  if (Array.isArray(node)) {
+    for (const item of node) {
+      collectRefs(item, found)
+    }
+    return
+  }
+  if (!node || typeof node !== 'object') {
+    return
+  }
+  for (const [key, value] of Object.entries(node)) {
+    if (key === '$ref' && typeof value === 'string') {
+      found.add(value)
+    }
+    else {
+      collectRefs(value, found)
+    }
+  }
+}
+
+/**
+ * Reads the referenced schemas that the user supplies, keyed by `$id`. The
+ * tool never fetches a schema over the network, so every `$ref` must resolve
+ * against this list.
+ */
+export function parseRefSchemas(refInput: string): {
+  schemas: Record<string, unknown>
+  error?: string
+} {
+  const trimmed = refInput.trim()
+  if (!trimmed) {
+    return { schemas: {} }
+  }
+
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(trimmed)
+  }
+  catch (err) {
+    return {
+      schemas: {},
+      error: `Referenced schema parse error: ${err instanceof Error ? err.message : 'Invalid JSON'}`,
+    }
+  }
+
+  const list = Array.isArray(parsed) ? parsed : [parsed]
+  const schemas: Record<string, unknown> = {}
+  for (const entry of list) {
+    if (!entry || typeof entry !== 'object' || Array.isArray(entry)) {
+      return { schemas: {}, error: 'Each referenced schema must be a JSON object with an "$id".' }
+    }
+    const id = (entry as Record<string, unknown>).$id
+    if (typeof id !== 'string' || !id) {
+      return { schemas: {}, error: 'Each referenced schema needs an "$id" to resolve a "$ref".' }
+    }
+    schemas[id] = entry
+  }
+  return { schemas }
+}
+
+export function validateJsonSchema(
+  schemaInput: string,
+  dataInput: string,
+  refSchemasInput = '',
+): SchemaValidationResult {
   const trimmedSchema = schemaInput.trim()
   const trimmedData = dataInput.trim()
 
@@ -109,6 +245,8 @@ export function validateJsonSchema(schemaInput: string, dataInput: string): Sche
     return {
       isValid: true,
       errors: [],
+      branchGroups: [],
+      resolvedRefIds: [],
     }
   }
 
@@ -121,6 +259,8 @@ export function validateJsonSchema(schemaInput: string, dataInput: string): Sche
       isValid: false,
       schemaError: `Schema JSON parse error: ${err instanceof Error ? err.message : 'Invalid JSON'}`,
       errors: [],
+      branchGroups: [],
+      resolvedRefIds: [],
     }
   }
 
@@ -134,6 +274,8 @@ export function validateJsonSchema(schemaInput: string, dataInput: string): Sche
       schemaError: undefined,
       dataError: `Data JSON parse error: ${err instanceof Error ? err.message : 'Invalid JSON'}`,
       errors: [],
+      branchGroups: [],
+      resolvedRefIds: [],
     }
   }
 
@@ -145,6 +287,8 @@ export function validateJsonSchema(schemaInput: string, dataInput: string): Sche
       isValid: false,
       schemaError: 'Invalid JSON Schema definition: the schema must be a JSON object or boolean.',
       errors: [],
+      branchGroups: [],
+      resolvedRefIds: [],
     }
   }
 
@@ -155,13 +299,48 @@ export function validateJsonSchema(schemaInput: string, dataInput: string): Sche
       draft: displayDraft,
       schemaError: draftError,
       errors: [],
+      branchGroups: [],
+      resolvedRefIds: [],
     }
   }
+
+  const { schemas: refSchemas, error: refParseError } = parseRefSchemas(refSchemasInput)
+  if (refParseError) {
+    return {
+      isValid: false,
+      draft: displayDraft,
+      refError: refParseError,
+      errors: [],
+      branchGroups: [],
+      resolvedRefIds: [],
+    }
+  }
+
+  const refs = new Set<string>()
+  collectRefs(parsedSchema, refs)
+  const unresolved = Array.from(refs).filter(
+    ref => REMOTE_REF.test(ref) && !refSchemas[ref] && !refSchemas[ref.replace(/#.*$/, '')],
+  )
+  if (unresolved.length > 0) {
+    return {
+      isValid: false,
+      draft: displayDraft,
+      refError: `This tool never fetches a schema over the network. Add the schema for ${unresolved.join(', ')} in the referenced schemas pane, keyed by "$id".`,
+      errors: [],
+      branchGroups: [],
+      resolvedRefIds: [],
+    }
+  }
+
+  const resolvedRefIds = Object.keys(refSchemas)
 
   let result: ReturnType<Validator['validate']>
   try {
     // `shortCircuit: false` collects every error instead of the first one.
     const validator = new Validator(parsedSchema as Schema, draft, false)
+    for (const schema of Object.values(refSchemas)) {
+      validator.addSchema(schema as Schema)
+    }
     result = validator.validate(parsedData)
   }
   catch (err) {
@@ -170,6 +349,8 @@ export function validateJsonSchema(schemaInput: string, dataInput: string): Sche
       draft: displayDraft,
       schemaError: `Invalid JSON Schema definition: ${err instanceof Error ? err.message : 'Schema error'}`,
       errors: [],
+      branchGroups: [],
+      resolvedRefIds: [],
     }
   }
 
@@ -178,6 +359,8 @@ export function validateJsonSchema(schemaInput: string, dataInput: string): Sche
       isValid: true,
       draft: displayDraft,
       errors: [],
+      branchGroups: [],
+      resolvedRefIds,
     }
   }
 
@@ -185,6 +368,8 @@ export function validateJsonSchema(schemaInput: string, dataInput: string): Sche
     isValid: false,
     draft: displayDraft,
     errors: toErrors(result.errors),
+    branchGroups: groupBranchErrors(result.errors),
+    resolvedRefIds,
   }
 }
 
@@ -283,4 +468,87 @@ export function generateSchemaFromJson(data: unknown): Record<string, unknown> {
     return mergeObjectSchemas([data as Record<string, unknown>])
   }
   return {}
+}
+
+export interface SchemaTestCase {
+  name: string
+  data: unknown
+  /** The result the author expects. Defaults to a payload that must pass. */
+  expectValid?: boolean
+}
+
+export interface SchemaTestCaseResult {
+  name: string
+  isValid: boolean
+  /** True when the outcome matches `expectValid`. */
+  passed: boolean
+  expectValid: boolean
+  errorCount: number
+  firstError?: string
+}
+
+export function parseTestCases(input: string): {
+  cases: SchemaTestCase[]
+  error?: string
+} {
+  const trimmed = input.trim()
+  if (!trimmed) {
+    return { cases: [] }
+  }
+
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(trimmed)
+  }
+  catch (err) {
+    return {
+      cases: [],
+      error: `Test case parse error: ${err instanceof Error ? err.message : 'Invalid JSON'}`,
+    }
+  }
+
+  if (!Array.isArray(parsed)) {
+    return { cases: [], error: 'Test cases must be a JSON array.' }
+  }
+
+  const cases: SchemaTestCase[] = []
+  for (const [index, entry] of parsed.entries()) {
+    if (!entry || typeof entry !== 'object' || Array.isArray(entry)) {
+      return { cases: [], error: `Test case ${index + 1} must be a JSON object.` }
+    }
+    const row = entry as Record<string, unknown>
+    if (!Object.hasOwn(row, 'data')) {
+      return { cases: [], error: `Test case ${index + 1} needs a "data" field.` }
+    }
+    cases.push({
+      name: typeof row.name === 'string' && row.name ? row.name : `Case ${index + 1}`,
+      data: row.data,
+      expectValid: typeof row.expectValid === 'boolean' ? row.expectValid : true,
+    })
+  }
+  return { cases }
+}
+
+export function runSchemaTestCases(
+  schemaInput: string,
+  cases: SchemaTestCase[],
+  refSchemasInput = '',
+): SchemaTestCaseResult[] {
+  return cases.map((testCase) => {
+    const expectValid = testCase.expectValid ?? true
+    const result = validateJsonSchema(
+      schemaInput,
+      JSON.stringify(testCase.data),
+      refSchemasInput,
+    )
+    const isValid = result.isValid
+    return {
+      name: testCase.name,
+      isValid,
+      expectValid,
+      passed: isValid === expectValid,
+      errorCount: result.errors.length,
+      firstError: result.errors[0]?.message ?? result.schemaError ?? result.refError,
+    }
+  })
 }
