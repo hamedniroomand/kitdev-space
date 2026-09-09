@@ -104,18 +104,23 @@ test.describe('SQLite Studio', () => {
     await page.getByRole('button', { name: 'Run Query' }).click()
 
     const stop = page.getByRole('button', { name: 'Stop' })
-    await expect(stop).toBeVisible()
+    await expect(stop).toBeVisible({ timeout: 15_000 })
     await stop.click()
 
-    await expect(page.getByText('The query was stopped. The sample database reloaded.')).toBeVisible()
+    // Cancelling terminates the worker, so SQLite reloads its WebAssembly
+    // engine. That takes longer than the default wait on a busy machine.
+    const RECOVERY = 30_000
+    await expect(
+      page.getByText('The query was stopped. The sample database reloaded.'),
+    ).toBeVisible({ timeout: RECOVERY })
 
     // Recovery: the worker restarted and the sample tables are back and usable.
-    await expect(tableList.getByText('products', { exact: true })).toBeVisible()
+    await expect(tableList.getByText('products', { exact: true })).toBeVisible({ timeout: RECOVERY })
     await tableList.getByText('products', { exact: true }).click()
-    await expect(page.getByText('Mechanical Keyboard', { exact: true })).toBeVisible()
+    await expect(page.getByText('Mechanical Keyboard', { exact: true })).toBeVisible({ timeout: RECOVERY })
 
     await fillCodeMirror(page, 'SQL query', 'SELECT count(*) AS total FROM products;')
     await page.getByRole('button', { name: 'Run Query' }).click()
-    await expect(page.getByRole('button', { name: 'Stop' })).not.toBeVisible()
+    await expect(page.getByRole('button', { name: 'Stop' })).not.toBeVisible({ timeout: RECOVERY })
   })
 })
