@@ -15,6 +15,12 @@ test.describe('HTML to JSX Converter Tool', () => {
       expect(outputText).toContain('export default function UserProfileCard()')
       expect(outputText).toContain('className="card"')
       expect(outputText).toContain('htmlFor="username-input"')
+      expect(outputText).toContain('<img src="/avatar.jpg"')
+      expect(outputText).not.toContain('onclick')
+    })
+
+    await test.step('lists the event handler that JSX cannot hold', async () => {
+      await expect(page.getByText('onclick on <button>: saveProfile()')).toBeVisible()
     })
 
     await test.step('updates component name', async () => {
