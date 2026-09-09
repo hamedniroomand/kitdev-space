@@ -1,3 +1,4 @@
+import type { TotpAlgorithm } from '#shared/utils/crypto/totp'
 import { describe, expect, it } from 'vitest'
 import {
   base32Decode,
@@ -50,4 +51,40 @@ describe('generateTotp', () => {
     expect(sec.length).toBeGreaterThan(16)
     expect(() => base32Decode(sec)).not.toThrow()
   })
+})
+
+/** RFC 6238 Appendix B seeds repeat "1234567890" up to the block size of the hash. */
+function rfcSeed(byteLength: number): string {
+  const ascii = '1234567890'.repeat(Math.ceil(byteLength / 10)).slice(0, byteLength)
+  return base32Encode(new TextEncoder().encode(ascii))
+}
+
+describe('generateTotp against RFC 6238 test vectors', () => {
+  const seeds: Record<TotpAlgorithm, string> = {
+    'SHA-1': rfcSeed(20),
+    'SHA-256': rfcSeed(32),
+    'SHA-512': rfcSeed(64),
+  }
+
+  const vectors: Array<{ seconds: number, codes: Record<TotpAlgorithm, string> }> = [
+    { seconds: 59, codes: { 'SHA-1': '94287082', 'SHA-256': '46119246', 'SHA-512': '90693936' } },
+    { seconds: 1111111109, codes: { 'SHA-1': '07081804', 'SHA-256': '68084774', 'SHA-512': '25091201' } },
+    { seconds: 1234567890, codes: { 'SHA-1': '89005924', 'SHA-256': '91819424', 'SHA-512': '93441116' } },
+    { seconds: 2000000000, codes: { 'SHA-1': '69279037', 'SHA-256': '90698825', 'SHA-512': '38618901' } },
+    { seconds: 20000000000, codes: { 'SHA-1': '65353130', 'SHA-256': '77737706', 'SHA-512': '47863826' } },
+  ]
+
+  for (const algorithm of ['SHA-1', 'SHA-256', 'SHA-512'] as TotpAlgorithm[]) {
+    it(`matches every ${algorithm} vector`, async () => {
+      for (const vector of vectors) {
+        const res = await generateTotp(seeds[algorithm], {
+          time: vector.seconds * 1000,
+          digits: 8,
+          period: 30,
+          algorithm,
+        })
+        expect(res.code, `${algorithm} at T=${vector.seconds}`).toBe(vector.codes[algorithm])
+      }
+    })
+  }
 })

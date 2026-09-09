@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import type { TotpOptions } from '#shared/utils/crypto/totp'
+import type { TotpAlgorithm, TotpOptions } from '#shared/utils/crypto/totp'
 import { useIntervalFn } from '@vueuse/core'
-import { generateTotp, generateTotpSecret, parseTotpUri } from '#shared/utils/crypto/totp'
+import { generateTotp, generateTotpSecret, parseTotpUri, TOTP_ALGORITHMS } from '#shared/utils/crypto/totp'
 
 useToolSeo('totp')
 
 const secretInput = ref('JBSWY3DPEHPK3PXP')
 const digits = ref(6)
 const period = ref(30)
-const algorithm = ref<'SHA-1' | 'SHA-256' | 'SHA-512'>('SHA-1')
+const algorithm = ref<TotpAlgorithm>('SHA-1')
 
 const code = ref('')
 const remainingSeconds = ref(30)
@@ -143,6 +143,18 @@ function handleClear() {
               @click="period = 60"
             />
           </div>
+
+          <!-- Algorithm -->
+          <div class="flex items-center gap-2 border-s border-default ps-3">
+            <span class="text-xs text-muted font-medium">Algorithm:</span>
+            <USelect
+              v-model="algorithm"
+              :items="TOTP_ALGORITHMS"
+              size="xs"
+              aria-label="Hash algorithm"
+              class="w-28"
+            />
+          </div>
         </div>
 
         <div class="flex items-center gap-2">
@@ -255,6 +267,9 @@ function handleClear() {
           </p>
           <p>
             Give a Base32 secret or a full otpauth:// URI. The tool shows the current code and the seconds until the next code. Use it to test a login flow or to check that your server and your app agree.
+          </p>
+          <p>
+            The tool supports SHA-1, SHA-256, and SHA-512. SHA-1 is the default, because almost every authenticator app uses it. Change the algorithm only when your server asks for a different one.
           </p>
           <p>
             The clock of the server and the clock of the device must agree. Most of the failures of TOTP come from a clock that has drifted, and not from a wrong secret. Do not put a real production secret into any web tool.

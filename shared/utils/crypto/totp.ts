@@ -39,11 +39,15 @@ export function base32Encode(bytes: Uint8Array): string {
   return base32
 }
 
+export type TotpAlgorithm = 'SHA-1' | 'SHA-256' | 'SHA-512'
+
+export const TOTP_ALGORITHMS: TotpAlgorithm[] = ['SHA-1', 'SHA-256', 'SHA-512']
+
 export interface TotpOptions {
   time?: number
   period?: number
   digits?: number
-  algorithm?: 'SHA-1' | 'SHA-256' | 'SHA-512'
+  algorithm?: TotpAlgorithm
 }
 
 export interface TotpResult {
@@ -58,7 +62,7 @@ export function parseTotpUri(uri: string): {
   label?: string
   period?: number
   digits?: number
-  algorithm?: 'SHA-1' | 'SHA-256' | 'SHA-512'
+  algorithm?: TotpAlgorithm
 } | null {
   try {
     if (!uri.startsWith('otpauth://totp/'))
@@ -74,7 +78,7 @@ export function parseTotpUri(uri: string): {
     const period = Number.parseInt(url.searchParams.get('period') || '30', 10)
     const digits = Number.parseInt(url.searchParams.get('digits') || '6', 10)
     const algoParam = url.searchParams.get('algorithm')?.toUpperCase()
-    let algorithm: 'SHA-1' | 'SHA-256' | 'SHA-512' = 'SHA-1'
+    let algorithm: TotpAlgorithm = 'SHA-1'
     if (algoParam === 'SHA256' || algoParam === 'SHA-256')
       algorithm = 'SHA-256'
     else if (algoParam === 'SHA512' || algoParam === 'SHA-512')

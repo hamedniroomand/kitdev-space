@@ -19,6 +19,13 @@ test('generates time-based one-time passwords', { tag: '@smoke' }, async ({ page
     expect(digits.replace(/\s+/g, '')).toMatch(/^\d{8}$/)
   })
 
+  await test.step('switches hash algorithm', async () => {
+    await page.getByLabel('Hash algorithm').click()
+    await page.getByRole('option', { name: 'SHA-256' }).click()
+    const digits = (await codeContainer.textContent()) ?? ''
+    expect(digits.replace(/\s+/g, '')).toMatch(/^\d{8}$/)
+  })
+
   await test.step('generates random secret and clears', async () => {
     await page.getByRole('button', { name: 'Generate Random Secret' }).click()
     const digits = (await codeContainer.textContent()) ?? ''
