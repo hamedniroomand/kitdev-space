@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { LightnessFix } from '#shared/utils/color/contrast-fix'
+import { APCA_LEVELS, apcaContrast, apcaLevel } from '#shared/utils/color/apca'
 import { contrastRatio, wcagLevel } from '#shared/utils/color/contrast'
 import { suggestLightnessFix } from '#shared/utils/color/contrast-fix'
 import { parseColor } from '#shared/utils/color/parse'
@@ -50,6 +51,22 @@ const results = computed(() => {
     { label: 'Normal text', hint: 'Below 24px', ...wcagLevel(ratio.value, false) },
     { label: 'Large text', hint: '24px, or 18.66px bold', ...wcagLevel(ratio.value, true) },
   ]
+})
+
+const showApca = ref(false)
+
+const apca = computed(() => {
+  try {
+    return apcaContrast(colors.fg, colors.bg)
+  }
+  catch {
+    return null
+  }
+})
+
+const apcaRows = computed(() => {
+  const score = Math.abs(apca.value ?? 0)
+  return APCA_LEVELS.map(level => ({ ...level, pass: score >= level.lc }))
 })
 
 /** The picker needs a 6 digit hex value. An invalid input keeps the swatch black. */
@@ -276,6 +293,74 @@ function applyFix(fix: LightnessFix) {
           </li>
         </ul>
       </div>
+
+      <div class="space-y-3">
+        <USwitch
+          v-model="showApca"
+          label="APCA score (draft WCAG 3)"
+        />
+
+        <div
+          v-if="showApca && apca !== null"
+          class="space-y-3"
+        >
+          <div class="flex flex-wrap items-center gap-3">
+            <p class="font-mono text-lg font-medium text-highlighted">
+              Lc {{ apca.toFixed(1) }}
+            </p>
+            <UBadge
+              color="neutral"
+              variant="subtle"
+            >
+              {{ apcaLevel(apca)?.use ?? 'Below the draft minimum' }}
+            </UBadge>
+          </div>
+
+          <div class="overflow-x-auto rounded-md border border-default">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="border-b border-default">
+                  <th class="px-3 py-2 text-left font-medium text-highlighted">
+                    Level
+                  </th>
+                  <th class="px-3 py-2 text-left font-medium text-highlighted">
+                    Text size and weight
+                  </th>
+                  <th class="px-3 py-2 text-left font-medium text-highlighted">
+                    Result
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-default">
+                <tr
+                  v-for="row in apcaRows"
+                  :key="row.lc"
+                >
+                  <td class="px-3 py-2 font-mono text-highlighted">
+                    Lc {{ row.lc }}
+                  </td>
+                  <td class="px-3 py-2 text-muted">
+                    {{ row.use }}
+                  </td>
+                  <td class="px-3 py-2">
+                    <UBadge
+                      :color="row.pass ? 'success' : 'error'"
+                      variant="subtle"
+                    >
+                      {{ row.pass ? 'Pass' : 'Fail' }}
+                    </UBadge>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p class="text-xs text-muted">
+            APCA is a draft candidate for WCAG 3. It is not a W3C recommendation. Use the WCAG
+            table above for conformance today.
+          </p>
+        </div>
+      </div>
     </div>
 
     <template #docs>
@@ -298,6 +383,12 @@ function applyFix(fix: LightnessFix) {
           <p>
             The preview shows the pair at 14px regular, 18.66px bold, and 24px regular. It also
             shows a button. Use it to see the pair at the sizes that the table reports.
+          </p>
+          <p>
+            APCA is the Accessible Perceptual Contrast Algorithm. It is a draft candidate for
+            WCAG 3, and it is not a W3C recommendation. It reports a lightness contrast score,
+            Lc, from about -108 to 106. A negative score is light text on a dark background. The
+            tool shows the score and the draft font size thresholds when you turn the row on.
           </p>
           <p>
             When a pair fails, the tool suggests the smallest lightness change that makes it pass.

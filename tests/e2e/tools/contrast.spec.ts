@@ -44,4 +44,14 @@ test('checks color contrast ratio and WCAG rating', { tag: '@smoke' }, async ({ 
     await page.getByRole('button', { name: 'Reset' }).click()
     await expect(page.getByText('5.70:1', { exact: true })).toBeVisible()
   })
+
+  await test.step('shows the draft APCA score', async () => {
+    const toggle = page.getByRole('switch', { name: 'APCA score (draft WCAG 3)' })
+    await expect(page.getByText('Lc -82.8', { exact: true })).not.toBeVisible()
+
+    await toggle.click()
+
+    await expect(page.getByText('Lc -82.8', { exact: true })).toBeVisible()
+    await expect(page.getByText('Body text, 14px regular and larger')).toBeVisible()
+  })
 })
