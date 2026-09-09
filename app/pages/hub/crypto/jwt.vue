@@ -2,11 +2,21 @@
 import type { JwtClaimMatch, JwtDecodeResult, JwtVerifyStatus } from '#shared/utils/crypto/jwt'
 import { formatTimeAgo, useNow } from '@vueuse/core'
 import { decodeJwt, matchJwtClaim, verifyJwt } from '#shared/utils/crypto/jwt'
+import { jwtSegmentHighlight } from '#shared/utils/crypto/jwt-segments'
+
+/** A demo token and its demo secret. Both are fake and hold no real data. */
+const SAMPLE = {
+  token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkZW1vLXVzZXIiLCJuYW1lIjoiRGVtbyBVc2VyIiwiaXNzIjoiaHR0cHM6Ly9kZW1vLmtpdGRldi5zcGFjZSIsImF1ZCI6ImtpdGRldi1kZW1vIiwiaWF0IjoxNzM1Njg5NjAwLCJleHAiOjQxMDI0NDQ4MDB9.EbPcFPkJLm1CNs0_8DtfV-LF61psPczWBMqKwq00Ia0',
+  secret: 'kitdev-demo-secret',
+  issuer: 'https://demo.kitdev.space',
+  audience: 'kitdev-demo',
+}
 
 const token = ref('')
 const key = ref('')
 const expectedIssuer = ref('')
 const expectedAudience = ref('')
+const segmentColors = jwtSegmentHighlight()
 const decoded = ref<JwtDecodeResult | null>(null)
 const verifyStatus = ref<JwtVerifyStatus | null>(null)
 const { status, error, run, reset } = useTool()
@@ -105,6 +115,16 @@ async function handleDecode() {
   })
 }
 
+const { applySample } = useSampleInput(token, { demo: SAMPLE.token })
+
+async function handleLoadSample() {
+  applySample('demo')
+  key.value = SAMPLE.secret
+  expectedIssuer.value = SAMPLE.issuer
+  expectedAudience.value = SAMPLE.audience
+  await handleDecode()
+}
+
 async function handleCopy(text: string, key: 'header' | 'payload') {
   if (!text) {
     return
@@ -141,7 +161,13 @@ useToolShortcuts({
       hydrate-on-idle
       label="JWT"
       placeholder="Paste a JWT here"
+      :extensions="segmentColors"
     />
+
+    <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted">
+      <span><span class="text-primary font-medium">Header</span> . <span class="text-success font-medium">Payload</span> . <span class="text-warning font-medium">Signature</span></span>
+      <span>The editor colors each part of the token.</span>
+    </div>
 
     <UFormField
       label="Secret or public key"
@@ -180,6 +206,13 @@ useToolShortcuts({
     </div>
 
     <ToolActions>
+      <UButton
+        label="Load Sample"
+        color="neutral"
+        variant="ghost"
+        icon="i-lucide-file-text"
+        @click="handleLoadSample"
+      />
       <UButton
         label="Decode"
         icon="i-lucide-scan-search"
@@ -317,6 +350,9 @@ useToolShortcuts({
           </p>
           <p>
             An <code>alg</code> of <code>none</code> gets an urgent warning. Such a token has no signature, so the signature check fails.
+          </p>
+          <p>
+            "Load Sample" fills the tool with a demo token, a demo secret, and the demo issuer and audience. The sample data is fake. Do not use the demo secret for a real token.
           </p>
         </div>
         <RelatedTools
