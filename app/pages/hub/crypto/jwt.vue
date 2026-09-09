@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { JwtClaimMatch, JwtDecodeResult, JwtVerifyStatus } from '#shared/utils/crypto/jwt'
+import { formatTimeAgo, useNow } from '@vueuse/core'
 import { decodeJwt, matchJwtClaim, verifyJwt } from '#shared/utils/crypto/jwt'
 
 const token = ref('')
@@ -62,6 +63,31 @@ function timeCheck(): JwtCheck {
   }
   return { label, value: 'Valid', description: 'Inside the exp and nbf window', color: 'success' }
 }
+
+/** `alg: none` means the token has no signature. It is never valid. */
+const insecureAlgorithm = computed(() => decoded.value?.algorithm?.toLowerCase() === 'none')
+
+const now = useNow({ interval: 1000 })
+const CLAIM_NAMES = ['iat', 'nbf', 'exp'] as const
+const CLAIM_TITLES: Record<string, string> = {
+  iat: 'Issued at',
+  nbf: 'Not before',
+  exp: 'Expires at',
+}
+
+const claimDates = computed(() => CLAIM_NAMES.flatMap((name) => {
+  const seconds = decoded.value?.payload[name]
+  if (typeof seconds !== 'number' || !Number.isFinite(seconds)) {
+    return []
+  }
+  const date = new Date(seconds * 1000)
+  return [{
+    name,
+    title: CLAIM_TITLES[name]!,
+    iso: date.toISOString(),
+    relative: formatTimeAgo(date, undefined, now.value.getTime()),
+  }]
+}))
 
 const checks = computed<JwtCheck[]>(() => [
   signatureCheck(),
@@ -188,6 +214,15 @@ useToolShortcuts({
         </UBadge>
       </div>
 
+      <UAlert
+        v-if="insecureAlgorithm"
+        color="error"
+        variant="subtle"
+        icon="i-lucide-shield-alert"
+        title="Insecure algorithm: alg is none"
+        description="A token with alg none carries no signature. The signature check fails. Never accept such a token."
+      />
+
       <div class="grid gap-3 grid-cols-2 lg:grid-cols-4">
         <StatCard
           v-for="check in checks"
@@ -198,6 +233,23 @@ useToolShortcuts({
           :color="check.color"
           :aria-label="`${check.label} check`"
         />
+      </div>
+
+      <div
+        v-if="claimDates.length"
+        aria-label="Claim dates"
+        class="p-3.5 border border-default rounded-xl bg-elevated/40 space-y-1.5"
+      >
+        <div
+          v-for="claim in claimDates"
+          :key="claim.name"
+          class="flex flex-wrap items-baseline gap-x-2 text-sm"
+        >
+          <span class="text-highlighted font-medium w-24">{{ claim.title }}</span>
+          <code class="text-muted">{{ claim.name }}</code>
+          <span class="font-mono text-highlighted">{{ claim.iso }}</span>
+          <span class="text-muted">({{ claim.relative }})</span>
+        </div>
       </div>
 
       <div class="grid gap-4 lg:grid-cols-2">
@@ -259,6 +311,12 @@ useToolShortcuts({
           </p>
           <p>
             Each check has its own card. The signature, the time claims, the issuer, and the audience pass or fail on their own. A card shows "Not checked" when the tool has no data for that check.
+          </p>
+          <p>
+            The <code>iat</code>, <code>nbf</code>, and <code>exp</code> claims hold Unix seconds. The tool shows each one as an ISO date and as a relative time. The relative time updates every second.
+          </p>
+          <p>
+            An <code>alg</code> of <code>none</code> gets an urgent warning. Such a token has no signature, so the signature check fails.
           </p>
         </div>
         <RelatedTools
