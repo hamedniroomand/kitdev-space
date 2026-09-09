@@ -18,9 +18,6 @@ const keyFormat = ref<HmacKeyFormat>('text')
 const encoding = ref<HmacEncoding>('hex')
 const uppercase = ref(false)
 const expected = ref('')
-const signature = ref('')
-const signatureBytes = ref<Uint8Array | null>(null)
-const errorMessage = ref<string | null>(null)
 
 const { copy, label, color, icon } = useCopyFeedback()
 
@@ -35,35 +32,58 @@ const encodings: { label: string, value: HmacEncoding }[] = [
   { label: 'Base64', value: 'base64' },
 ]
 
-async function computeSignature() {
-  if (!message.value || !secret.value) {
-    signature.value = ''
-    signatureBytes.value = null
-    errorMessage.value = null
-    return
+interface HmacResult {
+  signature: string
+  bytes: Uint8Array | null
+  error: unknown
+}
+
+const EMPTY_RESULT: HmacResult = { signature: '', bytes: null, error: null }
+
+// `computedAsync` tracks only the refs that it reads before the first `await`,
+// so every input is read here first. `useLiveTool` then watches the ref and
+// sends `tool_execute`, or `tool_error` when `error` holds a value.
+const result = computedAsync<HmacResult>(async () => {
+  const text = message.value
+  const key = secret.value
+  const format = keyFormat.value
+  const algo = algorithm.value
+  const enc = encoding.value
+  const upper = uppercase.value
+
+  if (!text || !key) {
+    return EMPTY_RESULT
   }
 
   try {
-    const keyBytes = decodeHmacKey(secret.value, keyFormat.value)
-    const bytes = await hmacBytes(message.value, keyBytes, algorithm.value)
-    let sig = encodeHmac(bytes, encoding.value)
-    if (encoding.value === 'hex' && uppercase.value) {
-      sig = sig.toUpperCase()
-    }
-    signature.value = sig
-    signatureBytes.value = bytes
-    errorMessage.value = null
+    const bytes = await hmacBytes(text, decodeHmacKey(key, format), algo)
+    const encoded = encodeHmac(bytes, enc)
+    return { signature: enc === 'hex' && upper ? encoded.toUpperCase() : encoded, bytes, error: null }
   }
-  catch (err) {
-    signature.value = ''
-    signatureBytes.value = null
-    errorMessage.value = err instanceof Error ? err.message : 'Failed to compute HMAC signature.'
+  catch (cause) {
+    return { signature: '', bytes: null, error: cause }
   }
-}
+}, EMPTY_RESULT)
 
-watch([message, secret, algorithm, keyFormat, encoding, uppercase], () => {
-  computeSignature()
-}, { immediate: true })
+useLiveTool(result, { option: () => algorithm.value })
+
+const signature = computed(() => result.value.signature)
+const signatureBytes = computed(() => result.value.bytes)
+const errorMessage = computed(() => {
+  const { error } = result.value
+  if (!error) {
+    return null
+  }
+  return error instanceof Error ? error.message : 'Failed to compute HMAC signature.'
+})
+
+// Only the message reports its size. The secret key never reaches analytics.
+const { reportBytes, clearBytes } = useToolInput()
+watchDebounced(message, value => reportBytes('hmac-message', textBytes(value)), {
+  debounce: 400,
+  immediate: true,
+})
+onUnmounted(() => clearBytes('hmac-message'))
 
 // Byte metrics. The count is the exact input. The tool never trims the message
 // or changes its whitespace.
@@ -108,9 +128,6 @@ function handleClear() {
   message.value = ''
   secret.value = ''
   expected.value = ''
-  signature.value = ''
-  signatureBytes.value = null
-  errorMessage.value = null
 }
 </script>
 
