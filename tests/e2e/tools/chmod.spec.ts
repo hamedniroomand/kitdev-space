@@ -17,4 +17,23 @@ test.describe('Chmod Calculator tool', () => {
     await expect(octalInput).toHaveValue('644')
     await expect(page.locator('main').getByText('chmod 644 file.txt')).toBeVisible()
   })
+
+  test('reads a symbolic string with a special bit', async ({ page }) => {
+    await gotoHydrated(page, '/hub/dev/chmod')
+
+    const octalInput = page.locator('main').getByPlaceholder('755')
+    const symbolicInput = page.locator('main').getByPlaceholder('rwxr-xr-x')
+
+    await symbolicInput.fill('rwxr-sr-x')
+    await expect(octalInput).toHaveValue('2755')
+    await expect(page.locator('main').getByRole('checkbox', { name: 'SetGID (s = 2)', exact: true })).toBeChecked()
+    await expect(page.locator('main').getByText('chmod 2755 file.txt')).toBeVisible()
+  })
+
+  test('quotes a file name that contains a space', async ({ page }) => {
+    await gotoHydrated(page, '/hub/dev/chmod')
+
+    await page.locator('main').getByPlaceholder('file.txt').fill('my file.txt')
+    await expect(page.locator('main').getByText('chmod 755 \'my file.txt\'')).toBeVisible()
+  })
 })
