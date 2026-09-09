@@ -82,6 +82,7 @@ const chips = computed(() => palette.value.map((shade) => {
   const onBlack = contrastRatio(shade.hex, BLACK)
   return {
     ...shade,
+    isAnchor: shade.shade === anchorShade.value,
     foreground: onWhite >= onBlack ? WHITE : BLACK,
     white: WHITE,
     black: BLACK,
@@ -129,10 +130,24 @@ function handleReset() {
   overrides.value = {}
 }
 
+const jsonOutput = computed(() => JSON.stringify(
+  Object.fromEntries(palette.value.map(s => [s.shade, s.hex])),
+  null,
+  2,
+))
+
 function handleCopyCode() {
   if (codeOutput.value) {
     copy(codeOutput.value)
   }
+}
+
+function handleCopyCssVars() {
+  copy(formatAsCssVars(palette.value, colorName.value.trim() || DEFAULT_NAME), 'css-vars', 'snippet')
+}
+
+function handleCopyJson() {
+  copy(jsonOutput.value, 'json', 'snippet')
 }
 
 useToolShortcuts({
@@ -238,9 +253,29 @@ onMounted(() => {
         v-if="palette.length > 0"
         class="space-y-2"
       >
-        <span class="block text-sm font-medium text-default">
-          Generated 50–950 Shade Scale (Click any swatch to copy hex)
-        </span>
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <span class="text-sm font-medium text-default">
+            Generated 50–950 Shade Scale (Click any swatch to copy hex)
+          </span>
+          <div class="flex flex-wrap items-center gap-2">
+            <UButton
+              :label="label('css-vars', 'Copy all as CSS variables')"
+              :icon="icon('css-vars')"
+              :color="color('css-vars')"
+              size="xs"
+              variant="subtle"
+              @click="handleCopyCssVars"
+            />
+            <UButton
+              :label="label('json', 'Copy all as JSON')"
+              :icon="icon('json')"
+              :color="color('json')"
+              size="xs"
+              variant="subtle"
+              @click="handleCopyJson"
+            />
+          </div>
+        </div>
         <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-11 gap-2">
           <div
             v-for="s in chips"
@@ -250,8 +285,9 @@ onMounted(() => {
             <button
               type="button"
               class="w-full rounded-xl p-3 text-center transition-transform hover:scale-105 shadow-xs border border-default/20 flex flex-col items-center justify-between gap-1 min-h-24 cursor-pointer"
+              :class="s.isAnchor ? 'ring-2 ring-primary ring-offset-2 ring-offset-default' : ''"
               :style="{ backgroundColor: s.hex, color: s.foreground }"
-              :aria-label="`Copy shade ${s.shade}`"
+              :aria-label="`Copy shade ${s.shade}${s.isAnchor ? ', the base color' : ''}`"
               @click="copy(s.hex)"
             >
               <span class="font-bold text-xs font-mono">
@@ -290,6 +326,18 @@ onMounted(() => {
                 {{ s.hex }}
               </span>
             </button>
+
+            <span
+              v-if="s.isAnchor"
+              role="img"
+              aria-label="Base color"
+              class="absolute top-1 left-1 inline-flex size-5 items-center justify-center rounded-md bg-default/80 shadow-xs"
+            >
+              <UIcon
+                name="i-lucide-pin"
+                class="size-3 text-primary"
+              />
+            </span>
 
             <!-- The color input covers the icon, so the chip keeps one clear affordance. -->
             <span class="absolute top-1 right-1 inline-flex size-5 items-center justify-center rounded-md bg-default/80 shadow-xs">

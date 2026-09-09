@@ -11,6 +11,13 @@ test('generates Tailwind shades and configuration code', { tag: '@smoke' }, asyn
     await expect(output).toContainText('--color-brand-500: #3b82f6')
   })
 
+  await test.step('copies the whole scale as JSON', async () => {
+    await expect(page.getByRole('button', { name: 'Copy all as CSS variables' })).toBeVisible()
+    await page.getByRole('button', { name: 'Copy all as JSON' }).click()
+
+    await expect(page.getByRole('button', { name: 'Copied' })).toBeVisible()
+  })
+
   await test.step('updates scale from preset button', async () => {
     await page.getByRole('button', { name: 'Emerald' }).click()
     await expect(output).toContainText('--color-brand-500: #10b981')
