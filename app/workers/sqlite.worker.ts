@@ -1,6 +1,7 @@
 import type { Database } from 'sql.js'
 import type { ColumnInfo, DatabaseObject, DatabaseObjectType, QueryResult, TableInfo, WorkerMessage, WorkerResponse } from '~/types/sqlite'
 import initSqlJs from 'sql.js'
+import { coerceCell } from '#shared/utils/data/csv'
 import { buildUpdateQuery } from '~/types/sqlite'
 import { quoteIdentifier } from '~/utils/sqlite/query-builder'
 import { getSampleSqlScript } from '~/utils/sqlite/sample-data'
@@ -204,6 +205,48 @@ globalThis.onmessage = async (event: MessageEvent<WorkerMessage>) => {
           tables,
           objects,
         }
+        globalThis.postMessage(response)
+        break
+      }
+
+      case 'IMPORT_CSV': {
+        if (!db) {
+          throw new Error('Database is not loaded.')
+        }
+        // One transaction keeps the table out of a half-imported state when a
+        // row fails.
+        db.run('BEGIN TRANSACTION;')
+        try {
+          db.run(message.createSql)
+          const placeholders = message.columns.map(() => '?').join(', ')
+          const columnList = message.columns.map(name => quoteIdentifier(name)).join(', ')
+          const insert = db.prepare(
+            `INSERT INTO ${quoteIdentifier(message.table)} (${columnList}) VALUES (${placeholders});`,
+          )
+          const booleanColumns = new Set(message.booleanColumns)
+          for (const row of message.rows) {
+            insert.run(message.columns.map((_, idx) => {
+              const cell = coerceCell(row[idx] ?? '')
+              // SQLite has no boolean, so a boolean column stores 1 or 0.
+              if (typeof cell === 'boolean') {
+                return cell ? 1 : 0
+              }
+              if (booleanColumns.has(idx) && typeof cell === 'string' && cell === '') {
+                return null
+              }
+              return cell
+            }))
+          }
+          insert.free()
+          db.run('COMMIT;')
+        }
+        catch (cause) {
+          db.run('ROLLBACK;')
+          throw cause
+        }
+        const tables = introspectSchema(db)
+        const objects = introspectObjects(db)
+        const response: WorkerResponse = { type: 'DB_READY', tables, objects, sizeBytes: db.export().byteLength }
         globalThis.postMessage(response)
         break
       }

@@ -1,5 +1,8 @@
+import type { ColumnSchema } from '#shared/utils/data/csv-preview'
 import type { DatabaseObject, QueryResult, SqlValue, TableInfo, WorkerResponse } from '~/types/sqlite'
 import type { TableQueryState, TableSort } from '~/utils/sqlite/query-builder'
+import { parseCsv } from '#shared/utils/data/csv'
+import { extractPreviewData, generateCreateTableSql } from '#shared/utils/data/csv-preview'
 import { rowsToCsv, rowsToJson } from '~/utils/sqlite/export'
 import { buildTableQuery, initialTableQuery, isTextColumn, tableSnippets } from '~/utils/sqlite/query-builder'
 
@@ -288,6 +291,67 @@ export function useSqliteStudio() {
     selectedRowid.value = selectedRowid.value === rowid ? null : rowid
   }
 
+  const csvImport = ref<{
+    fileName: string
+    table: string
+    columns: ColumnSchema[]
+    rows: string[][]
+  } | null>(null)
+
+  /** Reads a dropped CSV and opens the preview, so the user sets each type. */
+  async function prepareCsvImport(file: File) {
+    error.value = null
+    try {
+      const text = await file.text()
+      const preview = extractPreviewData(text, 'csv', 50)
+      if (preview.columns.length === 0) {
+        error.value = 'That CSV file holds no column.'
+        return
+      }
+      // Row 0 holds the header, so the data starts at row 1.
+      const [, ...dataRows] = parseCsv(text)
+      csvImport.value = {
+        fileName: file.name,
+        table: file.name.replace(/\.[^.]+$/, '').replace(/\W+/g, '_').toLowerCase() || 'imported',
+        columns: preview.columns,
+        rows: dataRows,
+      }
+    }
+    catch (cause) {
+      error.value = cause instanceof Error ? cause.message : 'Cannot read that CSV file.'
+    }
+  }
+
+  function cancelCsvImport() {
+    csvImport.value = null
+  }
+
+  function confirmCsvImport(table: string, columns: ColumnSchema[]) {
+    const pending = csvImport.value
+    if (!pending) {
+      return
+    }
+    initWorker()
+    // An import from the welcome screen has no database yet, so a blank one is
+    // created first. The worker handles the two messages in order.
+    if (!isReady.value) {
+      databaseName.value = `${table}.sqlite`
+      post({ type: 'INIT_DB' })
+    }
+    const createSql = generateCreateTableSql(table, columns, 'sqlite')
+    csvImport.value = null
+    post({
+      type: 'IMPORT_CSV',
+      table,
+      createSql,
+      columns: columns.map(column => column.name),
+      rows: pending.rows,
+      booleanColumns: columns
+        .map((column, index) => (column.type === 'boolean' ? index : -1))
+        .filter(index => index >= 0),
+    })
+  }
+
   function downloadDatabase() {
     if (worker) {
       worker.postMessage({ type: 'EXPORT_DB' })
@@ -387,6 +451,7 @@ export function useSqliteStudio() {
     selectedRowid,
     schemaSql,
     schemaOpen,
+    csvImport,
     statementResults,
     pendingEdits,
     history,
@@ -396,6 +461,9 @@ export function useSqliteStudio() {
     loadSampleDatabase,
     executeQuery,
     cancelQuery,
+    prepareCsvImport,
+    cancelCsvImport,
+    confirmCsvImport,
     selectTable,
     updateTableQuery,
     toggleSort,

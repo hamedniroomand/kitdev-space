@@ -21,6 +21,7 @@ const {
   selectedRowid,
   schemaSql,
   schemaOpen,
+  csvImport,
   statementResults,
   pendingEdits,
   history,
@@ -30,6 +31,9 @@ const {
   loadSampleDatabase,
   executeQuery,
   cancelQuery,
+  prepareCsvImport,
+  cancelCsvImport,
+  confirmCsvImport,
   selectTable,
   updateTableQuery,
   toggleSort,
@@ -51,6 +55,14 @@ const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeed
 const activeStatement = ref(0)
 
 const sqlExtensions = [sqliteCompletion(() => tables.value)]
+
+function handleDroppedFile(file: File) {
+  if (/\.(?:csv|tsv)$/i.test(file.name)) {
+    prepareCsvImport(file)
+    return
+  }
+  loadDatabaseFile(file)
+}
 
 const columnTypes = computed(() => {
   const info = activeTableInfo.value
@@ -81,7 +93,7 @@ const shownResult = computed(() => {
         <ToolHeader />
         <SqliteWelcome
           :loading="isExecuting"
-          @load-file="loadDatabaseFile"
+          @load-file="handleDroppedFile"
           @create-blank="createBlankDatabase"
           @load-sample="loadSampleDatabase"
         />
@@ -208,5 +220,16 @@ const shownResult = computed(() => {
         </template>
       </USlideover>
     </template>
+
+    <SqliteCsvImport
+      v-if="csvImport"
+      :key="csvImport.fileName"
+      :file-name="csvImport.fileName"
+      :table="csvImport.table"
+      :columns="csvImport.columns"
+      :rows="csvImport.rows"
+      @cancel="cancelCsvImport"
+      @confirm="confirmCsvImport"
+    />
   </div>
 </template>

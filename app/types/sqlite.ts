@@ -47,6 +47,8 @@ export type WorkerMessage
     | { type: 'TABLE_SCHEMA', table: string }
     | { type: 'LOAD_SAMPLE' }
     | { type: 'EXPORT_DB' }
+    /** Creates a typed table and inserts every row inside one transaction. */
+    | { type: 'IMPORT_CSV', table: string, createSql: string, columns: string[], rows: string[][], booleanColumns: number[] }
 
 export type WorkerResponse
   = | { type: 'DB_READY', tables: TableInfo[], objects: DatabaseObject[], sizeBytes: number }
