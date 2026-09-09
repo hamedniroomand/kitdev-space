@@ -252,6 +252,25 @@ function downloadPng() {
             />
 
             <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold text-default">SVG Data URI</span>
+              <UButton
+                size="xs"
+                variant="subtle"
+                :label="label('uri', 'Copy Data URI')"
+                :color="color('uri')"
+                :icon="icon('uri')"
+                @click="copy(dataUri, 'uri')"
+              />
+            </div>
+            <UTextarea
+              :model-value="dataUri"
+              readonly
+              :rows="2"
+              aria-label="SVG data URI"
+              class="font-mono text-xs w-full"
+            />
+
+            <div class="flex items-center justify-between">
               <span class="text-xs font-semibold text-default">HTML &lt;img&gt; Tag</span>
               <UButton
                 size="xs"
