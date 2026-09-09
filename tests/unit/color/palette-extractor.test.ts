@@ -24,6 +24,23 @@ describe('extractPaletteFromPixels', () => {
     expect(palette[1]?.hex).toBe('#0000ff')
   })
 
+  it('ignores a pixel under ten percent alpha', () => {
+    // 1 opaque red pixel, 1 blue pixel at 10 percent alpha minus one step
+    const pixels = new Uint8ClampedArray([255, 0, 0, 255, 0, 0, 255, 25])
+
+    const palette = extractPaletteFromPixels(pixels, 4)
+    expect(palette).toHaveLength(1)
+    expect(palette[0]?.hex).toBe('#ff0000')
+  })
+
+  it('keeps a pixel at ten percent alpha', () => {
+    const pixels = new Uint8ClampedArray([0, 0, 255, 26])
+
+    const palette = extractPaletteFromPixels(pixels, 4)
+    expect(palette).toHaveLength(1)
+    expect(palette[0]?.hex).toBe('#0000ff')
+  })
+
   it('ignores fully transparent pixels', () => {
     const pixels = new Uint8ClampedArray(16)
     // 4 transparent pixels

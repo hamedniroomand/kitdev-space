@@ -19,8 +19,8 @@ export function extractPaletteFromPixels(
     const b = pixels[i + 2]!
     const a = pixels[i + 3]!
 
-    // Skip transparent or near-transparent pixels
-    if (a < 128)
+    // Skip a pixel under ten percent alpha
+    if (a < 26)
       continue
     validCount++
 
