@@ -1,17 +1,19 @@
 <script setup lang="ts">
+import type { SvgExportFormat, SvgScale } from '~/utils/image/svg-browser'
 import { imageExtensionFor } from '#shared/utils/image/format'
 import { rasterizeSvgInBrowser } from '~/utils/image/svg-browser'
-
-type SvgFormat = 'png' | 'webp'
-type SvgScale = 1 | 2 | 4
 
 const svgText = ref(`<svg xmlns="http://www.w3.org/2000/svg" width="120" height="80">
   <rect width="120" height="80" fill="#0f766e"/>
   <text x="60" y="46" text-anchor="middle" fill="#ecfdf5" font-size="18" font-family="sans-serif">SVG</text>
 </svg>`)
 const file = ref<File | null>(null)
-const format = ref<SvgFormat>('png')
+const format = ref<SvgExportFormat>('png')
 const quality = ref(80)
+const width = ref<number | null>(null)
+const height = ref<number | null>(null)
+const lockAspect = ref(true)
+const background = ref('#ffffff')
 const result1x = ref<Blob | null>(null)
 const result2x = ref<Blob | null>(null)
 const result4x = ref<Blob | null>(null)
@@ -27,6 +29,7 @@ const { downloadBlob } = useDownload()
 const formatItems = [
   { label: 'PNG', value: 'png' },
   { label: 'WebP', value: 'webp' },
+  { label: 'JPEG', value: 'jpeg' },
 ]
 
 const scaleCards = computed(() => [
@@ -43,7 +46,15 @@ async function convertScale(scale: SvgScale) {
     throw new Error('Paste SVG code or upload an SVG file.')
   }
 
-  const processed = await rasterizeSvgInBrowser(source, scale, format.value, quality.value)
+  const processed = await rasterizeSvgInBrowser(source, {
+    scale,
+    format: format.value,
+    quality: quality.value,
+    width: width.value,
+    height: height.value,
+    background: format.value === 'jpeg' ? background.value : null,
+    stretch: !lockAspect.value,
+  })
 
   if (scale === 1) {
     result1x.value = processed.blob
@@ -143,6 +154,57 @@ useToolShortcuts({
             @update:model-value="quality = Number($event)"
           />
           <span class="w-10 font-mono text-sm text-muted">{{ quality }}</span>
+        </div>
+      </UFormField>
+      <UFormField
+        label="Width"
+        hint="Pixels at 1x. Blank keeps the SVG size."
+      >
+        <UInput
+          :model-value="width ?? undefined"
+          type="number"
+          :min="1"
+          placeholder="Auto"
+          class="w-full"
+          @update:model-value="width = Number($event) || null"
+        />
+      </UFormField>
+      <UFormField
+        label="Height"
+        hint="Pixels at 1x. Blank keeps the SVG size."
+      >
+        <UInput
+          :model-value="height ?? undefined"
+          type="number"
+          :min="1"
+          placeholder="Auto"
+          class="w-full"
+          @update:model-value="height = Number($event) || null"
+        />
+      </UFormField>
+      <UFormField
+        label="Lock aspect ratio"
+        hint="The vector fits inside the width and height box. Unlock to stretch it to the exact box."
+      >
+        <USwitch v-model="lockAspect" />
+      </UFormField>
+      <UFormField
+        v-if="format === 'jpeg'"
+        label="Background color"
+        hint="JPEG has no transparency."
+      >
+        <div class="flex items-center gap-2">
+          <input
+            v-model="background"
+            type="color"
+            aria-label="Background color picker"
+            class="h-8 w-8 cursor-pointer rounded border border-default bg-transparent"
+          >
+          <UInput
+            v-model="background"
+            placeholder="#ffffff"
+            class="flex-1 font-mono"
+          />
         </div>
       </UFormField>
     </div>
