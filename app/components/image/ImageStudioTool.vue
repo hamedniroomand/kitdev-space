@@ -178,7 +178,11 @@ watch(files, async (selected) => {
   const meta = readImageMetadata(bytes)
   const probe = await probeImageInBrowser(primary)
   decodable.value = probe !== null
-  animated.value = isAnimatedImage(bytes)
+
+  // Each file of a batch loses its frames, so each file needs the sniff. The
+  // marker of an animation sits in the first bytes of the file.
+  const heads = await Promise.all(selected.map(item => item.slice(0, 4096).arrayBuffer()))
+  animated.value = heads.some(head => isAnimatedImage(new Uint8Array(head)))
 
   source.value = {
     width: probe?.width ?? meta.width,
@@ -389,7 +393,7 @@ function handleClear() {
       color="warning"
       variant="subtle"
       icon="i-lucide-film"
-      title="This file has more than one frame"
+      :title="isBatch ? 'A file of the batch has more than one frame' : 'This file has more than one frame'"
       description="The tool keeps the first frame only. The result is a still image."
     />
 
@@ -529,7 +533,7 @@ function handleClear() {
           <UFormField
             label="Keep the metadata"
             :hint="canKeepMetadata
-              ? 'The tool copies the file bytes, so the EXIF data stays.'
+              ? 'The tool copies the file bytes, so the EXIF data stays and the quality setting does not apply.'
               : 'A re-encode removes the EXIF data. Keep the original size, format, and transform to retain it.'"
           >
             <USwitch

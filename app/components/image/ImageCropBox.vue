@@ -172,9 +172,10 @@ const HANDLES: { id: CropHandle, class: string }[] = [
         :label="field.label"
       >
         <UInput
-          :model-value="crop[field.key]"
+          :model-value="crop?.[field.key]"
           type="number"
           :min="0"
+          :aria-label="field.label"
           class="w-full"
           @update:model-value="setField(field.key, Number($event))"
         />
