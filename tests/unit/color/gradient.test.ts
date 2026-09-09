@@ -32,6 +32,18 @@ describe('formatGradientCss', () => {
     expect(css).toBe('radial-gradient(circle, #000000 0%, #ffffff 100%)')
   })
 
+  it('adds the alpha byte for a stop that is not opaque', () => {
+    const css = formatGradientCss({
+      type: 'linear',
+      angle: 90,
+      stops: [
+        { ...createGradientStop('#7c3aed', 0, 'a'), alpha: 0.5 },
+        createGradientStop('#06b6d4', 100, 'b'),
+      ],
+    })
+    expect(css).toBe('linear-gradient(90deg, #7c3aed80 0%, #06b6d4 100%)')
+  })
+
   it('formats a CSS declaration', () => {
     expect(formatGradientDeclaration({
       type: 'linear',

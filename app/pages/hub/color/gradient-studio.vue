@@ -2,11 +2,13 @@
 import type { GradientInterpolation, GradientStop, GradientType } from '#shared/utils/color/gradient'
 import {
   checkGradientTextContrast,
+  clampPosition,
   createGradientStop,
   formatGradientCss,
   formatGradientDeclaration,
 } from '#shared/utils/color/gradient'
 import { parseGradientCss } from '#shared/utils/color/gradient-parse'
+import { parseColor } from '#shared/utils/color/parse'
 
 const type = ref<GradientType>('linear')
 const angle = ref(135)
@@ -90,9 +92,43 @@ function updateStopColor(id: string, color: string) {
 function updateStopPosition(id: string, position: number) {
   const stop = stops.value.find(item => item.id === id)
   if (stop) {
-    stop.position = position
+    stop.position = clampPosition(position)
   }
 }
+
+function updateStopAlpha(id: string, alpha: number) {
+  const stop = stops.value.find(item => item.id === id)
+  if (stop) {
+    stop.alpha = Number.isFinite(alpha) ? Math.min(1, Math.max(0, alpha)) : 1
+  }
+}
+
+function stopColorError(color: string): string | undefined {
+  try {
+    parseColor(color)
+    return undefined
+  }
+  catch {
+    return 'Use a hex color such as #7c3aed.'
+  }
+}
+
+const bar = ref<HTMLElement | null>(null)
+const dragId = ref<string | null>(null)
+const { left: barLeft, width: barWidth } = useElementBounding(bar)
+const { x: pointerX } = usePointer()
+const { pressed } = useMousePressed({ target: bar })
+
+watch([pointerX, pressed], () => {
+  if (!pressed.value) {
+    dragId.value = null
+    return
+  }
+  if (!dragId.value || barWidth.value === 0) {
+    return
+  }
+  updateStopPosition(dragId.value, ((pointerX.value - barLeft.value) / barWidth.value) * 100)
+})
 
 function addStop() {
   const last = stops.value[stops.value.length - 1]
@@ -245,13 +281,37 @@ useToolShortcuts({
         />
       </div>
 
+      <div
+        ref="bar"
+        class="relative h-8 touch-none select-none rounded-md border border-default"
+        :style="{ background: cssValue || undefined }"
+      >
+        <button
+          v-for="(stop, index) in stops"
+          :key="stop.id"
+          type="button"
+          class="absolute top-0 h-8 w-3 -translate-x-1/2 cursor-ew-resize rounded-sm border-2 border-inverted outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          :style="{ left: `${stop.position}%`, background: stop.color }"
+          :aria-label="`Stop ${index + 1} position, ${stop.position} percent`"
+          @pointerdown="dragId = stop.id"
+          @keydown.left.prevent="updateStopPosition(stop.id, stop.position - 1)"
+          @keydown.right.prevent="updateStopPosition(stop.id, stop.position + 1)"
+        />
+      </div>
+      <p class="text-sm text-muted">
+        Drag a marker to move the stop.
+      </p>
+
       <ul class="space-y-3">
         <li
           v-for="(stop, index) in stops"
           :key="stop.id"
           class="flex flex-wrap items-end gap-3 rounded-md border border-default p-3"
         >
-          <UFormField :label="`Stop ${index + 1}`">
+          <UFormField
+            :label="`Stop ${index + 1}`"
+            :error="stopColorError(stop.color)"
+          >
             <div class="flex items-center gap-2">
               <input
                 :value="stop.color"
@@ -267,6 +327,21 @@ useToolShortcuts({
                 @update:model-value="updateStopColor(stop.id, String($event))"
               />
             </div>
+          </UFormField>
+          <UFormField
+            label="Alpha"
+            class="w-24"
+          >
+            <UInput
+              :model-value="stop.alpha ?? 1"
+              type="number"
+              :min="0"
+              :max="1"
+              :step="0.05"
+              class="w-full"
+              :aria-label="`Stop ${index + 1} alpha`"
+              @update:model-value="updateStopAlpha(stop.id, Number($event))"
+            />
           </UFormField>
           <UFormField
             label="Position"
@@ -370,7 +445,7 @@ useToolShortcuts({
             This tool builds linear and radial CSS gradients from color stops.
           </p>
           <p>
-            Use the angle control for linear gradients. Move each stop to set its position.
+            Use the angle control for linear gradients. Drag a stop marker on the gradient bar, or use the position slider. Set Alpha to make a stop transparent.
           </p>
           <p>
             Paste a CSS gradient to load its stops and its angle. The tool reads one gradient layer. It does not read conic or repeating gradients.

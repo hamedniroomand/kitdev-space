@@ -28,7 +28,7 @@ export interface GradientContrastResult {
   samples: { label: string, color: string, ratio: number }[]
 }
 
-function clampPosition(value: number): number {
+export function clampPosition(value: number): number {
   if (!Number.isFinite(value)) {
     return 0
   }
