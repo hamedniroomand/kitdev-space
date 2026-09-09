@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import type { JwtDecodeResult, JwtVerifyStatus } from '#shared/utils/crypto/jwt'
-import { decodeJwt, verifyJwtHs256 } from '#shared/utils/crypto/jwt'
+import { decodeJwt, verifyJwt } from '#shared/utils/crypto/jwt'
 
 const token = ref('')
-const secret = ref('')
+const key = ref('')
 const decoded = ref<JwtDecodeResult | null>(null)
 const verifyStatus = ref<JwtVerifyStatus | null>(null)
 const { status, error, run, reset } = useTool()
@@ -14,13 +14,13 @@ useToolSeo('jwt')
 const verifyLabel = computed(() => {
   switch (verifyStatus.value) {
     case 'valid':
-      return 'Signature is valid for HS256.'
+      return 'Signature is valid.'
     case 'invalid':
       return 'Signature is not valid.'
     case 'unsupported':
-      return 'Only HS256 signature checks are supported.'
-    case 'missing-secret':
-      return 'Enter a secret to verify the signature.'
+      return 'This algorithm has no browser signature check.'
+    case 'missing-key':
+      return 'Enter a secret or a public key to verify the signature.'
     default:
       return null
   }
@@ -40,15 +40,7 @@ async function handleDecode() {
   verifyStatus.value = null
   await run(async () => {
     decoded.value = decodeJwt(token.value)
-    if (secret.value) {
-      verifyStatus.value = await verifyJwtHs256(token.value, secret.value)
-    }
-    else if (decoded.value.algorithm === 'HS256') {
-      verifyStatus.value = 'missing-secret'
-    }
-    else if (decoded.value.algorithm) {
-      verifyStatus.value = 'unsupported'
-    }
+    verifyStatus.value = await verifyJwt(token.value, key.value)
     return decoded.value.payloadJson
   })
 }
@@ -62,7 +54,7 @@ async function handleCopy(text: string, key: 'header' | 'payload') {
 
 function handleClear() {
   token.value = ''
-  secret.value = ''
+  key.value = ''
   decoded.value = null
   verifyStatus.value = null
   reset()
@@ -89,12 +81,16 @@ useToolShortcuts({
       placeholder="Paste a JWT here"
     />
 
-    <UFormField label="Secret (optional, HS256)">
-      <UInput
-        v-model="secret"
-        type="password"
-        placeholder="HMAC secret"
-        class="w-full"
+    <UFormField
+      label="Secret or public key"
+      hint="Optional"
+      description="Give the shared secret for HS256, HS384, and HS512. Give a PEM or a JWK public key for RS256, RS384, and RS512."
+    >
+      <UTextarea
+        v-model="key"
+        :rows="3"
+        placeholder="HMAC secret, PEM public key, or JWK"
+        class="font-mono text-sm w-full"
       />
     </UFormField>
 
@@ -210,7 +206,10 @@ useToolShortcuts({
             The tool parses Base64URL header and payload data and formats them as JSON.
           </p>
           <p>
-            Expiration uses the <code>exp</code> claim. Signature checks use Web Crypto for HS256 only.
+            Expiration uses the <code>exp</code> claim. Signature checks use Web Crypto. HS256, HS384, and HS512 need the shared secret. RS256, RS384, and RS512 need the public key in PEM or JWK form.
+          </p>
+          <p>
+            The tool does not download a public key. Paste the key that you want to use.
           </p>
         </div>
         <RelatedTools

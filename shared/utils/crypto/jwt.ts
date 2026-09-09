@@ -18,7 +18,21 @@ export interface JwtDecodeResult {
   algorithm: string | null
 }
 
-export type JwtVerifyStatus = 'valid' | 'invalid' | 'unsupported' | 'missing-secret'
+export type JwtVerifyStatus = 'valid' | 'invalid' | 'unsupported' | 'missing-key'
+
+/** The hash of each supported HMAC algorithm. The key is a shared secret. */
+const HMAC_HASHES: Record<string, string> = {
+  HS256: 'SHA-256',
+  HS384: 'SHA-384',
+  HS512: 'SHA-512',
+}
+
+/** The hash of each supported RSA algorithm. The key is a public key. */
+const RSA_HASHES: Record<string, string> = {
+  RS256: 'SHA-256',
+  RS384: 'SHA-384',
+  RS512: 'SHA-512',
+}
 
 function padBase64(value: string): string {
   const rem = value.length % 4
@@ -87,11 +101,11 @@ export function decodeJwt(token: string, nowSec = Math.floor(Date.now() / 1000))
   }
 }
 
-async function hmacSha256(secret: string, data: string): Promise<Uint8Array> {
+async function hmacSign(secret: string, hash: string, data: string): Promise<Uint8Array> {
   const key = await crypto.subtle.importKey(
     'raw',
     new TextEncoder().encode(secret),
-    { name: 'HMAC', hash: 'SHA-256' },
+    { name: 'HMAC', hash },
     false,
     ['sign'],
   )
@@ -99,23 +113,72 @@ async function hmacSha256(secret: string, data: string): Promise<Uint8Array> {
   return new Uint8Array(signature)
 }
 
-export async function verifyJwtHs256(token: string, secret: string): Promise<JwtVerifyStatus> {
-  if (!secret) {
-    return 'missing-secret'
+/** Reads a public key in PEM (SPKI) or JWK form. It never fetches a remote key. */
+async function importRsaPublicKey(key: string, hash: string): Promise<CryptoKey> {
+  const algorithm = { name: 'RSASSA-PKCS1-v1_5', hash }
+  const trimmed = key.trim()
+
+  if (trimmed.startsWith('{')) {
+    let jwk: JsonWebKey
+    try {
+      jwk = JSON.parse(trimmed) as JsonWebKey
+    }
+    catch (cause) {
+      throw new Error('Invalid JWK.\n\nCheck the public key and try again.', { cause })
+    }
+    // `alg` and `key_ops` in the JWK must agree with the algorithm above, and a
+    // copied key often disagrees. Drop them and use the token header instead.
+    const { alg: _alg, key_ops: _keyOps, ext: _ext, use: _use, ...rest } = jwk
+    return crypto.subtle.importKey('jwk', { ...rest, ext: true }, algorithm, false, ['verify'])
   }
 
+  const body = trimmed.replace(/-----[^-]+-----/g, '').replace(/\s+/g, '')
+  if (!body) {
+    throw new Error('Invalid public key.\n\nPaste a PEM or a JWK public key.')
+  }
+  return crypto.subtle.importKey('spki', decodeBase64Url(body), algorithm, false, ['verify'])
+}
+
+/**
+ * Verifies the signature of a token. The header `alg` selects the check.
+ *
+ * `key` is the shared secret for HS256, HS384, and HS512. It is a PEM or a JWK
+ * public key for RS256, RS384, and RS512. An `alg` of `none` is never valid.
+ */
+export async function verifyJwt(token: string, key: string): Promise<JwtVerifyStatus> {
   const parts = token.trim().split('.')
   if (parts.length !== 3 || !parts[0] || !parts[1] || parts[2] == null) {
     throw new Error('A JWT must have three parts separated by dots.')
   }
 
-  const decoded = decodeJwt(token)
-  if (decoded.algorithm !== 'HS256') {
+  const { algorithm } = decodeJwt(token)
+  if (algorithm == null || algorithm.toLowerCase() === 'none') {
+    return 'invalid'
+  }
+
+  const hmacHash = HMAC_HASHES[algorithm]
+  const rsaHash = RSA_HASHES[algorithm]
+  if (!hmacHash && !rsaHash) {
     return 'unsupported'
+  }
+  if (!key) {
+    return 'missing-key'
   }
 
   const signingInput = `${parts[0]}.${parts[1]}`
-  const expected = await hmacSha256(secret, signingInput)
-  const actual = decodeBase64Url(parts[2])
-  return timingSafeEqual(expected, actual) ? 'valid' : 'invalid'
+  const signature = decodeBase64Url(parts[2])
+
+  if (hmacHash) {
+    const expected = await hmacSign(key, hmacHash, signingInput)
+    return timingSafeEqual(expected, signature) ? 'valid' : 'invalid'
+  }
+
+  const publicKey = await importRsaPublicKey(key, rsaHash!)
+  const verified = await crypto.subtle.verify(
+    'RSASSA-PKCS1-v1_5',
+    publicKey,
+    signature,
+    new TextEncoder().encode(signingInput),
+  )
+  return verified ? 'valid' : 'invalid'
 }
