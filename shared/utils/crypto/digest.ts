@@ -66,3 +66,14 @@ export function parseDigest(value: string): Uint8Array {
 export function digestsMatch(expected: string, actual: string): boolean {
   return timingSafeEqual(parseDigest(expected), parseDigest(actual))
 }
+
+/**
+ * Formats one line of a checksum file, in the format of `sha256sum`.
+ *
+ * The line is the digest, two spaces, then the name of the file. Two spaces
+ * mean text mode. `sha256sum -c` reads this format. A name of `-` means that
+ * the input came from standard input, which is the same as text in this tool.
+ */
+export function checksumFileLine(digest: string, filename = '-'): string {
+  return `${digest}  ${filename}\n`
+}

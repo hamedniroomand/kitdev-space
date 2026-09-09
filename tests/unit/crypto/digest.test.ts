@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { digestsMatch, parseDigest } from '#shared/utils/crypto/digest'
+import { checksumFileLine, digestsMatch, parseDigest } from '#shared/utils/crypto/digest'
 
 const HELLO_SHA256_HEX = '2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824'
 const HELLO_SHA256_BASE64 = 'LPJNul+wow4m6DsqxbninhsWHlwfp0JecwQzYpOLmCQ='
@@ -46,5 +46,16 @@ describe('digestsMatch', () => {
 
   it('rejects a digest of another length', () => {
     expect(digestsMatch('2cf24dba', HELLO_SHA256_HEX)).toBe(false)
+  })
+})
+
+describe('checksumFileLine', () => {
+  it('writes the digest, two spaces, and the file name', () => {
+    expect(checksumFileLine(HELLO_SHA256_HEX, 'archive.zip'))
+      .toBe(`${HELLO_SHA256_HEX}  archive.zip\n`)
+  })
+
+  it('uses the standard input name when no file name is given', () => {
+    expect(checksumFileLine('abcd')).toBe('abcd  -\n')
   })
 })

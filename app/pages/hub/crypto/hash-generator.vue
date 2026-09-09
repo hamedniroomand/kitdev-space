@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { HashAlgorithm } from '#shared/utils/crypto/types'
-import { digestsMatch } from '#shared/utils/crypto/digest'
+import { checksumFileLine, digestsMatch } from '#shared/utils/crypto/digest'
 import { hashFile, hashString } from '#shared/utils/crypto/hash'
 import { parseJson } from '#shared/utils/data/json'
 import { stableStringify } from '#shared/utils/data/stable-json'
@@ -35,6 +35,7 @@ const expected = ref('')
 const bytesRead = ref(0)
 const { status, error, result, run, reset } = useTool<string>()
 const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
+const { downloadText } = useDownload()
 
 useToolSeo('hash')
 
@@ -91,6 +92,17 @@ async function hash() {
   if (status.value === 'success' && result.value !== null) {
     output.value = result.value
   }
+}
+
+/** The name that the checksum file holds. `-` marks input that is not a file. */
+const checksumName = computed(() => (source.value === 'file' && file.value ? file.value.name : '-'))
+
+function handleDownloadChecksum() {
+  if (!output.value) {
+    return
+  }
+  const base = checksumName.value === '-' ? 'checksum' : checksumName.value
+  downloadText(`${base}.${algorithm.value}`, checksumFileLine(output.value, checksumName.value), 'text/plain')
 }
 
 async function handleCopy() {
@@ -217,6 +229,14 @@ useToolShortcuts({
         @click="handleCopy"
       />
       <UButton
+        label="Download Checksum"
+        color="neutral"
+        variant="subtle"
+        icon="i-lucide-download"
+        :disabled="!output"
+        @click="handleDownloadChecksum"
+      />
+      <UButton
         label="Clear"
         color="neutral"
         variant="ghost"
@@ -307,6 +327,14 @@ useToolShortcuts({
             standard JSON form, so <code>1.0</code> becomes <code>1</code> and <code>1e3</code>
             becomes <code>1000</code>. The tool removes a comment and a trailing comma, because it
             reads JSON5 and JSONC input. Hash the canonical text below to reproduce the digest.
+          </p>
+          <p>
+            Select Download Checksum to save the result as a checksum file. The file holds the
+            digest, two spaces, and the name of your file, which is the format of
+            <code>sha256sum</code>. Put the file next to the input file, then run
+            <code>sha256sum -c archive.zip.sha256</code> to check the file on a Linux or a macOS
+            machine. The file is made in your browser, and the name of your file stays on your
+            device.
           </p>
           <h3 class="font-semibold text-highlighted">
             Text encoding
