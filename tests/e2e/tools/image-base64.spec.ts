@@ -16,7 +16,7 @@ test.describe('Image to Base64 tool', () => {
 
     // Switch to Base64 -> Image mode
     await page.getByRole('button', { name: 'Base64 → Image' }).click()
-    const textarea = page.getByPlaceholder('Paste raw Base64 string or data:image/... URI...')
+    const textarea = page.getByRole('textbox', { name: 'Base64 String or Data URI' })
     await textarea.fill('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==')
 
     await expect(page.locator('main').getByText('Decoded Image Preview')).toBeVisible()

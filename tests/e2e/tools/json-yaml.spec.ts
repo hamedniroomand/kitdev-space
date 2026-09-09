@@ -49,11 +49,13 @@ test('swaps output to input and reverses conversion direction', async ({ page })
   const output = page.getByRole('textbox', { name: 'Output' })
   await expect(output).toContainText('name: KitDev')
 
-  await page.getByRole('button', { name: 'Swap' }).click()
+  await page.getByRole('button', { name: 'Swap', exact: true }).click()
 
   const input = page.getByRole('textbox', { name: 'Input' })
   await expect(input).toContainText('name: KitDev')
-  await expect(output).toHaveText('')
+  // An empty CodeMirror still renders its placeholder, so assert the old
+  // output is gone instead of matching an empty string.
+  await expect(output).not.toContainText('name: KitDev')
 
   await page.getByRole('button', { name: 'Convert' }).click()
   await expect(output).toContainText('"name": "KitDev"')

@@ -149,8 +149,13 @@ function getSampleForFormat(format: Exclude<DataFormat, 'typescript'>): string {
 }
 
 watch(from, (newFrom, oldFrom) => {
-  const oldSample = getSampleForFormat(oldFrom)
-  if (!input.value || input.value.trim() === oldSample.trim()) {
+  const current = input.value.trim()
+  // `getSampleForFormat` reformats, so the raw prop counts as untouched too.
+  // Without it a first swap reads the untouched sample as a user edit.
+  const untouched = !current
+    || current === getSampleForFormat(oldFrom).trim()
+    || current === props.sample.trim()
+  if (untouched) {
     input.value = getSampleForFormat(newFrom)
     output.value = ''
     warnings.value = []
