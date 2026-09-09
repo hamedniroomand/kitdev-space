@@ -57,6 +57,11 @@ function downloadZip() {
   downloadBlob('favicon_package.zip', result.value.zipBlob)
 }
 
+/** The rendered icon of one size, for the platform mockups. */
+function previewUrl(name: string) {
+  return result.value?.previews.find(item => item.name === name)?.dataUrl
+}
+
 function handleReset() {
   file.value = null
   reset()
@@ -246,6 +251,77 @@ function handleReset() {
             label="Download Package (.ZIP)"
             @click="downloadZip"
           />
+        </div>
+
+        <!-- Platform Mockups -->
+        <div class="p-4 border border-default rounded-xl bg-elevated/20 space-y-3">
+          <h3 class="text-sm font-semibold text-default flex items-center gap-2">
+            <UIcon
+              name="i-lucide-monitor-smartphone"
+              class="w-4 h-4 text-primary"
+            />
+            Platform Previews
+          </h3>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+            <!-- Browser tab -->
+            <div class="space-y-2">
+              <div class="text-[11px] font-semibold text-muted">
+                Browser tab
+              </div>
+              <div class="rounded-t-lg bg-accented pt-2 px-2">
+                <div class="flex items-center gap-2 rounded-t-md bg-default px-2 py-1.5">
+                  <img
+                    v-if="previewUrl('favicon-32x32.png')"
+                    :src="previewUrl('favicon-32x32.png')"
+                    alt="Browser tab favicon preview"
+                    class="w-4 h-4 shrink-0"
+                  >
+                  <span class="text-[11px] text-default truncate">{{ appName || 'My Application' }}</span>
+                  <UIcon
+                    name="i-lucide-x"
+                    class="w-3 h-3 ml-auto shrink-0 text-muted"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- iOS home screen -->
+            <div class="space-y-2">
+              <div class="text-[11px] font-semibold text-muted">
+                iOS home screen
+              </div>
+              <div class="rounded-lg bg-inverted flex flex-col items-center gap-1.5 py-4">
+                <img
+                  v-if="previewUrl('apple-touch-icon.png')"
+                  :src="previewUrl('apple-touch-icon.png')"
+                  alt="iOS home screen icon preview"
+                  class="w-14 h-14 rounded-[22%] shadow-md"
+                >
+                <span class="text-[10px] text-inverted truncate max-w-full px-2">{{ shortName || 'App' }}</span>
+              </div>
+            </div>
+
+            <!-- Android launcher -->
+            <div class="space-y-2">
+              <div class="text-[11px] font-semibold text-muted">
+                Android launcher
+              </div>
+              <div class="rounded-lg bg-inverted flex flex-col items-center gap-1.5 py-4">
+                <img
+                  v-if="previewUrl('android-chrome-192x192.png')"
+                  :src="previewUrl('android-chrome-192x192.png')"
+                  alt="Android launcher icon preview"
+                  class="w-14 h-14 rounded-full shadow-md"
+                >
+                <span class="text-[10px] text-inverted truncate max-w-full px-2">{{ shortName || 'App' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <p class="text-[11px] text-muted">
+            An iOS home screen rounds the corners. An Android launcher can crop a maskable icon into a circle. Keep the important part of the icon in the middle.
+          </p>
         </div>
 
         <!-- Generated Icons Grid Preview -->

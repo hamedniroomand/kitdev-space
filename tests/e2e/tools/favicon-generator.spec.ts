@@ -17,6 +17,12 @@ test.describe('Favicon Set Generator tool', () => {
     await expect(page.locator('main').getByText('Favicon Package Ready')).toBeVisible()
     await expect(page.locator('main').getByText('Download Package (.ZIP)')).toBeVisible()
     await expect(page.locator('main').getByText('favicon-32x32.png')).toBeVisible()
+
+    // Platform mockups
+    await expect(page.locator('main').getByText('Browser tab', { exact: true })).toBeVisible()
+    await expect(page.locator('main').getByText('iOS home screen', { exact: true })).toBeVisible()
+    await expect(page.locator('main').getByText('Android launcher', { exact: true })).toBeVisible()
+    await expect(page.getByAltText('iOS home screen icon preview')).toBeVisible()
   })
 
   test('shows the padding background field for contain fit only', async ({ page }) => {
