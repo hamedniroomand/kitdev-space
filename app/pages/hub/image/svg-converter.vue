@@ -17,7 +17,9 @@ const width = ref<number | null>(null)
 const height = ref<number | null>(null)
 const lockAspect = ref(true)
 const background = ref('#ffffff')
-const selectedScales = ref<SvgScale[]>([1, 2, 3])
+// UCheckboxGroup carries string values only, so the scale numbers cross as strings.
+const checkedScales = ref(['1', '2', '3'])
+const selectedScales = computed(() => checkedScales.value.map(Number).sort() as SvgScale[])
 const result1x = ref<Blob | null>(null)
 const result2x = ref<Blob | null>(null)
 const result3x = ref<Blob | null>(null)
@@ -36,10 +38,10 @@ const formatItems = [
   { label: 'JPEG', value: 'jpeg' },
 ]
 
-const scaleItems: { label: string, value: SvgScale }[] = [
-  { label: '1x', value: 1 },
-  { label: '2x', value: 2 },
-  { label: '3x', value: 3 },
+const scaleItems = [
+  { label: '1x', value: '1' },
+  { label: '2x', value: '2' },
+  { label: '3x', value: '3' },
 ]
 
 const scaleCards = computed(() => [
@@ -239,7 +241,7 @@ useToolShortcuts({
         hint="Each selected scale gives one raster in the zip file."
       >
         <UCheckboxGroup
-          v-model="selectedScales"
+          v-model="checkedScales"
           :items="scaleItems"
           orientation="horizontal"
         />
