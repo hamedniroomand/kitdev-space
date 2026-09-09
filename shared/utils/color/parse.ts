@@ -6,8 +6,10 @@ function clampByte(value: number): number {
   return Math.min(255, Math.max(0, Math.round(value)))
 }
 
-export function rgbToHex({ r, g, b }: Rgb): string {
-  return `#${[r, g, b].map(value => clampByte(value).toString(16).padStart(2, '0')).join('')}`
+/** Writes an 8-digit hex when the color has alpha, so the alpha value stays. */
+export function rgbToHex({ r, g, b, a }: Rgb): string {
+  const channels = a !== undefined && a < 1 ? [r, g, b, a * 255] : [r, g, b]
+  return `#${channels.map(value => clampByte(value).toString(16).padStart(2, '0')).join('')}`
 }
 
 function describe(rgb: Rgb, hsl?: Hsl, oklchInput?: Oklch, alpha?: number): ParsedColor {

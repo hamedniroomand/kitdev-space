@@ -23,12 +23,12 @@ describe('parseColor', () => {
     expect(four.alpha).toBeUndefined()
 
     const fourHalf = parseColor('#f008')
-    expect(fourHalf.hex).toBe('#ff0000')
+    expect(fourHalf.hex).toBe('#ff000088')
     expect(fourHalf.alpha).toBeCloseTo(0.533, 2)
     expect(fourHalf.rgb.a).toBeCloseTo(0.533, 2)
 
     const eight = parseColor('#00ff0080')
-    expect(eight.hex).toBe('#00ff00')
+    expect(eight.hex).toBe('#00ff0080')
     expect(eight.alpha).toBeCloseTo(0.502, 2)
     expect(eight.rgb.a).toBeCloseTo(0.502, 2)
   })
@@ -168,5 +168,46 @@ describe('parseColor', () => {
     expect(() => parseColor('not-a-color')).toThrow('Invalid color')
     expect(() => parseColor('rgb(1, 2)')).toThrow()
     expect(() => parseColor('hsl(foo bar baz)')).toThrow()
+  })
+})
+
+describe('alpha preservation', () => {
+  const forms = [
+    '#7c3aed66',
+    'rgba(124, 58, 237, 0.4)',
+    'hsl(262 83% 58% / 0.4)',
+    'oklch(53.6% 0.245 293 / 0.4)',
+  ]
+
+  it('keeps the alpha value in each output format', () => {
+    for (const form of forms) {
+      const color = parseColor(form)
+      expect(color.alpha).toBe(0.4)
+      expect(color.hex).toHaveLength(9)
+      expect(color.hex.endsWith('66')).toBe(true)
+      expect(toRgbString(color.rgb)).toContain('/ 0.4')
+      expect(toHslString(color.hsl)).toContain('/ 0.4')
+      expect(toOklchString(color.oklch)).toContain('/ 0.4')
+    }
+  })
+
+  it('round-trips the alpha value between the four formats', () => {
+    const start = parseColor('#7c3aed66')
+    const outputs = [
+      start.hex,
+      toRgbString(start.rgb),
+      toHslString(start.hsl),
+      toOklchString(start.oklch),
+    ]
+    for (const output of outputs) {
+      const round = parseColor(output)
+      expect(round.alpha).toBe(0.4)
+      expect(round.hex.endsWith('66')).toBe(true)
+    }
+  })
+
+  it('writes a 6-digit hex for an opaque color', () => {
+    expect(parseColor('#7c3aedff').hex).toBe('#7c3aed')
+    expect(parseColor('rgb(124 58 237 / 1)').alpha).toBeUndefined()
   })
 })

@@ -24,6 +24,15 @@ test('converts color formats', { tag: '@smoke' }, async ({ page }) => {
     await expect(page.getByText('rgb(255, 0, 0)')).toBeVisible()
   })
 
+  await test.step('keeps the alpha value in every format', async () => {
+    const colorInput = page.getByRole('textbox', { name: 'Color' })
+    await colorInput.fill('rgba(124, 58, 237, 0.4)')
+    await page.getByRole('button', { name: 'Convert' }).click()
+
+    await expect(page.getByText('#7c3aed66').first()).toBeVisible()
+    await expect(page.getByText('rgb(124 58 237 / 0.4)')).toBeVisible()
+  })
+
   await test.step('warns when a color is outside the sRGB gamut', async () => {
     const colorInput = page.getByRole('textbox', { name: 'Color' })
     await colorInput.fill('oklch(86.6% 0.295 142.5)')

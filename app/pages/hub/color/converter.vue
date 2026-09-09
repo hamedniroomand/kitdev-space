@@ -21,24 +21,33 @@ const formats = computed(() => {
   ]
 })
 
-const channels = computed(() => {
+interface ChannelGroup {
+  group: string
+  items: [string, string | number][]
+}
+
+const channels = computed<ChannelGroup[]>(() => {
   if (!color.value) {
     return []
   }
-  const { rgb, hsl, oklch } = color.value
+  const { rgb, hsl, oklch, alpha } = color.value
+  const srgb: [string, string | number][] = [['R', rgb.r], ['G', rgb.g], ['B', rgb.b]]
+  if (alpha !== undefined) {
+    srgb.push(['A', alpha])
+  }
   return [
-    { group: 'sRGB', items: [['R', rgb.r], ['G', rgb.g], ['B', rgb.b]] as const },
+    { group: 'sRGB', items: srgb },
     {
       group: 'HSL',
       items: [
         ['H', `${Math.round(hsl.h)}°`],
         ['S', `${Math.round(hsl.s)}%`],
         ['L', `${Math.round(hsl.l)}%`],
-      ] as const,
+      ],
     },
     {
       group: 'OKLCH',
-      items: [['L', `${oklch.l}%`], ['C', oklch.c], ['H', `${oklch.h}°`]] as const,
+      items: [['L', `${oklch.l}%`], ['C', oklch.c], ['H', `${oklch.h}°`]],
     },
   ]
 })
@@ -195,6 +204,10 @@ onMounted(() => {
           <p>
             This tool converts between HEX, RGB, HSL, and OKLCH color values. It also shows a large
             swatch, the channel values of each space, and a copy action for each format.
+          </p>
+          <p>
+            Each output format keeps the alpha value. An 8-digit hex holds it, and the rgb(), hsl(),
+            and oklch() forms hold it after a slash. No output format of this tool discards alpha.
           </p>
           <p>
             OKLCH is a perceptual color space. Two colors with the same L value look equally bright.
