@@ -37,6 +37,26 @@ test('redirects the exif stripper to the exif remover', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Remove EXIF Data from a Photo', level: 1 })).toBeVisible()
 })
 
+test('warns about an animated GIF and offers the metadata toggle', async ({ page }) => {
+  await gotoHydrated(page, '/hub/image/studio')
+
+  // A 1×1 GIF with two frames and the NETSCAPE loop block.
+  const gifBuffer = Buffer.from(
+    'R0lGODlhAQABAIAAAAAAAP///yH/C05FVFNDQVBFMi4wAwEAAAAh+QQJAAAAACwAAAAAAQABAAAC'
+    + 'AkQBACH5BAkAAAAALAAAAAABAAEAAAICRAEAOw==',
+    'base64',
+  )
+
+  await page.locator('input[type="file"]').setInputFiles({
+    name: 'loop.gif',
+    mimeType: 'image/gif',
+    buffer: gifBuffer,
+  })
+
+  await expect(page.getByText('This file has more than one frame')).toBeVisible()
+  await expect(page.getByText('Keep the metadata')).toBeVisible()
+})
+
 test('converts a JPEG to WebP in the browser with no server request', async ({ page }) => {
   const apiCalls: string[] = []
   await page.route('/api/image/**', async (route) => {

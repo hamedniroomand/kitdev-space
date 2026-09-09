@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { CropRect } from '#shared/utils/image/crop'
+import type { ImageContainer } from '#shared/utils/image/exif'
 import type { ImageEncodeFormat, ImageFilter, ImageFit, ImagePresetId } from '#shared/utils/image/types'
 import { formatBytes } from '#shared/utils/format'
 import { readImageMetadata } from '#shared/utils/image/exif'
@@ -8,6 +9,7 @@ import { PRESET_SIZES } from '#shared/utils/image/presets'
 import { readImageResponse } from '#shared/utils/image/response'
 import { cropImageFile } from '~/utils/image/crop-file'
 import { canProcessInBrowser, probeImageInBrowser, processImageInBrowser } from '~/utils/image/process-browser'
+import { isAnimatedImage } from '~/utils/image/studio-animation'
 
 type SizeMode = ImagePresetId | 'original' | 'custom'
 
@@ -69,9 +71,16 @@ const rotateItems = [
 ]
 
 const file = ref<File | null>(null)
-const source = ref<{ width: number | null, height: number | null, bytes: number } | null>(null)
+const source = ref<{
+  width: number | null
+  height: number | null
+  bytes: number
+  container: ImageContainer
+} | null>(null)
 /** False when the browser cannot decode the file, so the run needs the server. */
 const decodable = ref(true)
+/** True when the file holds more than one frame. */
+const animated = ref(false)
 
 const sizeMode = ref<SizeMode>(props.sizeMode)
 const width = ref(1200)
@@ -85,6 +94,7 @@ const flop = ref(false)
 const grayscale = ref(false)
 const format = ref<ImageEncodeFormat>(props.format)
 const quality = ref(80)
+const keepMetadata = ref(false)
 const lockAspect = ref(true)
 const background = ref('#ffffff')
 /** The ratio that the lock keeps. It is captured when the lock or the file changes. */
@@ -109,6 +119,21 @@ const sourceUrl = useObjectUrl(() => file.value)
 const runsOnServer = computed(() => !canProcessInBrowser(format.value) || !decodable.value)
 const isCustom = computed(() => sizeMode.value === 'custom')
 const resizes = computed(() => sizeMode.value !== 'original')
+/**
+ * A re-encode always removes the metadata. The metadata stays only when the
+ * run changes no pixel and keeps the format, because then the file bytes pass
+ * through.
+ * ponytail: to keep the EXIF after a re-encode, copy the APP1 segment of the
+ * input into the output and set the Orientation tag to 1.
+ */
+const canKeepMetadata = computed(() =>
+  source.value?.container === format.value
+  && !cropEnabled.value
+  && !resizes.value
+  && !rotate.value
+  && !flip.value
+  && !flop.value
+  && !grayscale.value)
 const filename = computed(() => `studio.${imageExtensionFor(format.value)}`)
 
 const cropAspect = computed<number | null>(() => {
@@ -127,6 +152,8 @@ watch(file, async (selected) => {
   outputBlob.value = null
   source.value = null
   cropRect.value = null
+  decodable.value = true
+  animated.value = false
   reset()
 
   if (!selected) {
@@ -134,14 +161,17 @@ watch(file, async (selected) => {
   }
 
   // The size is read in the browser, so the preset fields start from the real size.
-  const meta = readImageMetadata(new Uint8Array(await selected.arrayBuffer()))
+  const bytes = new Uint8Array(await selected.arrayBuffer())
+  const meta = readImageMetadata(bytes)
   const probe = await probeImageInBrowser(selected)
   decodable.value = probe !== null
+  animated.value = isAnimatedImage(bytes)
 
   source.value = {
     width: probe?.width ?? meta.width,
     height: probe?.height ?? meta.height,
     bytes: selected.size,
+    container: meta.container,
   }
 
   if (source.value.width && source.value.height) {
@@ -182,15 +212,29 @@ function setHeight(value: number) {
   }
 }
 
+function setResult(blob: Blob, resultWidth: number | null, resultHeight: number | null) {
+  inputBytes.value = file.value?.size ?? null
+  outputBytes.value = blob.size
+  outWidth.value = resultWidth
+  outHeight.value = resultHeight
+  outputBlob.value = blob
+}
+
 async function process() {
   outputBlob.value = null
 
-  const isBrowser = !runsOnServer.value
+  const passthrough = keepMetadata.value && canKeepMetadata.value
+  const isBrowser = passthrough || !runsOnServer.value
   const runLocation = isBrowser ? 'browser' : 'server'
 
   await run(async () => {
     if (!file.value) {
       throw new Error('Choose an image file before you run the tool.')
+    }
+
+    if (passthrough) {
+      setResult(file.value, source.value?.width ?? null, source.value?.height ?? null)
+      return file.value
     }
 
     if (isBrowser) {
@@ -210,11 +254,7 @@ async function process() {
         background: background.value,
       })
 
-      inputBytes.value = file.value.size
-      outputBytes.value = result.outputBytes
-      outWidth.value = result.width
-      outHeight.value = result.height
-      outputBlob.value = result.blob
+      setResult(result.blob, result.width, result.height)
       return result.blob
     }
 
@@ -252,11 +292,7 @@ async function process() {
     const response = await fetch('/api/image/process', { method: 'POST', body: form })
     const result = await readImageResponse(response, 'The image operation failed.', file.value.size)
 
-    inputBytes.value = file.value.size
-    outputBytes.value = result.outputBytes
-    outWidth.value = result.width
-    outHeight.value = result.height
-    outputBlob.value = result.blob
+    setResult(result.blob, result.width, result.height)
     return result.blob
   }, 'The image operation failed.', { runLocation, option: format.value })
 }
@@ -264,7 +300,6 @@ async function process() {
 function handleClear() {
   file.value = null
   source.value = null
-  decodable.value = true
   outputBlob.value = null
   cropRect.value = null
   inputBytes.value = null
@@ -292,6 +327,15 @@ function handleClear() {
       icon="i-lucide-shield-check"
       title="Processed locally"
       description="WebP, JPEG, and PNG operations run locally in your browser. No image data leaves your device."
+    />
+
+    <UAlert
+      v-if="animated"
+      color="warning"
+      variant="subtle"
+      icon="i-lucide-film"
+      title="This file has more than one frame"
+      description="The tool keeps the first frame only. The result is a still image."
     />
 
     <ImageDropzone v-model="file" />
@@ -414,6 +458,17 @@ function handleClear() {
               v-model="format"
               :items="formatItems"
               class="w-full"
+            />
+          </UFormField>
+          <UFormField
+            label="Keep the metadata"
+            :hint="canKeepMetadata
+              ? 'The tool copies the file bytes, so the EXIF data stays.'
+              : 'A re-encode removes the EXIF data. Keep the original size, format, and transform to retain it.'"
+          >
+            <USwitch
+              v-model="keepMetadata"
+              :disabled="!canKeepMetadata"
             />
           </UFormField>
           <UFormField
