@@ -191,6 +191,16 @@ useToolShortcuts({
             Your password becomes a key through PBKDF2, which repeats a hash many times. This makes a guess attack slow. A new random salt and a new random nonce are used for each operation, so the same text gives different output each time.
           </p>
           <p>
+            The output holds one envelope. The envelope has four parts, in this order:
+          </p>
+          <pre class="overflow-x-auto rounded-md border border-default bg-elevated/40 p-3 font-mono text-xs text-highlighted">version (1 byte) | salt (16 bytes) | iv (12 bytes) | ciphertext and tag</pre>
+          <p>
+            Version 1 is the only version. It fixes PBKDF2 with SHA-256 and 100000 iterations, and AES-256-GCM with a 16-byte tag. A change to these parameters needs a new version number.
+          </p>
+          <p>
+            An earlier release wrote no version byte. A random salt byte can hold the value 1, so the tool cannot read the layout from the first byte. The tool tries the version 1 layout first. GCM checks its tag, so a wrong layout always fails. The tool then tries the old layout. An old output therefore still decrypts.
+          </p>
+          <p>
             The strength comes from the password. A short password gives weak encryption, whatever the algorithm. Use the ID & Secret Generator to make a strong passphrase.
           </p>
         </div>

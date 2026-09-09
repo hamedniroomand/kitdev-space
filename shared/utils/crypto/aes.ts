@@ -16,6 +16,20 @@ function base64ToBytes(base64: string): Uint8Array {
   return bytes
 }
 
+/**
+ * Envelope layout: `version | salt | iv | ciphertext and tag`.
+ * Version 1 fixes PBKDF2-SHA-256 with 100000 iterations and AES-256-GCM.
+ * A change to the key derivation needs a new version number.
+ */
+export const AES_ENVELOPE_VERSION = 1
+
+const SALT_BYTES = 16
+const IV_BYTES = 12
+const TAG_BYTES = 16
+/** The salt and the IV of an unversioned payload from an earlier release. */
+const LEGACY_HEADER_BYTES = SALT_BYTES + IV_BYTES
+const VERSIONED_HEADER_BYTES = 1 + LEGACY_HEADER_BYTES
+
 async function deriveAesKey(
   password: string,
   salt: Uint8Array,
@@ -65,10 +79,10 @@ export async function encryptAesGcm(
     throw new Error('Web Crypto API is not available.')
   }
 
-  const salt = new Uint8Array(16)
+  const salt = new Uint8Array(SALT_BYTES)
   cryptoObj.getRandomValues(salt)
 
-  const iv = new Uint8Array(12)
+  const iv = new Uint8Array(IV_BYTES)
   cryptoObj.getRandomValues(iv)
 
   const key = await deriveAesKey(password, salt, iterations)
@@ -83,13 +97,34 @@ export async function encryptAesGcm(
   )
   const ciphertextBytes = new Uint8Array(ciphertextBuffer)
 
-  // Combined payload: [16 bytes salt][12 bytes IV][ciphertext + tag]
-  const packed = new Uint8Array(salt.length + iv.length + ciphertextBytes.length)
-  packed.set(salt, 0)
-  packed.set(iv, salt.length)
-  packed.set(ciphertextBytes, salt.length + iv.length)
+  const packed = new Uint8Array(VERSIONED_HEADER_BYTES + ciphertextBytes.length)
+  packed[0] = AES_ENVELOPE_VERSION
+  packed.set(salt, 1)
+  packed.set(iv, 1 + SALT_BYTES)
+  packed.set(ciphertextBytes, VERSIONED_HEADER_BYTES)
 
   return bytesToBase64(packed)
+}
+
+async function decryptEnvelope(
+  packed: Uint8Array,
+  password: string,
+  iterations: number,
+  offset: number,
+): Promise<string> {
+  const salt = packed.subarray(offset, offset + SALT_BYTES)
+  const iv = packed.subarray(offset + SALT_BYTES, offset + SALT_BYTES + IV_BYTES)
+  const ciphertext = packed.subarray(offset + SALT_BYTES + IV_BYTES)
+
+  const key = await deriveAesKey(password, salt, iterations)
+
+  const decrypted = await globalThis.crypto.subtle.decrypt(
+    { name: 'AES-GCM', iv: iv as unknown as BufferSource },
+    key,
+    ciphertext as unknown as BufferSource,
+  )
+
+  return new TextDecoder().decode(decrypted)
 }
 
 export async function decryptAesGcm(
@@ -114,30 +149,31 @@ export async function decryptAesGcm(
     throw new Error('Invalid Base64 ciphertext format.')
   }
 
-  if (packed.length < 28) {
+  if (packed.length < LEGACY_HEADER_BYTES + TAG_BYTES) {
     throw new Error('Ciphertext payload is too short.')
   }
 
-  const salt = packed.subarray(0, 16)
-  const iv = packed.subarray(16, 28)
-  const ciphertext = packed.subarray(28)
-
-  const cryptoObj = globalThis.crypto
-  if (!cryptoObj?.subtle) {
+  if (!globalThis.crypto?.subtle) {
     throw new Error('Web Crypto API is not available.')
   }
 
-  const key = await deriveAesKey(password, salt, iterations)
+  /*
+   * A random salt byte can hold the same value as the version byte, so the
+   * layout cannot be read from the first byte. GCM checks its tag, so a trial
+   * decryption is exact: try the versioned layout, then the legacy layout.
+   * A legacy payload therefore costs two key derivations.
+   */
+  if (packed.length >= VERSIONED_HEADER_BYTES + TAG_BYTES) {
+    try {
+      return await decryptEnvelope(packed, password, iterations, 1)
+    }
+    catch {
+      // The payload is not a version 1 envelope. Try the legacy layout.
+    }
+  }
 
   try {
-    const decryptedBuffer = await cryptoObj.subtle.decrypt(
-      { name: 'AES-GCM', iv: iv as unknown as BufferSource },
-      key,
-      ciphertext as unknown as BufferSource,
-    )
-
-    const decoder = new TextDecoder()
-    return decoder.decode(decryptedBuffer)
+    return await decryptEnvelope(packed, password, iterations, 0)
   }
   catch {
     throw new Error('Decryption failed. Incorrect password or corrupted ciphertext.')
