@@ -101,6 +101,28 @@ export function decodeJwt(token: string, nowSec = Math.floor(Date.now() / 1000))
   }
 }
 
+export type JwtClaimMatch = 'match' | 'mismatch' | 'not-checked'
+
+/**
+ * Compares an expected value with a claim of the token.
+ *
+ * An empty expected value is not checked, so it never counts as a match.
+ * The `aud` claim holds a string or an array of strings, and both work here.
+ */
+export function matchJwtClaim(expected: string, claim: unknown): JwtClaimMatch {
+  const wanted = expected.trim()
+  if (!wanted) {
+    return 'not-checked'
+  }
+  if (typeof claim === 'string') {
+    return claim === wanted ? 'match' : 'mismatch'
+  }
+  if (Array.isArray(claim)) {
+    return claim.includes(wanted) ? 'match' : 'mismatch'
+  }
+  return 'mismatch'
+}
+
 async function hmacSign(secret: string, hash: string, data: string): Promise<Uint8Array> {
   const key = await crypto.subtle.importKey(
     'raw',

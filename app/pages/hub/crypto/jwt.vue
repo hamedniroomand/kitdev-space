@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import type { JwtDecodeResult, JwtVerifyStatus } from '#shared/utils/crypto/jwt'
-import { decodeJwt, verifyJwt } from '#shared/utils/crypto/jwt'
+import type { JwtClaimMatch, JwtDecodeResult, JwtVerifyStatus } from '#shared/utils/crypto/jwt'
+import { decodeJwt, matchJwtClaim, verifyJwt } from '#shared/utils/crypto/jwt'
 
 const token = ref('')
 const key = ref('')
+const expectedIssuer = ref('')
+const expectedAudience = ref('')
 const decoded = ref<JwtDecodeResult | null>(null)
 const verifyStatus = ref<JwtVerifyStatus | null>(null)
 const { status, error, run, reset } = useTool()
@@ -25,6 +27,16 @@ const verifyLabel = computed(() => {
       return null
   }
 })
+
+const issuerMatch = computed(() => matchJwtClaim(expectedIssuer.value, decoded.value?.payload.iss))
+const audienceMatch = computed(() => matchJwtClaim(expectedAudience.value, decoded.value?.payload.aud))
+
+function claimLabel(name: string, match: JwtClaimMatch): string {
+  if (match === 'match') {
+    return `${name} matches`
+  }
+  return `${name} does not match`
+}
 
 const verifyColor = computed(() => {
   if (verifyStatus.value === 'valid') {
@@ -55,6 +67,8 @@ async function handleCopy(text: string, key: 'header' | 'payload') {
 function handleClear() {
   token.value = ''
   key.value = ''
+  expectedIssuer.value = ''
+  expectedAudience.value = ''
   decoded.value = null
   verifyStatus.value = null
   reset()
@@ -93,6 +107,29 @@ useToolShortcuts({
         class="font-mono text-sm w-full"
       />
     </UFormField>
+
+    <div class="grid gap-4 sm:grid-cols-2">
+      <UFormField
+        label="Expected issuer (iss)"
+        hint="Optional"
+      >
+        <UInput
+          v-model="expectedIssuer"
+          placeholder="https://issuer.example.com"
+          class="font-mono text-sm w-full"
+        />
+      </UFormField>
+      <UFormField
+        label="Expected audience (aud)"
+        hint="Optional"
+      >
+        <UInput
+          v-model="expectedAudience"
+          placeholder="my-api"
+          class="font-mono text-sm w-full"
+        />
+      </UFormField>
+    </div>
 
     <ToolActions>
       <UButton
@@ -147,6 +184,20 @@ useToolShortcuts({
           variant="subtle"
         >
           Not valid yet (nbf)
+        </UBadge>
+        <UBadge
+          v-if="issuerMatch !== 'not-checked'"
+          :color="issuerMatch === 'match' ? 'success' : 'error'"
+          variant="subtle"
+        >
+          {{ claimLabel('iss', issuerMatch) }}
+        </UBadge>
+        <UBadge
+          v-if="audienceMatch !== 'not-checked'"
+          :color="audienceMatch === 'match' ? 'success' : 'error'"
+          variant="subtle"
+        >
+          {{ claimLabel('aud', audienceMatch) }}
         </UBadge>
       </div>
 
@@ -210,6 +261,9 @@ useToolShortcuts({
           </p>
           <p>
             The tool does not download a public key. Paste the key that you want to use.
+          </p>
+          <p>
+            Give an expected issuer or an expected audience to check the <code>iss</code> and <code>aud</code> claims. An empty field is not checked. The <code>aud</code> claim can hold one value or a list, and a match on one entry of the list counts as a match.
           </p>
         </div>
         <RelatedTools

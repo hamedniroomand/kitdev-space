@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest'
-import { decodeJwt, verifyJwt } from '#shared/utils/crypto/jwt'
+import { decodeJwt, matchJwtClaim, verifyJwt } from '#shared/utils/crypto/jwt'
 
 function encodeBase64Url(bytes: Uint8Array): string {
   let binary = ''
@@ -140,5 +140,31 @@ describe('jwt RS256', () => {
 
   it('reports a missing public key', async () => {
     await expect(verifyJwt(token, '')).resolves.toBe('missing-key')
+  })
+})
+
+describe('matchJwtClaim', () => {
+  it('does not check an empty expected value', () => {
+    expect(matchJwtClaim('', 'kitdev')).toBe('not-checked')
+    expect(matchJwtClaim('   ', 'kitdev')).toBe('not-checked')
+    expect(matchJwtClaim('', undefined)).toBe('not-checked')
+  })
+
+  it('matches a string claim', () => {
+    expect(matchJwtClaim('kitdev', 'kitdev')).toBe('match')
+    expect(matchJwtClaim(' kitdev ', 'kitdev')).toBe('match')
+    expect(matchJwtClaim('kitdev', 'other')).toBe('mismatch')
+  })
+
+  it('matches one entry of an audience array', () => {
+    expect(matchJwtClaim('api', ['web', 'api'])).toBe('match')
+    expect(matchJwtClaim('cli', ['web', 'api'])).toBe('mismatch')
+    expect(matchJwtClaim('api', [])).toBe('mismatch')
+  })
+
+  it('reports a mismatch when the claim is missing or not a string', () => {
+    expect(matchJwtClaim('kitdev', undefined)).toBe('mismatch')
+    expect(matchJwtClaim('kitdev', null)).toBe('mismatch')
+    expect(matchJwtClaim('7', 7)).toBe('mismatch')
   })
 })
