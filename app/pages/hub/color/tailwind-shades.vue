@@ -11,12 +11,23 @@ import {
   SHADE_KEYS,
 } from '#shared/utils/color/tailwind'
 
-useToolSeo('tailwind-shades')
+type CodeFormat = 'v4' | 'v3' | 'css' | 'tokens'
 
-const inputColor = ref('#3b82f6')
-const colorName = ref('brand')
-const anchorShade = ref<ShadeKey>(DEFAULT_ANCHOR)
-const format = ref<'v4' | 'v3' | 'css' | 'tokens'>('v4')
+const toolId = 'tailwind-shades'
+const DEFAULT_COLOR = '#3b82f6'
+const DEFAULT_NAME = 'brand'
+const DEFAULT_FORMAT: CodeFormat = 'v4'
+
+useToolSeo(toolId)
+
+const { consumeHandoffColor } = useColorHandoff()
+
+const inputColor = ref(DEFAULT_COLOR)
+const colorName = ref(DEFAULT_NAME)
+
+// The recipe holds only the enumerated options. The color and the name stay in memory.
+const anchorShade = useToolOption<ShadeKey>('anchor', DEFAULT_ANCHOR, toolId)
+const format = useToolOption<CodeFormat>('format', DEFAULT_FORMAT, toolId)
 
 const anchorItems = SHADE_KEYS.map(shade => ({ label: shade, value: shade }))
 
@@ -34,7 +45,7 @@ const ROLE_DEFAULTS: Record<string, ShadeKey> = {
   primary: '500',
 }
 
-const roleShades = ref<Record<string, ShadeKey>>({ ...ROLE_DEFAULTS })
+const roleShades = useToolOption<Record<string, ShadeKey>>('roles', { ...ROLE_DEFAULTS }, toolId)
 
 const { copy, label, color, icon } = useCopyFeedback()
 
@@ -109,6 +120,15 @@ function clearOverride(shade: string) {
   overrides.value = rest
 }
 
+function handleReset() {
+  inputColor.value = DEFAULT_COLOR
+  colorName.value = DEFAULT_NAME
+  anchorShade.value = DEFAULT_ANCHOR
+  format.value = DEFAULT_FORMAT
+  roleShades.value = { ...ROLE_DEFAULTS }
+  overrides.value = {}
+}
+
 function handleCopyCode() {
   if (codeOutput.value) {
     copy(codeOutput.value)
@@ -117,6 +137,14 @@ function handleCopyCode() {
 
 useToolShortcuts({
   onCopy: handleCopyCode,
+})
+
+// The Image Palette Extractor can send one swatch to this tool.
+onMounted(() => {
+  const handoff = consumeHandoffColor()
+  if (handoff) {
+    inputColor.value = handoff
+  }
 })
 </script>
 
@@ -147,6 +175,15 @@ useToolShortcuts({
             variant="subtle"
             :disabled="!codeOutput"
             @click="handleCopyCode"
+          />
+          <UButton
+            label="Reset"
+            color="neutral"
+            variant="ghost"
+            icon="i-lucide-rotate-ccw"
+            size="xs"
+            aria-label="Reset the shade recipe"
+            @click="handleReset"
           />
         </div>
       </div>
