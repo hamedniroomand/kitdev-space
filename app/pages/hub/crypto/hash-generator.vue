@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { HashAlgorithm } from '#shared/utils/crypto/types'
+import { digestsMatch } from '#shared/utils/crypto/digest'
 import { hashFile, hashString } from '#shared/utils/crypto/hash'
 import { parseJson } from '#shared/utils/data/json'
 import { stableStringify } from '#shared/utils/data/stable-json'
@@ -30,6 +31,7 @@ const canonical = ref('')
 const file = ref<File | null>(null)
 const algorithm = ref<HashAlgorithm>('sha256')
 const output = ref('')
+const expected = ref('')
 const bytesRead = ref(0)
 const { status, error, result, run, reset } = useTool<string>()
 const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
@@ -37,6 +39,22 @@ const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeed
 useToolSeo('hash')
 
 const isLegacy = computed(() => algorithm.value === 'md5' || algorithm.value === 'sha1')
+
+/**
+ * Compares the output with the hash that the user pasted.
+ * `null` means that the tool made no comparison yet.
+ */
+const comparison = computed<{ match: boolean, error: null } | { match: null, error: string } | null>(() => {
+  if (!output.value || !expected.value.trim()) {
+    return null
+  }
+  try {
+    return { match: digestsMatch(expected.value, output.value), error: null }
+  }
+  catch (cause) {
+    return { match: null, error: cause instanceof Error ? cause.message : 'The hash is not valid.' }
+  }
+})
 
 watch([source, algorithm], () => {
   output.value = ''
@@ -88,6 +106,7 @@ function handleClear() {
   canonical.value = ''
   file.value = null
   output.value = ''
+  expected.value = ''
   bytesRead.value = 0
   reset()
 }
@@ -219,6 +238,41 @@ useToolShortcuts({
       placeholder="Hash appears here"
     />
 
+    <UFormField
+      label="Expected hash (optional)"
+      hint="Hex or Base64, upper case or lower case"
+    >
+      <UInput
+        v-model="expected"
+        placeholder="Paste the hash of the publisher"
+        class="w-full font-mono"
+      />
+    </UFormField>
+
+    <UAlert
+      v-if="comparison?.error"
+      color="warning"
+      variant="subtle"
+      icon="i-lucide-triangle-alert"
+      :title="comparison.error"
+    />
+    <UAlert
+      v-else-if="comparison?.match === true"
+      color="success"
+      variant="subtle"
+      icon="i-lucide-check"
+      title="Match"
+      description="The output is the same as the expected hash. The compare reads every byte, so it gives away no timing information."
+    />
+    <UAlert
+      v-else-if="comparison?.match === false"
+      color="error"
+      variant="subtle"
+      icon="i-lucide-x"
+      title="Mismatch"
+      description="The output is not the same as the expected hash. Check that you chose the algorithm of the publisher."
+    />
+
     <LazyToolEditor
       v-if="source === 'json' && canonical"
       v-model="canonical"
@@ -245,6 +299,11 @@ useToolShortcuts({
             The JSON object source gives a stable digest for an object. The keys are sorted at every
             level and the spaces are removed, so the same content in a different key order gives the same
             hash. Use it as a cache key, a deduplication key, or a change detector for a config object.
+          </p>
+          <p>
+            Paste the hash of the publisher into the expected hash field to get a Match or a
+            Mismatch result. The field accepts hex and Base64, in upper case or in lower case. The
+            compare reads every byte of both values, so its run time does not depend on the content.
           </p>
           <p>
             These digests are not password hashes. A password needs a slow algorithm such as bcrypt,
