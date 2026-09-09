@@ -14,8 +14,9 @@ test('benchmarks password hashing algorithms', { tag: '@smoke' }, async ({ page 
   await expect(page.getByText('Each repetition')).toBeVisible()
 
   await test.step('checks the password against the hash of the run', async () => {
-    const hash = ((await page.locator('dl dd').last().textContent()) ?? '').trim()
+    const hash = ((await page.locator('dl div').filter({ hasText: 'Hash' }).locator('dd').textContent()) ?? '').trim()
 
+    // The password matches SAMPLE.password in app/pages/hub/crypto/password-benchmark.vue.
     await page.getByPlaceholder('Enter the password to check').fill('correct-horse-battery-staple')
     await page.getByPlaceholder('$2b$10$...').fill(hash)
     await page.getByRole('button', { name: 'Check hash' }).click()
