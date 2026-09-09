@@ -30,7 +30,7 @@ function buildHashOptions(options: {
   memoryCost?: number
   timeCost?: number
   cost?: number
-}): Parameters<typeof Bun.password.hash>[1] {
+}): Bun.Password.Argon2Algorithm | Bun.Password.BCryptAlgorithm {
   if (options.algorithm === 'bcrypt') {
     const cost = options.cost ?? 10
     if (!Number.isInteger(cost) || cost < 4 || cost > MAX_BCRYPT_COST) {
