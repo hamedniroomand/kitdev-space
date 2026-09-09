@@ -944,7 +944,7 @@ export const tools: Tool[] = [
     description: 'Build, format, and align Markdown tables with real-time output.',
     category: 'dev',
     icon: 'i-lucide-table',
-    keywords: ['markdown', 'table', 'generator', 'grid', 'columns', 'align'],
+    keywords: ['markdown', 'table', 'generator', 'grid', 'columns', 'align', 'csv', 'paste', 'import'],
     route: '/hub/dev/markdown-table',
     clientOnly: true,
     serverRequired: false,
