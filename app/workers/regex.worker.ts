@@ -29,7 +29,6 @@ globalThis.onmessage = (event: MessageEvent<RegexWorkerRequest>) => {
         valid: false,
         error: errorMsg,
         matches: [],
-        highlights: sample ? [{ text: sample, matched: false, matchIndex: null }] : [],
         explanations: [],
       },
     } satisfies RegexWorkerResponse)
