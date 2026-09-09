@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { HmacAlgorithm, HmacEncoding, HmacKeyFormat } from '#shared/utils/crypto/hmac'
+import { textBytes } from '#shared/utils/analytics/buckets'
 import {
   decodeHmacKey,
   encodeHmac,
@@ -63,6 +64,21 @@ async function computeSignature() {
 watch([message, secret, algorithm, keyFormat, encoding, uppercase], () => {
   computeSignature()
 }, { immediate: true })
+
+// Byte metrics. The count is the exact input. The tool never trims the message
+// or changes its whitespace.
+const messageBytes = computed(() => textBytes(message.value))
+const keyByteLength = computed(() => {
+  try {
+    return decodeHmacKey(secret.value, keyFormat.value).byteLength
+  }
+  catch {
+    return 0
+  }
+})
+const keyFormatLabel = computed(() => (
+  keyFormats.find(format => format.value === keyFormat.value)?.label ?? ''
+))
 
 /** The expected signature check. It never uses `===` on the signature bytes. */
 const expectedMatch = computed(() => {
@@ -212,6 +228,34 @@ function handleClear() {
         />
       </UFormField>
 
+      <!-- Byte metrics -->
+      <div class="grid gap-3 grid-cols-2 lg:grid-cols-4">
+        <StatCard
+          label="Message bytes"
+          :value="messageBytes"
+          unit="B"
+          description="UTF-8 encoding"
+          aria-label="Message bytes"
+        />
+        <StatCard
+          label="Message characters"
+          :value="message.length"
+          description="UTF-16 code units"
+        />
+        <StatCard
+          label="Key bytes"
+          :value="keyByteLength"
+          unit="B"
+          :description="`${keyFormatLabel} key`"
+        />
+        <StatCard
+          label="Digest bytes"
+          :value="signatureBytes?.byteLength ?? 0"
+          unit="B"
+          :description="algorithm"
+        />
+      </div>
+
       <!-- Signature Output -->
       <UFormField :label="`Signature (${algorithm})`">
         <template #hint>
@@ -282,6 +326,9 @@ function handleClear() {
           </p>
           <p>
             A key is bytes, not text. Select the key format that matches your key. "Text (UTF-8)" reads the key as UTF-8 text. "Hex" and "Base64" decode the key to the same bytes that the sender uses. The tool reports an error when the key holds a character that the selected format does not allow.
+          </p>
+          <p>
+            The tool converts the message to bytes with UTF-8 and shows the exact byte count. It does not trim the message and it does not change the whitespace, because one extra space changes the signature. A character outside the ASCII range needs more than one byte, so the byte count and the character count can differ.
           </p>
           <p>
             An HMAC is not encryption. It does not hide the message. Anybody can read the message; only a holder of the key can make a valid signature.
