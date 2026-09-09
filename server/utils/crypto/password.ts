@@ -2,6 +2,11 @@ const MAX_ARGON_MEMORY = 65536
 const MAX_ARGON_TIME = 3
 const MAX_BCRYPT_COST = 12
 const MAX_RUNS = 3
+const MAX_PASSWORD_LENGTH = 1024
+const MAX_HASH_LENGTH = 512
+
+/** The prefixes that Bun.password.verify reads. Bcrypt is not strict PHC, so it needs its own entries. */
+const HASH_PREFIXES = ['$argon2i$', '$argon2d$', '$argon2id$', '$2a$', '$2b$', '$2y$', '$scrypt$']
 
 export type PasswordAlgorithm = 'argon2id' | 'bcrypt'
 
@@ -67,7 +72,7 @@ export async function benchmarkPassword(options: {
   if (!password) {
     throw new Error('Enter a password before you run the tool.')
   }
-  if (password.length > 1024) {
+  if (password.length > MAX_PASSWORD_LENGTH) {
     throw new Error('The password is too long.')
   }
 
@@ -94,5 +99,38 @@ export async function benchmarkPassword(options: {
     runs,
     verified,
     algorithm: options.algorithm,
+  }
+}
+
+/**
+ * Checks a password against a hash that the user already has.
+ * Bun.password.verify reads the algorithm from the hash string, so one path
+ * covers Argon2, bcrypt, and scrypt.
+ */
+export async function verifyPasswordHash(options: {
+  password: string
+  hash: string
+}): Promise<boolean> {
+  const password = options.password
+  const hash = options.hash.trim()
+
+  if (!password) {
+    throw new Error('Enter a password before you run the tool.')
+  }
+  if (password.length > MAX_PASSWORD_LENGTH) {
+    throw new Error('The password is too long.')
+  }
+  if (hash.length > MAX_HASH_LENGTH) {
+    throw new Error('The hash string is too long.')
+  }
+  if (!HASH_PREFIXES.some(prefix => hash.startsWith(prefix))) {
+    throw new Error('Paste an Argon2, a bcrypt, or an scrypt hash string.')
+  }
+
+  try {
+    return await Bun.password.verify(password, hash)
+  }
+  catch {
+    throw new Error('The hash string is not valid.')
   }
 }

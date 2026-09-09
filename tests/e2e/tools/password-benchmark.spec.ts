@@ -12,4 +12,14 @@ test('benchmarks password hashing algorithms', { tag: '@smoke' }, async ({ page 
   await expect(page.getByText(/Duration/)).toBeVisible({ timeout: 10_000 })
   await expect(page.getByText(/Verified/)).toBeVisible()
   await expect(page.getByText('Each repetition')).toBeVisible()
+
+  await test.step('checks the password against the hash of the run', async () => {
+    const hash = ((await page.locator('dl dd').last().textContent()) ?? '').trim()
+
+    await page.getByPlaceholder('Enter the password to check').fill('correct-horse-battery-staple')
+    await page.getByPlaceholder('$2b$10$...').fill(hash)
+    await page.getByRole('button', { name: 'Check hash' }).click()
+
+    await expect(page.getByText('The password matches the hash.')).toBeVisible({ timeout: 10_000 })
+  })
 })

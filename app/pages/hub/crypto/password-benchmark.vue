@@ -13,8 +13,18 @@ const durationMs = ref<number | null>(null)
 const durations = ref<number[]>([])
 const verified = ref<boolean | null>(null)
 const { status, error, run, reset } = useTool<string>()
+const {
+  status: checkStatus,
+  error: checkError,
+  run: runCheck,
+  reset: resetCheck,
+} = useTool<boolean>()
 const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
 const { reportInput } = useToolInput()
+
+const checkPassword = ref('')
+const checkHash = ref('')
+const matched = ref<boolean | null>(null)
 
 // A dummy password. The tool never keeps a password after a run.
 const SAMPLE = {
@@ -77,6 +87,23 @@ function handleLoadSample() {
   reportInput('sample')
 }
 
+async function check() {
+  matched.value = null
+
+  await runCheck(async () => {
+    const data = await $fetch<{ result: { matched: boolean } }>('/api/crypto/password-verify', {
+      method: 'POST',
+      body: {
+        password: checkPassword.value,
+        hash: checkHash.value,
+      },
+    })
+
+    matched.value = data.result.matched
+    return data.result.matched
+  }, 'The check failed.')
+}
+
 async function handleCopy() {
   if (!hash.value) {
     return
@@ -90,7 +117,11 @@ function handleClear() {
   durationMs.value = null
   durations.value = []
   verified.value = null
+  checkPassword.value = ''
+  checkHash.value = ''
+  matched.value = null
   reset()
+  resetCheck()
 }
 
 useToolShortcuts({
@@ -270,6 +301,56 @@ useToolShortcuts({
       </div>
     </dl>
 
+    <div class="space-y-4 rounded-md border border-default p-4">
+      <p class="text-sm text-highlighted">
+        Check a password against a hash that you already have.
+      </p>
+
+      <UFormField label="Password to check">
+        <UInput
+          v-model="checkPassword"
+          type="password"
+          autocomplete="off"
+          placeholder="Enter the password to check"
+        />
+      </UFormField>
+
+      <UFormField
+        label="Hash string"
+        help="Argon2, bcrypt, and scrypt hash strings are read."
+      >
+        <UInput
+          v-model="checkHash"
+          placeholder="$2b$10$..."
+          class="w-full font-mono"
+        />
+      </UFormField>
+
+      <ToolActions>
+        <UButton
+          color="primary"
+          variant="subtle"
+          icon="i-lucide-shield-check"
+          label="Check hash"
+          :loading="checkStatus === 'processing'"
+          @click="check"
+        />
+      </ToolActions>
+
+      <ToolError
+        v-if="checkError"
+        :message="checkError"
+      />
+
+      <UAlert
+        v-else-if="matched !== null"
+        :color="matched ? 'success' : 'error'"
+        variant="subtle"
+        :icon="matched ? 'i-lucide-circle-check' : 'i-lucide-circle-x'"
+        :title="matched ? 'The password matches the hash.' : 'The password does not match the hash.'"
+      />
+    </div>
+
     <template #docs>
       <ToolDocs title="About password hashing">
         <p class="text-sm leading-relaxed text-muted">
@@ -277,6 +358,11 @@ useToolShortcuts({
         </p>
         <p class="text-sm leading-relaxed text-muted">
           Do not use MD5, SHA-1, or plain digests to store passwords.
+        </p>
+        <p class="text-sm leading-relaxed text-muted">
+          Paste a hash string that you already have to check a password against it. Bun reads the
+          algorithm and the cost from the hash string, so an Argon2, a bcrypt, and an scrypt string
+          all work.
         </p>
         <RelatedTools
           :items="[
