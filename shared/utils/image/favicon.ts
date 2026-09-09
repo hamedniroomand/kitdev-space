@@ -8,6 +8,22 @@ export interface FaviconOptions {
   /** Fills the padding of a `contain` icon. An empty value keeps the padding transparent. */
   backgroundColor?: string
   fit?: FaviconFit
+  /** The folder that serves the icons, such as `/static/icons/`. */
+  pathPrefix?: string
+}
+
+/**
+ * Normalize a path prefix to the `/folder/` form. It removes each character
+ * that a URL path cannot hold, so a prefix cannot break out of an `href`
+ * attribute or point above the site root.
+ */
+export function sanitizePathPrefix(input?: string): string {
+  const safe = (input ?? '')
+    .replace(/[^\w\-./~]/g, '')
+    .replace(/\.{2,}/g, '')
+    .replace(/\/{2,}/g, '/')
+    .replace(/^\/+|\/+$/g, '')
+  return safe ? `/${safe}/` : '/'
 }
 
 export interface FaviconItemPreview {
@@ -66,17 +82,18 @@ export function buildIco(images: { width: number, height: number, bytes: Uint8Ar
 }
 
 export function buildWebmanifest(options: FaviconOptions): string {
+  const prefix = sanitizePathPrefix(options.pathPrefix)
   const manifest = {
     name: options.appName?.trim() || 'My Application',
     short_name: options.shortName?.trim() || options.appName?.trim() || 'App',
     icons: [
       {
-        src: '/android-chrome-192x192.png',
+        src: `${prefix}android-chrome-192x192.png`,
         sizes: '192x192',
         type: 'image/png',
       },
       {
-        src: '/android-chrome-512x512.png',
+        src: `${prefix}android-chrome-512x512.png`,
         sizes: '512x512',
         type: 'image/png',
       },
@@ -90,14 +107,15 @@ export function buildWebmanifest(options: FaviconOptions): string {
 
 export function buildHtmlSnippet(options: FaviconOptions): string {
   const theme = options.themeColor?.trim() || '#ffffff'
+  const prefix = sanitizePathPrefix(options.pathPrefix)
   return [
     '<!-- Favicon and App Icons -->',
-    '<link rel="icon" type="image/x-icon" href="/favicon.ico">',
-    '<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">',
-    '<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">',
-    '<link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png">',
-    '<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">',
-    '<link rel="manifest" href="/site.webmanifest">',
+    `<link rel="icon" type="image/x-icon" href="${prefix}favicon.ico">`,
+    `<link rel="icon" type="image/png" sizes="16x16" href="${prefix}favicon-16x16.png">`,
+    `<link rel="icon" type="image/png" sizes="32x32" href="${prefix}favicon-32x32.png">`,
+    `<link rel="icon" type="image/png" sizes="48x48" href="${prefix}favicon-48x48.png">`,
+    `<link rel="apple-touch-icon" sizes="180x180" href="${prefix}apple-touch-icon.png">`,
+    `<link rel="manifest" href="${prefix}site.webmanifest">`,
     `<meta name="theme-color" content="${theme}">`,
   ].join('\n')
 }

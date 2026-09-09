@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildHtmlSnippet, buildIco, buildWebmanifest } from '#shared/utils/image/favicon'
+import { buildHtmlSnippet, buildIco, buildWebmanifest, sanitizePathPrefix } from '#shared/utils/image/favicon'
 
 describe('favicon utility', () => {
   it('builds a valid webmanifest string', () => {
@@ -48,5 +48,67 @@ describe('favicon utility', () => {
     // Second image entry: 32x32
     expect(view.getUint8(22)).toBe(32)
     expect(view.getUint8(23)).toBe(32)
+  })
+})
+
+describe('sanitizePathPrefix', () => {
+  it('returns the site root for an empty or blank prefix', () => {
+    expect(sanitizePathPrefix()).toBe('/')
+    expect(sanitizePathPrefix('')).toBe('/')
+    expect(sanitizePathPrefix('   ')).toBe('/')
+    expect(sanitizePathPrefix('///')).toBe('/')
+  })
+
+  it('adds the leading and the trailing slash', () => {
+    expect(sanitizePathPrefix('static/icons')).toBe('/static/icons/')
+    expect(sanitizePathPrefix('/static/icons/')).toBe('/static/icons/')
+    expect(sanitizePathPrefix('//static//icons//')).toBe('/static/icons/')
+  })
+
+  it('removes each character that a URL path cannot hold', () => {
+    expect(sanitizePathPrefix('a b/c d')).toBe('/ab/cd/')
+    expect(sanitizePathPrefix('icons?v=2#top')).toBe('/iconsv2top/')
+    expect(sanitizePathPrefix('https://cdn.test/icons')).toBe('/https/cdn.test/icons/')
+  })
+
+  it('cannot break out of an href attribute', () => {
+    expect(sanitizePathPrefix('"><script>alert(1)</script>')).toBe('/scriptalert1/script/')
+    expect(sanitizePathPrefix('\' onerror=x')).toBe('/onerrorx/')
+
+    const html = buildHtmlSnippet({ pathPrefix: '"><script>' })
+    expect(html).not.toContain('<script>')
+    expect(html).toContain('href="/script/favicon.ico"')
+  })
+
+  it('cannot point above the site root', () => {
+    expect(sanitizePathPrefix('../../etc')).toBe('/etc/')
+    expect(sanitizePathPrefix('..')).toBe('/')
+  })
+})
+
+describe('path prefix rewriting', () => {
+  it('rewrites every link tag and the manifest reference', () => {
+    const html = buildHtmlSnippet({ pathPrefix: 'static/icons' })
+
+    expect(html).toContain('href="/static/icons/favicon.ico"')
+    expect(html).toContain('href="/static/icons/favicon-16x16.png"')
+    expect(html).toContain('href="/static/icons/favicon-32x32.png"')
+    expect(html).toContain('href="/static/icons/favicon-48x48.png"')
+    expect(html).toContain('href="/static/icons/apple-touch-icon.png"')
+    expect(html).toContain('href="/static/icons/site.webmanifest"')
+  })
+
+  it('rewrites every manifest icon source', () => {
+    const manifest = JSON.parse(buildWebmanifest({ pathPrefix: '/static/icons/' }))
+
+    expect(manifest.icons.map((icon: { src: string }) => icon.src)).toEqual([
+      '/static/icons/android-chrome-192x192.png',
+      '/static/icons/android-chrome-512x512.png',
+    ])
+  })
+
+  it('keeps the site root when no prefix is given', () => {
+    expect(buildHtmlSnippet({})).toContain('href="/favicon.ico"')
+    expect(JSON.parse(buildWebmanifest({})).icons[0].src).toBe('/android-chrome-192x192.png')
   })
 })

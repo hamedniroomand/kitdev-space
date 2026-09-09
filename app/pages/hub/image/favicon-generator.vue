@@ -13,6 +13,7 @@ const shortName = ref('App')
 const themeColor = ref('#ffffff')
 const backgroundColor = ref('')
 const fit = ref<FaviconFit>('contain')
+const pathPrefix = ref('/')
 
 const { status, error, result, run, reset } = useTool<FaviconPackageResult>()
 const { copy: copyHtml, label: htmlCopyLabel, icon: htmlCopyIcon, color: htmlCopyColor } = useCopyFeedback()
@@ -45,6 +46,7 @@ async function generate() {
       themeColor: themeColor.value,
       backgroundColor: backgroundColor.value,
       fit: fit.value,
+      pathPrefix: pathPrefix.value,
     })
   }, 'The favicon generation failed.', { option: fit.value })
 }
@@ -141,7 +143,7 @@ function handleReset() {
             </UFormField>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <UFormField
               label="Icon Fit"
               help="Contain keeps the whole icon. Cover crops it to a square. Neither distorts the source."
@@ -172,6 +174,16 @@ function handleReset() {
                   class="flex-1 font-mono text-xs"
                 />
               </div>
+            </UFormField>
+            <UFormField
+              label="Path Prefix"
+              help="The folder that serves the icons."
+            >
+              <UInput
+                v-model="pathPrefix"
+                placeholder="/static/icons/"
+                class="w-full font-mono text-xs"
+              />
             </UFormField>
           </div>
 
@@ -352,6 +364,9 @@ function handleReset() {
           </p>
           <p>
             Use a square source image of 512 pixels or more. A simple shape reads better than a detailed one, because the icon is often shown at 16 pixels.
+          </p>
+          <p>
+            The ZIP file is flat. Put every file of it in one folder, then give the path of that folder in "Path Prefix". Each <code>&lt;link&gt;</code> tag, the manifest reference, and each icon in the manifest then use that path. The tool removes each character that a URL path cannot hold.
           </p>
           <p>
             A source image that is not square needs a fit mode. "Contain with padding" keeps the whole image and adds padding on two sides. Give a padding background color, or leave the field empty to keep the padding transparent. "Cover crop" fills the square and cuts the long edges. Neither mode changes the aspect ratio of the source.
