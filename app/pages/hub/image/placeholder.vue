@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { generatePlaceholderSvg, svgToDataUri } from '#shared/utils/image/placeholder'
+import type { PlaceholderOptions } from '#shared/utils/image/placeholder'
+import { formatPlaceholderImgTag, generatePlaceholderSvg, svgToDataUri } from '#shared/utils/image/placeholder'
 
 useToolSeo('placeholder')
 
@@ -27,20 +28,21 @@ function applyPreset(w: number, h: number) {
   height.value = h
 }
 
-const svgOutput = computed(() => {
-  return generatePlaceholderSvg({
-    width: width.value,
-    height: height.value,
-    bgType: bgType.value,
-    bgColor1: bgColor1.value,
-    bgColor2: bgColor2.value,
-    text: customText.value ? customText.value : undefined,
-    textColor: textColor.value,
-  })
-})
+const placeholderOptions = computed<PlaceholderOptions>(() => ({
+  width: width.value,
+  height: height.value,
+  bgType: bgType.value,
+  bgColor1: bgColor1.value,
+  bgColor2: bgColor2.value,
+  text: customText.value ? customText.value : undefined,
+  textColor: textColor.value,
+}))
+
+const svgOutput = computed(() => generatePlaceholderSvg(placeholderOptions.value))
 useLiveTool(svgOutput)
 
 const dataUri = computed(() => svgToDataUri(svgOutput.value))
+const htmlTag = computed(() => formatPlaceholderImgTag(placeholderOptions.value))
 
 const fileName = computed(() => `placeholder-${width.value}x${height.value}`)
 
@@ -236,7 +238,7 @@ function downloadPng() {
               <UButton
                 size="xs"
                 variant="subtle"
-                :label="label('svg')"
+                :label="label('svg', 'Copy SVG')"
                 :color="color('svg')"
                 :icon="icon('svg')"
                 @click="copy(svgOutput, 'svg')"
@@ -246,6 +248,25 @@ function downloadPng() {
               :model-value="svgOutput"
               readonly
               :rows="3"
+              class="font-mono text-xs w-full"
+            />
+
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold text-default">HTML &lt;img&gt; Tag</span>
+              <UButton
+                size="xs"
+                variant="subtle"
+                :label="label('html', 'Copy HTML tag')"
+                :color="color('html')"
+                :icon="icon('html')"
+                @click="copy(htmlTag, 'html', 'snippet')"
+              />
+            </div>
+            <UTextarea
+              :model-value="htmlTag"
+              readonly
+              :rows="2"
+              aria-label="HTML img tag"
               class="font-mono text-xs w-full"
             />
           </div>

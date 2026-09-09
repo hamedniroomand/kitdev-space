@@ -24,5 +24,9 @@ test.describe('Placeholder Image Generator tool', () => {
     const downloadButton = page.getByRole('button', { name: 'Download SVG' })
     await expect(downloadButton).toBeVisible()
     await expect(downloadButton).toBeEnabled()
+
+    // The HTML img tag output carries the chosen dimensions
+    await expect(page.getByRole('button', { name: 'Copy HTML tag', exact: true })).toBeVisible()
+    await expect(page.getByLabel('HTML img tag')).toHaveValue(/<img src="data:image\/svg\+xml;base64,.+" width="1200" height="630" alt="Hero Banner">/)
   })
 })
