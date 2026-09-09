@@ -104,6 +104,18 @@ export default defineNuxtConfig({
     '@sentry/nuxt/module',
   ],
 
+  /**
+   * Every icon the source uses is inlined in the client bundle. Without this
+   * an icon that the default set misses is fetched at run time, which times
+   * out on a slow network and breaks the offline path.
+   */
+  icon: {
+    clientBundle: {
+      scan: true,
+      sizeLimitKb: 512,
+    },
+  },
+
   sentry: {
     enabled: Boolean(sentryDsn),
     debug: process.env.SENTRY_DEBUG === 'true',

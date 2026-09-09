@@ -216,7 +216,8 @@ export function detectJsonWarnings(input: string): JsonWarning[] {
       if (/^-?\d+$/.test(numStr)) {
         try {
           const val = BigInt(numStr)
-          if (val > 9007199254740991n || val < -9007199254740991n) {
+          const maxSafe = BigInt(Number.MAX_SAFE_INTEGER)
+          if (val > maxSafe || val < -maxSafe) {
             warnings.push({
               type: 'precision',
               message: `Integer ${numStr} exceeds safe precision (2^53 - 1). The value can lose precision.`,

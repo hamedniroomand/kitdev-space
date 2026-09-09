@@ -155,17 +155,19 @@ export function twosComplement(decimalValue: string, width: TwosComplementWidth)
     return null
   }
 
+  const zero = BigInt(0)
+  const one = BigInt(1)
   const bits = BigInt(width)
-  const mask = (1n << bits) - 1n
+  const mask = (one << bits) - one
 
   // Clamp n to the signed two's complement range
-  const maxPos = (1n << (bits - 1n)) - 1n
-  const minNeg = -(1n << (bits - 1n))
+  const maxPos = (one << (bits - one)) - one
+  const minNeg = -(one << (bits - one))
 
   if (n > maxPos || n < minNeg) {
     return null
   }
 
-  const twos = n < 0n ? (n + (1n << bits)) & mask : n & mask
-  return twos.toString(16).toUpperCase().padStart(Number(bits / 4n), '0')
+  const twos = n < zero ? (n + (one << bits)) & mask : n & mask
+  return twos.toString(16).toUpperCase().padStart(Number(bits / BigInt(4)), '0')
 }
