@@ -24,6 +24,10 @@ test.describe('Image Resizer tool', () => {
       await expect(page.getByText('1 × 1')).toBeVisible()
     })
 
+    await test.step('locks the ratio of the size fields', async () => {
+      await expect(page.getByText('Lock the ratio')).toBeVisible()
+    })
+
     await test.step('processes image resize', async () => {
       await page.getByRole('button', { name: 'Process' }).click()
       await expect(page.getByText('Image Result')).toBeVisible({ timeout: 15_000 })

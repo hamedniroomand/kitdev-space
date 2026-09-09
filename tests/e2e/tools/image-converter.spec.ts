@@ -24,6 +24,15 @@ test.describe('Image Converter tool', () => {
       await expect(page.getByText('1 × 1')).toBeVisible()
     })
 
+    await test.step('offers a background color for a JPEG output', async () => {
+      await page.getByRole('combobox').last().click()
+      await page.getByRole('option', { name: 'JPEG', exact: true }).click()
+      await expect(page.getByLabel('Background color picker')).toBeVisible()
+
+      await page.getByRole('combobox').last().click()
+      await page.getByRole('option', { name: 'WebP', exact: true }).click()
+    })
+
     await test.step('processes image conversion', async () => {
       await page.getByRole('button', { name: 'Process' }).click()
       await expect(page.getByText('Image Result')).toBeVisible({ timeout: 15_000 })

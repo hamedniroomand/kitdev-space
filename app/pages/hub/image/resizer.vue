@@ -16,7 +16,7 @@
             Choose a file. Set the size and the output format, then select Process. WebP gives a small file for the web. PNG keeps every pixel.
           </p>
           <p>
-            The resize runs on the server with Bun, in one pass with the encode. The file is processed in memory and is not stored.
+            The resize runs in your browser for a WebP, JPEG, or PNG output, so no image data leaves your device. An AVIF output, or a file that your browser cannot decode, runs on the server with Bun. The server holds the file in memory and does not store it.
           </p>
         </div>
         <RelatedTools

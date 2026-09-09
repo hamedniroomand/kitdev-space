@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import {
+  base64ByteLength,
   formatAsCssBackground,
   formatAsHtmlImg,
+  IMAGE_BASE64_MAX_BYTES,
   mimeToExtension,
   parseDataUri,
+  validateImageBase64,
 } from '#shared/utils/image/base64'
 
 describe('parseDataUri', () => {
@@ -36,6 +39,39 @@ describe('parseDataUri', () => {
     expect(mimeToExtension('image/jpeg')).toBe('jpg')
     expect(mimeToExtension('image/webp')).toBe('webp')
     expect(mimeToExtension('image/png')).toBe('png')
+  })
+})
+
+describe('base64ByteLength', () => {
+  it('counts decoded bytes with padding', () => {
+    expect(base64ByteLength('aGVsbG8=')).toBe(5)
+    expect(base64ByteLength('PHN2Zz48L3N2Zz4=')).toBe(11)
+    expect(base64ByteLength('')).toBe(0)
+  })
+})
+
+describe('validateImageBase64', () => {
+  const onePixelPng = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
+
+  it('accepts a valid data uri', () => {
+    expect(validateImageBase64(onePixelPng)).toBeNull()
+  })
+
+  it('accepts a raw base64 string', () => {
+    expect(validateImageBase64('PHN2Zz48L3N2Zz4=')).toBeNull()
+  })
+
+  it('rejects an empty input', () => {
+    expect(validateImageBase64('   ')).toMatch(/Add a Base64 string/)
+  })
+
+  it('rejects data outside the base64 alphabet', () => {
+    expect(validateImageBase64('not base64!')).toMatch(/not valid Base64/)
+  })
+
+  it('rejects data over the 10 MB limit', () => {
+    const oversize = 'A'.repeat(Math.ceil((IMAGE_BASE64_MAX_BYTES + 1024) / 3) * 4)
+    expect(validateImageBase64(oversize)).toMatch(/larger than 10 MB/)
   })
 })
 

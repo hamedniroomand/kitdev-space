@@ -1,6 +1,7 @@
+import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { detectContainer, readImageMetadata } from '#shared/utils/image/exif'
-import { buildJpeg, buildPng, buildWebp } from './fixtures'
+import { buildJpeg, buildPng, buildTiff, buildWebp } from './fixtures'
 
 function tag(bytes: Uint8Array, name: string) {
   return readImageMetadata(bytes).tags.find(item => item.name === name)
@@ -11,7 +12,45 @@ describe('detectContainer', () => {
     expect(detectContainer(buildJpeg())).toBe('jpeg')
     expect(detectContainer(buildPng())).toBe('png')
     expect(detectContainer(buildWebp())).toBe('webp')
+    expect(detectContainer(buildTiff())).toBe('tiff')
     expect(detectContainer(new Uint8Array([1, 2, 3]))).toBe('unknown')
+  })
+})
+
+describe('readImageMetadata with a TIFF', () => {
+  const bytes = buildTiff()
+  const result = readImageMetadata(bytes)
+
+  it('reads the size from the TIFF header', () => {
+    expect(result.container).toBe('tiff')
+    expect(result.width).toBe(40)
+    expect(result.height).toBe(30)
+  })
+
+  it('reads the camera tags and the GPS position', () => {
+    expect(tag(bytes, 'Make')?.value).toBe('TestCam')
+    expect(result.gps?.latitude).toBeCloseTo(48.8584, 3)
+    expect(result.blocks).toContain('EXIF')
+  })
+})
+
+describe('readImageMetadata with an AVIF', () => {
+  const bytes = new Uint8Array(readFileSync('tests/fixtures/images/exif.avif'))
+  const result = readImageMetadata(bytes)
+
+  it('reads the size from the ispe box', () => {
+    expect(result.container).toBe('avif')
+    expect(result.width).toBeGreaterThan(0)
+    expect(result.height).toBeGreaterThan(0)
+  })
+
+  it('reads the EXIF item of the meta box', () => {
+    expect(result.blocks).toContain('EXIF')
+    expect(result.tags.length).toBeGreaterThan(0)
+  })
+
+  it('finds the ICC color profile', () => {
+    expect(result.colorProfile).toBe('ICC profile')
   })
 })
 

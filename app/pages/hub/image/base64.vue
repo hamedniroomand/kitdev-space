@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useImage as useImageElement } from '@vueuse/core'
-import { formatAsCssBackground, formatAsHtmlImg, mimeToExtension, parseDataUri } from '#shared/utils/image/base64'
+import { formatAsCssBackground, formatAsHtmlImg, IMAGE_BASE64_MAX_BYTES, mimeToExtension, parseDataUri, validateImageBase64 } from '#shared/utils/image/base64'
 
 useToolSeo('image-base64')
 const { reportInput } = useToolInput()
@@ -28,6 +28,12 @@ const fileName = computed(() => file.value?.name ?? '')
 const fileSize = computed(() => file.value?.size ?? 0)
 const imageWidth = computed(() => previewImage.value?.naturalWidth ?? 0)
 const imageHeight = computed(() => previewImage.value?.naturalHeight ?? 0)
+const dataUriLength = computed(() => dataUri.value?.length ?? 0)
+const overheadPercent = computed(() => {
+  if (!fileSize.value || !dataUriLength.value)
+    return 0
+  return Math.round(((dataUriLength.value - fileSize.value) / fileSize.value) * 100)
+})
 
 function loadSample() {
   reportInput('sample')
@@ -39,8 +45,14 @@ function handleClear() {
   base64Input.value = ''
 }
 
-const parsedInput = computed(() => {
+const decodeError = computed(() => {
   if (!base64Input.value.trim())
+    return null
+  return validateImageBase64(base64Input.value)
+})
+
+const parsedInput = computed(() => {
+  if (!base64Input.value.trim() || decodeError.value)
     return null
   return parseDataUri(base64Input.value)
 })
@@ -53,6 +65,21 @@ const decodedDataUri = computed(() => {
   return `data:${parsedInput.value.mimeType};base64,${parsedInput.value.base64}`
 })
 useLiveTool(decodedDataUri)
+
+const { state: decodedImage, error: decodedImageError } = useImageElement(
+  () => ({ src: decodedDataUri.value }),
+  { immediate: false },
+)
+const decodedWidth = computed(() => decodedImage.value?.naturalWidth ?? 0)
+const decodedHeight = computed(() => decodedImage.value?.naturalHeight ?? 0)
+
+const decodeMessage = computed(() => {
+  if (decodeError.value)
+    return decodeError.value
+  if (decodedDataUri.value && decodedImageError.value)
+    return 'This Base64 data is not an image. Check the data URI.'
+  return null
+})
 
 function handleDownloadDecoded() {
   if (!decodedDataUri.value || !parsedInput.value)
@@ -74,6 +101,7 @@ function handleDownloadDecoded() {
               :variant="mode === 'image-to-base64' ? 'solid' : 'ghost'"
               color="neutral"
               label="Image → Base64"
+              :aria-pressed="mode === 'image-to-base64'"
               @click="mode = 'image-to-base64'"
             />
             <UButton
@@ -81,6 +109,7 @@ function handleDownloadDecoded() {
               :variant="mode === 'base64-to-image' ? 'solid' : 'ghost'"
               color="neutral"
               label="Base64 → Image"
+              :aria-pressed="mode === 'base64-to-image'"
               @click="mode = 'base64-to-image'"
             />
           </div>
@@ -114,11 +143,22 @@ function handleDownloadDecoded() {
         v-if="mode === 'image-to-base64'"
         class="space-y-6"
       >
+        <UAlert
+          color="info"
+          variant="subtle"
+          icon="i-lucide-info"
+          title="Base64 adds about 33 percent"
+          :description="overheadPercent
+            ? `Base64 writes 4 characters for each 3 bytes. This data URI is ${overheadPercent} percent larger than the file. Use a data URI for a small icon or a placeholder only.`
+            : 'Base64 writes 4 characters for each 3 bytes. A data URI is about 33 percent larger than the file. Use a data URI for a small icon or a placeholder only.'"
+        />
+
         <ImageDropzone
           v-if="!dataUri"
           v-model="file"
           accept="image/png,image/jpeg,image/webp,image/svg+xml,image/gif,image/avif"
-          hint="Max size 10 MB. PNG, JPEG, WebP, SVG, GIF, or AVIF."
+          hint="Max size 10 MB. PNG, JPEG, WebP, SVG, GIF, or AVIF. You can also paste an image."
+          :max-bytes="IMAGE_BASE64_MAX_BYTES"
         />
 
         <!-- Preview and Outputs if image is selected -->
@@ -154,7 +194,10 @@ function handleDownloadDecoded() {
               <!-- Data URI -->
               <div class="space-y-1.5">
                 <div class="flex items-center justify-between">
-                  <span class="text-xs font-semibold text-default">Data URI (Full Source)</span>
+                  <span class="text-xs font-semibold text-default">
+                    Data URI (Full Source)
+                    <span class="font-normal text-muted">· {{ dataUriLength.toLocaleString() }} characters</span>
+                  </span>
                   <UButton
                     size="xs"
                     variant="subtle"
@@ -230,8 +273,13 @@ function handleDownloadDecoded() {
           />
         </UFormField>
 
+        <ToolError
+          v-if="decodeMessage"
+          :message="decodeMessage"
+        />
+
         <div
-          v-if="decodedDataUri"
+          v-if="decodedDataUri && !decodeMessage"
           class="p-6 border border-default rounded-2xl bg-elevated/40 text-center space-y-4 max-w-md mx-auto"
         >
           <div class="text-xs font-medium text-muted uppercase tracking-wider">
@@ -243,6 +291,12 @@ function handleDownloadDecoded() {
               alt="Decoded preview"
               class="max-h-60 object-contain"
             >
+          </div>
+          <div
+            v-if="decodedWidth && decodedHeight"
+            class="text-xs text-muted"
+          >
+            {{ decodedWidth }} × {{ decodedHeight }} px
           </div>
           <div>
             <UButton

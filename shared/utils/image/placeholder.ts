@@ -18,15 +18,43 @@ function escapeXml(unsafe: string): string {
     .replace(/'/g, '&apos;')
 }
 
-export function generatePlaceholderSvg(options: PlaceholderOptions): string {
+// ponytail: an SVG string builder cannot measure text, so the label width comes
+// from the character count and an average glyph width of 0.6 em. A run of wide
+// glyphs, such as "WWWW", can still touch the edge, and the 6 px floor keeps a
+// very long label small but legible. Upgrade path: measure the label with
+// `OffscreenCanvas` in the browser and pass the exact `fontSize`.
+const GLYPH_WIDTH_RATIO = 0.6
+const TEXT_BOX_RATIO = 0.9
+const MIN_FONT_SIZE = 6
+
+interface ResolvedPlaceholder {
+  width: number
+  height: number
+  text: string
+  fontSize: number
+}
+
+function resolvePlaceholder(options: PlaceholderOptions): ResolvedPlaceholder {
   const width = Math.max(1, Math.min(options.width || 600, 4000))
   const height = Math.max(1, Math.min(options.height || 400, 4000))
+  const text = options.text !== undefined ? options.text : `${width} × ${height}`
+  const requested = options.fontSize || Math.max(12, Math.min(Math.round(Math.min(width, height) / 8), 72))
+  const fitted = Math.floor((width * TEXT_BOX_RATIO) / (Math.max(1, text.length) * GLYPH_WIDTH_RATIO))
+
+  return {
+    width,
+    height,
+    text,
+    fontSize: Math.min(requested, Math.max(MIN_FONT_SIZE, fitted)),
+  }
+}
+
+export function generatePlaceholderSvg(options: PlaceholderOptions): string {
+  const { width, height, text, fontSize } = resolvePlaceholder(options)
   const bgType = options.bgType || 'solid'
   const bgColor1 = escapeXml(options.bgColor1 || '#3b82f6')
   const bgColor2 = escapeXml(options.bgColor2 || '#8b5cf6')
-  const text = options.text !== undefined ? options.text : `${width} × ${height}`
   const textColor = escapeXml(options.textColor || '#ffffff')
-  const fontSize = options.fontSize || Math.max(12, Math.min(Math.round(Math.min(width, height) / 8), 72))
 
   let defs = ''
   let fill = bgColor1
@@ -55,4 +83,11 @@ export function svgToDataUri(svg: string): string {
   // `btoa` exists in every browser, in Node 16 and later, and in Bun.
   const encoded = btoa(unescape(encodeURIComponent(svg)))
   return `data:image/svg+xml;base64,${encoded}`
+}
+
+export function formatPlaceholderImgTag(options: PlaceholderOptions): string {
+  const { width, height, text } = resolvePlaceholder(options)
+  const src = svgToDataUri(generatePlaceholderSvg(options))
+
+  return `<img src="${src}" width="${width}" height="${height}" alt="${escapeXml(text)}">`
 }

@@ -16,7 +16,7 @@
             Choose a file and a format, then select Process. The result shows the input size and the output size, so you can compare them.
           </p>
           <p>
-            The conversion runs on the server with Bun. The file is processed in memory and is not stored. To resize the image in the same pass, set an output size.
+            A WebP, JPEG, or PNG output runs in your browser, so no image data leaves your device. An AVIF output, or a file that your browser cannot decode, runs on the server with Bun. The server holds the file in memory and does not store it. To resize the image in the same pass, set an output size.
           </p>
         </div>
         <RelatedTools
