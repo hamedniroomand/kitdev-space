@@ -52,7 +52,10 @@ test('checks color contrast ratio and WCAG rating', { tag: '@smoke' }, async ({ 
     await toggle.click()
 
     await expect(page.getByText('Lc -82.8', { exact: true })).toBeVisible()
-    await expect(page.getByText('Body text, 14px regular and larger')).toBeVisible()
+    // The badge repeats one row of the matrix, so scope the check to the row.
+    await expect(
+      page.getByRole('row').filter({ hasText: 'Lc 90' }),
+    ).toContainText('Body text, 14px regular and larger')
   })
 })
 
