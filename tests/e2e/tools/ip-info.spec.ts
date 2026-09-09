@@ -17,7 +17,9 @@ test.describe('IP Address Info tool', () => {
     // Click Cloudflare DNS preset to trigger client fetch
     await page.locator('main').getByRole('button', { name: 'Cloudflare DNS' }).click()
 
-    await expect(page.locator('main').getByTitle('one.one.one.one')).toBeVisible()
-    await expect(page.locator('main').getByText('16843009', { exact: false })).toBeVisible()
+    // The hostname shows in the Reverse DNS stat card and in the details table,
+    // so scope to the card.
+    await expect(page.getByLabel('Reverse DNS').getByText('one.one.one.one')).toBeVisible()
+    await expect(page.locator('main').getByText('16843009').first()).toBeVisible()
   })
 })

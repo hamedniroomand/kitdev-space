@@ -13,8 +13,11 @@ test.describe('Cookie Inspector tool', () => {
     await page.locator('main').getByRole('button', { name: 'Secure session cookie' }).click()
     await expect(page.locator('main').getByText('sid', { exact: true })).toBeVisible()
 
-    // Test clearing
+    // Test clearing. An empty input renders no report at all. The
+    // "No cookie found." notice needs input that parses to no cookie, which
+    // an empty box is not.
     await page.locator('main').getByRole('button', { name: 'Clear' }).click()
-    await expect(page.locator('main').getByText('No cookie found.')).toBeVisible()
+    await expect(page.locator('main').getByText('sid', { exact: true })).not.toBeVisible()
+    await expect(page.locator('main').getByText('session', { exact: true })).not.toBeVisible()
   })
 })

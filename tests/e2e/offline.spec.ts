@@ -5,11 +5,15 @@ test.describe('Progressive Web App Offline Mode', () => {
   test('client-only tool executes successfully with network disabled', async ({ page, context }) => {
     await gotoHydrated(page, '/hub/data/json-formatter')
 
+    // The editor hydrates when the main thread goes idle, which is after the
+    // page reports hydration. Wait for it while the network still works, so
+    // going offline cannot strand its chunk.
+    const input = page.getByRole('textbox', { name: 'Input' })
+    await expect(input).toBeVisible()
+
     // Disconnect network
     await context.setOffline(true)
 
-    const input = page.getByRole('textbox', { name: 'Input' })
-    await expect(input).toBeVisible()
     await input.fill('{"offline":true,"tool":"json-formatter"}')
     await page.getByRole('button', { name: 'Format' }).click()
 

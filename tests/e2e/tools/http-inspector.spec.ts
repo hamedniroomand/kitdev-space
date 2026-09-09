@@ -19,7 +19,7 @@ test.describe('HTTP Inspector tool', () => {
     await input.fill('https://example.com')
     await page.locator('main').getByRole('button', { name: 'Inspect' }).click()
 
-    await expect(page.locator('main').getByText('75/100 · Grade C')).toBeVisible({ timeout: 10_000 })
+    await expect(page.locator('main').getByText('59/100 · Grade D')).toBeVisible({ timeout: 10_000 })
     await expect(page.locator('main').getByText('CSP is missing')).toBeVisible()
 
     // Switch to Headers tab

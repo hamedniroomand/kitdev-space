@@ -99,7 +99,6 @@ export default defineNuxtConfig({
     '@nuxt/scripts',
     '@nuxtjs/seo',
     '@vueuse/nuxt',
-    '@vite-pwa/nuxt',
     'nuxt-llms',
     '@sentry/nuxt/module',
   ],
@@ -130,31 +129,6 @@ export default defineNuxtConfig({
     // Both Sentry configs send errors only. Remove unused tracing code.
     bundleSizeOptimizations: {
       excludeTracing: true,
-    },
-  },
-
-  pwa: {
-    registerType: 'autoUpdate',
-    manifest: {
-      name: 'KitDev Space',
-      short_name: 'KitDev',
-      description: 'Developer tools for people who build things.',
-      theme_color: '#0f172a',
-      background_color: '#0f172a',
-      display: 'standalone',
-      start_url: '/',
-      icons: [
-        {
-          src: '/favicon.ico',
-          sizes: '48x48',
-          type: 'image/x-icon',
-        },
-        {
-          src: '/apple-touch-icon.png',
-          sizes: '180x180',
-          type: 'image/png',
-        },
-      ],
     },
   },
 
