@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { HashAlgorithm } from '#shared/utils/crypto/types'
-import { canHashInBrowser, hashBytes, hashString } from '#shared/utils/crypto/hash'
+import { hashFile, hashString } from '#shared/utils/crypto/hash'
 import { parseJson } from '#shared/utils/data/json'
 import { stableStringify } from '#shared/utils/data/stable-json'
 import { formatBytes } from '#shared/utils/format'
@@ -19,8 +19,7 @@ const algorithmItems = [
   { label: 'SHA-512', value: 'sha512' },
   { label: 'SHA-1 (Legacy)', value: 'sha1' },
   { label: 'MD5 (Legacy)', value: 'md5' },
-  { label: 'xxHash64 (Bun Fast Hash)', value: 'xxhash64' },
-  { label: 'wyhash (Bun Fast Hash)', value: 'wyhash' },
+  { label: 'xxHash64 (Fast Hash)', value: 'xxhash64' },
   { label: 'CRC32 (Checksum)', value: 'crc32' },
 ]
 
@@ -31,35 +30,33 @@ const canonical = ref('')
 const file = ref<File | null>(null)
 const algorithm = ref<HashAlgorithm>('sha256')
 const output = ref('')
+const bytesRead = ref(0)
 const { status, error, result, run, reset } = useTool<string>()
 const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
 
 useToolSeo('hash')
 
-const inBrowser = computed(() => canHashInBrowser(algorithm.value))
 const isLegacy = computed(() => algorithm.value === 'md5' || algorithm.value === 'sha1')
-
-// A file is read as bytes, so it needs the browser path.
-const fileNeedsSha = computed(() => source.value === 'file' && !inBrowser.value)
 
 watch([source, algorithm], () => {
   output.value = ''
   canonical.value = ''
+  bytesRead.value = 0
   reset()
 })
 
 async function hash() {
   output.value = ''
+  bytesRead.value = 0
 
   await run(async () => {
     if (source.value === 'file') {
       if (!file.value) {
         throw new Error('Choose a file before you run the tool.')
       }
-      if (!inBrowser.value) {
-        throw new Error('A file needs SHA-1, SHA-256, SHA-384, or SHA-512.')
-      }
-      return hashBytes(await file.value.arrayBuffer(), algorithm.value)
+      return hashFile(file.value, algorithm.value, (read) => {
+        bytesRead.value = read
+      })
     }
 
     // A JSON object is hashed in its canonical form: sorted keys, no spaces.
@@ -70,19 +67,8 @@ async function hash() {
       text = canonical.value
     }
 
-    if (inBrowser.value) {
-      return hashString(text, algorithm.value)
-    }
-
-    const data = await $fetch<{ result: string }>('/api/crypto/hash', {
-      method: 'POST',
-      body: {
-        input: text,
-        algorithm: algorithm.value,
-      },
-    })
-    return data.result
-  }, 'The hash operation failed.', { option: algorithm.value, runLocation: inBrowser.value ? 'browser' : 'server' })
+    return hashString(text, algorithm.value)
+  }, 'The hash operation failed.', { option: algorithm.value })
 
   if (status.value === 'success' && result.value !== null) {
     output.value = result.value
@@ -102,6 +88,7 @@ function handleClear() {
   canonical.value = ''
   file.value = null
   output.value = ''
+  bytesRead.value = 0
   reset()
 }
 
@@ -114,20 +101,11 @@ useToolShortcuts({
 <template>
   <ToolPage>
     <UAlert
-      v-if="inBrowser"
       color="success"
       variant="subtle"
       icon="i-lucide-lock"
       title="The input stays in your browser"
-      description="The SHA family runs with Web Crypto on your device. Nothing is uploaded."
-    />
-    <UAlert
-      v-else
-      color="info"
-      variant="subtle"
-      icon="i-lucide-server"
-      title="Processed with Bun"
-      description="Web Crypto has no MD5, CRC32, xxHash64, or wyhash. This algorithm runs on the server."
+      description="Every algorithm runs on your device. The SHA family uses Web Crypto. MD5, CRC32, and xxHash64 use WebAssembly. Nothing is uploaded."
     />
 
     <div class="flex flex-wrap items-end gap-4">
@@ -158,15 +136,6 @@ useToolShortcuts({
       icon="i-lucide-triangle-alert"
       title="Legacy algorithm"
       description="Do not use MD5 or SHA-1 for passwords or security decisions. Use SHA-256 or stronger."
-    />
-
-    <UAlert
-      v-if="fileNeedsSha"
-      color="warning"
-      variant="subtle"
-      icon="i-lucide-triangle-alert"
-      title="This algorithm cannot hash a file"
-      description="A file is hashed in the browser. Choose SHA-1, SHA-256, SHA-384, or SHA-512."
     />
 
     <LazyToolEditor
@@ -205,6 +174,12 @@ useToolShortcuts({
       >
         {{ file.name }} · {{ formatBytes(file.size) }}
       </p>
+      <p
+        v-if="status === 'processing' && bytesRead"
+        class="text-sm text-muted"
+      >
+        Read {{ formatBytes(bytesRead) }}
+      </p>
     </template>
 
     <ToolActions>
@@ -212,7 +187,6 @@ useToolShortcuts({
         label="Hash"
         icon="i-lucide-hash"
         :loading="status === 'processing'"
-        :disabled="fileNeedsSha"
         @click="hash"
       />
       <UButton
@@ -264,7 +238,8 @@ useToolShortcuts({
           </p>
           <p>
             Use the File source to check a download against the checksum of the publisher. The tool
-            reads the file on your device with Web Crypto, so a large file never leaves your browser.
+            reads the file in pieces and gives each piece to the hasher, so a file of up to 2 GB
+            never leaves your browser and never sits in memory as one block.
           </p>
           <p>
             The JSON object source gives a stable digest for an object. The keys are sorted at every

@@ -281,7 +281,7 @@ export const tools: Tool[] = [
     icon: 'i-lucide-hash',
     keywords: ['hash', 'sha', 'sha256', 'md5', 'digest', 'checksum', 'file', 'crc32', 'json', 'object hash', 'canonical', 'stable'],
     route: '/hub/crypto/hash-generator',
-    clientOnly: false,
+    clientOnly: true,
     serverRequired: false,
     status: 'available',
   },

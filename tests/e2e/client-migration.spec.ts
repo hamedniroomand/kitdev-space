@@ -87,6 +87,20 @@ test('bumps a semver version in the browser, with no server call', async ({ page
  * The page uses `immediate: false` and relies on the watcher inside `useImage`.
  * A wrong fix here shows no error — it shows no preview.
  */
+test('hashes MD5 in the browser, with no server call', async ({ page }) => {
+  const calls = watchRoute(page, '/api/crypto/hash')
+  await gotoHydrated(page, '/hub/crypto/hash-generator')
+
+  await page.getByRole('combobox').first().click()
+  await page.getByRole('option', { name: 'MD5 (Legacy)' }).click()
+  await fillCodeMirror(page, 'Input', 'hello')
+  await page.getByRole('button', { name: 'Hash' }).click()
+
+  await expect(page.getByRole('textbox', { name: 'Output' }))
+    .toContainText('5d41402abc4b2a76b9719d911017c592')
+  expect(calls).toEqual([])
+})
+
 test('shows image dimensions from the client-only preview', async ({ page }) => {
   const pageErrors: string[] = []
   page.on('pageerror', error => pageErrors.push(error.message))
