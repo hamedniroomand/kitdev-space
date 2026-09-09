@@ -33,7 +33,7 @@ export async function hmacBytes(
 
   const cryptoKey = await cryptoObj.subtle.importKey(
     'raw',
-    key,
+    key as unknown as BufferSource,
     { name: 'HMAC', hash: { name: algorithm } },
     false,
     ['sign'],

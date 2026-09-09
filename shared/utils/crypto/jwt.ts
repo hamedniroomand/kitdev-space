@@ -158,7 +158,13 @@ async function importRsaPublicKey(key: string, hash: string): Promise<CryptoKey>
   if (!body) {
     throw new Error('Invalid public key.\n\nPaste a PEM or a JWK public key.')
   }
-  return crypto.subtle.importKey('spki', decodeBase64Url(body), algorithm, false, ['verify'])
+  return crypto.subtle.importKey(
+    'spki',
+    decodeBase64Url(body) as unknown as BufferSource,
+    algorithm,
+    false,
+    ['verify'],
+  )
 }
 
 /**
@@ -199,7 +205,7 @@ export async function verifyJwt(token: string, key: string): Promise<JwtVerifySt
   const verified = await crypto.subtle.verify(
     'RSASSA-PKCS1-v1_5',
     publicKey,
-    signature,
+    signature as unknown as BufferSource,
     new TextEncoder().encode(signingInput),
   )
   return verified ? 'valid' : 'invalid'
