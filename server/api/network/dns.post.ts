@@ -12,13 +12,16 @@ interface DnsBody {
 
 export default defineEventHandler(async (event) => {
   const ip = getClientKey(event)
-  enforceRateLimit(ip, 'network:dns')
 
   const body = await readBody<DnsBody>(event)
   const domain = body.domain ?? ''
   const mode = body.mode ?? 'lookup'
 
+  // Email Health makes many record lookups per run. It gets its own bucket so
+  // that it cannot use up the tokens of a plain DNS lookup, and the reverse.
   if (mode === 'email-health') {
+    enforceRateLimit(ip, 'network:email-health')
+
     try {
       const result = await inspectEmailHealth(domain, body.dkimSelectors)
       return { result }
@@ -31,6 +34,8 @@ export default defineEventHandler(async (event) => {
       })
     }
   }
+
+  enforceRateLimit(ip, 'network:dns')
 
   if (mode !== 'lookup') {
     throw createError({
