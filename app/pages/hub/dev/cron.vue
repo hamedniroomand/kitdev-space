@@ -1,64 +1,73 @@
 <script setup lang="ts">
-import { describeCron, nextCronRuns } from '#shared/utils/dev/cron'
+import { analyzeCron, cronTimeZones, formatCronRunLocal } from '#shared/utils/dev/cron'
 
 const expression = ref('30 9 * * MON-FRI')
-const timeZone = ref('UTC')
-const description = ref('')
-const nextRuns = ref<string[]>([])
-const { status, error, run, reset } = useTool<string>()
-const { copy } = useCopyFeedback()
 
-const timeZoneItems = [
-  { label: 'UTC', value: 'UTC' },
-  { label: 'America/New_York', value: 'America/New_York' },
-  { label: 'Europe/London', value: 'Europe/London' },
-  { label: 'Europe/Berlin', value: 'Europe/Berlin' },
-  { label: 'Asia/Tehran', value: 'Asia/Tehran' },
-  { label: 'Asia/Tokyo', value: 'Asia/Tokyo' },
-]
+// An empty timezone means the timezone of the browser. The prerender runs in
+// the timezone of the build machine, so the browser value arrives after mount.
+const controls = reactive({ tz: '', count: 5, start: '' })
+
+const { buildShareUrl, canShare } = useToolQuery({ input: expression, options: controls })
+const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
+const mounted = useMounted()
 
 useToolSeo('cron')
 
-function formatRun(iso: string): string {
-  try {
-    return new Intl.DateTimeFormat('en-GB', {
-      timeZone: timeZone.value || 'UTC',
-      dateStyle: 'full',
-      timeStyle: 'short',
-    }).format(new Date(iso))
+const timeZones = cronTimeZones()
+
+// `controls.tz` stays empty until the user picks a zone, so a first visit does
+// not write the resolved zone into the query string.
+const browserZone = ref('')
+
+const zone = computed({
+  get: () => controls.tz || browserZone.value || 'UTC',
+  set: (value: string) => {
+    controls.tz = value
+  },
+})
+
+// A share link can carry any number, so the count needs a limit here too.
+const count = computed(() => Math.min(20, Math.max(1, Math.round(controls.count) || 5)))
+
+const { error, result: schedule } = useLiveTool(() => {
+  if (!mounted.value) {
+    return null
   }
-  catch {
-    return iso
+  return analyzeCron(expression.value, {
+    count: count.value,
+    from: controls.start || new Date(),
+    timeZone: zone.value,
+  })
+}, { runLocation: 'browser' })
+
+const rows = computed(() =>
+  (schedule.value?.runs ?? []).map(iso => ({
+    iso,
+    utc: formatCronRunLocal(iso, 'UTC'),
+    local: formatCronRunLocal(iso, zone.value),
+  })),
+)
+
+onMounted(() => {
+  browserZone.value = Intl.DateTimeFormat().resolvedOptions().timeZone
+})
+
+async function handleShare() {
+  const url = buildShareUrl()
+  if (url) {
+    await copy(url, 'share', 'snippet')
   }
 }
 
-async function execute() {
-  description.value = ''
-  nextRuns.value = []
-  await run(() => {
-    description.value = describeCron(expression.value)
-    nextRuns.value = nextCronRuns(expression.value, 5, new Date(), timeZone.value)
-    return description.value
-  }, 'The cron operation failed.')
-}
-
-async function handleCopy() {
-  if (!description.value) {
-    return
-  }
-  const content = [description.value, ...nextRuns.value].join('\n')
-  await copy(content)
-}
-
-function handleClear() {
-  description.value = ''
-  nextRuns.value = []
-  reset()
+function handleReset() {
+  expression.value = '30 9 * * MON-FRI'
+  controls.count = 5
+  controls.start = ''
+  controls.tz = ''
 }
 
 useToolShortcuts({
-  onRun: () => execute(),
-  onCopy: () => handleCopy(),
+  onCopy: () => handleShare(),
 })
 </script>
 
@@ -71,37 +80,70 @@ useToolShortcuts({
       description="This tool runs in the browser."
     />
 
-    <UFormField label="Cron expression">
+    <UFormField
+      label="Cron expression"
+      help="Five fields, or a nickname such as @daily. The result updates as you type."
+    >
       <UInput
         v-model="expression"
         placeholder="30 9 * * MON-FRI"
-        class="font-mono"
+        aria-label="Cron expression"
+        class="w-full"
+        :ui="{ base: 'font-mono' }"
       />
     </UFormField>
 
-    <UFormField label="Timezone">
-      <USelect
-        v-model="timeZone"
-        :items="timeZoneItems"
-        class="w-full"
-      />
-    </UFormField>
+    <div class="grid gap-4 sm:grid-cols-3">
+      <UFormField label="Timezone">
+        <USelectMenu
+          v-model="zone"
+          :items="timeZones"
+          :search-input="{ placeholder: 'Search timezones' }"
+          aria-label="Timezone"
+          class="w-full"
+        />
+      </UFormField>
+
+      <UFormField label="Runs">
+        <UInputNumber
+          v-model="controls.count"
+          :min="1"
+          :max="20"
+          aria-label="Number of runs"
+          class="w-full"
+        />
+      </UFormField>
+
+      <UFormField
+        label="Start date"
+        help="Optional. Read in the timezone above."
+      >
+        <UInput
+          v-model="controls.start"
+          type="datetime-local"
+          aria-label="Reference start date"
+          class="w-full"
+        />
+      </UFormField>
+    </div>
 
     <ToolActions>
       <UButton
-        color="primary"
-        :loading="status === 'processing'"
-        @click="execute"
-      >
-        Preview
-      </UButton>
+        v-if="canShare"
+        :label="copyLabel('share', 'Share')"
+        :color="copyColor('share')"
+        variant="subtle"
+        :icon="copyIcon('share', 'i-lucide-share-2')"
+        aria-label="Copy a link to this schedule"
+        @click="handleShare"
+      />
       <UButton
+        label="Reset"
         color="neutral"
         variant="ghost"
-        @click="handleClear"
-      >
-        Clear
-      </UButton>
+        icon="i-lucide-eraser"
+        @click="handleReset"
+      />
     </ToolActions>
 
     <ToolError
@@ -109,42 +151,116 @@ useToolShortcuts({
       :message="error"
     />
 
-    <div
-      v-if="description"
-      class="space-y-4 rounded-md border border-default bg-elevated/40 p-4"
-    >
-      <div>
-        <p class="text-xs text-muted">
-          Summary
-        </p>
-        <p class="mt-1 text-sm text-highlighted">
-          {{ description }}
-        </p>
+    <template v-if="schedule">
+      <ToolResultRow
+        label="Schedule"
+        :value="schedule.description"
+      />
+
+      <UAlert
+        v-if="schedule.neverRuns"
+        color="warning"
+        variant="subtle"
+        icon="i-lucide-calendar-x"
+        title="Never runs"
+        description="The expression is valid, but no date matches it. Check the day of month against the month."
+      />
+
+      <UAlert
+        v-else-if="schedule.runsAtStartup"
+        color="neutral"
+        variant="subtle"
+        icon="i-lucide-power"
+        title="No calendar run"
+        description="A @reboot schedule runs when the host starts, so it has no next run time."
+      />
+
+      <div
+        v-else-if="rows.length"
+        class="overflow-x-auto rounded-md border border-default"
+      >
+        <table class="w-full text-sm">
+          <caption class="sr-only">
+            The next {{ rows.length }} runs in UTC and in {{ zone }}
+          </caption>
+          <thead class="bg-elevated text-left text-xs text-muted">
+            <tr>
+              <th scope="col" class="px-4 py-2 font-medium">
+                #
+              </th>
+              <th scope="col" class="px-4 py-2 font-medium">
+                UTC
+              </th>
+              <th
+                v-if="zone !== 'UTC'"
+                scope="col"
+                class="px-4 py-2 font-medium"
+              >
+                {{ zone }}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="(row, index) in rows"
+              :key="row.iso"
+              class="border-t border-default"
+            >
+              <td class="px-4 py-2 text-muted">
+                {{ index + 1 }}
+              </td>
+              <td class="px-4 py-2 font-mono text-highlighted">
+                {{ row.utc }}
+              </td>
+              <td
+                v-if="zone !== 'UTC'"
+                class="px-4 py-2 font-mono text-highlighted"
+              >
+                {{ row.local }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
-      <div v-if="nextRuns.length">
-        <p class="text-xs text-muted">
-          Next 5 runs ({{ timeZone }})
-        </p>
-        <ol class="mt-2 list-decimal space-y-1 pl-5 font-mono text-sm text-highlighted">
-          <li
-            v-for="runIso in nextRuns"
-            :key="runIso"
-          >
-            {{ formatRun(runIso) }}
-            <span class="text-muted">· {{ runIso }}</span>
-          </li>
-        </ol>
-      </div>
-    </div>
+    </template>
 
     <template #docs>
       <ToolDocs title="About cron">
         <p class="text-sm leading-relaxed text-muted">
-          A standard cron expression has five fields: minute, hour, day of month, month, and weekday.
+          A standard cron expression has five fields: minute, hour, day of month, month, and
+          weekday. The nicknames @yearly, @monthly, @weekly, @daily, @hourly, and @midnight are
+          short forms of a five field expression.
         </p>
         <p class="text-sm leading-relaxed text-muted">
-          Nicknames like @daily and @hourly also work when Bun accepts them.
+          Cron joins the day of month field and the weekday field with OR. If you set both, the job
+          runs on a day that matches one field or the other field.
         </p>
+
+        <h3 class="text-base font-medium text-highlighted">
+          Daylight saving time
+        </h3>
+        <p class="text-sm leading-relaxed text-muted">
+          Cron reads the wall clock of the selected timezone. A timezone with daylight saving time
+          moves the wall clock two times each year, so two hours in the year are different.
+        </p>
+        <p class="text-sm leading-relaxed text-muted">
+          At the spring shift the clock moves forward and one hour does not exist. In New York on
+          8 March 2026 the clock goes from 02:00 to 03:00. A job set for 02:30 has no 02:30 on that
+          day, so it runs at 03:30. An hourly job loses the 02:00 run, but the time between two
+          runs stays one hour.
+        </p>
+        <p class="text-sm leading-relaxed text-muted">
+          At the autumn shift the clock moves back. One hour occurs two times. In New York on
+          1 November 2026 the clock goes from 02:00 to 01:00. An hourly job runs two times at
+          01:00, one time in daylight saving time and one time in standard time. A job set for a
+          single time, such as 01:30, runs one time only.
+        </p>
+        <p class="text-sm leading-relaxed text-muted">
+          Set the timezone to UTC for a schedule that must keep the same interval through the year.
+          UTC has no time shift. The UTC column shows the absolute time of each run, so you can
+          compare the two columns at a shift.
+        </p>
+
         <RelatedTools
           :items="[
             { label: 'Semver Calculator', to: '/hub/dev/semver' },
