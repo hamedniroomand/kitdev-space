@@ -3,6 +3,7 @@ const props = defineProps<{
   databaseName: string
   sizeBytes: number
   tableCount: number
+  pendingEdits: number
 }>()
 
 const emit = defineEmits<{
@@ -11,6 +12,21 @@ const emit = defineEmits<{
   exportJson: []
   close: []
 }>()
+
+const confirmOpen = ref(false)
+
+function requestClose() {
+  if (props.pendingEdits > 0) {
+    confirmOpen.value = true
+    return
+  }
+  emit('close')
+}
+
+function confirmClose() {
+  confirmOpen.value = false
+  emit('close')
+}
 
 const formattedSize = computed(() => {
   const bytes = props.sizeBytes
@@ -33,11 +49,20 @@ const formattedSize = computed(() => {
       />
       <span class="font-medium text-sm text-highlighted">{{ databaseName }}</span>
       <span class="text-xs text-muted font-mono">({{ formattedSize }} • {{ tableCount }} tables)</span>
+      <UBadge
+        v-if="pendingEdits > 0"
+        color="warning"
+        variant="subtle"
+        size="sm"
+        :aria-label="`${pendingEdits} changes are not downloaded`"
+      >
+        {{ pendingEdits }} unsaved {{ pendingEdits === 1 ? 'change' : 'changes' }}
+      </UBadge>
     </div>
 
     <div class="flex items-center gap-2">
       <UButton
-        label="Export CSV"
+        label="Export results (CSV)"
         icon="i-lucide-file-spreadsheet"
         size="xs"
         color="neutral"
@@ -45,7 +70,7 @@ const formattedSize = computed(() => {
         @click="emit('exportCsv')"
       />
       <UButton
-        label="Export JSON"
+        label="Export results (JSON)"
         icon="i-lucide-file-json"
         size="xs"
         color="neutral"
@@ -53,7 +78,7 @@ const formattedSize = computed(() => {
         @click="emit('exportJson')"
       />
       <UButton
-        label="Download .db"
+        label="Export database (.sqlite)"
         icon="i-lucide-download"
         size="xs"
         color="primary"
@@ -66,8 +91,31 @@ const formattedSize = computed(() => {
         size="xs"
         color="neutral"
         variant="ghost"
-        @click="emit('close')"
+        @click="requestClose"
       />
     </div>
+
+    <UModal
+      v-model:open="confirmOpen"
+      title="Close without saving?"
+      :description="`${pendingEdits} ${pendingEdits === 1 ? 'change is' : 'changes are'} not downloaded yet. The browser saves no file for you, so closing loses them.`"
+    >
+      <template #footer>
+        <div class="flex justify-end gap-2">
+          <UButton
+            label="Keep working"
+            color="neutral"
+            variant="ghost"
+            @click="confirmOpen = false"
+          />
+          <UButton
+            label="Close and lose changes"
+            color="error"
+            variant="subtle"
+            @click="confirmClose"
+          />
+        </div>
+      </template>
+    </UModal>
   </header>
 </template>

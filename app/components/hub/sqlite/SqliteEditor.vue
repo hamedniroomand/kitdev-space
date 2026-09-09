@@ -9,11 +9,13 @@ const props = defineProps<{
   rowCount?: number
   history?: string[]
   snippets?: { label: string, sql: string }[]
+  rowsAffected?: number
 }>()
 
 const emit = defineEmits<{
   'update:modelValue': [value: string]
   'run': [sql: string]
+  'cancel': []
 }>()
 
 const localSql = ref(props.modelValue)
@@ -100,11 +102,26 @@ onKeyStroke('Enter', (event) => {
       </div>
       <div class="flex items-center gap-3">
         <span
+          v-if="rowsAffected !== undefined"
+          class="font-mono text-dimmed"
+        >
+          {{ rowsAffected }} {{ rowsAffected === 1 ? 'row' : 'rows' }} affected
+        </span>
+        <span
           v-if="durationMs !== undefined && durationMs >= 0"
           class="font-mono text-dimmed"
         >
           {{ durationMs }} ms · {{ rowCount }} rows
         </span>
+        <UButton
+          v-if="executing"
+          label="Stop"
+          icon="i-lucide-square"
+          size="xs"
+          color="error"
+          variant="subtle"
+          @click="emit('cancel')"
+        />
         <UTooltip
           text="Run the query"
           :kbds="['meta', 'enter']"

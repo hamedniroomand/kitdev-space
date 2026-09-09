@@ -18,12 +18,15 @@ const {
   selectedRowid,
   schemaSql,
   schemaOpen,
+  statementResults,
+  pendingEdits,
   history,
   snippets,
   loadDatabaseFile,
   createBlankDatabase,
   loadSampleDatabase,
   executeQuery,
+  cancelQuery,
   selectTable,
   updateTableQuery,
   toggleSort,
@@ -41,6 +44,18 @@ const {
 } = useSqliteStudio()
 
 const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
+
+const activeStatement = ref(0)
+
+// A multi-statement run shows the result of the selected statement; a single
+// statement keeps the primary result.
+const shownResult = computed(() => {
+  const list = statementResults.value
+  if (!list || list.length === 0) {
+    return queryResult.value
+  }
+  return list[activeStatement.value] ?? queryResult.value
+})
 </script>
 
 <template>
@@ -96,6 +111,7 @@ const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeed
         :database-name="databaseName"
         :size-bytes="databaseSizeBytes"
         :table-count="tables.length"
+        :pending-edits="pendingEdits"
         @download-db="downloadDatabase"
         @export-csv="exportCsv"
         @export-json="exportJson"
@@ -114,11 +130,18 @@ const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeed
             v-model="activeQuery"
             :executing="isExecuting"
             :error="error"
-            :duration-ms="queryResult?.durationMs"
-            :row-count="queryResult?.rowCount"
+            :duration-ms="shownResult?.durationMs"
+            :row-count="shownResult?.rowCount"
+            :rows-affected="shownResult?.rowsAffected"
             :history="history"
             :snippets="snippets"
             @run="executeQuery"
+            @cancel="cancelQuery"
+          />
+          <SqliteStatementTabs
+            v-if="statementResults && statementResults.length > 1"
+            v-model="activeStatement"
+            :results="statementResults"
           />
           <SqliteQueryBar
             v-if="activeTableInfo && tableQuery"
@@ -137,7 +160,7 @@ const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeed
             @back-to-table="backToTable"
           />
           <SqliteGrid
-            :result="queryResult"
+            :result="shownResult"
             :active-table="activeTable"
             :offset="isCustomQuery ? 0 : tableQuery?.offset"
             :sort="isCustomQuery ? null : tableQuery?.sort"

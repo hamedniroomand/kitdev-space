@@ -27,6 +27,12 @@ export function useSqliteStudio() {
   const selectedRowid = ref<number | null>(null)
   const schemaSql = ref<string | null>(null)
   const schemaOpen = ref(false)
+  const statementResults = shallowRef<QueryResult[] | null>(null)
+  /** Changes made since the last download. The browser saves no file itself. */
+  const pendingEdits = ref(0)
+  /** The last bytes the user downloaded. A cancelled query reloads from here. */
+  let savedBytes: Uint8Array | null = null
+  let lastLoadedBytes: Uint8Array | null = null
   /** The queries that the user ran, newest first. Kept for the browser tab only. */
   const history = useSessionStorage<string[]>('kitdev:sqlite:history', [])
 
@@ -78,6 +84,10 @@ export function useSqliteStudio() {
 
         case 'QUERY_RESULT':
           queryResult.value = response.result
+          statementResults.value = response.results ?? null
+          if (response.result.rowsAffected !== undefined) {
+            pendingEdits.value++
+          }
           tableTotal.value = response.total ?? null
           if (response.tables) {
             tables.value = response.tables
@@ -89,10 +99,12 @@ export function useSqliteStudio() {
           break
 
         case 'UPDATE_SUCCESS':
+          pendingEdits.value++
           refreshRows()
           break
 
         case 'MUTATION_SUCCESS': {
+          pendingEdits.value++
           const table = tables.value.find(item => item.name === response.table)
           if (table) {
             table.rowCount = response.rowCount
@@ -108,7 +120,9 @@ export function useSqliteStudio() {
           break
 
         case 'EXPORT_RESULT': {
-          const blob = new Blob([response.bytes.slice().buffer], { type: 'application/x-sqlite3' })
+          savedBytes = response.bytes.slice()
+          pendingEdits.value = 0
+          const blob = new Blob([savedBytes.slice().buffer as ArrayBuffer], { type: 'application/x-sqlite3' })
           downloadBlob(databaseName.value || 'database.sqlite', blob)
           break
         }
@@ -128,6 +142,9 @@ export function useSqliteStudio() {
 
     try {
       const bytes = new Uint8Array(await file.arrayBuffer())
+      lastLoadedBytes = bytes.slice()
+      savedBytes = bytes.slice()
+      pendingEdits.value = 0
       worker?.postMessage({ type: 'INIT_DB', bytes })
     }
     catch {
@@ -139,6 +156,9 @@ export function useSqliteStudio() {
   function createBlankDatabase() {
     initWorker()
     databaseName.value = 'blank.sqlite'
+    lastLoadedBytes = null
+    savedBytes = null
+    pendingEdits.value = 0
     post({ type: 'INIT_DB' })
   }
 
@@ -282,6 +302,34 @@ export function useSqliteStudio() {
     downloadText(`${activeTable.value || 'query'}.json`, json, 'application/json')
   }
 
+  /**
+   * Stops a running query. A worker cannot interrupt a busy SQLite call, so it
+   * is terminated and a new one loads the last saved state.
+   */
+  function cancelQuery() {
+    if (!isExecuting.value) {
+      return
+    }
+    worker?.terminate()
+    worker = null
+    isExecuting.value = false
+    queryResult.value = null
+    statementResults.value = null
+    selectedRowid.value = null
+
+    const restoreFrom = savedBytes ?? lastLoadedBytes
+    initWorker()
+    if (restoreFrom) {
+      pendingEdits.value = 0
+      post({ type: 'INIT_DB', bytes: restoreFrom.slice() })
+      error.value = 'The query was stopped. The database reloaded from the last saved state.'
+    }
+    else {
+      post({ type: 'INIT_DB' })
+      error.value = 'The query was stopped. The database restarted empty.'
+    }
+  }
+
   function closeDatabase() {
     worker?.terminate()
     worker = null
@@ -294,6 +342,10 @@ export function useSqliteStudio() {
     selectedRowid.value = null
     schemaSql.value = null
     queryResult.value = null
+    statementResults.value = null
+    pendingEdits.value = 0
+    savedBytes = null
+    lastLoadedBytes = null
     error.value = null
   }
 
@@ -325,12 +377,15 @@ export function useSqliteStudio() {
     selectedRowid,
     schemaSql,
     schemaOpen,
+    statementResults,
+    pendingEdits,
     history,
     snippets,
     loadDatabaseFile,
     createBlankDatabase,
     loadSampleDatabase,
     executeQuery,
+    cancelQuery,
     selectTable,
     updateTableQuery,
     toggleSort,

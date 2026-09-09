@@ -1,9 +1,10 @@
 import type { Database } from 'sql.js'
-import type { ColumnInfo, TableInfo, WorkerMessage, WorkerResponse } from '~/types/sqlite'
+import type { ColumnInfo, QueryResult, TableInfo, WorkerMessage, WorkerResponse } from '~/types/sqlite'
 import initSqlJs from 'sql.js'
 import { buildUpdateQuery } from '~/types/sqlite'
 import { quoteIdentifier } from '~/utils/sqlite/query-builder'
 import { getSampleSqlScript } from '~/utils/sqlite/sample-data'
+import { isDmlStatement, splitSqlStatements } from '~/utils/sqlite/statements'
 
 let db: Database | null = null
 let SQL: Awaited<ReturnType<typeof initSqlJs>> | null = null
@@ -145,36 +146,46 @@ globalThis.onmessage = async (event: MessageEvent<WorkerMessage>) => {
           throw new Error('Database is not loaded.')
         }
 
-        const start = performance.now()
-        const results = db.exec(message.sql)
-        const durationMs = Math.round(performance.now() - start)
+        // Each statement runs on its own, so a result and a row count belong to
+        // the statement that produced them. `getRowsModified` stays at the last
+        // change, so it is read only after a statement that changes rows.
+        const statements = splitSqlStatements(message.sql)
+        const perStatement: QueryResult[] = []
+
+        for (const statement of statements) {
+          const start = performance.now()
+          const results = db.exec(statement)
+          const durationMs = Math.round(performance.now() - start)
+          const isDml = isDmlStatement(statement)
+          const first = results[0]
+          const allRows = first?.values ?? []
+
+          perStatement.push({
+            columns: first?.columns ?? [],
+            rows: allRows.slice(0, 1000),
+            rowCount: allRows.length,
+            durationMs,
+            rowsAffected: isDml ? db.getRowsModified() : undefined,
+            sql: statement,
+          })
+        }
 
         const isDdl = /\b(?:create|drop|alter)\b/i.test(message.sql)
         const tables = isDdl ? introspectSchema(db) : undefined
 
-        if (results.length === 0) {
-          const response: WorkerResponse = {
-            type: 'QUERY_RESULT',
-            result: { columns: [], rows: [], rowCount: 0, durationMs },
-            tables,
-          }
-          globalThis.postMessage(response)
-          break
-        }
-
-        const first = results[0]
-        const columns = first?.columns ?? []
-        const allRows = first?.values ?? []
-        const totalRows = allRows.length
-        const slicedRows = allRows.slice(0, 1000)
+        // A statement that returns rows is the one a reader wants to see first.
+        const primary = perStatement.find(item => item.columns.length > 0)
+          ?? perStatement[perStatement.length - 1]
+          ?? { columns: [], rows: [], rowCount: 0, durationMs: 0 }
 
         const total = message.countSql
-          ? Number(db.exec(message.countSql)[0]?.values?.[0]?.[0] ?? totalRows)
+          ? Number(db.exec(message.countSql)[0]?.values?.[0]?.[0] ?? primary.rowCount)
           : undefined
 
         const response: WorkerResponse = {
           type: 'QUERY_RESULT',
-          result: { columns, rows: slicedRows, rowCount: totalRows, durationMs },
+          result: primary,
+          results: perStatement.length > 1 ? perStatement : undefined,
           total,
           tables,
         }
@@ -197,7 +208,7 @@ globalThis.onmessage = async (event: MessageEvent<WorkerMessage>) => {
           throw new Error('Database is not loaded.')
         }
         const table = quoteIdentifier(message.table)
-        const columns = copyableColumns(db, message.table).map(quoteIdentifier).join(', ')
+        const columns = copyableColumns(db, message.table).map(name => quoteIdentifier(name)).join(', ')
         if (!columns) {
           throw new Error('This table has no column to copy.')
         }

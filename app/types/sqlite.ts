@@ -19,6 +19,10 @@ export interface QueryResult {
   rows: unknown[][]
   rowCount: number
   durationMs: number
+  /** Rows that an INSERT, UPDATE, or DELETE changed. Undefined for a SELECT. */
+  rowsAffected?: number
+  /** The statement that produced this result, for a multi-statement run. */
+  sql?: string
 }
 
 export type SqlValue = number | string | Uint8Array | null
@@ -37,7 +41,8 @@ export type WorkerMessage
 
 export type WorkerResponse
   = | { type: 'DB_READY', tables: TableInfo[], sizeBytes: number }
-    | { type: 'QUERY_RESULT', result: QueryResult, total?: number, tables?: TableInfo[] }
+    /** `results` holds one entry for each statement of a multi-statement run. */
+    | { type: 'QUERY_RESULT', result: QueryResult, results?: QueryResult[], total?: number, tables?: TableInfo[] }
     | { type: 'UPDATE_SUCCESS', table: string, rowid: number, column: string, value: SqlValue }
     /** A row was added, copied, or deleted. `rowCount` is the new count of the table. */
     | { type: 'MUTATION_SUCCESS', table: string, rowCount: number }
