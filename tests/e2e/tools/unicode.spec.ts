@@ -8,7 +8,8 @@ test('inspects Unicode characters and detects hidden marks', { tag: '@smoke' }, 
 
   await test.step('inspects default text with hidden zero-width marks', async () => {
     await expect(page.getByText('Hidden Characters Detected')).toBeVisible()
-    await expect(page.getByText('Code Points', { exact: true })).toBeVisible()
+    // The page also holds a "Code Points" view tab, so target the stat card.
+    await expect(page.getByLabel('Code Points').getByText('Code Points')).toBeVisible()
   })
 
   await test.step('updates inspection when typing standard text', async () => {
