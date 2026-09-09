@@ -1,20 +1,20 @@
+import type { HttpRequestMethod, RedirectHop } from '#shared/utils/network/http-report'
 import { assertSafeUrl } from './ssrf'
+
+export type { HttpRequestMethod, RedirectHop }
 
 export interface HeaderInspectResult {
   status: number
   statusText: string
   headers: Record<string, string>
   url: string
-}
-
-export interface RedirectHop {
-  url: string
-  status: number
-  location?: string
+  /** The method that produced this result. HEAD can fall back to GET. */
+  method: HttpRequestMethod
 }
 
 const TIMEOUT_MS = 8000
-const MAX_REDIRECTS = 5
+/** The tool follows at most 10 redirects, so a chain holds at most 11 hops. */
+const MAX_REDIRECTS = 10
 const REDIRECT_STATUSES = new Set([301, 302, 303, 307, 308])
 
 function headersToRecord(headers: Headers): Record<string, string> {
@@ -60,7 +60,7 @@ function isRedirectStatus(status: number): boolean {
 
 async function fetchOnce(
   url: URL,
-  method: 'HEAD' | 'GET' | 'OPTIONS',
+  method: HttpRequestMethod,
   requestHeaders?: Record<string, string>,
 ): Promise<Response> {
   return Bun.fetch(url, {
@@ -71,24 +71,34 @@ async function fetchOnce(
   })
 }
 
-function toResult(response: Response, fallbackUrl: URL): HeaderInspectResult {
+function toResult(
+  response: Response,
+  fallbackUrl: URL,
+  method: HttpRequestMethod,
+): HeaderInspectResult {
   return {
     status: response.status,
     statusText: response.statusText,
     headers: headersToRecord(response.headers),
     url: response.url || fallbackUrl.href,
+    method,
   }
 }
 
 export async function fetchHeaders(
   input: string,
-  options: { origin?: string, method?: 'HEAD' | 'GET' | 'OPTIONS' } = {},
+  options: {
+    origin?: string
+    method?: HttpRequestMethod
+    /** The method to put in Access-Control-Request-Method on a preflight. */
+    requestMethod?: string
+  } = {},
 ): Promise<HeaderInspectResult> {
   const url = await assertSafeUrl(input)
   const requestHeaders = options.origin
     ? {
         'Origin': options.origin,
-        'Access-Control-Request-Method': 'GET',
+        'Access-Control-Request-Method': options.requestMethod ?? 'GET',
         'Access-Control-Request-Headers': 'content-type',
       }
     : undefined
@@ -97,7 +107,7 @@ export async function fetchHeaders(
     if (options.method === 'OPTIONS') {
       const response = await fetchOnce(url, 'OPTIONS', requestHeaders)
       discardBody(response)
-      return toResult(response, url)
+      return toResult(response, url, 'OPTIONS')
     }
 
     let response = await fetchOnce(url, 'HEAD', requestHeaders)
@@ -105,10 +115,12 @@ export async function fetchHeaders(
     if (response.status === 405 || response.status === 501) {
       discardBody(response)
       response = await fetchOnce(url, 'GET', requestHeaders)
+      discardBody(response)
+      return toResult(response, url, 'GET')
     }
 
     discardBody(response)
-    return toResult(response, url)
+    return toResult(response, url, 'HEAD')
   }
   catch (cause) {
     if (isTimeout(cause)) {
@@ -122,9 +134,11 @@ export async function fetchHeaders(
 export async function walkRedirects(input: string): Promise<RedirectHop[]> {
   const hops: RedirectHop[] = []
   let current = await assertSafeUrl(input)
+  const visited = new Set<string>([current.href])
 
   try {
     for (let followed = 0; followed <= MAX_REDIRECTS; followed++) {
+      const started = performance.now()
       const response = await fetchOnce(current, 'GET')
       discardBody(response)
 
@@ -133,6 +147,9 @@ export async function walkRedirects(input: string): Promise<RedirectHop[]> {
       const hop: RedirectHop = {
         url: current.href,
         status: response.status,
+        statusText: response.statusText,
+        headers: headersToRecord(response.headers),
+        durationMs: Math.round(performance.now() - started),
       }
 
       if (location !== undefined) {
@@ -149,8 +166,9 @@ export async function walkRedirects(input: string): Promise<RedirectHop[]> {
         break
       }
 
+      let next: URL
       try {
-        current = await assertSafeUrl(new URL(location, current).href)
+        next = await assertSafeUrl(new URL(location, current).href)
       }
       catch (cause) {
         // Keep hops. Do not fetch the blocked Location.
@@ -159,6 +177,15 @@ export async function walkRedirects(input: string): Promise<RedirectHop[]> {
         }
         throw cause
       }
+
+      // A URL that is already in the chain makes a loop. Stop before the fetch.
+      if (visited.has(next.href)) {
+        hop.loop = true
+        break
+      }
+
+      visited.add(next.href)
+      current = next
     }
   }
   catch (cause) {

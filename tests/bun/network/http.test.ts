@@ -78,6 +78,7 @@ describe('fetchHeaders', () => {
         'x-test': '1',
       },
       url: 'https://example.com/',
+      method: 'HEAD',
     })
     expect(fetchSpy).toHaveBeenCalledTimes(1)
     const [url, options] = fetchSpy.mock.calls[0] as [URL, RequestInit]
@@ -102,6 +103,7 @@ describe('fetchHeaders', () => {
 
     expect(result.status).toBe(200)
     expect(result.headers.server).toBe('test')
+    expect(result.method).toBe('GET')
     expect(fetchSpy.mock.calls.map(call => (call[1] as RequestInit).method)).toEqual(['HEAD', 'GET'])
     expect((fetchSpy.mock.calls[1] as [URL, RequestInit])[1].redirect).toBe('manual')
   })
@@ -151,6 +153,36 @@ describe('fetchHeaders', () => {
     await fetchHeaders('https://example.com/')
 
     expect(cancel).toHaveBeenCalled()
+  })
+
+  it('sends the preflight headers of the requested method', async () => {
+    fetchSpy.mockResolvedValue(mockResponse({
+      status: 204,
+      statusText: 'No Content',
+      url: 'https://example.com/',
+    }))
+
+    const result = await fetchHeaders('https://example.com/', {
+      origin: 'https://app.example.com',
+      method: 'OPTIONS',
+      requestMethod: 'DELETE',
+    })
+
+    expect(result.method).toBe('OPTIONS')
+    const [, options] = fetchSpy.mock.calls[0] as [URL, RequestInit]
+    expect(options.method).toBe('OPTIONS')
+    expect(options.headers).toMatchObject({
+      'Origin': 'https://app.example.com',
+      'Access-Control-Request-Method': 'DELETE',
+    })
+  })
+
+  it('sends no Origin header when no origin is given', async () => {
+    fetchSpy.mockResolvedValue(mockResponse({ status: 200, url: 'https://example.com/' }))
+
+    await fetchHeaders('https://example.com/', { requestMethod: 'PUT' })
+
+    expect((fetchSpy.mock.calls[0] as [URL, RequestInit])[1].headers).toBeUndefined()
   })
 
   it('maps a timeout to a clear error', async () => {
@@ -204,15 +236,19 @@ describe('walkRedirects', () => {
 
     const result = await walkRedirects('https://example.com/start')
 
-    expect(result).toEqual([
+    expect(result).toMatchObject([
       {
         url: 'https://example.com/start',
         status: 302,
+        statusText: 'Found',
         location: 'https://example.com/next',
+        durationMs: expect.any(Number),
+        headers: { location: 'https://example.com/next' },
       },
       {
         url: 'https://example.com/next',
         status: 301,
+        statusText: 'Moved Permanently',
         location: '/final',
       },
       {
@@ -220,6 +256,8 @@ describe('walkRedirects', () => {
         status: 200,
       },
     ])
+    expect(result).toHaveLength(3)
+    expect(result[2]?.location).toBeUndefined()
     expect(fetchSpy).toHaveBeenCalledTimes(3)
     const [url, options] = fetchSpy.mock.calls[0] as [URL, RequestInit]
     expect(url.href).toBe('https://example.com/start')
@@ -227,8 +265,8 @@ describe('walkRedirects', () => {
     expect(options.signal).toBeInstanceOf(AbortSignal)
   })
 
-  it('stops at maxRedirects', async () => {
-    for (let index = 0; index < 8; index++) {
+  it('follows at most 10 redirects', async () => {
+    for (let index = 0; index < 14; index++) {
       fetchSpy.mockResolvedValueOnce(mockResponse({
         status: 302,
         statusText: 'Found',
@@ -239,20 +277,51 @@ describe('walkRedirects', () => {
 
     const result = await walkRedirects('https://example.com/0')
 
-    expect(result).toHaveLength(6)
-    expect(result.map(hop => hop.url)).toEqual([
-      'https://example.com/0',
-      'https://example.com/1',
-      'https://example.com/2',
-      'https://example.com/3',
-      'https://example.com/4',
-      'https://example.com/5',
-    ])
-    expect(result[5]?.location).toBe('https://example.com/6')
-    expect(fetchSpy).toHaveBeenCalledTimes(6)
+    // 10 redirects followed gives 11 hops.
+    expect(result).toHaveLength(11)
+    expect(result[10]?.url).toBe('https://example.com/10')
+    expect(result[10]?.location).toBe('https://example.com/11')
+    expect(fetchSpy).toHaveBeenCalledTimes(11)
     expect(
       fetchSpy.mock.calls.map(call => (call[0] as URL).href),
-    ).not.toContain('https://example.com/6')
+    ).not.toContain('https://example.com/11')
+  })
+
+  it('stops on a redirect that points to itself', async () => {
+    fetchSpy.mockResolvedValue(mockResponse({
+      status: 302,
+      statusText: 'Found',
+      headers: { Location: 'https://example.com/loop' },
+      url: 'https://example.com/loop',
+    }))
+
+    const result = await walkRedirects('https://example.com/loop')
+
+    expect(result).toHaveLength(1)
+    expect(result[0]?.loop).toBe(true)
+    expect(fetchSpy).toHaveBeenCalledTimes(1)
+  })
+
+  it('stops on a redirect loop between two URLs', async () => {
+    fetchSpy
+      .mockResolvedValueOnce(mockResponse({
+        status: 302,
+        statusText: 'Found',
+        headers: { Location: 'https://example.com/b' },
+        url: 'https://example.com/a',
+      }))
+      .mockResolvedValueOnce(mockResponse({
+        status: 302,
+        statusText: 'Found',
+        headers: { Location: 'https://example.com/a' },
+        url: 'https://example.com/b',
+      }))
+
+    const result = await walkRedirects('https://example.com/a')
+
+    expect(result.map(hop => hop.url)).toEqual(['https://example.com/a', 'https://example.com/b'])
+    expect(result[1]?.loop).toBe(true)
+    expect(fetchSpy).toHaveBeenCalledTimes(2)
   })
 
   it('blocks a private Location before the next fetch', async () => {
@@ -265,13 +334,14 @@ describe('walkRedirects', () => {
 
     const result = await walkRedirects('https://example.com/')
 
-    expect(result).toEqual([
+    expect(result).toMatchObject([
       {
         url: 'https://example.com/',
         status: 302,
         location: 'http://127.0.0.1/secret',
       },
     ])
+    expect(result).toHaveLength(1)
     expect(fetchSpy).toHaveBeenCalledTimes(1)
     expect((fetchSpy.mock.calls[0] as [URL, RequestInit])[0].href).toBe('https://example.com/')
   })
@@ -288,13 +358,14 @@ describe('walkRedirects', () => {
 
     const result = await walkRedirects('https://example.com/')
 
-    expect(result).toEqual([
+    expect(result).toMatchObject([
       {
         url: 'https://example.com/',
         status: 302,
         location: 'https://example.com/next',
       },
     ])
+    expect(result).toHaveLength(1)
     expect(fetchSpy).toHaveBeenCalledTimes(2)
   })
 })
