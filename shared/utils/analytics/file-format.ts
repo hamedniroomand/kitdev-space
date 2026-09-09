@@ -22,6 +22,7 @@ const KNOWN_FORMATS = new Set([
   'db',
   'env',
   'pem',
+  'enc',
   'svg',
   'png',
   'jpg',

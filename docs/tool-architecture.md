@@ -20,6 +20,8 @@ A server route is not correct when a platform API covers the work:
 | Work                          | Browser API                        |
 | ----------------------------- | ---------------------------------- |
 | SHA-1, SHA-256, SHA-384, SHA-512 | `crypto.subtle.digest`          |
+| MD5, CRC32, xxHash64          | `hash-wasm`, an installed dependency |
+| A hash of a file of up to 2 GB | `hash-wasm`, over `Blob.stream()` |
 | Random bytes                  | `crypto.getRandomValues`           |
 | Resize, rotate, grayscale     | `OffscreenCanvas`, `createImageBitmap` |
 | JPEG, PNG, and WebP encode    | `OffscreenCanvas.convertToBlob`    |
@@ -30,8 +32,14 @@ A server route is not correct when a platform API covers the work:
 | CSS minify                    | `csso`, an installed dependency    |
 | JSON format and minify        | `shared/utils/data/json.ts`        |
 
-Web Crypto has no MD5, no CRC32, and no xxHash. A tool that offers those keeps a server path for
-them.
+Web Crypto has no MD5, no CRC32, and no xxHash, and `crypto.subtle.digest` needs the full input in
+memory. `hash-wasm` covers both gaps in the browser: it adds those algorithms, and it gives an
+incremental hasher for every algorithm. A tool that hashes a large file streams the file through
+that hasher, so it needs no server path. `shared/utils/crypto/hash.ts` shows the pattern: Web
+Crypto for SHA over text, `hash-wasm` for the other algorithms and for every file.
+
+Bun has `Bun.hash.wyhash`, which no browser and no WebAssembly module gives. A tool does not offer
+wyhash, because the hash tool runs fully in the browser.
 
 `confbox` reads and writes YAML, TOML, JSONC, and JSON5. It has no dependency of its own and it
 tree-shakes, so the formats together cost about the bundle bytes of a YAML-only library. Use it for
@@ -40,8 +48,8 @@ a converter. Use `yaml` only when a tool must show the line and the column of ea
 
 A tool with a browser path and a server path keeps one source. Put the browser code in
 `shared/utils/`, export a `can*InBrowser()` guard next to it, and let the server route import the
-same module. `shared/utils/crypto/hash.ts`, `shared/utils/data/convert.ts`,
-`shared/utils/dev/code-format.ts`, and `shared/utils/dev/semver.ts` show the pattern.
+same module. `shared/utils/data/convert.ts`, `shared/utils/dev/code-format.ts`, and
+`shared/utils/dev/semver.ts` show the pattern.
 
 ## Why this rule exists
 

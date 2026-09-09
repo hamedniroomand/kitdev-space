@@ -7,11 +7,33 @@ const memoryCost = ref(4096)
 const timeCost = ref(2)
 const cost = ref(10)
 const verify = ref(true)
+const runs = ref(1)
 const hash = ref('')
 const durationMs = ref<number | null>(null)
+const durations = ref<number[]>([])
 const verified = ref<boolean | null>(null)
 const { status, error, run, reset } = useTool<string>()
+const {
+  status: checkStatus,
+  error: checkError,
+  run: runCheck,
+  reset: resetCheck,
+} = useTool<boolean>()
 const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
+const { reportInput } = useToolInput()
+
+const checkPassword = ref('')
+const checkHash = ref('')
+const matched = ref<boolean | null>(null)
+
+// A dummy password. The tool never keeps a password after a run.
+const SAMPLE = {
+  password: 'correct-horse-battery-staple',
+  memoryCost: 4096,
+  timeCost: 2,
+  cost: 10,
+  runs: 3,
+}
 
 const algorithmItems = [
   { label: 'Argon2id', value: 'argon2id' },
@@ -23,6 +45,7 @@ useToolSeo('password-benchmark')
 async function execute() {
   hash.value = ''
   durationMs.value = null
+  durations.value = []
   verified.value = null
 
   await run(async () => {
@@ -30,6 +53,7 @@ async function execute() {
       result: {
         hash: string
         durationMs: number
+        durations: number[]
         verified?: boolean
         algorithm: PasswordAlgorithm
       }
@@ -42,14 +66,42 @@ async function execute() {
         timeCost: algorithm.value === 'argon2id' ? timeCost.value : undefined,
         cost: algorithm.value === 'bcrypt' ? cost.value : undefined,
         verify: verify.value,
+        runs: runs.value,
       },
     })
 
     hash.value = data.result.hash
     durationMs.value = data.result.durationMs
+    durations.value = data.result.durations
     verified.value = data.result.verified ?? null
     return data.result.hash
   }, 'The benchmark failed.')
+}
+
+function handleLoadSample() {
+  password.value = SAMPLE.password
+  memoryCost.value = SAMPLE.memoryCost
+  timeCost.value = SAMPLE.timeCost
+  cost.value = SAMPLE.cost
+  runs.value = SAMPLE.runs
+  reportInput('sample')
+}
+
+async function check() {
+  matched.value = null
+
+  await runCheck(async () => {
+    const data = await $fetch<{ result: { matched: boolean } }>('/api/crypto/password-verify', {
+      method: 'POST',
+      body: {
+        password: checkPassword.value,
+        hash: checkHash.value,
+      },
+    })
+
+    matched.value = data.result.matched
+    return data.result.matched
+  }, 'The check failed.')
 }
 
 async function handleCopy() {
@@ -63,8 +115,13 @@ function handleClear() {
   password.value = ''
   hash.value = ''
   durationMs.value = null
+  durations.value = []
   verified.value = null
+  checkPassword.value = ''
+  checkHash.value = ''
+  matched.value = null
   reset()
+  resetCheck()
 }
 
 useToolShortcuts({
@@ -142,6 +199,18 @@ useToolShortcuts({
       />
     </UFormField>
 
+    <UFormField
+      label="Repetitions (1-3)"
+      help="More repetitions give a more stable median time."
+    >
+      <UInput
+        v-model.number="runs"
+        type="number"
+        :min="1"
+        :max="3"
+      />
+    </UFormField>
+
     <UCheckbox
       v-model="verify"
       label="Verify hash after hashing"
@@ -166,6 +235,13 @@ useToolShortcuts({
       <UButton
         color="neutral"
         variant="ghost"
+        icon="i-lucide-file-text"
+        label="Load Sample"
+        @click="handleLoadSample"
+      />
+      <UButton
+        color="neutral"
+        variant="ghost"
         @click="handleClear"
       >
         Clear
@@ -181,12 +257,30 @@ useToolShortcuts({
       v-if="hash"
       class="grid gap-3 rounded-md border border-default bg-elevated/40 p-4 sm:grid-cols-2"
     >
+      <div class="flex items-start gap-2 text-xs text-muted sm:col-span-2">
+        <UIcon
+          name="i-lucide-server"
+          class="mt-0.5 size-4 shrink-0"
+        />
+        <span>
+          Each time is measured on this server, not your infrastructure. Your own hardware gives a
+          different result.
+        </span>
+      </div>
       <div>
         <dt class="text-xs text-muted">
-          Duration
+          Duration (median)
         </dt>
         <dd class="font-mono text-sm text-highlighted">
           {{ durationMs }} ms
+        </dd>
+      </div>
+      <div v-if="durations.length > 1">
+        <dt class="text-xs text-muted">
+          Each repetition
+        </dt>
+        <dd class="font-mono text-sm text-highlighted">
+          {{ durations.map((value, index) => `#${index + 1} ${value} ms`).join(' · ') }}
         </dd>
       </div>
       <div>
@@ -207,6 +301,56 @@ useToolShortcuts({
       </div>
     </dl>
 
+    <div class="space-y-4 rounded-md border border-default p-4">
+      <p class="text-sm text-highlighted">
+        Check a password against a hash that you already have.
+      </p>
+
+      <UFormField label="Password to check">
+        <UInput
+          v-model="checkPassword"
+          type="password"
+          autocomplete="off"
+          placeholder="Enter the password to check"
+        />
+      </UFormField>
+
+      <UFormField
+        label="Hash string"
+        help="Argon2, bcrypt, and scrypt hash strings are read."
+      >
+        <UInput
+          v-model="checkHash"
+          placeholder="$2b$10$..."
+          class="w-full font-mono"
+        />
+      </UFormField>
+
+      <ToolActions>
+        <UButton
+          color="primary"
+          variant="subtle"
+          icon="i-lucide-shield-check"
+          label="Check hash"
+          :loading="checkStatus === 'processing'"
+          @click="check"
+        />
+      </ToolActions>
+
+      <ToolError
+        v-if="checkError"
+        :message="checkError"
+      />
+
+      <UAlert
+        v-else-if="matched !== null"
+        :color="matched ? 'success' : 'error'"
+        variant="subtle"
+        :icon="matched ? 'i-lucide-circle-check' : 'i-lucide-circle-x'"
+        :title="matched ? 'The password matches the hash.' : 'The password does not match the hash.'"
+      />
+    </div>
+
     <template #docs>
       <ToolDocs title="About password hashing">
         <p class="text-sm leading-relaxed text-muted">
@@ -214,6 +358,11 @@ useToolShortcuts({
         </p>
         <p class="text-sm leading-relaxed text-muted">
           Do not use MD5, SHA-1, or plain digests to store passwords.
+        </p>
+        <p class="text-sm leading-relaxed text-muted">
+          Paste a hash string that you already have to check a password against it. Bun reads the
+          algorithm and the cost from the hash string, so an Argon2, a bcrypt, and an scrypt string
+          all work.
         </p>
         <RelatedTools
           :items="[

@@ -13,10 +13,43 @@ test('generates time-based one-time passwords', { tag: '@smoke' }, async ({ page
     expect(digits.replace(/\s+/g, '')).toMatch(/^\d{6}$/)
   })
 
+  await test.step('exposes the countdown to assistive technology', async () => {
+    await expect(codeContainer).toHaveAttribute('aria-live', 'polite')
+    const bar = page.getByRole('progressbar', { name: 'Seconds until the next one-time password' })
+    await expect(bar).toHaveAttribute('aria-valuemax', '30')
+    await expect(bar).toHaveAttribute('aria-valuenow', /^\d+$/)
+  })
+
+  await test.step('masks the secret key', async () => {
+    const secret = page.getByPlaceholder('Paste Base32 secret')
+    await expect(secret).toHaveAttribute('type', 'password')
+    await page.getByRole('button', { name: 'Show the secret key' }).click()
+    await expect(secret).toHaveAttribute('type', 'text')
+  })
+
   await test.step('switches to 8-digit passcode', async () => {
     await page.getByRole('button', { name: '8 Digits' }).click()
     const digits = (await codeContainer.textContent()) ?? ''
     expect(digits.replace(/\s+/g, '')).toMatch(/^\d{8}$/)
+  })
+
+  await test.step('switches hash algorithm', async () => {
+    await page.locator('select, [role="combobox"]').first().click()
+    await page.getByRole('option', { name: 'SHA-256' }).click()
+    const digits = (await codeContainer.textContent()) ?? ''
+    expect(digits.replace(/\s+/g, '')).toMatch(/^\d{8}$/)
+  })
+
+  await test.step('shows the otpauth uri', async () => {
+    await expect(page.getByText(/^otpauth:\/\/totp\//).first()).toBeVisible()
+  })
+
+  await test.step('freezes the clock at a fixed test time', async () => {
+    await page.locator('input[type="datetime-local"]').fill('2026-01-01T00:00:30')
+    await expect(page.getByText('The clock is frozen')).toBeVisible()
+    const frozen = (await codeContainer.textContent()) ?? ''
+    await page.waitForTimeout(1500)
+    expect((await codeContainer.textContent()) ?? '').toBe(frozen)
   })
 
   await test.step('generates random secret and clears', async () => {

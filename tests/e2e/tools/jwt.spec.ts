@@ -13,4 +13,7 @@ test('decodes JSON Web Tokens', { tag: '@smoke' }, async ({ page }) => {
 
   const payload = page.getByRole('textbox', { name: 'Payload' })
   await expect(payload).toContainText('"John Doe"')
+
+  await expect(page.getByLabel('Signature check')).toContainText('Not checked')
+  await expect(page.getByLabel('Audience check')).toContainText('Not checked')
 })

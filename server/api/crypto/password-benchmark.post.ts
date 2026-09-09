@@ -10,6 +10,7 @@ interface PasswordBody {
   timeCost?: number
   cost?: number
   verify?: boolean
+  runs?: number
 }
 
 const algorithms = new Set<PasswordAlgorithm>(['argon2id', 'bcrypt'])
@@ -36,6 +37,7 @@ export default defineEventHandler(async (event) => {
       timeCost: body.timeCost,
       cost: body.cost,
       verify: body.verify ?? true,
+      runs: body.runs,
     })
 
     return { result }

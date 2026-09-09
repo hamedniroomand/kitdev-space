@@ -1,51 +1,117 @@
 <script setup lang="ts">
-import type { HmacAlgorithm, HmacEncoding } from '#shared/utils/crypto/hmac'
-import { generateHmac, generateRandomSecret } from '#shared/utils/crypto/hmac'
+import type { HmacAlgorithm, HmacEncoding, HmacKeyFormat } from '#shared/utils/crypto/hmac'
+import { textBytes } from '#shared/utils/analytics/buckets'
+import {
+  decodeHmacKey,
+  encodeHmac,
+  generateRandomSecret,
+  hmacBytes,
+  verifyHmacSignature,
+} from '#shared/utils/crypto/hmac'
 
 useToolSeo('hmac')
 
 const message = ref('The quick brown fox jumps over the lazy dog')
 const secret = ref('secret-key-12345')
 const algorithm = ref<HmacAlgorithm>('SHA-256')
+const keyFormat = ref<HmacKeyFormat>('text')
 const encoding = ref<HmacEncoding>('hex')
 const uppercase = ref(false)
-const signature = ref('')
-const errorMessage = ref<string | null>(null)
+const expected = ref('')
 
 const { copy, label, color, icon } = useCopyFeedback()
 
 const algorithms: HmacAlgorithm[] = ['SHA-256', 'SHA-384', 'SHA-512', 'SHA-1']
+const keyFormats: { label: string, value: HmacKeyFormat }[] = [
+  { label: 'Text (UTF-8)', value: 'text' },
+  { label: 'Hex', value: 'hex' },
+  { label: 'Base64', value: 'base64' },
+]
 const encodings: { label: string, value: HmacEncoding }[] = [
   { label: 'Hexadecimal', value: 'hex' },
   { label: 'Base64', value: 'base64' },
 ]
 
-async function computeSignature() {
-  if (!message.value || !secret.value) {
-    signature.value = ''
-    errorMessage.value = null
-    return
+interface HmacResult {
+  signature: string
+  bytes: Uint8Array | null
+  error: unknown
+}
+
+const EMPTY_RESULT: HmacResult = { signature: '', bytes: null, error: null }
+
+// `computedAsync` tracks only the refs that it reads before the first `await`,
+// so every input is read here first. `useLiveTool` then watches the ref and
+// sends `tool_execute`, or `tool_error` when `error` holds a value.
+const result = computedAsync<HmacResult>(async () => {
+  const text = message.value
+  const key = secret.value
+  const format = keyFormat.value
+  const algo = algorithm.value
+  const enc = encoding.value
+  const upper = uppercase.value
+
+  if (!text || !key) {
+    return EMPTY_RESULT
   }
 
   try {
-    let sig = await generateHmac(message.value, secret.value, algorithm.value, encoding.value)
-    if (encoding.value === 'hex' && uppercase.value) {
-      sig = sig.toUpperCase()
-    }
-    signature.value = sig
-    errorMessage.value = null
+    const bytes = await hmacBytes(text, decodeHmacKey(key, format), algo)
+    const encoded = encodeHmac(bytes, enc)
+    return { signature: enc === 'hex' && upper ? encoded.toUpperCase() : encoded, bytes, error: null }
   }
-  catch (err) {
-    signature.value = ''
-    errorMessage.value = err instanceof Error ? err.message : 'Failed to compute HMAC signature.'
+  catch (cause) {
+    return { signature: '', bytes: null, error: cause }
   }
-}
+}, EMPTY_RESULT)
 
-watch([message, secret, algorithm, encoding, uppercase], () => {
-  computeSignature()
-}, { immediate: true })
+useLiveTool(result, { option: () => algorithm.value })
+
+const signature = computed(() => result.value.signature)
+const signatureBytes = computed(() => result.value.bytes)
+const errorMessage = computed(() => {
+  const { error } = result.value
+  if (!error) {
+    return null
+  }
+  return error instanceof Error ? error.message : 'Failed to compute HMAC signature.'
+})
+
+// Only the message reports its size. The secret key never reaches analytics.
+const { reportBytes, clearBytes } = useToolInput()
+watchDebounced(message, value => reportBytes('hmac-message', textBytes(value)), { debounce: 400 })
+onUnmounted(() => clearBytes('hmac-message'))
+
+// Byte metrics. The count is the exact input. The tool never trims the message
+// or changes its whitespace.
+const messageBytes = computed(() => textBytes(message.value))
+const keyByteLength = computed(() => {
+  try {
+    return decodeHmacKey(secret.value, keyFormat.value).byteLength
+  }
+  catch {
+    return 0
+  }
+})
+const keyFormatLabel = computed(() => (
+  keyFormats.find(format => format.value === keyFormat.value)?.label ?? ''
+))
+
+/** The expected signature check. It never uses `===` on the signature bytes. */
+const expectedMatch = computed(() => {
+  if (!signatureBytes.value) {
+    return 'not-checked'
+  }
+  try {
+    return verifyHmacSignature(expected.value, signatureBytes.value)
+  }
+  catch {
+    return 'unreadable'
+  }
+})
 
 function handleGenerateKey() {
+  keyFormat.value = 'hex'
   secret.value = generateRandomSecret(32)
 }
 
@@ -58,8 +124,7 @@ function handleCopy() {
 function handleClear() {
   message.value = ''
   secret.value = ''
-  signature.value = ''
-  errorMessage.value = null
+  expected.value = ''
 }
 </script>
 
@@ -70,7 +135,11 @@ function handleClear() {
       <div class="flex flex-wrap items-center justify-between gap-3 p-3 border border-default rounded-xl bg-elevated/40">
         <div class="flex flex-wrap items-center gap-3">
           <!-- Algorithm -->
-          <div class="flex items-center gap-1">
+          <div
+            role="group"
+            aria-label="Algorithm"
+            class="flex items-center gap-1"
+          >
             <span class="text-xs text-muted font-medium">Algorithm:</span>
             <UButton
               v-for="algo in algorithms"
@@ -83,8 +152,30 @@ function handleClear() {
             />
           </div>
 
-          <!-- Encoding -->
-          <div class="flex items-center gap-1 border-s border-default ps-3">
+          <!-- Key format -->
+          <div
+            role="group"
+            aria-label="Key format"
+            class="flex items-center gap-1 border-s border-default ps-3"
+          >
+            <span class="text-xs text-muted font-medium">Key format:</span>
+            <UButton
+              v-for="format in keyFormats"
+              :key="format.value"
+              size="xs"
+              :variant="keyFormat === format.value ? 'solid' : 'ghost'"
+              :color="keyFormat === format.value ? 'primary' : 'neutral'"
+              :label="format.label"
+              @click="keyFormat = format.value"
+            />
+          </div>
+
+          <!-- Output encoding -->
+          <div
+            role="group"
+            aria-label="Output encoding"
+            class="flex items-center gap-1 border-s border-default ps-3"
+          >
             <span class="text-xs text-muted font-medium">Encoding:</span>
             <UButton
               v-for="enc in encodings"
@@ -136,7 +227,7 @@ function handleClear() {
         </template>
         <UInput
           v-model="secret"
-          placeholder="Enter secret key string..."
+          :placeholder="keyFormat === 'text' ? 'Enter secret key text...' : `Enter the key in ${keyFormat === 'hex' ? 'hex' : 'Base64'}...`"
           class="font-mono text-sm w-full"
         />
       </UFormField>
@@ -151,8 +242,36 @@ function handleClear() {
         />
       </UFormField>
 
+      <!-- Byte metrics -->
+      <div class="grid gap-3 grid-cols-2 lg:grid-cols-4">
+        <StatCard
+          label="Message bytes"
+          :value="messageBytes"
+          unit="B"
+          description="UTF-8 encoding"
+          aria-label="Message bytes"
+        />
+        <StatCard
+          label="Message characters"
+          :value="message.length"
+          description="UTF-16 code units"
+        />
+        <StatCard
+          label="Key bytes"
+          :value="keyByteLength"
+          unit="B"
+          :description="`${keyFormatLabel} key`"
+        />
+        <StatCard
+          label="Digest bytes"
+          :value="signatureBytes?.byteLength ?? 0"
+          unit="B"
+          :description="algorithm"
+        />
+      </div>
+
       <!-- Signature Output -->
-      <UFormField :label="`HMAC Signature (${algorithm})`">
+      <UFormField :label="`Signature (${algorithm})`">
         <template #hint>
           <UButton
             :label="label()"
@@ -164,7 +283,10 @@ function handleClear() {
             @click="handleCopy"
           />
         </template>
-        <div class="p-3.5 border border-default rounded-lg bg-default font-mono text-sm break-all select-all min-h-12 flex items-center">
+        <output
+          aria-label="HMAC signature"
+          class="p-3.5 border border-default rounded-lg bg-default font-mono text-sm break-all select-all min-h-12 flex items-center"
+        >
           <span
             v-if="signature"
             class="text-primary font-semibold"
@@ -173,7 +295,29 @@ function handleClear() {
             v-else
             class="text-muted italic"
           >Enter a secret key and a message to compute HMAC...</span>
-        </div>
+        </output>
+      </UFormField>
+
+      <!-- Expected signature check -->
+      <UFormField
+        label="Expected signature"
+        description="Paste the signature of the sender in hex or Base64. A sha256= prefix is removed for you."
+      >
+        <template #hint>
+          <UBadge
+            v-if="expectedMatch !== 'not-checked'"
+            :color="expectedMatch === 'match' ? 'success' : 'error'"
+            variant="subtle"
+            :aria-label="`Expected signature ${expectedMatch}`"
+          >
+            {{ expectedMatch === 'match' ? 'Match' : expectedMatch === 'mismatch' ? 'Mismatch' : 'Unreadable' }}
+          </UBadge>
+        </template>
+        <UInput
+          v-model="expected"
+          placeholder="sha256=..."
+          class="font-mono text-sm w-full"
+        />
       </UFormField>
 
       <ToolError
@@ -190,6 +334,15 @@ function handleClear() {
           </p>
           <p>
             A webhook uses an HMAC. The sender puts the signature in a header. Your server computes the same HMAC over the raw body and compares the two values. Compare them with a constant-time function, never with a plain equals.
+          </p>
+          <p>
+            Paste the signature of the sender into "Expected signature" to check it. The tool accepts hex or Base64, in upper case or lower case, and it removes a prefix such as <code>sha256=</code>. It compares the bytes with a constant-time check, so the run time does not leak where the first difference is.
+          </p>
+          <p>
+            A key is bytes, not text. Select the key format that matches your key. "Text (UTF-8)" reads the key as UTF-8 text. "Hex" and "Base64" decode the key to the same bytes that the sender uses. The tool reports an error when the key holds a character that the selected format does not allow.
+          </p>
+          <p>
+            The tool converts the message to bytes with UTF-8 and shows the exact byte count. It does not trim the message and it does not change the whitespace, because one extra space changes the signature. A character outside the ASCII range needs more than one byte, so the byte count and the character count can differ.
           </p>
           <p>
             An HMAC is not encryption. It does not hide the message. Anybody can read the message; only a holder of the key can make a valid signature.

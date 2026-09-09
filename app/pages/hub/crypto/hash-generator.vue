@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { HashAlgorithm } from '#shared/utils/crypto/types'
-import { canHashInBrowser, hashBytes, hashString } from '#shared/utils/crypto/hash'
+import { checksumFileLine, digestsMatch } from '#shared/utils/crypto/digest'
+import { hashFile, hashString } from '#shared/utils/crypto/hash'
 import { parseJson } from '#shared/utils/data/json'
 import { stableStringify } from '#shared/utils/data/stable-json'
 import { formatBytes } from '#shared/utils/format'
@@ -19,8 +20,7 @@ const algorithmItems = [
   { label: 'SHA-512', value: 'sha512' },
   { label: 'SHA-1 (Legacy)', value: 'sha1' },
   { label: 'MD5 (Legacy)', value: 'md5' },
-  { label: 'xxHash64 (Bun Fast Hash)', value: 'xxhash64' },
-  { label: 'wyhash (Bun Fast Hash)', value: 'wyhash' },
+  { label: 'xxHash64 (Fast Hash)', value: 'xxhash64' },
   { label: 'CRC32 (Checksum)', value: 'crc32' },
 ]
 
@@ -31,35 +31,51 @@ const canonical = ref('')
 const file = ref<File | null>(null)
 const algorithm = ref<HashAlgorithm>('sha256')
 const output = ref('')
+const expected = ref('')
+const bytesRead = ref(0)
 const { status, error, result, run, reset } = useTool<string>()
 const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
+const { downloadText } = useDownload()
 
 useToolSeo('hash')
 
-const inBrowser = computed(() => canHashInBrowser(algorithm.value))
 const isLegacy = computed(() => algorithm.value === 'md5' || algorithm.value === 'sha1')
 
-// A file is read as bytes, so it needs the browser path.
-const fileNeedsSha = computed(() => source.value === 'file' && !inBrowser.value)
+/**
+ * Compares the output with the hash that the user pasted.
+ * `null` means that the tool made no comparison yet.
+ */
+const comparison = computed<{ match: boolean, error: null } | { match: null, error: string } | null>(() => {
+  if (!output.value || !expected.value.trim()) {
+    return null
+  }
+  try {
+    return { match: digestsMatch(expected.value, output.value), error: null }
+  }
+  catch (cause) {
+    return { match: null, error: cause instanceof Error ? cause.message : 'The hash is not valid.' }
+  }
+})
 
 watch([source, algorithm], () => {
   output.value = ''
   canonical.value = ''
+  bytesRead.value = 0
   reset()
 })
 
 async function hash() {
   output.value = ''
+  bytesRead.value = 0
 
   await run(async () => {
     if (source.value === 'file') {
       if (!file.value) {
         throw new Error('Choose a file before you run the tool.')
       }
-      if (!inBrowser.value) {
-        throw new Error('A file needs SHA-1, SHA-256, SHA-384, or SHA-512.')
-      }
-      return hashBytes(await file.value.arrayBuffer(), algorithm.value)
+      return hashFile(file.value, algorithm.value, (read) => {
+        bytesRead.value = read
+      })
     }
 
     // A JSON object is hashed in its canonical form: sorted keys, no spaces.
@@ -70,23 +86,23 @@ async function hash() {
       text = canonical.value
     }
 
-    if (inBrowser.value) {
-      return hashString(text, algorithm.value)
-    }
-
-    const data = await $fetch<{ result: string }>('/api/crypto/hash', {
-      method: 'POST',
-      body: {
-        input: text,
-        algorithm: algorithm.value,
-      },
-    })
-    return data.result
-  }, 'The hash operation failed.', { option: algorithm.value, runLocation: inBrowser.value ? 'browser' : 'server' })
+    return hashString(text, algorithm.value)
+  }, 'The hash operation failed.', { option: algorithm.value })
 
   if (status.value === 'success' && result.value !== null) {
     output.value = result.value
   }
+}
+
+/** The name that the checksum file holds. `-` marks input that is not a file. */
+const checksumName = computed(() => (source.value === 'file' && file.value ? file.value.name : '-'))
+
+function handleDownloadChecksum() {
+  if (!output.value) {
+    return
+  }
+  const base = checksumName.value === '-' ? 'checksum' : checksumName.value
+  downloadText(`${base}.${algorithm.value}`, checksumFileLine(output.value, checksumName.value), 'text/plain')
 }
 
 async function handleCopy() {
@@ -102,6 +118,8 @@ function handleClear() {
   canonical.value = ''
   file.value = null
   output.value = ''
+  expected.value = ''
+  bytesRead.value = 0
   reset()
 }
 
@@ -114,20 +132,11 @@ useToolShortcuts({
 <template>
   <ToolPage>
     <UAlert
-      v-if="inBrowser"
       color="success"
       variant="subtle"
       icon="i-lucide-lock"
       title="The input stays in your browser"
-      description="The SHA family runs with Web Crypto on your device. Nothing is uploaded."
-    />
-    <UAlert
-      v-else
-      color="info"
-      variant="subtle"
-      icon="i-lucide-server"
-      title="Processed with Bun"
-      description="Web Crypto has no MD5, CRC32, xxHash64, or wyhash. This algorithm runs on the server."
+      description="Every algorithm runs on your device. The SHA family uses Web Crypto. MD5, CRC32, and xxHash64 use WebAssembly. Nothing is uploaded."
     />
 
     <div class="flex flex-wrap items-end gap-4">
@@ -158,15 +167,6 @@ useToolShortcuts({
       icon="i-lucide-triangle-alert"
       title="Legacy algorithm"
       description="Do not use MD5 or SHA-1 for passwords or security decisions. Use SHA-256 or stronger."
-    />
-
-    <UAlert
-      v-if="fileNeedsSha"
-      color="warning"
-      variant="subtle"
-      icon="i-lucide-triangle-alert"
-      title="This algorithm cannot hash a file"
-      description="A file is hashed in the browser. Choose SHA-1, SHA-256, SHA-384, or SHA-512."
     />
 
     <LazyToolEditor
@@ -205,6 +205,12 @@ useToolShortcuts({
       >
         {{ file.name }} · {{ formatBytes(file.size) }}
       </p>
+      <p
+        v-if="status === 'processing' && bytesRead"
+        class="text-sm text-muted"
+      >
+        Read {{ formatBytes(bytesRead) }}
+      </p>
     </template>
 
     <ToolActions>
@@ -212,7 +218,6 @@ useToolShortcuts({
         label="Hash"
         icon="i-lucide-hash"
         :loading="status === 'processing'"
-        :disabled="fileNeedsSha"
         @click="hash"
       />
       <UButton
@@ -222,6 +227,14 @@ useToolShortcuts({
         :icon="copyIcon()"
         :disabled="!output"
         @click="handleCopy"
+      />
+      <UButton
+        label="Download Checksum"
+        color="neutral"
+        variant="subtle"
+        icon="i-lucide-download"
+        :disabled="!output"
+        @click="handleDownloadChecksum"
       />
       <UButton
         label="Clear"
@@ -245,6 +258,41 @@ useToolShortcuts({
       placeholder="Hash appears here"
     />
 
+    <UFormField
+      label="Expected hash (optional)"
+      hint="Hex or Base64, upper case or lower case"
+    >
+      <UInput
+        v-model="expected"
+        placeholder="Paste the hash of the publisher"
+        class="w-full font-mono"
+      />
+    </UFormField>
+
+    <UAlert
+      v-if="comparison?.error"
+      color="warning"
+      variant="subtle"
+      icon="i-lucide-triangle-alert"
+      :title="comparison.error"
+    />
+    <UAlert
+      v-else-if="comparison?.match === true"
+      color="success"
+      variant="subtle"
+      icon="i-lucide-check"
+      title="Match"
+      description="The output is the same as the expected hash. The compare reads every byte, so it gives away no timing information."
+    />
+    <UAlert
+      v-else-if="comparison?.match === false"
+      color="error"
+      variant="subtle"
+      icon="i-lucide-x"
+      title="Mismatch"
+      description="The output is not the same as the expected hash. Check that you chose the algorithm of the publisher."
+    />
+
     <LazyToolEditor
       v-if="source === 'json' && canonical"
       v-model="canonical"
@@ -264,16 +312,57 @@ useToolShortcuts({
           </p>
           <p>
             Use the File source to check a download against the checksum of the publisher. The tool
-            reads the file on your device with Web Crypto, so a large file never leaves your browser.
+            reads the file in pieces and gives each piece to the hasher, so a file of up to 2 GB
+            never leaves your browser and never sits in memory as one block.
           </p>
           <p>
-            The JSON object source gives a stable digest for an object. The keys are sorted at every
-            level and the spaces are removed, so the same content in a different key order gives the same
-            hash. Use it as a cache key, a deduplication key, or a change detector for a config object.
+            The JSON object source gives a stable digest for an object. The tool sorts the keys at
+            every level, keeps the order of each array, and writes the text with no spaces and no
+            line breaks. The same content in a different key order then gives the same hash. Use it
+            as a cache key, a deduplication key, or a change detector for a config object.
+          </p>
+          <p>
+            The JSON rules have three more effects. The tool sorts the keys by their code unit
+            value, so <code>Z</code> comes before <code>a</code>. The tool writes each number in the
+            standard JSON form, so <code>1.0</code> becomes <code>1</code> and <code>1e3</code>
+            becomes <code>1000</code>. The tool removes a comment and a trailing comma, because it
+            reads JSON5 and JSONC input. Hash the canonical text below to reproduce the digest.
+          </p>
+          <p>
+            Select Download Checksum to save the result as a checksum file. The file holds the
+            digest, two spaces, and the name of your file, which is the format of
+            <code>sha256sum</code>. Put the file next to the input file, then run
+            <code>sha256sum -c archive.zip.sha256</code> to check the file on a Linux or a macOS
+            machine. The file is made in your browser, and the name of your file stays on your
+            device.
+          </p>
+          <h3 class="font-semibold text-highlighted">
+            Text encoding
+          </h3>
+          <p>
+            The tool converts your text to UTF-8 bytes, and hashes the bytes. A character outside
+            the ASCII set is more than one byte: <code>é</code> is 2 bytes and <code>😀</code> is 4
+            bytes. A hash of text is a hash of bytes, so the encoding is part of the input.
+          </p>
+          <p>
+            Three details change the digest, and each one is easy to miss. A byte order mark at the
+            start of a file is 3 bytes. A Windows line break is 2 bytes, and a Unix line break is 1
+            byte. A last empty line adds a byte. Compare a checksum against the exact bytes of the
+            file, and use the File source for a file.
+          </p>
+          <p>
+            Paste the hash of the publisher into the expected hash field to get a Match or a
+            Mismatch result. The field accepts hex and Base64, in upper case or in lower case. The
+            compare reads every byte of both values, so its run time does not depend on the content.
           </p>
           <p>
             These digests are not password hashes. A password needs a slow algorithm such as bcrypt,
             scrypt, or Argon2. Do not store a password with MD5, SHA-1, or SHA-256.
+          </p>
+          <p>
+            A digest is also not a signature. It proves that two inputs are the same. It does not
+            prove who made the input, because anybody can calculate the same digest. A signature
+            needs a key: use the HMAC Generator for a shared key, or a public key signature.
           </p>
         </div>
         <RelatedTools

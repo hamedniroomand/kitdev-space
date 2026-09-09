@@ -1,21 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { canHashInBrowser, hashString, toHex } from '#shared/utils/crypto/hash'
-
-describe('canHashInBrowser', () => {
-  it('covers the SHA family only', () => {
-    expect(canHashInBrowser('sha1')).toBe(true)
-    expect(canHashInBrowser('sha256')).toBe(true)
-    expect(canHashInBrowser('sha384')).toBe(true)
-    expect(canHashInBrowser('sha512')).toBe(true)
-  })
-
-  it('rejects the algorithms that Web Crypto does not have', () => {
-    expect(canHashInBrowser('md5')).toBe(false)
-    expect(canHashInBrowser('crc32')).toBe(false)
-    expect(canHashInBrowser('xxhash64')).toBe(false)
-    expect(canHashInBrowser('wyhash')).toBe(false)
-  })
-})
+import { hashFile, hashString, toHex } from '#shared/utils/crypto/hash'
 
 describe('hashString', () => {
   it('matches the known digest of "hello"', async () => {
@@ -34,8 +18,30 @@ describe('hashString', () => {
     expect(await hashString('héllo', 'sha256')).toHaveLength(64)
   })
 
-  it('reports an algorithm that the browser cannot run', async () => {
-    await expect(hashString('hello', 'md5')).rejects.toThrow(/needs the server/)
+  it('hashes the algorithms that Web Crypto does not have', async () => {
+    expect(await hashString('hello', 'md5')).toBe('5d41402abc4b2a76b9719d911017c592')
+    expect(await hashString('hello', 'crc32')).toBe('3610a686')
+    expect(await hashString('hello', 'xxhash64')).toBe('26c7827d889f6da3')
+  })
+})
+
+describe('hashFile', () => {
+  it('gives the same digest as the text path', async () => {
+    const file = new Blob(['hello'])
+    expect(await hashFile(file, 'sha256')).toBe(await hashString('hello', 'sha256'))
+    expect(await hashFile(file, 'md5')).toBe('5d41402abc4b2a76b9719d911017c592')
+  })
+
+  it('hashes a file that arrives in more than one piece', async () => {
+    // A stream of three pieces must give the digest of the joined text.
+    const parts = new Blob(['abc', 'def', 'ghi'])
+    expect(await hashFile(parts, 'sha256')).toBe(await hashString('abcdefghi', 'sha256'))
+  })
+
+  it('reports the count of bytes that it read', async () => {
+    const reads: number[] = []
+    await hashFile(new Blob(['0123456789']), 'crc32', read => reads.push(read))
+    expect(reads.at(-1)).toBe(10)
   })
 })
 

@@ -19,6 +19,9 @@
           <p>
             The same generator makes ULID and NanoID values. A ULID is a time-ordered ID with 26 characters. A NanoID is shorter than a UUID and is safe in a URL.
           </p>
+          <p>
+            A ULID and a UUID v7 both start with a timestamp, so a database sorts both formats in the order of creation. UUID v7 is the standard format, and a UUID column accepts it without a change. Select a ULID when the value must be short and must sort as text, such as in a log file name.
+          </p>
         </div>
         <RelatedTools
           class="mt-8"
