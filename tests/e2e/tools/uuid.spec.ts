@@ -27,7 +27,7 @@ test('generates UUIDs', { tag: '@smoke' }, async ({ page }) => {
   })
 
   await test.step('inspects a pasted UUID v7', async () => {
-    await page.getByPlaceholder('017f22e2-79b0-7cc3-98c4-dc0c0c07398f').fill('017f22e2-79b0-7cc3-98c4-dc0c0c07398f')
+    await page.getByPlaceholder('01ARZ3NDEKTSV4RRFFQ69G5FAV').fill('017f22e2-79b0-7cc3-98c4-dc0c0c07398f')
     await expect(page.getByText('2022-02-22T19:22:22.000Z')).toBeVisible()
   })
 

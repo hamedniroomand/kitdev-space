@@ -365,13 +365,14 @@ onMounted(() => {
       >
         <UInput
           v-model="inspectInput"
-          placeholder="017f22e2-79b0-7cc3-98c4-dc0c0c07398f"
+          placeholder="01ARZ3NDEKTSV4RRFFQ69G5FAV"
           class="w-full font-mono"
         />
       </UFormField>
 
+      <!-- 26 is the length of a ULID, which is the shortest input that the parser accepts. -->
       <ToolError
-        v-if="inspectError"
+        v-if="inspectError && inspectInput.trim().length >= 26"
         :message="inspectError"
       />
 
