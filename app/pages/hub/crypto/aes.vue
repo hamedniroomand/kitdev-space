@@ -53,14 +53,19 @@ async function handleRun() {
   }
 }
 
+/** The mode switch never touches the text. Only `handleMoveOutput` replaces the input. */
 function handleModeChange(newMode: AesMode) {
   mode.value = newMode
   errorMsg.value = null
-  // If output exists, swap input with output for quick round-trip testing
-  if (output.value) {
-    input.value = output.value
-    output.value = ''
+}
+
+function handleMoveOutput() {
+  if (!output.value) {
+    return
   }
+  input.value = output.value
+  output.value = ''
+  errorMsg.value = null
 }
 
 function handleCopy() {
@@ -140,6 +145,15 @@ useToolShortcuts({
             variant="subtle"
             :disabled="!output"
             @click="handleCopy"
+          />
+          <UButton
+            label="Move output to input"
+            icon="i-lucide-corner-left-up"
+            size="xs"
+            color="neutral"
+            variant="subtle"
+            :disabled="!output"
+            @click="handleMoveOutput"
           />
           <UButton
             label="Download .enc"
@@ -242,6 +256,9 @@ useToolShortcuts({
           </p>
           <p>
             An earlier release wrote no version byte. A random salt byte can hold the value 1, so the tool cannot read the layout from the first byte. The tool tries the version 1 layout first. GCM checks its tag, so a wrong layout always fails. The tool then tries the old layout. An old output therefore still decrypts.
+          </p>
+          <p>
+            The Encrypt and Decrypt buttons change the mode only. They never change your text. To test a round trip, use the <strong>Move output to input</strong> button. That button replaces the input with the output.
           </p>
           <p>
             A failed decryption gives one of three errors. An invalid Base64 input reports a format error. A payload that is too short for a salt, an IV, and a tag reports an incomplete envelope. A tag check that fails reports a tag error.

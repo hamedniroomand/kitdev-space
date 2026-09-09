@@ -15,4 +15,12 @@ test('encrypts text using AES-GCM', { tag: '@smoke' }, async ({ page }) => {
   const download = page.waitForEvent('download')
   await page.getByRole('button', { name: 'Download .enc' }).click()
   expect((await download).suggestedFilename()).toBe('ciphertext.enc')
+
+  // The mode switch must keep the text of the user.
+  await page.getByRole('button', { name: 'Decrypt', exact: true }).click()
+  const inputEditor = page.getByRole('textbox', { name: 'Base64 Ciphertext Input' })
+  await expect(inputEditor).toContainText('Secret payload message')
+
+  await page.getByRole('button', { name: 'Move output to input' }).click()
+  await expect(inputEditor).toContainText(ciphertext?.trim().slice(0, 16) ?? '')
 })
