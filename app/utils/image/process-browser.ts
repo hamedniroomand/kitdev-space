@@ -14,6 +14,8 @@ export interface BrowserImageProcessOptions {
   grayscale?: boolean
   format: ImageEncodeFormat
   quality?: number
+  /** The fill behind a transparent image. JPEG has no alpha, so it needs one. */
+  background?: string
 }
 
 export interface BrowserImageProcessResult {
@@ -119,6 +121,12 @@ export async function processImageInBrowser(
 
   ctx.imageSmoothingEnabled = true
   ctx.imageSmoothingQuality = 'high'
+
+  // A transparent pixel on a JPEG canvas turns black. The fill stops that.
+  if (options.format === 'jpeg') {
+    ctx.fillStyle = options.background ?? '#ffffff'
+    ctx.fillRect(0, 0, canvasWidth, canvasHeight)
+  }
 
   ctx.save()
   ctx.translate(canvasWidth / 2, canvasHeight / 2)

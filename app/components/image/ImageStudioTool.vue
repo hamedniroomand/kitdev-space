@@ -85,6 +85,10 @@ const flop = ref(false)
 const grayscale = ref(false)
 const format = ref<ImageEncodeFormat>(props.format)
 const quality = ref(80)
+const lockAspect = ref(true)
+const background = ref('#ffffff')
+/** The ratio that the lock keeps. It is captured when the lock or the file changes. */
+const lockedRatio = ref(1)
 
 const cropEnabled = ref(props.crop)
 const cropAspectMode = ref<CropAspectMode>('free')
@@ -143,6 +147,7 @@ watch(file, async (selected) => {
   if (source.value.width && source.value.height) {
     width.value = source.value.width
     height.value = source.value.height
+    captureRatio()
   }
 })
 
@@ -152,7 +157,30 @@ watch(sizeMode, (mode) => {
     width.value = preset.width
     height.value = preset.height
   }
+  captureRatio()
 })
+
+function captureRatio() {
+  if (width.value > 0 && height.value > 0) {
+    lockedRatio.value = width.value / height.value
+  }
+}
+
+watch(lockAspect, on => on && captureRatio())
+
+function setWidth(value: number) {
+  width.value = value
+  if (lockAspect.value && value > 0) {
+    height.value = Math.max(1, Math.round(value / lockedRatio.value))
+  }
+}
+
+function setHeight(value: number) {
+  height.value = value
+  if (lockAspect.value && value > 0) {
+    width.value = Math.max(1, Math.round(value * lockedRatio.value))
+  }
+}
 
 async function process() {
   outputBlob.value = null
@@ -179,6 +207,7 @@ async function process() {
         grayscale: grayscale.value,
         format: format.value,
         quality: quality.value,
+        background: background.value,
       })
 
       inputBytes.value = file.value.size
@@ -307,19 +336,28 @@ function handleClear() {
           >
             <UFormField label="Width">
               <UInput
-                v-model.number="width"
+                :model-value="width"
                 type="number"
                 :disabled="!isCustom"
                 class="w-full"
+                @update:model-value="setWidth(Number($event))"
               />
             </UFormField>
             <UFormField label="Height">
               <UInput
-                v-model.number="height"
+                :model-value="height"
                 type="number"
                 :disabled="!isCustom"
                 class="w-full"
+                @update:model-value="setHeight(Number($event))"
               />
+            </UFormField>
+            <UFormField
+              label="Lock the ratio"
+              class="sm:col-span-2"
+              hint="The other side follows the width or the height that you type."
+            >
+              <USwitch v-model="lockAspect" />
             </UFormField>
             <UFormField label="Fit">
               <USelect
@@ -377,6 +415,25 @@ function handleClear() {
               :items="formatItems"
               class="w-full"
             />
+          </UFormField>
+          <UFormField
+            v-if="format === 'jpeg'"
+            label="Background"
+            hint="JPEG has no transparency. A transparent pixel gets this color."
+          >
+            <div class="flex items-center gap-3">
+              <input
+                v-model="background"
+                type="color"
+                aria-label="Background color picker"
+                class="size-10 shrink-0 cursor-pointer rounded-lg border border-default bg-transparent p-0"
+              >
+              <UInput
+                v-model="background"
+                aria-label="Background color"
+                class="w-full font-mono text-sm"
+              />
+            </div>
           </UFormField>
           <UFormField
             v-if="format !== 'png'"
