@@ -60,8 +60,7 @@ const typed = computed(() => ({
 }))
 const settled = refDebounced(typed, PREVIEW_DELAY)
 
-const { error, result: code } = useLiveTool(() => {
-  const values = settled.value
+function encode(values: typeof typed.value) {
   if (!(values.kind === 'wifi' ? values.ssid.trim() : values.text.trim())) {
     return null
   }
@@ -78,7 +77,20 @@ const { error, result: code } = useLiveTool(() => {
       : undefined,
   )
   return renderQr(payload, { ecc: ecc.value, border: quietZone.value })
-}, { runLocation: 'browser', option: () => ecc.value })
+}
+
+const { error, result: code } = useLiveTool(
+  () => encode(settled.value),
+  { runLocation: 'browser', option: () => ecc.value },
+)
+
+/**
+ * A copy or a download must give what the user typed, not the debounced
+ * preview. Inside the 200 ms window the two differ.
+ */
+function currentCode() {
+  return encode(typed.value)
+}
 
 const previewUrl = computed(() => {
   const svg = code.value?.svg
@@ -90,26 +102,26 @@ const errorMessage = computed(() => error.value ?? downloadError.value)
 const noQuietZone = computed(() => qrQuietZone(quietZone.value) === 0)
 
 async function handleCopy() {
-  const svg = code.value?.svg
+  const svg = currentCode()?.svg
   if (svg) {
     await copy(svg)
   }
 }
 
 function handleDownloadSvg() {
-  const svg = code.value?.svg
+  const svg = currentCode()?.svg
   if (svg) {
     downloadText('qr-code.svg', svg, 'image/svg+xml')
   }
 }
 
 async function handleDownloadPng() {
-  const matrix = code.value?.matrix
-  if (!matrix?.length) {
-    return
-  }
   downloadError.value = null
   try {
+    const matrix = currentCode()?.matrix
+    if (!matrix?.length) {
+      return
+    }
     if (typeof OffscreenCanvas === 'undefined') {
       throw new Error('This browser cannot render a PNG. Download the SVG instead.')
     }
