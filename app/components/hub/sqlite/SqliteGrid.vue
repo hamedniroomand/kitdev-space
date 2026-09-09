@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import type { QueryResult, SqlValue } from '~/types/sqlite'
 import type { TableSort } from '~/utils/sqlite/query-builder'
+import { useVirtualList } from '@vueuse/core'
 import { ROWID_ALIAS } from '~/utils/sqlite/query-builder'
+import { blobPreview, formatByteSize, isBlobValue } from '~/utils/sqlite/statements'
 
 /**
  * The result grid. When the result carries the rowid alias, a row can be
@@ -16,6 +18,8 @@ const props = defineProps<{
   sort?: TableSort | null
   sortable?: boolean
   selectedRowid?: number | null
+  /** Declared SQLite type of each column, shown under the column name. */
+  columnTypes?: Record<string, string>
 }>()
 
 const emit = defineEmits<{
@@ -34,6 +38,29 @@ const visibleColumns = computed(() => (props.result?.columns ?? [])
 
 const editingCell = ref<{ rowIndex: number, colIndex: number } | null>(null)
 const editValue = ref('')
+
+const ROW_HEIGHT = 29
+const allRows = computed(() => props.result?.rows ?? [])
+
+const { list: virtualRows, containerProps } = useVirtualList(allRows, {
+  itemHeight: ROW_HEIGHT,
+  overscan: 12,
+})
+
+const paddingTop = computed(() => (virtualRows.value[0]?.index ?? 0) * ROW_HEIGHT)
+
+const paddingBottom = computed(() => {
+  if (virtualRows.value.length === 0) {
+    return 0
+  }
+  const lastIndex = virtualRows.value[virtualRows.value.length - 1]!.index
+  return Math.max(0, (allRows.value.length - 1 - lastIndex) * ROW_HEIGHT)
+})
+
+function blobLabel(value: Uint8Array): string {
+  const preview = blobPreview(value)
+  return `BLOB ${formatByteSize(preview.byteLength)} · ${preview.hex}${preview.truncated ? ' …' : ''}`
+}
 
 function rowidOf(row: unknown[]): number | null {
   return rowidIndex.value >= 0 ? Number(row[rowidIndex.value]) : null
@@ -87,6 +114,7 @@ function sortIcon(column: string): string {
 
     <div
       v-else
+      v-bind="containerProps"
       class="flex-1 overflow-auto"
     >
       <table class="w-full border-collapse text-left text-xs">
@@ -115,12 +143,21 @@ function sortIcon(column: string): string {
                 />
               </button>
               <span v-else>{{ column.name }}</span>
+              <span
+                v-if="columnTypes?.[column.name]"
+                class="ml-1 font-normal text-[10px] uppercase text-dimmed"
+              >{{ columnTypes[column.name] }}</span>
             </th>
           </tr>
         </thead>
         <tbody class="divide-y divide-default font-mono text-default">
           <tr
-            v-for="(row, rowIndex) in result.rows"
+            v-if="paddingTop > 0"
+            :style="{ height: `${paddingTop}px` }"
+            aria-hidden="true"
+          />
+          <tr
+            v-for="{ data: row, index: rowIndex } in virtualRows"
             :key="rowIndex"
             class="transition-colors hover:bg-elevated/60"
             :class="{ 'bg-primary/10': selectedRowid !== null && selectedRowid !== undefined && rowidOf(row) === selectedRowid }"
@@ -174,9 +211,19 @@ function sortIcon(column: string): string {
                 v-else-if="row[column.index] === null"
                 class="font-sans text-[11px] italic text-dimmed"
               >NULL</span>
+              <span
+                v-else-if="isBlobValue(row[column.index])"
+                class="text-[11px] text-dimmed"
+                :title="`${blobPreview(row[column.index] as Uint8Array).byteLength} bytes`"
+              >{{ blobLabel(row[column.index] as Uint8Array) }}</span>
               <span v-else>{{ row[column.index] }}</span>
             </td>
           </tr>
+          <tr
+            v-if="paddingBottom > 0"
+            :style="{ height: `${paddingBottom}px` }"
+            aria-hidden="true"
+          />
         </tbody>
       </table>
     </div>

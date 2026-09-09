@@ -78,3 +78,42 @@ export function isDmlStatement(sql: string): boolean {
     .replace(/--[^\n]*/g, ' ')
   return DML.test(withoutComments)
 }
+
+export interface BlobPreview {
+  byteLength: number
+  hex: string
+  truncated: boolean
+}
+
+const HEX_PREVIEW_BYTES = 16
+
+/** True for a cell that SQLite returned as a BLOB. */
+export function isBlobValue(value: unknown): value is Uint8Array {
+  return value instanceof Uint8Array
+}
+
+/**
+ * Describes a BLOB by its size and the first bytes as hex. A multi-megabyte
+ * BLOB never becomes a string, so the grid stays responsive.
+ */
+export function blobPreview(value: Uint8Array): BlobPreview {
+  const slice = value.subarray(0, HEX_PREVIEW_BYTES)
+  const hex = Array.from(slice)
+    .map(byte => byte.toString(16).padStart(2, '0'))
+    .join(' ')
+  return {
+    byteLength: value.byteLength,
+    hex,
+    truncated: value.byteLength > HEX_PREVIEW_BYTES,
+  }
+}
+
+export function formatByteSize(bytes: number): string {
+  if (bytes < 1024) {
+    return `${bytes} B`
+  }
+  if (bytes < 1024 * 1024) {
+    return `${(bytes / 1024).toFixed(1)} KB`
+  }
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}

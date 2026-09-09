@@ -47,6 +47,14 @@ const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeed
 
 const activeStatement = ref(0)
 
+const columnTypes = computed(() => {
+  const info = activeTableInfo.value
+  if (!info) {
+    return undefined
+  }
+  return Object.fromEntries(info.columns.map(column => [column.name, column.type]))
+})
+
 // A multi-statement run shows the result of the selected statement; a single
 // statement keeps the primary result.
 const shownResult = computed(() => {
@@ -166,6 +174,7 @@ const shownResult = computed(() => {
             :sort="isCustomQuery ? null : tableQuery?.sort"
             :sortable="!isCustomQuery"
             :selected-rowid="selectedRowid"
+            :column-types="columnTypes"
             @update-cell="updateCell($event.table, $event.rowid, $event.column, $event.value)"
             @sort="toggleSort"
             @select-row="selectRow"

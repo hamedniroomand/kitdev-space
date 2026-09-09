@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { isDmlStatement, splitSqlStatements } from '~/utils/sqlite/statements'
+import { blobPreview, formatByteSize, isBlobValue, isDmlStatement, splitSqlStatements } from '~/utils/sqlite/statements'
 
 describe('splitSqlStatements', () => {
   it('splits two statements', () => {
@@ -73,5 +73,42 @@ describe('isDmlStatement', () => {
 
   it('sees through a leading comment', () => {
     expect(isDmlStatement('-- add a row\nINSERT INTO t VALUES (1)')).toBe(true)
+  })
+})
+
+describe('blob previews', () => {
+  it('detects a BLOB value', () => {
+    expect(isBlobValue(new Uint8Array([1, 2]))).toBe(true)
+  })
+
+  it('does not treat a string as a BLOB', () => {
+    expect(isBlobValue('abc')).toBe(false)
+    expect(isBlobValue(null)).toBe(false)
+    expect(isBlobValue(42)).toBe(false)
+  })
+
+  it('shows the byte length and hex of a small BLOB', () => {
+    const preview = blobPreview(new Uint8Array([0x00, 0xFF, 0x10]))
+    expect(preview.byteLength).toBe(3)
+    expect(preview.hex).toBe('00 ff 10')
+    expect(preview.truncated).toBe(false)
+  })
+
+  it('marks a long BLOB as truncated and previews only the first bytes', () => {
+    const preview = blobPreview(new Uint8Array(100).fill(0xAB))
+    expect(preview.byteLength).toBe(100)
+    expect(preview.truncated).toBe(true)
+    expect(preview.hex.split(' ')).toHaveLength(16)
+  })
+
+  it('does not build a string from the whole BLOB', () => {
+    const preview = blobPreview(new Uint8Array(5_000_000))
+    expect(preview.hex.length).toBeLessThan(80)
+  })
+
+  it('formats a byte size', () => {
+    expect(formatByteSize(512)).toBe('512 B')
+    expect(formatByteSize(2048)).toBe('2.0 KB')
+    expect(formatByteSize(5 * 1024 * 1024)).toBe('5.0 MB')
   })
 })

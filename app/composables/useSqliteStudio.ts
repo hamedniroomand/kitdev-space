@@ -145,7 +145,10 @@ export function useSqliteStudio() {
       lastLoadedBytes = bytes.slice()
       savedBytes = bytes.slice()
       pendingEdits.value = 0
-      worker?.postMessage({ type: 'INIT_DB', bytes })
+      // The transfer list moves the buffer to the worker instead of copying it,
+      // so a large database needs memory once. The copies above stay behind for
+      // a reload after a cancelled query.
+      worker?.postMessage({ type: 'INIT_DB', bytes }, [bytes.buffer])
     }
     catch {
       error.value = 'Failed to read file.'
