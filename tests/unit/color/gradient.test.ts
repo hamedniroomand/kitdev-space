@@ -1,11 +1,14 @@
 import { describe, expect, it } from 'vitest'
+import { contrastRatio } from '#shared/utils/color/contrast'
 import {
   averageStopColor,
   checkGradientTextContrast,
   createGradientStop,
   formatGradientCss,
   formatGradientDeclaration,
+  sortStops,
 } from '#shared/utils/color/gradient'
+import { parseColor } from '#shared/utils/color/parse'
 
 describe('formatGradientCss', () => {
   it('builds a linear gradient with sorted stops', () => {
@@ -66,6 +69,33 @@ describe('checkGradientTextContrast', () => {
     expect(result.samples.length).toBe(3)
     expect(result.worstRatio).toBeLessThan(contrastAgainstWhite())
     expect(result.levels.aa).toBe(false)
+  })
+
+  it('samples at the stop coordinates and at the average', () => {
+    const stops = [
+      createGradientStop('#00f', 100, 'c'),
+      createGradientStop('#f00', 0, 'a'),
+      createGradientStop('#0f0', 40, 'b'),
+    ]
+    const sorted = sortStops(stops)
+    const result = checkGradientTextContrast('#ffffff', stops)
+
+    expect(result.samples.length).toBe(stops.length + 1)
+    expect(result.samples.map(sample => sample.label)).toEqual([
+      'Stop 1',
+      'Stop 2',
+      'Stop 3',
+      'Average',
+    ])
+
+    for (const [index, stop] of sorted.entries()) {
+      expect(result.samples[index]!.color).toBe(parseColor(stop.color).hex)
+      expect(result.samples[index]!.ratio).toBe(contrastRatio('#ffffff', stop.color))
+    }
+
+    const average = result.samples.at(-1)!
+    expect(average.color).toBe(averageStopColor(stops))
+    expect(average.ratio).toBe(contrastRatio('#ffffff', average.color))
   })
 
   it('averages stop colors', () => {

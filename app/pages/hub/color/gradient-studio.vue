@@ -412,7 +412,7 @@ useToolShortcuts({
     >
       <div class="flex flex-wrap items-center gap-3">
         <p class="text-sm font-medium text-highlighted">
-          Sampled text contrast
+          Text contrast, sampled at stops and average
         </p>
         <p class="font-mono text-sm text-highlighted">
           worst {{ contrast.worstRatio.toFixed(2) }}:1
@@ -424,6 +424,9 @@ useToolShortcuts({
           AAA {{ contrast.levels.aaa ? 'Pass' : 'Fail' }}
         </UBadge>
       </div>
+      <p class="text-sm text-muted">
+        Each row is one sample. The tool measures the text color against each stop color and against the average stop color. It does not measure every pixel between two stops.
+      </p>
       <ul class="divide-y divide-default rounded-md border border-default">
         <li
           v-for="sample in contrast.samples"
