@@ -26,7 +26,7 @@ test.describe('TLS Certificate Inspector tool', () => {
 
     // The chain shows the leaf first and flags the incomplete chain.
     await expect(page.locator('main').getByText('Leaf (server)')).toBeVisible()
-    await expect(page.locator('main').getByText('Missing intermediate')).toBeVisible()
+    await expect(page.locator('main').getByText('Missing intermediate', { exact: true })).toBeVisible()
 
     // The negotiated cipher and the JSON download.
     await expect(page.locator('main').getByText('Negotiated Cipher', { exact: true })).toBeVisible()

@@ -3,8 +3,11 @@ import { expect, test } from '@playwright/test'
 import { gotoHydrated } from '../utils'
 
 function fieldRow(page: Page, name: string) {
-  const main = page.locator('main')
-  return main.getByRole('row').filter({ has: main.getByRole('cell', { name, exact: true }) })
+  // The `has` locator is re-rooted at each row, so it must start from `page`.
+  // A `main`-rooted one would look for a `<main>` inside the row and find none.
+  return page.locator('main').getByRole('row').filter({
+    has: page.getByRole('cell', { name, exact: true }),
+  })
 }
 
 test.describe('URL Inspector tool', () => {

@@ -60,7 +60,7 @@ test.describe('RDAP Lookup tool', () => {
     await page.locator('main').getByRole('button', { name: 'Lookup' }).click()
 
     await expect(page.locator('main').getByText('The domain expires soon')).toBeVisible()
-    await expect(page.locator('main').getByText('Hidden for privacy')).toBeVisible()
+    await expect(page.locator('main').getByText('Hidden for privacy', { exact: true })).toBeVisible()
     await expect(
       page.locator('main').getByText('https://rdap.verisign.com/com/v1/domain/thin.com'),
     ).toBeVisible()
