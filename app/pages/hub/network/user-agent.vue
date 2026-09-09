@@ -1,16 +1,17 @@
 <script setup lang="ts">
-import { parseUserAgent } from '#shared/utils/network/user-agent'
+import type { ClientHints } from '#shared/utils/network/user-agent'
+import { computedAsync, useSupported } from '@vueuse/core'
+import { normalizeClientHints, parseUserAgent, unknownUserAgentInfo } from '#shared/utils/network/user-agent'
 
 useToolSeo('user-agent')
 
 const input = ref('')
 const { copy } = useCopyFeedback()
 
-onMounted(() => {
-  if (typeof navigator !== 'undefined' && navigator.userAgent) {
-    input.value = navigator.userAgent
-  }
-})
+// A share link fills the input first. The local User Agent is the fallback.
+// Keep this call above the `onMounted` hook below. `useToolQuery` restores the
+// input in its own `onMounted` hook, and Vue runs the hooks in this order.
+useToolQuery({ input })
 
 const presets = [
   {
@@ -35,8 +36,31 @@ const presets = [
   },
 ]
 
-const parsed = computed(() => parseUserAgent(input.value))
+// `parseUserAgent` loads the parser library on demand, so the value is async.
+const parsed = computedAsync(() => parseUserAgent(input.value), unknownUserAgentInfo())
 useLiveTool(parsed)
+
+// Client Hints come from the local browser. `navigator.userAgentData` is not in
+// Safari and not in Firefox, so the value can stay empty.
+const clientHintsSupported = useSupported(() => typeof navigator !== 'undefined' && 'userAgentData' in navigator)
+const clientHints = ref<ClientHints | null>(null)
+
+onMounted(() => {
+  if (!input.value && navigator.userAgent) {
+    input.value = navigator.userAgent
+  }
+  clientHints.value = normalizeClientHints((navigator as Navigator & { userAgentData?: unknown }).userAgentData)
+})
+
+const isLocalUserAgent = computed(
+  () => typeof navigator !== 'undefined' && input.value.trim() === navigator.userAgent,
+)
+
+const exportResult = computed(() => ({
+  userAgent: input.value.trim(),
+  ...parsed.value,
+  ...(isLocalUserAgent.value && clientHints.value ? { clientHints: clientHints.value } : {}),
+}))
 
 function handlePreset(getter: () => string) {
   input.value = getter()
@@ -65,7 +89,14 @@ function handleClear() {
           />
         </div>
 
-        <div class="flex items-center gap-2">
+        <div class="flex flex-wrap items-center gap-2">
+          <ToolResultActions
+            v-if="input.trim()"
+            :result="exportResult"
+            :input="input"
+            tool-id="user-agent"
+            filename="user-agent.json"
+          />
           <UButton
             label="Clear"
             icon="i-lucide-eraser"
@@ -114,6 +145,7 @@ function handleClear() {
           <StatCard
             label="Client Type"
             :value="parsed.isBot ? 'Bot / Crawler' : 'User Browser'"
+            :description="parsed.browser.type || undefined"
             :color="parsed.isBot ? 'warning' : 'success'"
           />
         </div>
@@ -214,6 +246,60 @@ function handleClear() {
             </tbody>
           </table>
         </div>
+
+        <UAlert
+          v-if="parsed.isFrozen"
+          color="warning"
+          variant="subtle"
+          icon="i-lucide-snowflake"
+          title="The string holds a frozen version"
+          description="The browser sends a fixed platform version and a fixed WebKit version. Read the Client Hints to get the true values."
+        />
+
+        <!-- Client Hints of the local browser -->
+        <div
+          v-if="isLocalUserAgent"
+          class="border border-default rounded-xl overflow-hidden"
+        >
+          <div class="p-3 border-b border-default bg-elevated/40 font-medium text-sm flex items-center gap-2">
+            <UIcon name="i-lucide-badge-info" />
+            Client Hints of this browser
+          </div>
+
+          <div
+            v-if="clientHints"
+            class="p-3 space-y-3 text-sm"
+          >
+            <div class="flex flex-wrap gap-2">
+              <UBadge
+                v-for="brand in clientHints.brands"
+                :key="brand.brand"
+                color="neutral"
+                variant="subtle"
+                class="font-mono"
+              >
+                {{ brand.brand }} {{ brand.version }}
+              </UBadge>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <span class="text-xs text-muted font-medium block">Platform</span>
+                <span class="font-mono text-default">{{ clientHints.platform }}</span>
+              </div>
+              <div>
+                <span class="text-xs text-muted font-medium block">Mobile</span>
+                <span class="font-mono text-default">{{ clientHints.mobile ? 'Yes' : 'No' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <p
+            v-else
+            class="p-3 text-sm text-muted"
+          >
+            {{ clientHintsSupported ? 'This browser gives no Client Hints values.' : 'This browser has no navigator.userAgentData. Safari and Firefox do not support Client Hints.' }}
+          </p>
+        </div>
       </div>
     </div>
 
@@ -228,6 +314,24 @@ function handleClear() {
           </p>
           <p>
             Paste a string from a log file or from a bug report to see which client made the request.
+          </p>
+          <h3 class="text-default font-medium">
+            User Agent reduction
+          </h3>
+          <p>
+            Chrome and Edge send a shorter string. This is User Agent reduction. The string keeps the browser name and the major version. It drops the minor version, and it gives a fixed value for the platform version and for the device model. Chrome on macOS always sends <code>Mac OS X 10_15_7</code>. Chrome on Windows always sends <code>Windows NT 10.0</code>. Chrome on Android always sends <code>Android 10</code> and the model <code>K</code>.
+          </p>
+          <h3 class="text-default font-medium">
+            Frozen versions
+          </h3>
+          <p>
+            The string also holds frozen tokens. <code>AppleWebKit/537.36</code> and <code>Safari/537.36</code> do not change, and Chrome keeps <code>Mozilla/5.0</code> from an old browser. Do not read a frozen token as a true version. The tool shows a warning when it finds a frozen string.
+          </p>
+          <h3 class="text-default font-medium">
+            Client Hints
+          </h3>
+          <p>
+            User Agent Client Hints give the true values. The browser puts them in <code>navigator.userAgentData</code>, and it sends them in the <code>Sec-CH-UA</code> request headers. The tool shows the low entropy values of your browser: the brand list, the platform, and the mobile flag. The values stay in your browser. Safari and Firefox do not support Client Hints, so the tool shows a note there.
           </p>
         </div>
         <RelatedTools
