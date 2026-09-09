@@ -20,7 +20,8 @@ test.describe('Tar Explorer Tool', () => {
       await page.locator('input[type="file"]').setInputFiles('tests/fixtures/pax.tar')
       await page.getByRole('button', { name: 'Inspect' }).click()
       await expect(page.getByText('Archive size')).toBeVisible({ timeout: 10_000 })
-      await expect(page.getByText('entries', { exact: false })).toBeVisible()
+      // The page prose also says "entries", so match the counted summary.
+      await expect(page.getByText(/\d+ entries/)).toBeVisible()
     })
   })
 })

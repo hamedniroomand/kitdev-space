@@ -107,7 +107,10 @@ function applyPreset(pattern: string) {
             </span>
           </div>
 
-          <div class="border border-default rounded-xl bg-default overflow-hidden max-h-[300px] overflow-y-auto divide-y divide-default font-mono text-xs">
+          <div
+            aria-label="Match results"
+            class="border border-default rounded-xl bg-default overflow-hidden max-h-[300px] overflow-y-auto divide-y divide-default font-mono text-xs"
+          >
             <div
               v-for="(item, index) in evaluatedResults"
               :key="index"
