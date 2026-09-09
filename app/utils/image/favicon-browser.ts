@@ -59,7 +59,10 @@ export async function generateFaviconPackageInBrowser(
 
   const srcW = source.width
   const srcH = source.height
-  const maxDim = Math.max(srcW, srcH)
+  // `contain` scales the long edge to the square. `cover` scales the short edge.
+  // Both keep the source aspect ratio, so a non-square icon never distorts.
+  const fitDim = options.fit === 'cover' ? Math.min(srcW, srcH) : Math.max(srcW, srcH)
+  const background = options.fit === 'cover' ? '' : options.backgroundColor?.trim() || ''
 
   for (const { name, size } of sizes) {
     let canvas: OffscreenCanvas | HTMLCanvasElement
@@ -84,8 +87,12 @@ export async function generateFaviconPackageInBrowser(
     ctx.imageSmoothingEnabled = true
     ctx.imageSmoothingQuality = 'high'
 
-    // Letterbox centered into square
-    const scale = size / maxDim
+    if (background) {
+      ctx.fillStyle = background
+      ctx.fillRect(0, 0, size, size)
+    }
+
+    const scale = size / fitDim
     const dw = Math.max(1, Math.round(srcW * scale))
     const dh = Math.max(1, Math.round(srcH * scale))
     const dx = Math.round((size - dw) / 2)

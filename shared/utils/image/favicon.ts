@@ -1,8 +1,13 @@
+/** `contain` pads the source into the square. `cover` crops the source to fill it. */
+export type FaviconFit = 'contain' | 'cover'
+
 export interface FaviconOptions {
   appName?: string
   shortName?: string
   themeColor?: string
+  /** Fills the padding of a `contain` icon. An empty value keeps the padding transparent. */
   backgroundColor?: string
+  fit?: FaviconFit
 }
 
 export interface FaviconItemPreview {

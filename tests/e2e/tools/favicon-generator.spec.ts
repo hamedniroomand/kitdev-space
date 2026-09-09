@@ -18,4 +18,17 @@ test.describe('Favicon Set Generator tool', () => {
     await expect(page.locator('main').getByText('Download Package (.ZIP)')).toBeVisible()
     await expect(page.locator('main').getByText('favicon-32x32.png')).toBeVisible()
   })
+
+  test('shows the padding background field for contain fit only', async ({ page }) => {
+    await gotoHydrated(page, '/hub/image/favicon-generator')
+
+    const padColor = page.getByLabel('Padding background color picker')
+    await expect(padColor).toBeVisible()
+
+    await page.getByRole('tab', { name: 'Cover crop' }).click()
+    await expect(padColor).toBeHidden()
+
+    await page.getByRole('tab', { name: 'Contain with padding' }).click()
+    await expect(padColor).toBeVisible()
+  })
 })

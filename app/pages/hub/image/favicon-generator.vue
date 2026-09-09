@@ -1,11 +1,18 @@
 <script setup lang="ts">
-import type { FaviconPackageResult } from '#shared/utils/image/favicon'
+import type { FaviconFit, FaviconPackageResult } from '#shared/utils/image/favicon'
 import { generateFaviconPackageInBrowser } from '~/utils/image/favicon-browser'
+
+const FIT_ITEMS = [
+  { label: 'Contain with padding', value: 'contain' },
+  { label: 'Cover crop', value: 'cover' },
+]
 
 const file = ref<File | null>(null)
 const appName = ref('My Application')
 const shortName = ref('App')
 const themeColor = ref('#ffffff')
+const backgroundColor = ref('')
+const fit = ref<FaviconFit>('contain')
 
 const { status, error, result, run, reset } = useTool<FaviconPackageResult>()
 const { copy: copyHtml, label: htmlCopyLabel, icon: htmlCopyIcon, color: htmlCopyColor } = useCopyFeedback()
@@ -36,8 +43,10 @@ async function generate() {
       appName: appName.value,
       shortName: shortName.value,
       themeColor: themeColor.value,
+      backgroundColor: backgroundColor.value,
+      fit: fit.value,
     })
-  }, 'The favicon generation failed.')
+  }, 'The favicon generation failed.', { option: fit.value })
 }
 
 function downloadZip() {
@@ -126,6 +135,40 @@ function handleReset() {
                 <UInput
                   v-model="themeColor"
                   placeholder="#ffffff"
+                  class="flex-1 font-mono text-xs"
+                />
+              </div>
+            </UFormField>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <UFormField
+              label="Icon Fit"
+              help="Contain keeps the whole icon. Cover crops it to a square. Neither distorts the source."
+            >
+              <UTabs
+                v-model="fit"
+                :items="FIT_ITEMS"
+                :content="false"
+                size="sm"
+                class="w-full"
+              />
+            </UFormField>
+            <UFormField
+              v-if="fit === 'contain'"
+              label="Padding Background"
+              help="Leave empty to keep the padding transparent."
+            >
+              <div class="flex items-center gap-2">
+                <input
+                  v-model="backgroundColor"
+                  type="color"
+                  aria-label="Padding background color picker"
+                  class="w-8 h-8 rounded border border-default cursor-pointer bg-transparent"
+                >
+                <UInput
+                  v-model="backgroundColor"
+                  placeholder="Transparent"
                   class="flex-1 font-mono text-xs"
                 />
               </div>
@@ -309,6 +352,9 @@ function handleReset() {
           </p>
           <p>
             Use a square source image of 512 pixels or more. A simple shape reads better than a detailed one, because the icon is often shown at 16 pixels.
+          </p>
+          <p>
+            A source image that is not square needs a fit mode. "Contain with padding" keeps the whole image and adds padding on two sides. Give a padding background color, or leave the field empty to keep the padding transparent. "Cover crop" fills the square and cuts the long edges. Neither mode changes the aspect ratio of the source.
           </p>
         </div>
         <RelatedTools
