@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { extractPaletteFromPixels } from '#shared/utils/color/palette-extractor'
+import { rasterizeSvgInBrowser } from '~/utils/image/svg-browser'
 
 useToolSeo('image-palette')
 
@@ -11,53 +12,67 @@ const minDistance = ref(32)
 const pixels = shallowRef<Uint8ClampedArray | null>(null)
 const anchorHex = ref<string | null>(null)
 const isProcessing = ref(false)
+const error = ref<string | null>(null)
 
-const { copy } = useCopyFeedback()
+const { copy, label, icon, color } = useCopyFeedback()
 const { setHandoffColor } = useColorHandoff()
-const { base64: imageUrl } = useBase64(() => file.value ?? undefined)
+const previewUrl = useObjectUrl(() => file.value ?? undefined)
 const fileName = computed(() => file.value?.name ?? '')
 
-function processImage(src: string) {
-  isProcessing.value = true
-  const img = new Image()
-  img.crossOrigin = 'Anonymous'
+// The decode scales the image to this square. A squashed aspect keeps the same
+// color proportions, and the small size holds the work off the main thread.
+const SAMPLE_SIZE = 120
 
-  img.onload = () => {
-    const canvas = document.createElement('canvas')
+async function readPixels(source: File) {
+  // A browser cannot always decode an SVG blob, so rasterize an SVG first
+  const blob = source.type === 'image/svg+xml'
+    ? (await rasterizeSvgInBrowser(source)).blob
+    : source
+
+  const bitmap = await createImageBitmap(blob, {
+    resizeWidth: SAMPLE_SIZE,
+    resizeHeight: SAMPLE_SIZE,
+    resizeQuality: 'pixelated',
+  })
+
+  try {
+    const canvas = new OffscreenCanvas(bitmap.width, bitmap.height)
     const ctx = canvas.getContext('2d')
     if (!ctx) {
-      isProcessing.value = false
-      return
+      throw new Error('Canvas 2D context is not available.')
     }
-
-    // Scale down for fast color extraction
-    const maxDim = 120
-    const scale = Math.min(maxDim / img.width, maxDim / img.height, 1)
-    const w = Math.max(1, Math.round(img.width * scale))
-    const h = Math.max(1, Math.round(img.height * scale))
-
-    canvas.width = w
-    canvas.height = h
-    ctx.drawImage(img, 0, 0, w, h)
-
-    pixels.value = ctx.getImageData(0, 0, w, h).data
-    isProcessing.value = false
+    ctx.drawImage(bitmap, 0, 0)
+    return ctx.getImageData(0, 0, bitmap.width, bitmap.height).data
   }
-
-  img.onerror = () => {
-    isProcessing.value = false
+  finally {
+    bitmap.close()
   }
-
-  img.src = src
 }
 
-watch(imageUrl, (src) => {
-  anchorHex.value = null
-  if (!src) {
-    pixels.value = null
-    return
+async function loadPixels(source: File) {
+  isProcessing.value = true
+  try {
+    const data = await readPixels(source)
+    // The user can select another file while the decode runs
+    if (file.value === source) {
+      pixels.value = data
+    }
   }
-  processImage(src)
+  catch {
+    error.value = 'The browser cannot read this image.'
+  }
+  finally {
+    isProcessing.value = false
+  }
+}
+
+watch(file, (next) => {
+  anchorHex.value = null
+  pixels.value = null
+  error.value = null
+  if (next) {
+    loadPixels(next)
+  }
 })
 
 const palette = computed(() => (
@@ -156,14 +171,14 @@ useLiveTool(palette)
             size="xs"
             color="neutral"
             variant="ghost"
-            :disabled="!imageUrl"
+            :disabled="!file"
             @click="handleClear"
           />
         </div>
       </div>
 
       <ImageDropzone
-        v-if="!imageUrl"
+        v-if="!file"
         v-model="file"
         accept="image/png,image/jpeg,image/webp,image/svg+xml,image/avif"
         hint="Max size 15 MB. PNG, JPEG, WebP, SVG, or AVIF."
@@ -171,9 +186,14 @@ useLiveTool(palette)
 
       <!-- Analysis View -->
       <div
-        v-if="imageUrl"
+        v-if="file"
         class="space-y-6"
       >
+        <ToolError
+          v-if="error"
+          :message="error"
+        />
+
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
           <!-- Image Card -->
           <div class="p-4 border border-default rounded-xl bg-elevated/40 space-y-3">
@@ -182,7 +202,7 @@ useLiveTool(palette)
             </div>
             <div class="flex items-center justify-center bg-default p-2 rounded-lg border border-default max-h-64 overflow-hidden">
               <img
-                :src="imageUrl"
+                :src="previewUrl"
                 alt="Preview"
                 class="max-h-60 object-contain rounded"
               >
@@ -192,25 +212,32 @@ useLiveTool(palette)
           <!-- Extracted Palette Grid -->
           <div class="md:col-span-2 space-y-4">
             <div class="flex items-center justify-between">
-              <h3 class="text-sm font-semibold text-default">
-                Dominant Colors ({{ palette.length }})
-              </h3>
+              <div class="flex items-center gap-2">
+                <h3 class="text-sm font-semibold text-default">
+                  Dominant Colors ({{ palette.length }})
+                </h3>
+                <UIcon
+                  v-if="isProcessing"
+                  name="i-lucide-loader-circle"
+                  class="size-3.5 text-muted animate-spin"
+                />
+              </div>
               <div class="flex items-center gap-2">
                 <UButton
                   size="xs"
                   variant="subtle"
-                  color="neutral"
-                  icon="i-lucide-copy"
-                  label="Copy JSON"
-                  @click="copy(jsonOutput)"
+                  :color="color('json')"
+                  :icon="icon('json')"
+                  :label="label('json', 'Copy JSON')"
+                  @click="copy(jsonOutput, 'json')"
                 />
                 <UButton
                   size="xs"
                   variant="subtle"
-                  color="neutral"
-                  icon="i-lucide-copy"
-                  label="Copy CSS Vars"
-                  @click="copy(cssVariablesOutput)"
+                  :color="color('css')"
+                  :icon="icon('css')"
+                  :label="label('css', 'Copy CSS Vars')"
+                  @click="copy(cssVariablesOutput, 'css', 'snippet')"
                 />
               </div>
             </div>
@@ -289,9 +316,9 @@ useLiveTool(palette)
                     <UButton
                       size="xs"
                       variant="ghost"
-                      color="neutral"
-                      icon="i-lucide-copy"
-                      :aria-label="`Copy ${c.hex}`"
+                      :color="color(c.hex)"
+                      :icon="icon(c.hex)"
+                      :aria-label="`${label(c.hex, 'Copy')} ${c.hex}`"
                       @click="copy(c.hex, c.hex, 'field')"
                     />
                   </div>
