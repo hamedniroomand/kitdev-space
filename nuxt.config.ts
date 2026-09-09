@@ -50,7 +50,6 @@ const contentSecurityPolicy = [
   'script-src \'self\' \'unsafe-inline\' \'wasm-unsafe-eval\' https://www.googletagmanager.com https://va.vercel-scripts.com',
   `connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://www.googletagmanager.com https://va.vercel-scripts.com${sentryOrigin ? ` ${sentryOrigin}` : ''}`,
   'worker-src \'self\' blob:',
-  'manifest-src \'self\'',
   'upgrade-insecure-requests',
 ].join('; ')
 
