@@ -50,23 +50,40 @@ export function useToolQuery<T extends Record<string, any>>(config: UseToolQuery
 
   const { reportInput } = useToolInput()
 
-  // The router drops the URL fragment while it starts, so the share hash comes
-  // from the plugin that read it before the app booted. A unit test runs with
-  // no Nuxt app, so the lookup stays optional.
-  const initialHash = (() => {
+  // The router drops the URL fragment and the query string while it starts, so
+  // both come from the plugin that read them before the app booted. A unit test
+  // runs with no Nuxt app, so each lookup stays optional.
+  function capturedByPlugin(key: '$shareHash' | '$shareSearch'): string {
     if (typeof useNuxtApp !== 'function') {
       return ''
     }
     try {
-      const shareHash = useNuxtApp().$shareHash as (() => string) | undefined
-      return shareHash?.() ?? ''
+      const read = useNuxtApp()[key] as (() => string) | undefined
+      return read?.() ?? ''
     }
     catch {
       return ''
     }
-  })()
+  }
 
+  const initialHash = capturedByPlugin('$shareHash')
   const searchParams = useUrlSearchParams('history')
+
+  // `searchParams` is empty during hydration, because the router has already
+  // rewritten the URL. The captured string still holds the shared values.
+  const capturedParams = new URLSearchParams(capturedByPlugin('$shareSearch'))
+
+  function readParam(key: string): string | undefined {
+    const captured = capturedParams.get(key)
+    if (captured !== null) {
+      return captured
+    }
+    const live = searchParams[key]
+    if (live === undefined) {
+      return undefined
+    }
+    return Array.isArray(live) ? live[0] : live
+  }
 
   // Synchronize options with query string
   if (config.options) {
@@ -74,7 +91,7 @@ export function useToolQuery<T extends Record<string, any>>(config: UseToolQuery
 
     // Read initial options from query params
     for (const key of Object.keys(opts)) {
-      const val = searchParams[key]
+      const val = readParam(key)
       if (val !== undefined) {
         if (typeof opts[key] === 'boolean') {
           (opts as any)[key] = val === 'true'
@@ -86,7 +103,7 @@ export function useToolQuery<T extends Record<string, any>>(config: UseToolQuery
           }
         }
         else {
-          (opts as any)[key] = Array.isArray(val) ? val[0] : val
+          (opts as any)[key] = val
         }
       }
     }
