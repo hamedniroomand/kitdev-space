@@ -1,4 +1,4 @@
-import type { QueryResult, SqlValue, TableInfo, WorkerResponse } from '~/types/sqlite'
+import type { DatabaseObject, QueryResult, SqlValue, TableInfo, WorkerResponse } from '~/types/sqlite'
 import type { TableQueryState, TableSort } from '~/utils/sqlite/query-builder'
 import { rowsToCsv, rowsToJson } from '~/utils/sqlite/export'
 import { buildTableQuery, initialTableQuery, isTextColumn, tableSnippets } from '~/utils/sqlite/query-builder'
@@ -12,6 +12,7 @@ export function useSqliteStudio() {
   const isExecuting = ref(false)
   const error = ref<string | null>(null)
   const tables = ref<TableInfo[]>([])
+  const objects = ref<DatabaseObject[]>([])
   const activeTable = ref<string | null>(null)
   const activeQuery = ref<string>('SELECT * FROM products LIMIT 100;')
   const queryResult = shallowRef<QueryResult | null>(null)
@@ -69,6 +70,7 @@ export function useSqliteStudio() {
         case 'DB_READY':
           isReady.value = true
           tables.value = response.tables
+          objects.value = response.objects
           databaseSizeBytes.value = response.sizeBytes
           error.value = null
           if (response.tables.length > 0) {
@@ -89,6 +91,9 @@ export function useSqliteStudio() {
             pendingEdits.value++
           }
           tableTotal.value = response.total ?? null
+          if (response.objects) {
+            objects.value = response.objects
+          }
           if (response.tables) {
             tables.value = response.tables
             if (activeTable.value && !response.tables.some(t => t.name === activeTable.value)) {
@@ -338,6 +343,7 @@ export function useSqliteStudio() {
     worker = null
     isReady.value = false
     tables.value = []
+    objects.value = []
     activeTable.value = null
     tableQuery.value = null
     tableTotal.value = null
@@ -367,6 +373,7 @@ export function useSqliteStudio() {
     isExecuting,
     error,
     tables,
+    objects,
     activeTable,
     activeTableInfo,
     activeQuery,

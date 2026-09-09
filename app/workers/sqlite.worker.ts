@@ -1,5 +1,5 @@
 import type { Database } from 'sql.js'
-import type { ColumnInfo, QueryResult, TableInfo, WorkerMessage, WorkerResponse } from '~/types/sqlite'
+import type { ColumnInfo, DatabaseObject, DatabaseObjectType, QueryResult, TableInfo, WorkerMessage, WorkerResponse } from '~/types/sqlite'
 import initSqlJs from 'sql.js'
 import { buildUpdateQuery } from '~/types/sqlite'
 import { quoteIdentifier } from '~/utils/sqlite/query-builder'
@@ -76,6 +76,17 @@ function introspectSchema(database: Database): TableInfo[] {
   return tables
 }
 
+function introspectObjects(database: Database): DatabaseObject[] {
+  const result = database.exec(
+    'SELECT name, type, tbl_name FROM sqlite_master WHERE type IN (\'view\', \'index\', \'trigger\') AND name NOT LIKE \'sqlite_%\' ORDER BY type, name;',
+  )
+  return (result[0]?.values ?? []).map(row => ({
+    name: String(row[0]),
+    type: String(row[1]) as DatabaseObjectType,
+    tableName: row[2] === null ? null : String(row[2]),
+  }))
+}
+
 function countRows(database: Database, table: string): number {
   const result = database.exec(`SELECT COUNT(*) FROM ${quoteIdentifier(table)};`)
   return Number(result[0]?.values?.[0]?.[0] ?? 0)
@@ -122,8 +133,9 @@ globalThis.onmessage = async (event: MessageEvent<WorkerMessage>) => {
         }
         db = message.bytes ? new engine.Database(message.bytes) : new engine.Database()
         const tables = introspectSchema(db)
+        const objects = introspectObjects(db)
         const sizeBytes = message.bytes ? message.bytes.byteLength : 0
-        const response: WorkerResponse = { type: 'DB_READY', tables, sizeBytes }
+        const response: WorkerResponse = { type: 'DB_READY', tables, objects, sizeBytes }
         globalThis.postMessage(response)
         break
       }
@@ -135,8 +147,9 @@ globalThis.onmessage = async (event: MessageEvent<WorkerMessage>) => {
         db = new engine.Database()
         db.run(getSampleSqlScript())
         const tables = introspectSchema(db)
+        const objects = introspectObjects(db)
         const exported = db.export()
-        const response: WorkerResponse = { type: 'DB_READY', tables, sizeBytes: exported.byteLength }
+        const response: WorkerResponse = { type: 'DB_READY', tables, objects, sizeBytes: exported.byteLength }
         globalThis.postMessage(response)
         break
       }
@@ -172,6 +185,7 @@ globalThis.onmessage = async (event: MessageEvent<WorkerMessage>) => {
 
         const isDdl = /\b(?:create|drop|alter)\b/i.test(message.sql)
         const tables = isDdl ? introspectSchema(db) : undefined
+        const objects = isDdl ? introspectObjects(db) : undefined
 
         // A statement that returns rows is the one a reader wants to see first.
         const primary = perStatement.find(item => item.columns.length > 0)
@@ -188,6 +202,7 @@ globalThis.onmessage = async (event: MessageEvent<WorkerMessage>) => {
           results: perStatement.length > 1 ? perStatement : undefined,
           total,
           tables,
+          objects,
         }
         globalThis.postMessage(response)
         break

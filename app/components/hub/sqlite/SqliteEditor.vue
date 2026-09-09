@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { Extension } from '@codemirror/state'
 import type { DropdownMenuItem } from '@nuxt/ui'
 
 const props = defineProps<{
@@ -10,6 +11,7 @@ const props = defineProps<{
   history?: string[]
   snippets?: { label: string, sql: string }[]
   rowsAffected?: number
+  extensions?: Extension[]
 }>()
 
 const emit = defineEmits<{
@@ -152,6 +154,7 @@ onKeyStroke('Enter', (event) => {
         lang="sql"
         placeholder="Enter a SQL statement"
         :wrap="false"
+        :extensions="props.extensions ?? []"
       />
     </div>
   </div>

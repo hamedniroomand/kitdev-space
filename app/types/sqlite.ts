@@ -14,6 +14,15 @@ export interface TableInfo {
   hasRowId: boolean
 }
 
+export type DatabaseObjectType = 'view' | 'index' | 'trigger'
+
+export interface DatabaseObject {
+  name: string
+  type: DatabaseObjectType
+  /** The table the object belongs to, when sqlite_master records one. */
+  tableName: string | null
+}
+
 export interface QueryResult {
   columns: string[]
   rows: unknown[][]
@@ -40,9 +49,9 @@ export type WorkerMessage
     | { type: 'EXPORT_DB' }
 
 export type WorkerResponse
-  = | { type: 'DB_READY', tables: TableInfo[], sizeBytes: number }
+  = | { type: 'DB_READY', tables: TableInfo[], objects: DatabaseObject[], sizeBytes: number }
     /** `results` holds one entry for each statement of a multi-statement run. */
-    | { type: 'QUERY_RESULT', result: QueryResult, results?: QueryResult[], total?: number, tables?: TableInfo[] }
+    | { type: 'QUERY_RESULT', result: QueryResult, results?: QueryResult[], total?: number, tables?: TableInfo[], objects?: DatabaseObject[] }
     | { type: 'UPDATE_SUCCESS', table: string, rowid: number, column: string, value: SqlValue }
     /** A row was added, copied, or deleted. `rowCount` is the new count of the table. */
     | { type: 'MUTATION_SUCCESS', table: string, rowCount: number }

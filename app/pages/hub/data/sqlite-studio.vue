@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { sqliteCompletion } from '~/utils/sqlite/completion'
+
 useToolSeo('sqlite-studio')
 
 const {
@@ -6,6 +8,7 @@ const {
   isExecuting,
   error,
   tables,
+  objects,
   activeTable,
   activeTableInfo,
   activeQuery,
@@ -46,6 +49,8 @@ const {
 const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
 
 const activeStatement = ref(0)
+
+const sqlExtensions = [sqliteCompletion(() => tables.value)]
 
 const columnTypes = computed(() => {
   const info = activeTableInfo.value
@@ -129,6 +134,7 @@ const shownResult = computed(() => {
       <div class="flex-1 flex overflow-hidden">
         <SqliteSidebar
           :tables="tables"
+          :objects="objects"
           :active-table="activeTable"
           @select-table="selectTable"
         />
@@ -143,6 +149,7 @@ const shownResult = computed(() => {
             :rows-affected="shownResult?.rowsAffected"
             :history="history"
             :snippets="snippets"
+            :extensions="sqlExtensions"
             @run="executeQuery"
             @cancel="cancelQuery"
           />
