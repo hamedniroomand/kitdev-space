@@ -1,5 +1,6 @@
 import { CronExpressionParser } from 'cron-parser'
 import cronstrue from 'cronstrue'
+import { isValidTimeZone } from '../time-zones'
 
 /** `cron-parser` rejects this alias, so the tool expands it. */
 const MIDNIGHT = /^@midnight$/i
@@ -29,21 +30,6 @@ export interface CronSchedule {
 }
 
 /** The IANA zones of the platform, with UTC first. `Intl` omits UTC. */
-export function cronTimeZones(): string[] {
-  const zones = typeof Intl.supportedValuesOf === 'function'
-    ? Intl.supportedValuesOf('timeZone')
-    : []
-  return ['UTC', ...zones.filter(zone => zone !== 'UTC')]
-}
-
-export function isValidTimeZone(timeZone: string): boolean {
-  try {
-    return Boolean(new Intl.DateTimeFormat('en', { timeZone }))
-  }
-  catch {
-    return false
-  }
-}
 
 export function normalizeCron(expression: string): string {
   const text = expression.trim()

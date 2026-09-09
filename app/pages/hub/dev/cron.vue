@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { analyzeCron, cronTimeZones, formatCronRunLocal } from '#shared/utils/dev/cron'
+import { analyzeCron, formatCronRunLocal } from '#shared/utils/dev/cron'
+import { ianaTimeZones } from '#shared/utils/time-zones'
 
 const expression = ref('30 9 * * MON-FRI')
 
@@ -13,7 +14,7 @@ const mounted = useMounted()
 
 useToolSeo('cron')
 
-const timeZones = cronTimeZones()
+const timeZones = ianaTimeZones()
 
 // `controls.tz` stays empty until the user picks a zone, so a first visit does
 // not write the resolved zone into the query string.

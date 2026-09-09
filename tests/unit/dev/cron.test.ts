@@ -1,10 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import {
   analyzeCron,
-  cronTimeZones,
   describeCron,
   formatCronRunLocal,
-  isValidTimeZone,
   nextCronRuns,
   normalizeCron,
 } from '../../../shared/utils/dev/cron'
@@ -124,14 +122,6 @@ describe('cron next runs', () => {
   it('rejects an expression that is not valid', () => {
     expect(() => nextCronRuns('61 * * * *', 5, FROM, 'UTC')).toThrow(/61/)
     expect(() => nextCronRuns('abc', 5, FROM, 'UTC')).toThrow(/alias/i)
-  })
-
-  it('lists UTC first in the timezone list, because Intl omits it', () => {
-    const zones = cronTimeZones()
-    expect(zones[0]).toBe('UTC')
-    expect(zones).toContain(NY)
-    expect(isValidTimeZone('UTC')).toBe(true)
-    expect(isValidTimeZone('Not/AZone')).toBe(false)
   })
 
   it('formats a run for a column of a table', () => {
