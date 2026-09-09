@@ -1,6 +1,47 @@
 import { expect, test } from '@playwright/test'
 import { gotoHydrated } from './utils'
 
+test('sidebar focus mode gives pages more width and keeps its setting', async ({ page }) => {
+  await page.setViewportSize({ width: 1600, height: 1000 })
+  await gotoHydrated(page, '/hub')
+  const content = page.locator('main > div')
+  const initialWidth = (await content.boundingBox())!.width
+  await page.getByRole('button', { name: 'Collapse sidebar', exact: true }).click()
+  await expect(page.locator('#hub-navigation')).toBeHidden()
+  await expect.poll(async () => (await content.boundingBox())!.width).toBeGreaterThan(initialWidth)
+  await page.reload()
+  await expect(page.getByRole('button', { name: 'Expand sidebar', exact: true })).toBeVisible()
+  await page.getByRole('main').getByRole('link', { name: /Data Lab/ }).click()
+  await expect(page.getByRole('button', { name: 'Expand sidebar', exact: true })).toBeVisible()
+  await page.getByRole('button', { name: 'Expand sidebar', exact: true }).click()
+  await expect(page.locator('#hub-navigation')).toBeVisible()
+  await page.locator('aside').getByRole('link', { name: /JSON Formatter/ }).click()
+  const toolWidth = (await content.boundingBox())!.width
+  await page.getByRole('button', { name: 'Collapse sidebar', exact: true }).click()
+  await expect.poll(async () => (await content.boundingBox())!.width).toBeGreaterThan(toolWidth)
+})
+
+test('GitHub is beside Home in the hub header', async ({ page }) => {
+  await gotoHydrated(page, '/hub')
+  const github = page.locator('header').getByRole('link', { name: 'KitDev Space source on GitHub' })
+  await expect(github).toHaveAttribute('href', 'https://github.com/hamedniroomand/kitdev-space')
+  await expect(page.locator('aside').getByRole('link', { name: /GitHub/ })).toHaveCount(0)
+  await expect(page.locator('header a[href="/"] + a')).toHaveAttribute('href', 'https://github.com/hamedniroomand/kitdev-space')
+})
+
+test('mobile navigation works after desktop sidebar collapse', async ({ page }) => {
+  await gotoHydrated(page, '/hub')
+  await page.getByRole('button', { name: 'Collapse sidebar', exact: true }).click()
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.getByRole('button', { name: 'Open tool navigation' }).click()
+  const drawer = page.getByRole('dialog')
+  await drawer.getByPlaceholder('Search tools...').fill('JSON Formatter')
+  await drawer.getByRole('link', { name: /JSON Formatter/ }).click()
+  await expect(page).toHaveURL(/\/hub\/data\/json-formatter/)
+  await expect(drawer).toBeHidden()
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390)
+})
+
 test('hub shows Tools Hub landing at /hub', async ({ page }) => {
   await page.goto('/hub')
   await expect(page).toHaveURL(/\/hub\/?$/)
@@ -110,7 +151,7 @@ test('hub layout scrolling and navigation behavior', async ({ page }) => {
   })
 
   await test.step('clicking KitDev Space in the hub header navigates to the home page', async () => {
-    // Exact, because the sidebar has a link named "KitDev Space source on GitHub".
+    // Use the exact name to exclude the GitHub link.
     await page.getByRole('link', { name: 'KitDev Space', exact: true }).click()
     await expect(page).toHaveURL('/')
     await expect(page.getByRole('heading', { name: /Small tasks\.\s*Useful tools\./ })).toBeVisible()

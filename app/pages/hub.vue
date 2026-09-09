@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import type { NavigationMenuItem } from '@nuxt/ui'
 import type { ToolCategory } from '#shared/types/tools'
+import { createReusableTemplate, useLocalStorage } from '@vueuse/core'
 import { categoryLabels, getToolsByCategory } from '#shared/utils/tools'
 
 definePageMeta({
@@ -9,6 +11,8 @@ definePageMeta({
 const route = useRoute()
 const searchQuery = ref('')
 const mobileOpen = ref(false)
+const sidebarCollapsed = useLocalStorage('kitdev:sidebar-collapsed', false, { initOnMounted: true })
+const [DefineNavigation, ReuseNavigation] = createReusableTemplate()
 const searchOpen = ref(false)
 const { track } = useToolAnalytics()
 
@@ -48,7 +52,21 @@ const categorizedTools = computed(() => {
       category: cat,
       label: categoryLabels[cat],
       tools: list,
-      total: getToolsByCategory(cat).length,
+      items: list.map(tool => ({
+        label: tool.name,
+        icon: tool.icon,
+        to: tool.route,
+        exact: true,
+        badge: tool.clientOnly
+          ? { label: '🔒 Client', color: 'neutral', variant: 'subtle', size: 'xs' }
+          : tool.serverRequired
+            ? { label: '⚡ Bun', color: 'warning', variant: 'subtle', size: 'xs' }
+            : undefined,
+        onSelect: () => {
+          closeMobile()
+          selectTool(tool.id)
+        },
+      } satisfies NavigationMenuItem)),
     }
   }).filter(group => group.tools.length > 0)
 })
@@ -87,11 +105,40 @@ watch(() => route.path, () => {
   revealActiveTool()
 })
 
+watch(sidebarCollapsed, (collapsed) => {
+  if (!collapsed)
+    revealActiveTool()
+})
+
 onMounted(revealActiveTool)
 </script>
 
 <template>
-  <div class="h-dvh flex flex-col overflow-hidden bg-default text-default">
+  <DefineNavigation>
+    <div v-for="group in categorizedTools" :key="group.category" class="space-y-2">
+      <UButton
+        :to="`/hub/${group.category}`"
+        color="neutral"
+        variant="link"
+        size="xs"
+        class="w-full justify-between px-2 text-muted"
+        @click="() => { closeMobile(); scrollToTop(); }"
+      >
+        {{ group.label }}
+        <UBadge color="neutral" variant="subtle" size="xs" :label="group.tools.length" />
+      </UButton>
+      <UNavigationMenu
+        :items="group.items"
+        orientation="vertical"
+        :aria-label="group.label"
+        :ui="{ link: 'py-2', linkLeadingIcon: 'size-4', linkLabel: 'truncate', linkTrailingBadge: 'text-[10px]' }"
+      />
+    </div>
+    <p v-if="categorizedTools.length === 0" class="py-8 text-center text-sm text-muted">
+      No tools found for "{{ searchQuery }}".
+    </p>
+  </DefineNavigation>
+  <div class="hub-shell h-dvh flex flex-col overflow-hidden bg-default text-default" :data-focus-mode="sidebarCollapsed">
     <!-- Top Bar -->
     <header class="shrink-0 z-30 flex h-14 items-center justify-between border-b border-default bg-default px-4">
       <div class="flex items-center gap-3">
@@ -126,8 +173,23 @@ onMounted(revealActiveTool)
           variant="ghost"
           size="sm"
           icon="i-lucide-arrow-left"
+          aria-label="Home"
+          @click="track('cta_click', { cta: 'landing' })"
         >
           <span class="hidden sm:inline">Home</span>
+        </UButton>
+        <UButton
+          to="https://github.com/hamedniroomand/kitdev-space"
+          target="_blank"
+          rel="noopener noreferrer"
+          color="neutral"
+          variant="ghost"
+          size="sm"
+          icon="i-simple-icons-github"
+          aria-label="KitDev Space source on GitHub"
+          @click="track('cta_click', { cta: 'github' })"
+        >
+          <span class="hidden sm:inline">GitHub</span>
         </UButton>
         <UTooltip
           text="Search tools"
@@ -148,135 +210,56 @@ onMounted(revealActiveTool)
     <!-- App Body: Sidebar + Content -->
     <div class="flex flex-1 min-h-0 overflow-hidden">
       <!-- Desktop Sidebar -->
-      <aside class="hidden w-72 shrink-0 border-r border-default bg-default lg:flex lg:flex-col h-full overflow-hidden">
-        <div class="shrink-0 p-3 border-b border-default">
-          <UButton
-            color="neutral"
-            variant="outline"
-            icon="i-lucide-search"
-            aria-label="Search tools"
-            class="w-full rounded-control font-normal border-default bg-elevated hover:bg-accented text-highlighted"
-            @click="openSearch"
-          >
-            <span class="text-muted">Search tools...</span>
-            <span class="flex items-center gap-0.5 ml-auto">
-              <UKbd
-                value="meta"
-                size="sm"
-              />
-              <UKbd
-                value="K"
-                size="sm"
-              />
-            </span>
-          </UButton>
+      <aside
+        aria-label="Tool sidebar"
+        class="hidden shrink-0 border-r border-default bg-default lg:flex lg:flex-col h-full overflow-hidden"
+        :class="sidebarCollapsed ? 'w-14' : 'w-72'"
+      >
+        <div class="shrink-0 border-b border-default" :class="sidebarCollapsed ? 'p-2' : 'p-3'">
+          <UTooltip text="Search tools" :disabled="!sidebarCollapsed" :kbds="['meta', 'K']">
+            <UButton
+              color="neutral"
+              :variant="sidebarCollapsed ? 'ghost' : 'outline'"
+              icon="i-lucide-search"
+              aria-label="Search tools"
+              class="w-full"
+              :class="sidebarCollapsed ? 'justify-center' : 'font-normal'"
+              @click="openSearch"
+            >
+              <template v-if="!sidebarCollapsed" #default>
+                <span class="text-muted">Search tools...</span>
+                <span class="flex items-center gap-0.5 ml-auto">
+                  <UKbd value="meta" size="sm" />
+                  <UKbd value="K" size="sm" />
+                </span>
+              </template>
+            </UButton>
+          </UTooltip>
         </div>
-
-        <nav
+        <div
+          v-show="!sidebarCollapsed"
+          id="hub-navigation"
           ref="sidebarNav"
-          class="flex-1 overflow-y-auto p-3 space-y-7"
+          class="flex-1 overflow-y-auto p-3 space-y-5"
         >
-          <div
-            v-for="group in categorizedTools"
-            :key="group.category"
-            class="space-y-1.5"
-          >
-            <div class="flex items-center justify-between px-2 py-1 text-xs font-medium text-muted">
-              <NuxtLink
-                :to="`/hub/${group.category}`"
-                class="hover:text-highlighted transition-colors"
-                @click="scrollToTop"
-              >
-                {{ group.label }}
-              </NuxtLink>
-              <UBadge
-                color="neutral"
-                variant="subtle"
-                size="xs"
-              >
-                {{ group.tools.length }}
-              </UBadge>
-            </div>
-
-            <ul class="space-y-0.5">
-              <li
-                v-for="tool in group.tools"
-                :key="tool.id"
-              >
-                <NuxtLink
-                  :to="tool.route"
-                  class="tool-nav-link group flex items-center justify-between gap-2 rounded-md px-3 py-2 text-sm"
-                  :class="route.path === tool.route
-                    ? 'bg-primary/8 text-primary font-medium'
-                    : 'text-default/80 hover:bg-elevated hover:text-highlighted'"
-                  @click="selectTool(tool.id)"
-                >
-                  <div class="flex items-center gap-2 truncate">
-                    <UIcon
-                      :name="tool.icon"
-                      class="size-4 shrink-0"
-                      :class="route.path === tool.route ? 'text-primary' : 'text-muted group-hover:text-default'"
-                    />
-                    <span class="truncate">{{ tool.name }}</span>
-                  </div>
-
-                  <UBadge
-                    v-if="tool.clientOnly"
-                    color="neutral"
-                    variant="subtle"
-                    size="xs"
-                    class="shrink-0 text-[10px]"
-                  >
-                    🔒 Client
-                  </UBadge>
-                  <UBadge
-                    v-else-if="tool.serverRequired"
-                    color="warning"
-                    variant="subtle"
-                    size="xs"
-                    class="shrink-0 text-[10px]"
-                  >
-                    ⚡ Bun
-                  </UBadge>
-                </NuxtLink>
-              </li>
-            </ul>
-          </div>
-
-          <div
-            v-if="categorizedTools.length === 0"
-            class="py-8 text-center text-sm text-muted"
-          >
-            No tools found for "{{ searchQuery }}".
-          </div>
-        </nav>
-
-        <div class="shrink-0 p-3 border-t border-default flex items-center justify-between text-xs text-muted">
-          <NuxtLink
-            to="/"
-            class="flex items-center gap-1 hover:text-highlighted transition-colors"
-            @click="track('cta_click', { cta: 'landing' })"
-          >
-            <UIcon
-              name="i-lucide-arrow-left"
-              class="size-3.5"
-            />
-            <span>Home</span>
-          </NuxtLink>
-          <a
-            href="https://github.com/hamedniroomand/kitdev-space"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="flex items-center gap-1 hover:text-highlighted transition-colors"
-            aria-label="KitDev Space source on GitHub"
-            @click="track('cta_click', { cta: 'github' })"
-          >
-            <UIcon
-              name="i-simple-icons-github"
-              class="size-3.5"
-            />
-            <span>GitHub</span>
-          </a>
+          <ReuseNavigation />
+        </div>
+        <div class="mt-auto shrink-0 border-t border-default p-2">
+          <UTooltip :text="sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'" :content="{ side: 'right' }">
+            <UButton
+              color="neutral"
+              variant="ghost"
+              :icon="sidebarCollapsed ? 'i-lucide-panel-left-open' : 'i-lucide-panel-left-close'"
+              :aria-label="sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'"
+              :aria-expanded="!sidebarCollapsed"
+              aria-controls="hub-navigation"
+              class="w-full"
+              :class="sidebarCollapsed ? 'justify-center' : ''"
+              @click="sidebarCollapsed = !sidebarCollapsed"
+            >
+              <span v-if="!sidebarCollapsed">Collapse sidebar</span>
+            </UButton>
+          </UTooltip>
         </div>
       </aside>
 
@@ -284,6 +267,7 @@ onMounted(revealActiveTool)
       <USlideover
         v-model:open="mobileOpen"
         title="Tools Hub"
+        side="left"
       >
         <template #body>
           <div class="space-y-4">
@@ -294,70 +278,8 @@ onMounted(revealActiveTool)
               class="w-full"
             />
 
-            <div class="space-y-6">
-              <div
-                v-for="group in categorizedTools"
-                :key="group.category"
-                class="space-y-1.5"
-              >
-                <div class="flex items-center justify-between px-2 py-1 text-xs font-medium text-muted">
-                  <NuxtLink
-                    :to="`/hub/${group.category}`"
-                    class="hover:text-highlighted transition-colors"
-                    @click="() => { closeMobile(); scrollToTop(); }"
-                  >
-                    {{ group.label }}
-                  </NuxtLink>
-                  <UBadge
-                    color="neutral"
-                    variant="subtle"
-                    size="xs"
-                  >
-                    {{ group.tools.length }}
-                  </UBadge>
-                </div>
-
-                <ul class="space-y-0.5">
-                  <li
-                    v-for="tool in group.tools"
-                    :key="tool.id"
-                  >
-                    <NuxtLink
-                      :to="tool.route"
-                      class="tool-nav-link flex items-center justify-between gap-2 rounded-md px-3 py-2 text-sm"
-                      :class="route.path === tool.route
-                        ? 'bg-primary/8 text-primary font-medium'
-                        : 'text-default/80 hover:bg-elevated hover:text-highlighted'"
-                      @click="() => { closeMobile(); selectTool(tool.id); }"
-                    >
-                      <div class="flex items-center gap-2 truncate">
-                        <UIcon
-                          :name="tool.icon"
-                          class="size-4 shrink-0"
-                        />
-                        <span class="truncate">{{ tool.name }}</span>
-                      </div>
-
-                      <UBadge
-                        v-if="tool.clientOnly"
-                        color="neutral"
-                        variant="subtle"
-                        size="xs"
-                      >
-                        🔒 Client
-                      </UBadge>
-                      <UBadge
-                        v-else-if="tool.serverRequired"
-                        color="warning"
-                        variant="subtle"
-                        size="xs"
-                      >
-                        ⚡ Bun
-                      </UBadge>
-                    </NuxtLink>
-                  </li>
-                </ul>
-              </div>
+            <div class="space-y-5">
+              <ReuseNavigation />
             </div>
           </div>
         </template>
@@ -366,7 +288,7 @@ onMounted(revealActiveTool)
       <!-- Main Hub Content Area -->
       <main
         ref="contentArea"
-        class="workspace-content flex-1 min-h-0 overflow-y-auto"
+        class="workspace-content flex-1 min-w-0 min-h-0 overflow-y-auto"
       >
         <NuxtPage />
       </main>
@@ -376,3 +298,11 @@ onMounted(revealActiveTool)
     <LazyAppCommandPalette v-if="searchOpen" v-model:open="searchOpen" />
   </div>
 </template>
+
+<style scoped>
+@media (min-width: 1024px) {
+  .hub-shell[data-focus-mode='true'] {
+    --hub-content-width: 100%;
+  }
+}
+</style>

@@ -39,7 +39,7 @@ useSchemaOrg([
 </script>
 
 <template>
-  <UContainer class="py-12 sm:py-16 max-w-5xl">
+  <UContainer class="py-12 sm:py-16 max-w-[var(--hub-content-width,64rem)]">
     <ToolBreadcrumbs :items="breadcrumbs" />
 
     <p class="font-mono text-xs font-semibold tracking-widest text-primary uppercase leading-[1.2]">

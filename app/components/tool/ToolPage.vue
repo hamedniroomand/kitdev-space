@@ -26,7 +26,7 @@ const currentTool = computed(() => {
 </script>
 
 <template>
-  <UContainer class="py-8 sm:py-12 max-w-5xl">
+  <UContainer class="py-8 sm:py-12 max-w-[var(--hub-content-width,64rem)]">
     <slot name="header">
       <ToolHeader
         :title="title"

@@ -46,7 +46,7 @@ const categories = [
 </script>
 
 <template>
-  <UContainer class="py-12 sm:py-16 max-w-5xl">
+  <UContainer class="py-8 sm:py-12 max-w-[var(--hub-content-width,64rem)]">
     <ToolBreadcrumbs
       :items="[
         { label: 'Home', to: '/' },
@@ -167,26 +167,26 @@ const categories = [
 
     <!-- Category Cards -->
     <UPageGrid class="mt-10 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      <NuxtLink
+      <UPageCard
         v-for="category in categories"
         :key="category"
         :to="`/hub/${category}`"
-        class="directory-card group rounded-xl border border-default p-6"
+        :title="categoryLabels[category]"
+        :description="categoryDescriptions[category]"
+        variant="outline"
+        class="[&>a]:absolute [&>a]:inset-0"
+        :ui="{ container: 'p-5 sm:p-6', title: 'text-lg', description: 'text-muted' }"
       >
-        <p class="text-lg font-medium tracking-tight text-highlighted">
-          {{ categoryLabels[category] }}
-        </p>
-        <p class="mt-2 text-sm text-highlighted">
-          {{ categoryDescriptions[category] }}
-        </p>
-        <p class="mt-3 inline-flex items-center gap-1 text-xs font-medium text-primary">
-          {{ getToolsByCategory(category).length }} tools
-          <UIcon
-            name="i-lucide-chevron-right"
-            class="size-3"
-          />
-        </p>
-      </NuxtLink>
+        <template #footer>
+          <p class="mt-3 inline-flex items-center gap-1 text-xs font-medium text-primary">
+            {{ getToolsByCategory(category).length }} tools
+            <UIcon
+              name="i-lucide-chevron-right"
+              class="size-3"
+            />
+          </p>
+        </template>
+      </UPageCard>
     </UPageGrid>
   </UContainer>
 </template>
