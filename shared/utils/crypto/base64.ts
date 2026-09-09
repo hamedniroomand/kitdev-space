@@ -14,17 +14,23 @@ function binaryToBytes(binary: string): Uint8Array {
   return bytes
 }
 
-export function encodeBase64(text: string): string {
-  const bytes = new TextEncoder().encode(text)
+export function bytesToBase64(bytes: Uint8Array): string {
   return btoa(bytesToBinary(bytes))
 }
 
-export function decodeBase64(text: string): string {
+export function base64ToBytes(text: string): Uint8Array {
   try {
-    const binary = atob(text.trim())
-    return new TextDecoder().decode(binaryToBytes(binary))
+    return binaryToBytes(atob(text.trim()))
   }
   catch (cause) {
     throw new Error('Invalid Base64.\n\nCheck the input and try again.', { cause })
   }
+}
+
+export function encodeBase64(text: string): string {
+  return bytesToBase64(new TextEncoder().encode(text))
+}
+
+export function decodeBase64(text: string): string {
+  return new TextDecoder().decode(base64ToBytes(text))
 }

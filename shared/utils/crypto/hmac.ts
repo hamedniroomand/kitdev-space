@@ -1,49 +1,63 @@
+import { base64ToBytes, bytesToBase64 } from './base64'
+import { bytesToHex, hexToBytes } from './hex'
+
 export type HmacAlgorithm = 'SHA-256' | 'SHA-384' | 'SHA-512' | 'SHA-1'
 export type HmacEncoding = 'hex' | 'base64'
+/** How the user wrote the secret key. `text` reads the key as UTF-8. */
+export type HmacKeyFormat = 'text' | 'hex' | 'base64'
 
-export async function generateHmac(
+/** Reads the key bytes out of the key text. It throws on an invalid format. */
+export function decodeHmacKey(key: string, format: HmacKeyFormat): Uint8Array {
+  if (format === 'hex') {
+    return hexToBytes(key)
+  }
+  if (format === 'base64') {
+    return base64ToBytes(key)
+  }
+  return new TextEncoder().encode(key)
+}
+
+export async function hmacBytes(
   message: string,
-  secret: string,
+  key: Uint8Array,
   algorithm: HmacAlgorithm = 'SHA-256',
-  encoding: HmacEncoding = 'hex',
-): Promise<string> {
-  const encoder = new TextEncoder()
-  const keyData = encoder.encode(secret)
-  const messageData = encoder.encode(message)
-
+): Promise<Uint8Array> {
   const cryptoObj = globalThis.crypto
   if (!cryptoObj?.subtle) {
     throw new Error('Web Crypto API is not available in this environment.')
   }
+  if (key.byteLength === 0) {
+    throw new Error('The secret key is empty.\n\nEnter a secret key.')
+  }
 
   const cryptoKey = await cryptoObj.subtle.importKey(
     'raw',
-    keyData,
+    key,
     { name: 'HMAC', hash: { name: algorithm } },
     false,
     ['sign'],
   )
 
-  const signatureBuffer = await cryptoObj.subtle.sign('HMAC', cryptoKey, messageData)
-  const bytes = new Uint8Array(signatureBuffer)
+  const signature = await cryptoObj.subtle.sign(
+    'HMAC',
+    cryptoKey,
+    new TextEncoder().encode(message),
+  )
+  return new Uint8Array(signature)
+}
 
-  if (encoding === 'base64') {
-    let binary = ''
-    for (let i = 0; i < bytes.byteLength; i++) {
-      binary += String.fromCharCode(bytes[i]!)
-    }
-    return btoa(binary)
-  }
-
-  return Array.from(bytes)
-    .map(b => b.toString(16).padStart(2, '0'))
-    .join('')
+export async function generateHmac(
+  message: string,
+  key: Uint8Array,
+  algorithm: HmacAlgorithm = 'SHA-256',
+  encoding: HmacEncoding = 'hex',
+): Promise<string> {
+  const bytes = await hmacBytes(message, key, algorithm)
+  return encoding === 'base64' ? bytesToBase64(bytes) : bytesToHex(bytes)
 }
 
 export function generateRandomSecret(length = 32): string {
   const bytes = new Uint8Array(length)
   globalThis.crypto.getRandomValues(bytes)
-  return Array.from(bytes)
-    .map(b => b.toString(16).padStart(2, '0'))
-    .join('')
+  return bytesToHex(bytes)
 }

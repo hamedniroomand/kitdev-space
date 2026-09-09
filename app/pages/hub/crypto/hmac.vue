@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import type { HmacAlgorithm, HmacEncoding } from '#shared/utils/crypto/hmac'
-import { generateHmac, generateRandomSecret } from '#shared/utils/crypto/hmac'
+import type { HmacAlgorithm, HmacEncoding, HmacKeyFormat } from '#shared/utils/crypto/hmac'
+import { decodeHmacKey, generateHmac, generateRandomSecret } from '#shared/utils/crypto/hmac'
 
 useToolSeo('hmac')
 
 const message = ref('The quick brown fox jumps over the lazy dog')
 const secret = ref('secret-key-12345')
 const algorithm = ref<HmacAlgorithm>('SHA-256')
+const keyFormat = ref<HmacKeyFormat>('text')
 const encoding = ref<HmacEncoding>('hex')
 const uppercase = ref(false)
 const signature = ref('')
@@ -15,6 +16,11 @@ const errorMessage = ref<string | null>(null)
 const { copy, label, color, icon } = useCopyFeedback()
 
 const algorithms: HmacAlgorithm[] = ['SHA-256', 'SHA-384', 'SHA-512', 'SHA-1']
+const keyFormats: { label: string, value: HmacKeyFormat }[] = [
+  { label: 'Text (UTF-8)', value: 'text' },
+  { label: 'Hex', value: 'hex' },
+  { label: 'Base64', value: 'base64' },
+]
 const encodings: { label: string, value: HmacEncoding }[] = [
   { label: 'Hexadecimal', value: 'hex' },
   { label: 'Base64', value: 'base64' },
@@ -28,7 +34,8 @@ async function computeSignature() {
   }
 
   try {
-    let sig = await generateHmac(message.value, secret.value, algorithm.value, encoding.value)
+    const keyBytes = decodeHmacKey(secret.value, keyFormat.value)
+    let sig = await generateHmac(message.value, keyBytes, algorithm.value, encoding.value)
     if (encoding.value === 'hex' && uppercase.value) {
       sig = sig.toUpperCase()
     }
@@ -41,11 +48,12 @@ async function computeSignature() {
   }
 }
 
-watch([message, secret, algorithm, encoding, uppercase], () => {
+watch([message, secret, algorithm, keyFormat, encoding, uppercase], () => {
   computeSignature()
 }, { immediate: true })
 
 function handleGenerateKey() {
+  keyFormat.value = 'hex'
   secret.value = generateRandomSecret(32)
 }
 
@@ -70,7 +78,11 @@ function handleClear() {
       <div class="flex flex-wrap items-center justify-between gap-3 p-3 border border-default rounded-xl bg-elevated/40">
         <div class="flex flex-wrap items-center gap-3">
           <!-- Algorithm -->
-          <div class="flex items-center gap-1">
+          <div
+            role="group"
+            aria-label="Algorithm"
+            class="flex items-center gap-1"
+          >
             <span class="text-xs text-muted font-medium">Algorithm:</span>
             <UButton
               v-for="algo in algorithms"
@@ -83,8 +95,30 @@ function handleClear() {
             />
           </div>
 
-          <!-- Encoding -->
-          <div class="flex items-center gap-1 border-s border-default ps-3">
+          <!-- Key format -->
+          <div
+            role="group"
+            aria-label="Key format"
+            class="flex items-center gap-1 border-s border-default ps-3"
+          >
+            <span class="text-xs text-muted font-medium">Key format:</span>
+            <UButton
+              v-for="format in keyFormats"
+              :key="format.value"
+              size="xs"
+              :variant="keyFormat === format.value ? 'solid' : 'ghost'"
+              :color="keyFormat === format.value ? 'primary' : 'neutral'"
+              :label="format.label"
+              @click="keyFormat = format.value"
+            />
+          </div>
+
+          <!-- Output encoding -->
+          <div
+            role="group"
+            aria-label="Output encoding"
+            class="flex items-center gap-1 border-s border-default ps-3"
+          >
             <span class="text-xs text-muted font-medium">Encoding:</span>
             <UButton
               v-for="enc in encodings"
@@ -136,7 +170,7 @@ function handleClear() {
         </template>
         <UInput
           v-model="secret"
-          placeholder="Enter secret key string..."
+          :placeholder="keyFormat === 'text' ? 'Enter secret key text...' : `Enter the key in ${keyFormat === 'hex' ? 'hex' : 'Base64'}...`"
           class="font-mono text-sm w-full"
         />
       </UFormField>
@@ -152,7 +186,7 @@ function handleClear() {
       </UFormField>
 
       <!-- Signature Output -->
-      <UFormField :label="`HMAC Signature (${algorithm})`">
+      <UFormField :label="`Signature (${algorithm})`">
         <template #hint>
           <UButton
             :label="label()"
@@ -164,7 +198,10 @@ function handleClear() {
             @click="handleCopy"
           />
         </template>
-        <div class="p-3.5 border border-default rounded-lg bg-default font-mono text-sm break-all select-all min-h-12 flex items-center">
+        <output
+          aria-label="HMAC signature"
+          class="p-3.5 border border-default rounded-lg bg-default font-mono text-sm break-all select-all min-h-12 flex items-center"
+        >
           <span
             v-if="signature"
             class="text-primary font-semibold"
@@ -173,7 +210,7 @@ function handleClear() {
             v-else
             class="text-muted italic"
           >Enter a secret key and a message to compute HMAC...</span>
-        </div>
+        </output>
       </UFormField>
 
       <ToolError
@@ -190,6 +227,9 @@ function handleClear() {
           </p>
           <p>
             A webhook uses an HMAC. The sender puts the signature in a header. Your server computes the same HMAC over the raw body and compares the two values. Compare them with a constant-time function, never with a plain equals.
+          </p>
+          <p>
+            A key is bytes, not text. Select the key format that matches your key. "Text (UTF-8)" reads the key as UTF-8 text. "Hex" and "Base64" decode the key to the same bytes that the sender uses. The tool reports an error when the key holds a character that the selected format does not allow.
           </p>
           <p>
             An HMAC is not encryption. It does not hide the message. Anybody can read the message; only a holder of the key can make a valid signature.
