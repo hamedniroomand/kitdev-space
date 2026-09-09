@@ -2,11 +2,14 @@
 import type { CropRect } from '#shared/utils/image/crop'
 import type { ImageContainer } from '#shared/utils/image/exif'
 import type { CropAspectId, ImageEncodeFormat, ImageFilter, ImageFit, ImagePresetId } from '#shared/utils/image/types'
+import type { ImageBatchRow } from '~/utils/image/batch-process'
 import { formatBytes } from '#shared/utils/format'
 import { readImageMetadata } from '#shared/utils/image/exif'
 import { imageExtensionFor } from '#shared/utils/image/format'
+import { IMAGE_BATCH_LIMIT } from '#shared/utils/image/limits'
 import { CROP_ASPECTS, PRESET_SIZES } from '#shared/utils/image/presets'
 import { readImageResponse } from '#shared/utils/image/response'
+import { processImageBatch } from '~/utils/image/batch-process'
 import { cropImageFile } from '~/utils/image/crop-file'
 import { canProcessInBrowser, probeImageInBrowser, processImageInBrowser } from '~/utils/image/process-browser'
 import { isAnimatedImage } from '~/utils/image/studio-animation'
@@ -68,7 +71,8 @@ const rotateItems = [
   { label: '270°', value: 270 },
 ]
 
-const file = ref<File | null>(null)
+const files = ref<File[]>([])
+const file = computed<File | null>(() => files.value[0] ?? null)
 const source = ref<{
   width: number | null
   height: number | null
@@ -103,12 +107,15 @@ const cropAspectMode = ref<CropAspectMode>('free')
 const cropRect = ref<CropRect | null>(null)
 
 const outputBlob = ref<Blob | null>(null)
+const batchRows = ref<ImageBatchRow[]>([])
+const batchZip = ref<Blob | null>(null)
 const inputBytes = ref<number | null>(null)
 const outputBytes = ref<number | null>(null)
 const outWidth = ref<number | null>(null)
 const outHeight = ref<number | null>(null)
 
 const { status, error, run, reset } = useTool<Blob>()
+const { downloadBlob } = useDownload()
 
 useToolSeo(props.toolId)
 
@@ -117,6 +124,11 @@ const sourceUrl = useObjectUrl(() => file.value)
 const runsOnServer = computed(() => !canProcessInBrowser(format.value) || !decodable.value)
 const isCustom = computed(() => sizeMode.value === 'custom')
 const resizes = computed(() => sizeMode.value !== 'original')
+/** More than one file shares the settings and gives one zip file. */
+const isBatch = computed(() => files.value.length > 1)
+/** A crop box needs one image, so a batch has no crop. */
+const cropActive = computed(() => cropEnabled.value && !isBatch.value)
+const dropzoneModel = computed(() => (isBatch.value ? files.value : file.value))
 /**
  * A re-encode always removes the metadata. The metadata stays only when the
  * run changes no pixel and keeps the format, because then the file bytes pass
@@ -126,7 +138,8 @@ const resizes = computed(() => sizeMode.value !== 'original')
  */
 const canKeepMetadata = computed(() =>
   source.value?.container === format.value
-  && !cropEnabled.value
+  && !isBatch.value
+  && !cropActive.value
   && !resizes.value
   && !rotate.value
   && !flip.value
@@ -145,29 +158,32 @@ const cropAspect = computed<number | null>(() => {
   return CROP_ASPECTS.find(item => item.value === mode)?.ratio ?? null
 })
 
-watch(file, async (selected) => {
+watch(files, async (selected) => {
   outputBlob.value = null
+  batchRows.value = []
+  batchZip.value = null
   source.value = null
   cropRect.value = null
   decodable.value = true
   animated.value = false
   reset()
 
-  if (!selected) {
+  const primary = selected[0]
+  if (!primary) {
     return
   }
 
   // The size is read in the browser, so the preset fields start from the real size.
-  const bytes = new Uint8Array(await selected.arrayBuffer())
+  const bytes = new Uint8Array(await primary.arrayBuffer())
   const meta = readImageMetadata(bytes)
-  const probe = await probeImageInBrowser(selected)
+  const probe = await probeImageInBrowser(primary)
   decodable.value = probe !== null
   animated.value = isAnimatedImage(bytes)
 
   source.value = {
     width: probe?.width ?? meta.width,
     height: probe?.height ?? meta.height,
-    bytes: selected.size,
+    bytes: primary.size,
     container: meta.container,
   }
 
@@ -227,16 +243,51 @@ function setResult(blob: Blob, resultWidth: number | null, resultHeight: number 
   outputBlob.value = blob
 }
 
+/** The settings that both the single run and the batch run share. */
+function browserOptions() {
+  return {
+    resizes: resizes.value,
+    width: width.value,
+    height: height.value,
+    fit: fit.value,
+    withoutEnlargement: withoutEnlargement.value,
+    rotate: rotate.value,
+    flip: flip.value,
+    flop: flop.value,
+    grayscale: grayscale.value,
+    format: format.value,
+    quality: quality.value,
+    background: background.value,
+  }
+}
+
 async function process() {
   outputBlob.value = null
+  batchRows.value = []
+  batchZip.value = null
 
   const passthrough = keepMetadata.value && canKeepMetadata.value
-  const isBrowser = passthrough || !runsOnServer.value
+  const isBrowser = isBatch.value || passthrough || !runsOnServer.value
   const runLocation = isBrowser ? 'browser' : 'server'
 
   await run(async () => {
     if (!file.value) {
       throw new Error('Choose an image file before you run the tool.')
+    }
+
+    if (isBatch.value) {
+      if (!canProcessInBrowser(format.value)) {
+        throw new Error('A batch runs in your browser. Choose WebP, JPEG, or PNG.')
+      }
+
+      const batch = await processImageBatch(files.value, { ...browserOptions(), cropRect: null })
+      batchRows.value = batch.rows
+      batchZip.value = batch.zip
+
+      if (!batch.zip) {
+        throw new Error('The browser could not process any file of the batch.')
+      }
+      return batch.zip
     }
 
     if (passthrough) {
@@ -246,19 +297,8 @@ async function process() {
 
     if (isBrowser) {
       const result = await processImageInBrowser(file.value, {
-        cropRect: cropEnabled.value ? cropRect.value : null,
-        resizes: resizes.value,
-        width: width.value,
-        height: height.value,
-        fit: fit.value,
-        withoutEnlargement: withoutEnlargement.value,
-        rotate: rotate.value,
-        flip: flip.value,
-        flop: flop.value,
-        grayscale: grayscale.value,
-        format: format.value,
-        quality: quality.value,
-        background: background.value,
+        ...browserOptions(),
+        cropRect: cropActive.value ? cropRect.value : null,
       })
 
       setResult(result.blob, result.width, result.height)
@@ -266,7 +306,7 @@ async function process() {
     }
 
     // Server path: an AVIF output, or a file that the browser cannot decode.
-    const upload = cropEnabled.value && cropRect.value
+    const upload = cropActive.value && cropRect.value
       ? await cropImageFile(file.value, cropRect.value)
       : file.value
 
@@ -304,10 +344,18 @@ async function process() {
   }, 'The image operation failed.', { runLocation, option: format.value })
 }
 
+function downloadZip() {
+  if (batchZip.value) {
+    downloadBlob('images.zip', batchZip.value)
+  }
+}
+
 function handleClear() {
-  file.value = null
+  files.value = []
   source.value = null
   outputBlob.value = null
+  batchRows.value = []
+  batchZip.value = null
   cropRect.value = null
   inputBytes.value = null
   outputBytes.value = null
@@ -345,22 +393,33 @@ function handleClear() {
       description="The tool keeps the first frame only. The result is a still image."
     />
 
-    <ImageDropzone v-model="file" />
+    <ImageDropzone
+      :model-value="dropzoneModel"
+      multiple
+      :max-files="IMAGE_BATCH_LIMIT"
+      prompt="Drop images here, or click to choose files."
+      :hint="`Max size 25 MB for each file. Up to ${IMAGE_BATCH_LIMIT} files. JPEG, PNG, WebP, GIF, BMP, TIFF, HEIC, AVIF, or SVG.`"
+      @update:files="files = $event"
+    />
 
     <template v-if="file">
       <div class="grid gap-6 lg:grid-cols-2">
         <section class="space-y-4">
-          <h2 class="text-sm font-medium text-highlighted">
+          <h2
+            v-if="!isBatch"
+            class="text-sm font-medium text-highlighted"
+          >
             Crop
           </h2>
           <UFormField
+            v-if="!isBatch"
             label="Crop the image"
             hint="The crop runs in your browser. On a server run, only the chosen pixels leave your device."
           >
             <USwitch v-model="cropEnabled" />
           </UFormField>
           <UFormField
-            v-if="cropEnabled"
+            v-if="cropActive"
             label="Crop ratio"
           >
             <USelect
@@ -539,7 +598,25 @@ function handleClear() {
     />
 
     <div
-      v-if="sourceUrl && source"
+      v-if="batchRows.length"
+      class="space-y-3"
+    >
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <p class="text-sm font-medium text-highlighted">
+          Batch of {{ batchRows.length }} files
+        </p>
+        <UButton
+          v-if="batchZip"
+          label="Download the zip"
+          icon="i-lucide-download"
+          @click="downloadZip"
+        />
+      </div>
+      <ImageBatchTable :rows="batchRows" />
+    </div>
+
+    <div
+      v-if="sourceUrl && source && !isBatch"
       class="space-y-4"
     >
       <div class="space-y-2 rounded-md border border-default bg-elevated/40 p-4">
@@ -548,12 +625,12 @@ function handleClear() {
         </p>
         <p class="text-xs text-muted">
           {{ source.width ?? '—' }} × {{ source.height ?? '—' }} · {{ formatBytes(source.bytes) }}
-          <template v-if="cropEnabled && cropRect">
+          <template v-if="cropActive && cropRect">
             · crop {{ cropRect.width }} × {{ cropRect.height }}
           </template>
         </p>
         <ImageCropBox
-          v-if="cropEnabled"
+          v-if="cropActive"
           v-model="cropRect"
           :src="sourceUrl"
           :aspect="cropAspect"

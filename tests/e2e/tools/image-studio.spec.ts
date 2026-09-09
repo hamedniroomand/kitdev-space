@@ -6,7 +6,28 @@ test('shows the Image Studio dropzone', { tag: '@smoke' }, async ({ page }) => {
   await page.goto('/hub/image/studio')
 
   await expect(page.getByRole('heading', { name: 'Image Studio', level: 1 })).toBeVisible()
-  await expect(page.getByText('Drop an image here, or click to choose a file.')).toBeVisible()
+  await expect(page.getByText('Drop images here, or click to choose files.')).toBeVisible()
+})
+
+test('processes a batch of images into one zip', async ({ page }) => {
+  await gotoHydrated(page, '/hub/image/studio')
+
+  const pngBuffer = Buffer.from(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+    'base64',
+  )
+
+  await page.locator('input[type="file"]').setInputFiles([
+    { name: 'one.png', mimeType: 'image/png', buffer: pngBuffer },
+    { name: 'two.png', mimeType: 'image/png', buffer: pngBuffer },
+  ])
+
+  await expect(page.getByText('2 files selected')).toBeVisible()
+
+  await page.getByRole('button', { name: 'Process' }).click()
+
+  await expect(page.getByText('Batch of 2 files')).toBeVisible({ timeout: 15_000 })
+  await expect(page.getByRole('button', { name: 'Download the zip' })).toBeVisible()
 })
 
 test('redirects the merged transform route to the studio', async ({ page }) => {
