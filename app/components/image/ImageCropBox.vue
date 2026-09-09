@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { CropHandle, CropRect } from '#shared/utils/image/crop'
-import { initialCrop, moveCrop, resizeCrop } from '#shared/utils/image/crop'
+import { clampCrop, initialCrop, moveCrop, resizeCrop } from '#shared/utils/image/crop'
 
 /**
  * A crop box over an image. The model holds the box in the pixels of the
@@ -97,6 +97,32 @@ const boxStyle = computed(() => {
   }
 })
 
+const FIELDS: { key: keyof CropRect, label: string }[] = [
+  { key: 'x', label: 'Crop x' },
+  { key: 'y', label: 'Crop y' },
+  { key: 'width', label: 'Crop width' },
+  { key: 'height', label: 'Crop height' },
+]
+
+function setField(key: keyof CropRect, value: number) {
+  const rect = crop.value
+  if (!rect || !Number.isFinite(value)) {
+    return
+  }
+
+  const next = { ...rect, [key]: Math.round(value) }
+  if (props.aspect && props.aspect > 0) {
+    if (key === 'width') {
+      next.height = Math.round(next.width / props.aspect)
+    }
+    if (key === 'height') {
+      next.width = Math.round(next.height * props.aspect)
+    }
+  }
+
+  crop.value = clampCrop(next, natural.value.width, natural.value.height)
+}
+
 const HANDLES: { id: CropHandle, class: string }[] = [
   { id: 'nw', class: '-left-1.5 -top-1.5 cursor-nwse-resize' },
   { id: 'ne', class: '-right-1.5 -top-1.5 cursor-nesw-resize' },
@@ -106,32 +132,53 @@ const HANDLES: { id: CropHandle, class: string }[] = [
 </script>
 
 <template>
-  <div class="relative inline-block max-w-full select-none overflow-hidden rounded bg-default leading-none touch-none">
-    <img
-      ref="imageRef"
-      :src="src"
-      :alt="alt ?? 'Image to crop'"
-      class="block max-h-96 max-w-full"
-      draggable="false"
-      @load="onLoad"
-    >
+  <div class="space-y-3">
+    <div class="relative inline-block max-w-full select-none overflow-hidden rounded bg-default leading-none touch-none">
+      <img
+        ref="imageRef"
+        :src="src"
+        :alt="alt ?? 'Image to crop'"
+        class="block max-h-96 max-w-full"
+        draggable="false"
+        @load="onLoad"
+      >
+      <div
+        v-if="boxStyle"
+        class="absolute cursor-move border border-inverted shadow-[0_0_0_9999px_rgb(0_0_0/0.55)] outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        :style="boxStyle"
+        role="group"
+        tabindex="0"
+        aria-label="Crop area. Use the arrow keys to move it. Hold Shift for a larger step."
+        @pointerdown="startDrag('move', $event)"
+        @keydown="onKeydown"
+      >
+        <span
+          v-for="handle in HANDLES"
+          :key="handle.id"
+          class="absolute size-3 rounded-sm border border-default bg-inverted"
+          :class="handle.class"
+          @pointerdown.stop="startDrag(handle.id, $event)"
+        />
+      </div>
+    </div>
+
     <div
-      v-if="boxStyle"
-      class="absolute cursor-move border border-inverted shadow-[0_0_0_9999px_rgb(0_0_0/0.55)] outline-none focus-visible:ring-2 focus-visible:ring-primary"
-      :style="boxStyle"
-      role="group"
-      tabindex="0"
-      aria-label="Crop area. Use the arrow keys to move it. Hold Shift for a larger step."
-      @pointerdown="startDrag('move', $event)"
-      @keydown="onKeydown"
+      v-if="crop"
+      class="grid grid-cols-2 gap-3 sm:grid-cols-4"
     >
-      <span
-        v-for="handle in HANDLES"
-        :key="handle.id"
-        class="absolute size-3 rounded-sm border border-default bg-inverted"
-        :class="handle.class"
-        @pointerdown.stop="startDrag(handle.id, $event)"
-      />
+      <UFormField
+        v-for="field in FIELDS"
+        :key="field.key"
+        :label="field.label"
+      >
+        <UInput
+          :model-value="crop[field.key]"
+          type="number"
+          :min="0"
+          class="w-full"
+          @update:model-value="setField(field.key, Number($event))"
+        />
+      </UFormField>
     </div>
   </div>
 </template>

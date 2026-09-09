@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import type { CropRect } from '#shared/utils/image/crop'
 import type { ImageContainer } from '#shared/utils/image/exif'
-import type { ImageEncodeFormat, ImageFilter, ImageFit, ImagePresetId } from '#shared/utils/image/types'
+import type { CropAspectId, ImageEncodeFormat, ImageFilter, ImageFit, ImagePresetId } from '#shared/utils/image/types'
 import { formatBytes } from '#shared/utils/format'
 import { readImageMetadata } from '#shared/utils/image/exif'
 import { imageExtensionFor } from '#shared/utils/image/format'
-import { PRESET_SIZES } from '#shared/utils/image/presets'
+import { CROP_ASPECTS, PRESET_SIZES } from '#shared/utils/image/presets'
 import { readImageResponse } from '#shared/utils/image/response'
 import { cropImageFile } from '~/utils/image/crop-file'
 import { canProcessInBrowser, probeImageInBrowser, processImageInBrowser } from '~/utils/image/process-browser'
@@ -23,15 +23,13 @@ const props = withDefaults(defineProps<{
   crop?: boolean
 }>(), { sizeMode: 'original', format: 'webp', crop: false })
 
-type CropAspectMode = 'free' | 'output' | '1:1' | '16:9' | '4:3' | '3:2'
+/** `free` and `output` are not fixed shapes, so they stay out of the shared list. */
+type CropAspectMode = 'free' | 'output' | CropAspectId
 
 const cropAspectItems: { label: string, value: CropAspectMode }[] = [
   { label: 'Free', value: 'free' },
   { label: 'Match the output size', value: 'output' },
-  { label: 'Square (1:1)', value: '1:1' },
-  { label: 'Wide (16:9)', value: '16:9' },
-  { label: 'Standard (4:3)', value: '4:3' },
-  { label: 'Photo (3:2)', value: '3:2' },
+  ...CROP_ASPECTS.map(item => ({ label: item.label, value: item.value })),
 ]
 
 const sizeItems = [
@@ -144,8 +142,7 @@ const cropAspect = computed<number | null>(() => {
   if (mode === 'output') {
     return resizes.value && width.value > 0 && height.value > 0 ? width.value / height.value : null
   }
-  const [w, h] = mode.split(':').map(Number)
-  return w! / h!
+  return CROP_ASPECTS.find(item => item.value === mode)?.ratio ?? null
 })
 
 watch(file, async (selected) => {
@@ -348,7 +345,7 @@ function handleClear() {
           </h2>
           <UFormField
             label="Crop the image"
-            hint="The crop runs in your browser. Only the chosen pixels go to the server."
+            hint="The crop runs in your browser. On a server run, only the chosen pixels leave your device."
           >
             <USwitch v-model="cropEnabled" />
           </UFormField>
