@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import type { LightnessFix } from '#shared/utils/color/contrast-fix'
 import { contrastRatio, wcagLevel } from '#shared/utils/color/contrast'
+import { suggestLightnessFix } from '#shared/utils/color/contrast-fix'
 
 const foreground = ref('#ffffff')
 const background = ref('#7c3aed')
@@ -7,6 +9,27 @@ const ratio = ref<number | null>(null)
 const { status, error, run, reset } = useTool<string>()
 
 useToolSeo('contrast')
+
+const WCAG_TARGETS = [
+  { label: 'AA', target: 4.5 },
+  { label: 'AAA', target: 7 },
+] as const
+
+const fixes = computed(() => {
+  if (ratio.value === null) {
+    return []
+  }
+
+  return WCAG_TARGETS.flatMap(({ label, target }) => {
+    try {
+      const fix = suggestLightnessFix(foreground.value, background.value, target)
+      return fix ? [{ label, ...fix }] : []
+    }
+    catch {
+      return []
+    }
+  })
+})
 
 // WCAG uses a lower bar for large text: 18.66px bold, or 24px and larger.
 const results = computed(() => {
@@ -31,6 +54,16 @@ async function check() {
 function handleClear() {
   ratio.value = null
   reset()
+}
+
+function applyFix(fix: LightnessFix) {
+  if (fix.target === 'foreground') {
+    foreground.value = fix.hex
+  }
+  else {
+    background.value = fix.hex
+  }
+  check()
 }
 
 useToolShortcuts({
@@ -140,6 +173,42 @@ onMounted(() => {
           </tbody>
         </table>
       </div>
+
+      <div
+        v-if="fixes.length"
+        class="space-y-2"
+      >
+        <h2 class="text-sm font-medium text-highlighted">
+          Lightness fix
+        </h2>
+        <ul class="divide-y divide-default rounded-md border border-default">
+          <li
+            v-for="fix in fixes"
+            :key="fix.label"
+            class="flex flex-wrap items-center gap-3 px-3 py-2 text-sm"
+          >
+            <span
+              class="size-6 shrink-0 rounded border border-default"
+              :style="{ backgroundColor: fix.hex }"
+            />
+            <span class="text-muted">
+              For {{ fix.label }}, set the
+              {{ fix.target === 'foreground' ? 'text color' : 'background' }} to
+              <span class="font-mono text-highlighted">{{ fix.hex }}</span>.
+              The ratio becomes {{ fix.ratio.toFixed(2) }}:1.
+            </span>
+            <UButton
+              :label="`Apply ${fix.label} fix`"
+              size="sm"
+              color="neutral"
+              variant="subtle"
+              icon="i-lucide-paintbrush"
+              class="ms-auto"
+              @click="applyFix(fix)"
+            />
+          </li>
+        </ul>
+      </div>
     </div>
 
     <template #docs>
@@ -154,6 +223,12 @@ onMounted(() => {
           <p>
             Large text has a lower bar. Text of 24px, or 18.66px in bold, needs 3:1 for AA and 4.5:1
             for AAA. The table shows both results, so you can see where a color pair is usable.
+          </p>
+          <p>
+            When a pair fails, the tool suggests the smallest lightness change that makes it pass.
+            The change keeps the hue and the chroma of the color, so the color stays near the
+            original. The tool changes the text color or the background, and picks the one that
+            needs the smaller change.
           </p>
         </div>
         <RelatedTools
