@@ -26,4 +26,18 @@ test('designs CSS gradients and shows code declaration', { tag: '@smoke' }, asyn
     await expect(pre).toContainText('linear-gradient(135deg, #7c3aed 0%, #06b6d4 100%)')
     await expect(pre).not.toContainText('#f59e0b')
   })
+
+  await test.step('loads stops from pasted CSS', async () => {
+    await page.getByRole('textbox', { name: 'Paste CSS gradient' })
+      .fill('linear-gradient(to right, red 0%, rgb(0, 0, 255) 100%)')
+    await page.getByRole('button', { name: 'Load CSS' }).click()
+    await expect(pre).toContainText('linear-gradient(90deg, #ff0000 0%, #0000ff 100%)')
+  })
+
+  await test.step('warns about an unsupported gradient', async () => {
+    await page.getByRole('textbox', { name: 'Paste CSS gradient' })
+      .fill('conic-gradient(red, blue)')
+    await page.getByRole('button', { name: 'Load CSS' }).click()
+    await expect(page.getByText('Conic gradients are not supported.')).toBeVisible()
+  })
 })

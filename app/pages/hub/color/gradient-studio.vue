@@ -1,21 +1,27 @@
 <script setup lang="ts">
-import type { GradientStop, GradientType } from '#shared/utils/color/gradient'
+import type { GradientInterpolation, GradientStop, GradientType } from '#shared/utils/color/gradient'
 import {
   checkGradientTextContrast,
   createGradientStop,
   formatGradientCss,
   formatGradientDeclaration,
 } from '#shared/utils/color/gradient'
+import { parseGradientCss } from '#shared/utils/color/gradient-parse'
 
 const type = ref<GradientType>('linear')
 const angle = ref(135)
 const textColor = ref('#ffffff')
+const interpolation = ref<GradientInterpolation>('srgb')
 const stops = ref<GradientStop[]>([
   createGradientStop('#7c3aed', 0, 'stop-a'),
   createGradientStop('#06b6d4', 100, 'stop-b'),
 ])
+const pastedCss = ref('')
+const parseError = ref<string | null>(null)
+const parseWarnings = ref<string[]>([])
 
 const toast = useToast()
+const { reportInput } = useToolInput()
 const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
 
 const typeItems = [
@@ -25,29 +31,23 @@ const typeItems = [
 
 useToolSeo('gradient-studio')
 
+const gradient = computed(() => ({
+  type: type.value,
+  angle: angle.value,
+  stops: stops.value,
+  interpolation: interpolation.value,
+}))
+
 const cssValue = computed(() => {
   try {
-    return formatGradientCss({
-      type: type.value,
-      angle: angle.value,
-      stops: stops.value,
-    })
+    return formatGradientCss(gradient.value)
   }
   catch {
     return ''
   }
 })
 
-const cssDeclaration = computed(() => {
-  if (!cssValue.value) {
-    return ''
-  }
-  return formatGradientDeclaration({
-    type: type.value,
-    angle: angle.value,
-    stops: stops.value,
-  })
-})
+const cssDeclaration = computed(() => (cssValue.value ? formatGradientDeclaration(gradient.value) : ''))
 
 const contrast = computed(() => {
   try {
@@ -57,6 +57,28 @@ const contrast = computed(() => {
     return null
   }
 })
+
+function loadCss() {
+  parseError.value = null
+  parseWarnings.value = []
+  if (!pastedCss.value.trim()) {
+    return
+  }
+
+  reportInput('paste')
+
+  try {
+    const parsed = parseGradientCss(pastedCss.value)
+    type.value = parsed.type
+    angle.value = parsed.angle
+    interpolation.value = parsed.interpolation
+    stops.value = parsed.stops
+    parseWarnings.value = parsed.warnings
+  }
+  catch (cause) {
+    parseError.value = cause instanceof Error ? cause.message : 'The gradient is not valid.'
+  }
+}
 
 function updateStopColor(id: string, color: string) {
   const stop = stops.value.find(item => item.id === id)
@@ -97,6 +119,9 @@ function handleReset() {
   type.value = 'linear'
   angle.value = 135
   textColor.value = '#ffffff'
+  interpolation.value = 'srgb'
+  parseError.value = null
+  parseWarnings.value = []
   stops.value = [
     createGradientStop('#7c3aed', 0, 'stop-a'),
     createGradientStop('#06b6d4', 100, 'stop-b'),
@@ -117,6 +142,52 @@ useToolShortcuts({
       title="Processed locally"
       description="This tool runs in the browser. Contrast is sampled at each color stop and the average stop color, not across every rendered gradient pixel."
     />
+
+    <section class="space-y-3">
+      <UFormField
+        label="Paste CSS gradient"
+        help="Paste a linear-gradient() or a radial-gradient() value. The tool reads the stops and the angle."
+      >
+        <UTextarea
+          v-model="pastedCss"
+          :rows="2"
+          class="w-full"
+          placeholder="linear-gradient(135deg, #7c3aed 0%, #06b6d4 100%)"
+          :ui="{ base: 'font-mono' }"
+        />
+      </UFormField>
+      <UButton
+        label="Load CSS"
+        size="sm"
+        color="neutral"
+        variant="subtle"
+        icon="i-lucide-clipboard-paste"
+        :disabled="!pastedCss.trim()"
+        @click="loadCss"
+      />
+      <ToolError
+        v-if="parseError"
+        :message="parseError"
+      />
+      <UAlert
+        v-if="parseWarnings.length"
+        color="warning"
+        variant="subtle"
+        icon="i-lucide-triangle-alert"
+        title="Some CSS was not kept"
+      >
+        <template #description>
+          <ul class="list-disc space-y-1 pl-4">
+            <li
+              v-for="warning in parseWarnings"
+              :key="warning"
+            >
+              {{ warning }}
+            </li>
+          </ul>
+        </template>
+      </UAlert>
+    </section>
 
     <div class="flex flex-wrap gap-4">
       <UFormField label="Type">
@@ -300,6 +371,9 @@ useToolShortcuts({
           </p>
           <p>
             Use the angle control for linear gradients. Move each stop to set its position.
+          </p>
+          <p>
+            Paste a CSS gradient to load its stops and its angle. The tool reads one gradient layer. It does not read conic or repeating gradients.
           </p>
           <p>
             Contrast is sampled at each explicit color stop and their average color. It estimates readability at those points, but does not test every interpolated point across the rendered gradient canvas.

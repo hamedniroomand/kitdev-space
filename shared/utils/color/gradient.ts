@@ -3,16 +3,22 @@ import { parseColor } from './parse'
 
 export type GradientType = 'linear' | 'radial'
 
+/** The color space that the browser interpolates the stops in. */
+export type GradientInterpolation = 'srgb' | 'oklch'
+
 export interface GradientStop {
   id: string
   color: string
   position: number
+  /** Opacity, 0 to 1. An undefined value means 1. */
+  alpha?: number
 }
 
 export interface GradientOptions {
   type: GradientType
   angle: number
   stops: GradientStop[]
+  interpolation?: GradientInterpolation
 }
 
 export interface GradientContrastResult {
@@ -29,7 +35,7 @@ function clampPosition(value: number): number {
   return Math.min(100, Math.max(0, Math.round(value)))
 }
 
-function clampAngle(value: number): number {
+export function clampAngle(value: number): number {
   if (!Number.isFinite(value)) {
     return 0
   }
@@ -55,17 +61,26 @@ export function formatGradientCss(options: GradientOptions): string {
   }
 
   const stops = sortStops(options.stops)
-    .map((stop) => {
-      const color = parseColor(stop.color).hex
-      return `${color} ${clampPosition(stop.position)}%`
-    })
+    .map(stop => `${stopColorCss(stop)} ${clampPosition(stop.position)}%`)
     .join(', ')
 
+  const space = options.interpolation === 'oklch' ? ' in oklch' : ''
+
   if (options.type === 'radial') {
-    return `radial-gradient(circle, ${stops})`
+    return `radial-gradient(circle${space}, ${stops})`
   }
 
-  return `linear-gradient(${clampAngle(options.angle)}deg, ${stops})`
+  return `linear-gradient(${clampAngle(options.angle)}deg${space}, ${stops})`
+}
+
+/** Returns the stop color as hex. It adds the alpha byte only when the stop is not opaque. */
+export function stopColorCss(stop: GradientStop): string {
+  const hex = parseColor(stop.color).hex
+  const alpha = stop.alpha ?? 1
+  if (alpha >= 1) {
+    return hex
+  }
+  return `${hex}${Math.round(Math.max(0, alpha) * 255).toString(16).padStart(2, '0')}`
 }
 
 export function formatGradientDeclaration(options: GradientOptions): string {
