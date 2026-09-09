@@ -10,6 +10,7 @@ const digits = ref(6)
 const period = ref(30)
 const algorithm = ref<TotpAlgorithm>('SHA-1')
 
+const showSecret = ref(false)
 const issuer = ref('KitDev')
 const account = ref('admin@example.com')
 /** Empty means "use the clock of this device". A value freezes the clock for a repeatable test. */
@@ -117,6 +118,36 @@ onMounted(() => {
   updateTotp()
 })
 
+const clockOffsetSeconds = ref<number | null>(null)
+const clockCheckPending = ref(false)
+
+/**
+ * Compares the client clock with the `Date` response header of this site.
+ * The header holds whole seconds only, so the result is rounded to seconds.
+ */
+async function checkClockOffset() {
+  clockCheckPending.value = true
+  try {
+    const sentAt = Date.now()
+    const response = await fetch('/', { method: 'HEAD', cache: 'no-store' })
+    const serverDate = response.headers.get('date')
+    const serverMs = serverDate ? Date.parse(serverDate) : Number.NaN
+    clockOffsetSeconds.value = Number.isNaN(serverMs)
+      ? null
+      : Math.round(((sentAt + Date.now()) / 2 - serverMs) / 1000)
+  }
+  catch {
+    clockOffsetSeconds.value = null
+  }
+  finally {
+    clockCheckPending.value = false
+  }
+}
+
+onMounted(() => {
+  checkClockOffset()
+})
+
 function handleGenerateSecret() {
   secretInput.value = generateTotpSecret(20)
 }
@@ -216,12 +247,51 @@ function handleClear() {
             @click="handleGenerateSecret"
           />
         </template>
-        <UInput
-          v-model="secretInput"
-          placeholder="Paste Base32 secret key or otpauth:// URI..."
-          class="font-mono text-sm w-full"
-        />
+        <div class="flex items-center gap-2">
+          <UInput
+            v-model="secretInput"
+            :type="showSecret ? 'text' : 'password'"
+            placeholder="Paste Base32 secret key or otpauth:// URI..."
+            class="font-mono text-sm w-full"
+          />
+          <UButton
+            size="sm"
+            variant="ghost"
+            color="neutral"
+            :icon="showSecret ? 'i-lucide-eye-off' : 'i-lucide-eye'"
+            :aria-label="showSecret ? 'Hide the secret key' : 'Show the secret key'"
+            @click="showSecret = !showSecret"
+          />
+        </div>
       </UFormField>
+
+      <!-- Clock offset -->
+      <div class="flex flex-wrap items-center gap-x-2 gap-y-1 p-3 border border-default rounded-xl bg-elevated/20 text-xs text-muted">
+        <UIcon
+          name="i-lucide-clock-arrow-down"
+          class="size-4 shrink-0"
+        />
+        <span v-if="clockOffsetSeconds === null">
+          The clock offset is not available.
+        </span>
+        <span v-else>
+          Clock offset:
+          <span
+            class="font-mono font-semibold"
+            :class="Math.abs(clockOffsetSeconds) > 1 ? 'text-warning' : 'text-success'"
+          >{{ clockOffsetSeconds > 0 ? '+' : '' }}{{ clockOffsetSeconds }}s</span>
+        </span>
+        <span>The reference is the <code class="font-mono">Date</code> response header of this site. The header holds whole seconds, so the offset is rounded to seconds.</span>
+        <UButton
+          label="Check again"
+          icon="i-lucide-refresh-cw"
+          size="xs"
+          color="neutral"
+          variant="ghost"
+          :loading="clockCheckPending"
+          @click="checkClockOffset"
+        />
+      </div>
 
       <!-- URI fields and the fixed test time -->
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -346,6 +416,12 @@ function handleClear() {
           </p>
           <p>
             Give a Base32 secret or a full otpauth:// URI. The tool shows the current code and the seconds until the next code. Use it to test a login flow or to check that your server and your app agree.
+          </p>
+          <p>
+            The tool masks the secret key. Use the eye button to show it or to hide it. The tool keeps the secret in the page memory only. It writes no secret to local storage.
+          </p>
+          <p>
+            The tool also shows the offset between this device and the <code>Date</code> response header of this site. A large offset explains most failures of TOTP. The header holds whole seconds, so the offset is correct to one second only.
           </p>
           <p>
             Set a fixed test time to freeze the clock. The tool then gives the same code each time, so you can repeat a test. Clear the field to follow the clock of this device again.

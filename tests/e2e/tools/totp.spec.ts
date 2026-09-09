@@ -13,6 +13,13 @@ test('generates time-based one-time passwords', { tag: '@smoke' }, async ({ page
     expect(digits.replace(/\s+/g, '')).toMatch(/^\d{6}$/)
   })
 
+  await test.step('masks the secret key', async () => {
+    const secret = page.getByLabel('Base32 Secret or OTPAuth URI')
+    await expect(secret).toHaveAttribute('type', 'password')
+    await page.getByRole('button', { name: 'Show the secret key' }).click()
+    await expect(secret).toHaveAttribute('type', 'text')
+  })
+
   await test.step('switches to 8-digit passcode', async () => {
     await page.getByRole('button', { name: '8 Digits' }).click()
     const digits = (await codeContainer.textContent()) ?? ''
