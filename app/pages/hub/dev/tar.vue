@@ -1,66 +1,170 @@
 <script setup lang="ts">
-import type { TarEntry } from '#shared/utils/dev/tar'
-import { listTarEntries, readTarEntry } from '#shared/utils/dev/tar'
+import type { Archive, EntryPreview, TarEntry, TarTreeNode } from '#shared/utils/dev/tar'
+import { refDebounced, useObjectUrl } from '@vueuse/core'
+import { buildPathTree, openArchive, packEntries, previewFor } from '#shared/utils/dev/tar'
 import { formatBytes } from '#shared/utils/format'
 
 const file = ref<File | null>(null)
-const entries = ref<TarEntry[]>([])
+const archive = shallowRef<Archive | null>(null)
 const archiveBytes = ref<number | null>(null)
-// The archive is read once and kept, so a download needs no second read.
-const archive = shallowRef<Uint8Array | null>(null)
+const query = ref('')
+const search = refDebounced(query, 200)
+const selected = ref<string[]>([])
+const previewEntry = shallowRef<TarEntry | null>(null)
+const previewText = ref('')
+const previewImage = shallowRef<Uint8Array | null>(null)
+
 const { status, error, run, reset } = useTool<string>()
 const { downloadBlob } = useDownload()
 const toast = useToast()
 
 useToolSeo('tar-explorer')
 
-const fileCount = computed(() => entries.value.filter(entry => entry.type === 'file').length)
+// Inflated bytes stay here, so a second read of the same entry needs no second inflate.
+const cache = new Map<string, Uint8Array>()
+
+const entries = computed(() => archive.value?.entries ?? [])
+const files = computed(() => entries.value.filter(entry => entry.type === 'file'))
+
+const matches = computed(() => {
+  const term = search.value.trim().toLowerCase()
+  if (!term) {
+    return entries.value
+  }
+  return entries.value.filter(entry => entry.path.toLowerCase().includes(term))
+})
+
+const tree = computed(() => buildPathTree(matches.value))
+const sizes = computed(() => new Map(files.value.map(entry => [entry.path, entry.size])))
+const selectedBytes = computed(() => selected.value.reduce(
+  (sum, path) => sum + (sizes.value.get(path) ?? 0),
+  0,
+))
+
+const preview = computed<EntryPreview>(() => previewEntry.value
+  ? previewFor(previewEntry.value.path, previewEntry.value.size)
+  : { kind: 'none' })
+
+const previewLang = computed(() => preview.value.kind === 'text' ? preview.value.lang : 'text')
+
+const previewBlob = computed(() => {
+  if (preview.value.kind !== 'image' || !previewImage.value) {
+    return undefined
+  }
+  return new Blob([previewImage.value.slice()], { type: preview.value.mime })
+})
+
+// `useObjectUrl` revokes the old URL on every change and on unmount.
+const previewUrl = useObjectUrl(previewBlob)
+
+function clearResult() {
+  archive.value = null
+  archiveBytes.value = null
+  selected.value = []
+  previewEntry.value = null
+  previewText.value = ''
+  previewImage.value = null
+  cache.clear()
+}
 
 watch(file, () => {
-  entries.value = []
-  archiveBytes.value = null
-  archive.value = null
+  clearResult()
   reset()
 })
 
+function notify(cause: unknown, fallback: string) {
+  toast.add({ title: cause instanceof Error ? cause.message : fallback, color: 'error' })
+}
+
+function readEntry(path: string): Uint8Array {
+  const hit = cache.get(path)
+  if (hit) {
+    return hit
+  }
+
+  const bytes = archive.value!.read(path)
+  cache.set(path, bytes)
+  return bytes
+}
+
 async function inspect() {
-  entries.value = []
-  archiveBytes.value = null
+  clearResult()
 
   await run(async () => {
     if (!file.value) {
-      throw new Error('Choose a tar or tar.gz file before you run the tool.')
+      throw new Error('Choose an archive file before you run the tool.')
     }
 
     const bytes = new Uint8Array(await file.value.arrayBuffer())
-    entries.value = listTarEntries(bytes)
-    archive.value = bytes
+    archive.value = openArchive(bytes)
     archiveBytes.value = bytes.byteLength
     return `${entries.value.length} entries`
   }, 'The archive list failed.')
 }
 
-function downloadEntry(path: string) {
-  if (!archive.value) {
+function handleSelect(path: string) {
+  selected.value = selected.value.includes(path)
+    ? selected.value.filter(item => item !== path)
+    : [...selected.value, path]
+}
+
+function selectAll() {
+  selected.value = matches.value.filter(entry => entry.type === 'file').map(entry => entry.path)
+}
+
+function handlePreview(node: TarTreeNode) {
+  previewEntry.value = { path: node.path, size: node.size, type: node.type }
+  previewText.value = ''
+  previewImage.value = null
+
+  if (preview.value.kind === 'none') {
     return
   }
 
   try {
-    const content = readTarEntry(archive.value, path)
-    downloadBlob(path.split('/').pop() || 'entry.bin', new Blob([content.slice()]))
+    const bytes = readEntry(node.path)
+    if (preview.value.kind === 'text') {
+      previewText.value = new TextDecoder().decode(bytes)
+    }
+    else {
+      previewImage.value = bytes
+    }
+  }
+  catch (cause) {
+    notify(cause, 'The preview failed.')
+  }
+}
+
+function downloadEntry(path: string) {
+  try {
+    downloadBlob(path.split('/').pop() || 'entry.bin', new Blob([readEntry(path).slice()]))
     toast.add({ title: 'Downloaded', color: 'success' })
   }
   catch (cause) {
-    const message = cause instanceof Error ? cause.message : 'Download failed.'
-    toast.add({ title: message, color: 'error' })
+    notify(cause, 'The download failed.')
+  }
+}
+
+function downloadSelection() {
+  try {
+    const picked: Record<string, Uint8Array> = {}
+    for (const path of selected.value) {
+      picked[path] = readEntry(path)
+    }
+
+    const zip = packEntries(picked)
+    downloadBlob('extracted.zip', new Blob([zip.slice()], { type: 'application/zip' }))
+    toast.add({ title: 'Downloaded', color: 'success' })
+  }
+  catch (cause) {
+    notify(cause, 'The download failed.')
   }
 }
 
 function handleClear() {
   file.value = null
-  entries.value = []
-  archiveBytes.value = null
-  archive.value = null
+  query.value = ''
+  clearResult()
   reset()
 }
 
@@ -81,9 +185,9 @@ useToolShortcuts({
 
     <ImageDropzone
       v-model="file"
-      accept=".tar,.tar.gz,application/x-tar,application/gzip"
-      prompt="Drop a .tar or .tar.gz here, or click to choose a file."
-      hint="Max size 25 MB. Use .tar or .tar.gz."
+      accept=".tar,.tar.gz,.tgz,.zip,.bz2,.xz,application/x-tar,application/gzip,application/zip"
+      prompt="Drop a .tar, .tgz, or .zip here, or click to choose a file."
+      hint="Max size 25 MB. Use .tar, .tar.gz, .tgz, or .zip."
     />
 
     <ToolActions>
@@ -112,70 +216,122 @@ useToolShortcuts({
       v-if="archiveBytes != null"
       class="text-sm text-muted"
     >
-      Archive size {{ formatBytes(archiveBytes) }} · {{ fileCount }} files · {{ entries.length }} entries
+      Archive size {{ formatBytes(archiveBytes) }} · {{ files.length }} files ·
+      {{ entries.length }} entries
     </p>
 
-    <div
-      v-if="entries.length"
-      class="overflow-hidden rounded-md border border-default"
-    >
-      <table class="w-full text-left text-sm">
-        <thead class="bg-elevated/60 text-xs text-muted">
-          <tr>
-            <th class="px-3 py-2 font-medium">
-              Path
-            </th>
-            <th class="px-3 py-2 font-medium">
-              Size
-            </th>
-            <th class="px-3 py-2 font-medium">
-              Action
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="entry in entries"
-            :key="entry.path"
-            class="border-t border-default"
-          >
-            <td class="px-3 py-2 font-mono text-highlighted">
-              {{ entry.path }}
-            </td>
-            <td class="px-3 py-2 text-muted">
-              {{ entry.type === 'directory' ? '—' : formatBytes(entry.size) }}
-            </td>
-            <td class="px-3 py-2">
-              <UButton
-                v-if="entry.type === 'file'"
-                size="xs"
-                color="neutral"
-                variant="soft"
-                @click="downloadEntry(entry.path)"
-              >
-                Download
-              </UButton>
-              <span
-                v-else
-                class="text-muted"
-              >{{ entry.type }}</span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <template v-if="entries.length">
+      <UFormField
+        label="Search paths"
+        help="The tree shows the paths that hold this text."
+      >
+        <UInput
+          v-model="query"
+          icon="i-lucide-search"
+          placeholder="src/index.ts"
+          class="w-full sm:w-80"
+        />
+      </UFormField>
+
+      <ToolActions>
+        <span class="self-center text-sm text-muted">
+          {{ selected.length }} selected · {{ formatBytes(selectedBytes) }}
+        </span>
+        <UButton
+          size="xs"
+          color="neutral"
+          variant="subtle"
+          @click="selectAll"
+        >
+          Select all
+        </UButton>
+        <UButton
+          size="xs"
+          color="neutral"
+          variant="subtle"
+          :disabled="!selected.length"
+          @click="selected = []"
+        >
+          Clear selection
+        </UButton>
+        <UButton
+          size="xs"
+          color="primary"
+          icon="i-lucide-file-archive"
+          :disabled="!selected.length"
+          @click="downloadSelection"
+        >
+          Download zip
+        </UButton>
+      </ToolActions>
+
+      <div class="rounded-md border border-default p-2">
+        <p
+          v-if="!tree.length"
+          class="px-2 py-1 text-sm text-muted"
+        >
+          No path holds this text.
+        </p>
+        <TarTreeNode
+          v-for="node in tree"
+          :key="node.path"
+          :node="node"
+          :selected="selected"
+          :active-path="previewEntry?.path ?? null"
+          @select="handleSelect"
+          @preview="handlePreview"
+          @download="downloadEntry"
+        />
+      </div>
+    </template>
+
+    <template v-if="previewEntry">
+      <p class="font-mono text-sm text-highlighted">
+        {{ previewEntry.path }}
+      </p>
+
+      <LazyToolEditor
+        v-if="preview.kind === 'text'"
+        v-model="previewText"
+        hydrate-on-idle
+        label="Preview"
+        readonly
+        :lang="previewLang"
+      />
+
+      <img
+        v-else-if="preview.kind === 'image' && previewUrl"
+        :src="previewUrl"
+        :alt="`Preview of ${previewEntry.path}`"
+        class="max-h-96 rounded-md border border-default bg-elevated/40 object-contain"
+      >
+
+      <p
+        v-else
+        class="text-sm text-muted"
+      >
+        This entry has no preview. Download it to open it. The tool previews text and images of
+        less than 1 MB.
+      </p>
+    </template>
 
     <template #docs>
-      <ToolDocs title="About tar archives">
+      <ToolDocs title="About archive files">
         <div class="space-y-4 text-muted">
           <p>
-            Use this tool to look in a .tar or .tar.gz file without extraction. It lists each entry
-            with the path, the type, and the size. You can download one entry.
+            Use this tool to look in a .tar, .tar.gz, .tgz, or .zip file without extraction. It
+            lists each entry with the path, the type, and the size. Search the paths, open a
+            preview, and download one entry or a zip of many.
           </p>
           <p>
             The tool reads the archive in your browser. It removes the gzip layer, then walks the
-            512-byte header blocks. It reads the long path forms of GNU tar and of bsdtar, so a deep
-            path is correct.
+            512-byte header blocks. It reads the long path forms of GNU tar and of bsdtar, so a
+            deep path is correct. A zip file uses its central directory, so an entry stays packed
+            until you ask for it.
+          </p>
+          <p>
+            bzip2 and xz need a decoder that the browser does not have. The tool reports
+            "Unsupported compression format" for such a file.
           </p>
           <p>
             Choose a file of 25 MB or smaller. Then select Inspect.

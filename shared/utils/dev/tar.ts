@@ -1,11 +1,12 @@
-import { gunzipSync } from 'fflate'
+import type { ToolEditorLang } from './editor-lang'
+import { gunzipSync, unzipSync, zipSync } from 'fflate'
 
 /**
- * A tar reader for the browser.
+ * An archive reader for the browser.
  *
- * fflate covers gzip only, so this walks the tar blocks. A tar file is a list
- * of 512-byte header blocks. Each header is followed by the file content,
- * padded to a multiple of 512.
+ * fflate covers gzip and zip only, so this walks the tar blocks. A tar file is
+ * a list of 512-byte header blocks. Each header is followed by the file
+ * content, padded to a multiple of 512.
  * @see https://www.gnu.org/software/tar/manual/html_node/Standard.html
  */
 
@@ -15,16 +16,26 @@ export interface TarEntry {
   path: string
   size: number
   type: TarEntryType
-  /** Offset of the content in the uncompressed archive. */
-  offset: number
+}
+
+export type ArchiveFormat = 'tar' | 'gzip' | 'zip'
+
+export interface Archive {
+  format: ArchiveFormat
+  entries: TarEntry[]
+  /** Inflates one entry. The rest of the archive stays packed. */
+  read: (path: string) => Uint8Array
 }
 
 const BLOCK = 512
 export const MAX_ARCHIVE_BYTES = 25 * 1024 * 1024
+const INVALID_ARCHIVE = 'The archive could not be read.\n\nUse a valid .tar, .tar.gz, or .zip file.'
+const UNSUPPORTED_FORMAT = 'Unsupported compression format.\n\nUse a .tar, .tar.gz, .tgz, or .zip file.'
+const ENTRY_NOT_FOUND = 'The entry was not found in the archive.'
 
 export function assertArchiveSize(byteLength: number): void {
   if (byteLength <= 0) {
-    throw new Error('Choose a tar or tar.gz file before you run the tool.')
+    throw new Error('Choose an archive file before you run the tool.')
   }
   if (byteLength > MAX_ARCHIVE_BYTES) {
     throw new Error('The archive is too large.\n\nUse a file that is 25 MB or smaller.')
@@ -41,8 +52,30 @@ export function assertSafeEntryPath(path: string): void {
   }
 }
 
-function isGzip(bytes: Uint8Array): boolean {
-  return bytes.length > 2 && bytes[0] === 0x1F && bytes[1] === 0x8B
+function hasMagic(bytes: Uint8Array, magic: number[]): boolean {
+  return magic.every((byte, index) => bytes[index] === byte)
+}
+
+/**
+ * Reads the format from the first bytes.
+ *
+ * bzip2 and xz need a decoder that no browser gives, so they report an error
+ * instead of a failed tar walk.
+ */
+export function detectArchiveFormat(bytes: Uint8Array): ArchiveFormat {
+  if (hasMagic(bytes, [0x1F, 0x8B])) {
+    return 'gzip'
+  }
+  if (hasMagic(bytes, [0x50, 0x4B, 0x03, 0x04])) {
+    return 'zip'
+  }
+  if (hasMagic(bytes, [0x42, 0x5A, 0x68])) {
+    throw new Error(UNSUPPORTED_FORMAT)
+  }
+  if (hasMagic(bytes, [0xFD, 0x37, 0x7A, 0x58, 0x5A, 0x00])) {
+    throw new Error(UNSUPPORTED_FORMAT)
+  }
+  return 'tar'
 }
 
 const decoder = new TextDecoder()
@@ -132,7 +165,7 @@ function entryType(flag: string, path: string): TarEntryType {
 export function inflateArchive(input: Uint8Array): Uint8Array {
   assertArchiveSize(input.byteLength)
 
-  if (!isGzip(input)) {
+  if (detectArchiveFormat(input) !== 'gzip') {
     return input
   }
 
@@ -145,13 +178,17 @@ export function inflateArchive(input: Uint8Array): Uint8Array {
     if (cause instanceof Error && cause.message.includes('25 MB')) {
       throw cause
     }
-    throw new Error('The archive could not be read.\n\nUse a valid .tar or .tar.gz file.', { cause })
+    throw new Error(INVALID_ARCHIVE, { cause })
   }
 }
 
-export function listTarEntries(input: Uint8Array): TarEntry[] {
-  const bytes = inflateArchive(input)
-  const entries: TarEntry[] = []
+/** A tar entry with the offset of its content in the uncompressed archive. */
+interface TarBlock extends TarEntry {
+  offset: number
+}
+
+function walkTar(bytes: Uint8Array): TarBlock[] {
+  const entries: TarBlock[] = []
   let offset = 0
   // A long name arrives in its own block, before the entry that it names.
   // GNU tar writes an 'L' entry. bsdtar writes a PAX 'x' header.
@@ -213,23 +250,258 @@ export function listTarEntries(input: Uint8Array): TarEntry[] {
     offset = content + padded
   }
 
-  if (entries.length === 0) {
-    throw new Error('The archive could not be read.\n\nUse a valid .tar or .tar.gz file.')
+  entries.sort((a, b) => a.path.localeCompare(b.path))
+  return entries
+}
+
+/**
+ * Lists the zip entries without inflation.
+ *
+ * A `filter` that returns `false` keeps the entry packed, so this walks the
+ * central directory only. `originalSize` is the uncompressed size.
+ */
+function listZipEntries(input: Uint8Array): TarEntry[] {
+  const entries: TarEntry[] = []
+
+  try {
+    unzipSync(input, {
+      filter(file) {
+        const clean = file.name.replace(/^\.\//, '').replace(/\/$/, '')
+        if (clean) {
+          entries.push({
+            path: clean,
+            size: file.originalSize ?? 0,
+            type: file.name.endsWith('/') ? 'directory' : 'file',
+          })
+        }
+        return false
+      },
+    })
+  }
+  catch (cause) {
+    throw new Error(INVALID_ARCHIVE, { cause })
   }
 
   entries.sort((a, b) => a.path.localeCompare(b.path))
   return entries
 }
 
-export function readTarEntry(input: Uint8Array, path: string): Uint8Array {
+function readZipEntry(input: Uint8Array, path: string): Uint8Array {
   assertSafeEntryPath(path)
 
-  const bytes = inflateArchive(input)
-  const entry = listTarEntries(input).find(item => item.path === path)
-
-  if (!entry || entry.type === 'directory') {
-    throw new Error('The entry was not found in the archive.')
+  let found: Record<string, Uint8Array>
+  try {
+    found = unzipSync(input, { filter: file => file.name.replace(/^\.\//, '') === path })
+  }
+  catch (cause) {
+    throw new Error(INVALID_ARCHIVE, { cause })
   }
 
-  return bytes.slice(entry.offset, entry.offset + entry.size)
+  const bytes = found[path]
+
+  if (!bytes) {
+    throw new Error(ENTRY_NOT_FOUND)
+  }
+
+  return bytes
+}
+
+/**
+ * Opens an archive for the page.
+ *
+ * The listing is cheap: a tar walk reads the headers, and a zip walk reads the
+ * central directory. `read` inflates one entry when the user asks for it, so a
+ * large archive never sits unpacked in memory.
+ */
+export function openArchive(input: Uint8Array): Archive {
+  assertArchiveSize(input.byteLength)
+  const format = detectArchiveFormat(input)
+
+  if (format === 'zip') {
+    const entries = listZipEntries(input)
+    if (entries.length === 0) {
+      throw new Error(INVALID_ARCHIVE)
+    }
+    return { format, entries, read: path => readZipEntry(input, path) }
+  }
+
+  const bytes = inflateArchive(input)
+  const blocks = walkTar(bytes)
+
+  if (blocks.length === 0) {
+    throw new Error(INVALID_ARCHIVE)
+  }
+
+  return {
+    format,
+    entries: blocks.map(({ path, size, type }) => ({ path, size, type })),
+    read(path) {
+      assertSafeEntryPath(path)
+      const block = blocks.find(item => item.path === path)
+
+      if (!block || block.type === 'directory') {
+        throw new Error(ENTRY_NOT_FOUND)
+      }
+
+      return bytes.slice(block.offset, block.offset + block.size)
+    },
+  }
+}
+
+export function listTarEntries(input: Uint8Array): TarEntry[] {
+  return openArchive(input).entries
+}
+
+export function readTarEntry(input: Uint8Array, path: string): Uint8Array {
+  return openArchive(input).read(path)
+}
+
+export interface TarTreeNode {
+  path: string
+  name: string
+  type: TarEntryType
+  size: number
+  children: TarTreeNode[]
+}
+
+/**
+ * Builds the folder hierarchy from the entry paths.
+ *
+ * A zip often holds no directory entry, so a missing folder comes from the
+ * path segments of its children.
+ */
+export function buildPathTree(entries: TarEntry[]): TarTreeNode[] {
+  const roots: TarTreeNode[] = []
+  const index = new Map<string, TarTreeNode>()
+
+  for (const entry of entries) {
+    const segments = entry.path.split('/').filter(Boolean)
+    let parentPath = ''
+
+    segments.forEach((name, depth) => {
+      const path = parentPath ? `${parentPath}/${name}` : name
+      const last = depth === segments.length - 1
+      let node = index.get(path)
+
+      if (!node) {
+        node = {
+          path,
+          name,
+          type: last ? entry.type : 'directory',
+          size: last ? entry.size : 0,
+          children: [],
+        }
+        index.set(path, node)
+        const parent = index.get(parentPath)
+        ;(parent ? parent.children : roots).push(node)
+      }
+      else if (last) {
+        node.type = entry.type
+        node.size = entry.size
+      }
+
+      parentPath = path
+    })
+  }
+
+  return roots
+}
+
+export const MAX_PREVIEW_BYTES = 1024 * 1024
+
+export type EntryPreview
+  = | { kind: 'none' }
+    | { kind: 'image', mime: string }
+    | { kind: 'text', lang: ToolEditorLang }
+
+const IMAGE_MIME: Record<string, string> = {
+  png: 'image/png',
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  svg: 'image/svg+xml',
+  webp: 'image/webp',
+}
+
+const TEXT_LANG: Record<string, ToolEditorLang> = {
+  cjs: 'javascript',
+  js: 'javascript',
+  mjs: 'javascript',
+  cts: 'typescript',
+  mts: 'typescript',
+  ts: 'typescript',
+  jsx: 'jsx',
+  tsx: 'tsx',
+  json: 'json',
+  jsonc: 'json',
+  json5: 'json',
+  htm: 'html',
+  html: 'html',
+  vue: 'html',
+  css: 'css',
+  less: 'css',
+  scss: 'css',
+  md: 'markdown',
+  markdown: 'markdown',
+  sql: 'sql',
+  xml: 'xml',
+  yaml: 'yaml',
+  yml: 'yaml',
+  cfg: 'text',
+  conf: 'text',
+  csv: 'text',
+  editorconfig: 'text',
+  env: 'text',
+  gitignore: 'text',
+  ini: 'text',
+  lock: 'text',
+  log: 'text',
+  npmrc: 'text',
+  sh: 'text',
+  toml: 'text',
+  txt: 'text',
+}
+
+const TEXT_NAMES = new Set(['changelog', 'dockerfile', 'license', 'makefile', 'readme'])
+
+/**
+ * Reports how the page can show one entry.
+ *
+ * The extension decides the kind. An unknown extension gives `none`, so a
+ * binary file never reaches the editor. An entry of 1 MB or more gives `none`.
+ */
+export function previewFor(path: string, size: number): EntryPreview {
+  const name = (path.split('/').pop() ?? '').toLowerCase()
+  const extension = name.includes('.') ? name.slice(name.lastIndexOf('.') + 1) : ''
+  const mime = IMAGE_MIME[extension]
+
+  if (size >= MAX_PREVIEW_BYTES) {
+    return { kind: 'none' }
+  }
+  if (mime) {
+    return { kind: 'image', mime }
+  }
+
+  const lang = extension ? TEXT_LANG[extension] : (TEXT_NAMES.has(name) ? 'text' : undefined)
+  return lang ? { kind: 'text', lang } : { kind: 'none' }
+}
+
+/**
+ * Packs the chosen entries into a zip.
+ *
+ * The 25 MB limit covers the output as well as the input.
+ */
+export function packEntries(files: Record<string, Uint8Array>): Uint8Array {
+  const paths = Object.keys(files)
+
+  if (paths.length === 0) {
+    throw new Error('Select one file or more before you download.')
+  }
+
+  const total = paths.reduce((sum, path) => sum + (files[path]?.byteLength ?? 0), 0)
+
+  if (total > MAX_ARCHIVE_BYTES) {
+    throw new Error('The selection is too large.\n\nSelect files of 25 MB or smaller in total.')
+  }
+
+  return zipSync(files)
 }
