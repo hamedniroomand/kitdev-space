@@ -16,6 +16,9 @@
             Set the word count, the separator, and the capitals. A capital letter and a separator add little strength. The word count adds strength. Do not change a word after generation, because a change that a person makes is not random.
           </p>
           <p>
+            A passphrase fits a secret that a person types or says, such as a login password or a disk encryption key. A passphrase does not fit a record ID, because it is long and it does not sort by creation time. Use a UUID v7 or a ULID for a record ID.
+          </p>
+          <p>
             Every passphrase is made in your browser. Nothing is sent to a server. Use the Password Benchmark tool to see how long an attack on the result takes.
           </p>
         </div>
