@@ -296,9 +296,31 @@ useToolShortcuts({
             never leaves your browser and never sits in memory as one block.
           </p>
           <p>
-            The JSON object source gives a stable digest for an object. The keys are sorted at every
-            level and the spaces are removed, so the same content in a different key order gives the same
-            hash. Use it as a cache key, a deduplication key, or a change detector for a config object.
+            The JSON object source gives a stable digest for an object. The tool sorts the keys at
+            every level, keeps the order of each array, and writes the text with no spaces and no
+            line breaks. The same content in a different key order then gives the same hash. Use it
+            as a cache key, a deduplication key, or a change detector for a config object.
+          </p>
+          <p>
+            The JSON rules have three more effects. The tool sorts the keys by their code unit
+            value, so <code>Z</code> comes before <code>a</code>. The tool writes each number in the
+            standard JSON form, so <code>1.0</code> becomes <code>1</code> and <code>1e3</code>
+            becomes <code>1000</code>. The tool removes a comment and a trailing comma, because it
+            reads JSON5 and JSONC input. Hash the canonical text below to reproduce the digest.
+          </p>
+          <h3 class="font-semibold text-highlighted">
+            Text encoding
+          </h3>
+          <p>
+            The tool converts your text to UTF-8 bytes, and hashes the bytes. A character outside
+            the ASCII set is more than one byte: <code>é</code> is 2 bytes and <code>😀</code> is 4
+            bytes. A hash of text is a hash of bytes, so the encoding is part of the input.
+          </p>
+          <p>
+            Three details change the digest, and each one is easy to miss. A byte order mark at the
+            start of a file is 3 bytes. A Windows line break is 2 bytes, and a Unix line break is 1
+            byte. A last empty line adds a byte. Compare a checksum against the exact bytes of the
+            file, and use the File source for a file.
           </p>
           <p>
             Paste the hash of the publisher into the expected hash field to get a Match or a
@@ -308,6 +330,11 @@ useToolShortcuts({
           <p>
             These digests are not password hashes. A password needs a slow algorithm such as bcrypt,
             scrypt, or Argon2. Do not store a password with MD5, SHA-1, or SHA-256.
+          </p>
+          <p>
+            A digest is also not a signature. It proves that two inputs are the same. It does not
+            prove who made the input, because anybody can calculate the same digest. A signature
+            needs a key: use the HMAC Generator for a shared key, or a public key signature.
           </p>
         </div>
         <RelatedTools
