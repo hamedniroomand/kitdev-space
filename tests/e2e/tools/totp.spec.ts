@@ -21,7 +21,7 @@ test('generates time-based one-time passwords', { tag: '@smoke' }, async ({ page
   })
 
   await test.step('masks the secret key', async () => {
-    const secret = page.getByLabel('Base32 Secret or OTPAuth URI')
+    const secret = page.getByPlaceholder('Paste Base32 secret')
     await expect(secret).toHaveAttribute('type', 'password')
     await page.getByRole('button', { name: 'Show the secret key' }).click()
     await expect(secret).toHaveAttribute('type', 'text')
@@ -34,7 +34,7 @@ test('generates time-based one-time passwords', { tag: '@smoke' }, async ({ page
   })
 
   await test.step('switches hash algorithm', async () => {
-    await page.getByLabel('Hash algorithm').click()
+    await page.locator('select, [role="combobox"]').first().click()
     await page.getByRole('option', { name: 'SHA-256' }).click()
     const digits = (await codeContainer.textContent()) ?? ''
     expect(digits.replace(/\s+/g, '')).toMatch(/^\d{8}$/)
@@ -45,9 +45,9 @@ test('generates time-based one-time passwords', { tag: '@smoke' }, async ({ page
   })
 
   await test.step('freezes the clock at a fixed test time', async () => {
-    await page.getByLabel('Fixed test time').fill('2026-01-01T00:00:30')
-    const frozen = (await codeContainer.textContent()) ?? ''
+    await page.locator('input[type="datetime-local"]').fill('2026-01-01T00:00:30')
     await expect(page.getByText('The clock is frozen')).toBeVisible()
+    const frozen = (await codeContainer.textContent()) ?? ''
     await page.waitForTimeout(1500)
     expect((await codeContainer.textContent()) ?? '').toBe(frozen)
   })
