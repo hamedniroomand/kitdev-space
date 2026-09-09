@@ -7,5 +7,5 @@ test('calculates text statistics', { tag: '@smoke' }, async ({ page }) => {
   await fillCodeMirror(page, 'Text input', 'One two three four five.')
 
   await expect(page.getByText('Words', { exact: true })).toBeVisible()
-  await expect(page.locator('div').filter({ has: page.getByText('Words', { exact: true }) }).getByText('5', { exact: true })).toBeVisible()
+  await expect(page.getByLabel('Word count').getByText('5', { exact: true })).toBeVisible()
 })

@@ -22,7 +22,7 @@ test('converts color formats', { tag: '@smoke' }, async ({ page }) => {
   })
 
   await test.step('converts user-provided color', async () => {
-    const colorInput = page.getByRole('textbox', { name: 'Color' })
+    const colorInput = page.getByRole('textbox', { name: 'Color', exact: true })
     await colorInput.fill('#ff0000')
 
     await expect(page.getByText('#ff0000').first()).toBeVisible()
@@ -30,7 +30,7 @@ test('converts color formats', { tag: '@smoke' }, async ({ page }) => {
   })
 
   await test.step('keeps the alpha value in every format', async () => {
-    const colorInput = page.getByRole('textbox', { name: 'Color' })
+    const colorInput = page.getByRole('textbox', { name: 'Color', exact: true })
     await colorInput.fill('rgba(124, 58, 237, 0.4)')
 
     await expect(page.getByText('#7c3aed66').first()).toBeVisible()
@@ -38,7 +38,7 @@ test('converts color formats', { tag: '@smoke' }, async ({ page }) => {
   })
 
   await test.step('warns when a color is outside the sRGB gamut', async () => {
-    const colorInput = page.getByRole('textbox', { name: 'Color' })
+    const colorInput = page.getByRole('textbox', { name: 'Color', exact: true })
     await colorInput.fill('oklch(86.6% 0.295 142.5)')
 
     await expect(page.getByText('sRGB: outside', { exact: true })).toBeVisible()
@@ -46,7 +46,7 @@ test('converts color formats', { tag: '@smoke' }, async ({ page }) => {
   })
 
   await test.step('shows the picked color in the native color picker', async () => {
-    const colorInput = page.getByRole('textbox', { name: 'Color' })
+    const colorInput = page.getByRole('textbox', { name: 'Color', exact: true })
     await colorInput.fill('#7c3aed')
 
     await expect(page.getByLabel('Color picker')).toHaveValue('#7c3aed')
@@ -54,7 +54,7 @@ test('converts color formats', { tag: '@smoke' }, async ({ page }) => {
 
   await test.step('clears color and conversion results', async () => {
     await page.getByRole('button', { name: 'Clear' }).click()
-    const colorInput = page.getByRole('textbox', { name: 'Color' })
+    const colorInput = page.getByRole('textbox', { name: 'Color', exact: true })
     await expect(colorInput).toHaveValue('')
     await expect(page.getByText('HEX', { exact: true })).not.toBeVisible()
   })
