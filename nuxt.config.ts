@@ -156,41 +156,6 @@ export default defineNuxtConfig({
         },
       ],
     },
-    workbox: {
-      navigateFallback: '/',
-      globPatterns: ['**/*.{js,css,html,png,svg,ico,woff,woff2}'],
-      runtimeCaching: [
-        {
-          urlPattern: /^https:\/\/fonts\.(?:googleapis|gstatic)\.com\/.*/i,
-          handler: 'CacheFirst',
-          options: {
-            cacheName: 'google-fonts',
-            expiration: {
-              maxEntries: 10,
-              maxAgeSeconds: 60 * 60 * 24 * 365,
-            },
-          },
-        },
-        {
-          urlPattern: /\/hub\/(?!network\/(?:dns|http-inspector|email-health|tls-inspector|rdap-lookup)).*/,
-          handler: 'StaleWhileRevalidate',
-          options: {
-            cacheName: 'client-tools-cache',
-            expiration: {
-              maxEntries: 100,
-              maxAgeSeconds: 60 * 60 * 24 * 30,
-            },
-          },
-        },
-      ],
-      navigateFallbackDenylist: [/^\/api\//, /^\/tunnel/],
-    },
-    client: {
-      installPrompt: true,
-    },
-    devOptions: {
-      enabled: false,
-    },
   },
 
   sourcemap: { client: 'hidden' },
