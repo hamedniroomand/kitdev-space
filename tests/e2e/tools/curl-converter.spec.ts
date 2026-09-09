@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { gotoHydrated } from '../utils'
+import { fillCodeMirror, gotoHydrated } from '../utils'
 
 test.describe('cURL to Code Converter Tool', () => {
   test('converts cURL to multiple languages and clears editors', { tag: '@smoke' }, async ({ page }) => {
@@ -33,6 +33,31 @@ test.describe('cURL to Code Converter Tool', () => {
       await page.getByRole('button', { name: 'Load GET Sample' }).click()
       const outputText = (await outputEditor.textContent()) ?? ''
       expect(outputText).toContain('api.example.com/v1/items?limit=10')
+    })
+
+    await test.step('shows the summary, the ignored options, and the mask', async () => {
+      await fillCodeMirror(
+        page,
+        'cURL Command',
+        'curl -k -b session=abc https://api.example.com/v1/ping -H "Authorization: Bearer top-secret"',
+      )
+
+      await expect(page.locator('div[aria-label="Method"]')).toContainText('GET')
+      await expect(page.locator('div[aria-label="Target URL"]')).toContainText('https://api.example.com/v1/ping')
+      await expect(page.locator('div[aria-label="Headers"]')).toContainText('1')
+      await expect(page.locator('div[aria-label="Payload"]')).toContainText('0 B')
+
+      await expect(page.getByText('Some cURL options are not in the code')).toBeVisible()
+      await expect(page.getByText('The code sends no cookie.')).toBeVisible()
+      await expect(page.getByText('The code validates the TLS certificate.')).toBeVisible()
+
+      expect((await outputEditor.textContent()) ?? '').toContain('Bearer top-secret')
+
+      await page.getByRole('switch', { name: 'Mask credentials' }).click()
+
+      const maskedText = (await outputEditor.textContent()) ?? ''
+      expect(maskedText).toContain('Bearer <redacted>')
+      expect(maskedText).not.toContain('top-secret')
     })
 
     await test.step('clears input and output', async () => {

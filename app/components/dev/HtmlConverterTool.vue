@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { ToolEditorLang } from '#shared/utils/dev/editor-lang'
+import type { ConvertNoteKind, ConvertResult } from '#shared/utils/dev/html-converter'
 import { convertHtmlToJsx, convertHtmlToVue } from '#shared/utils/dev/html-converter'
 
 type TargetFormat = 'jsx' | 'vue-template' | 'vue-sfc'
@@ -10,6 +11,14 @@ const props = withDefaults(defineProps<{
   /** The sample that is loaded when the page opens. */
   sample?: 'card' | 'svg'
 }>(), { sample: 'card' })
+
+const NOTE_LABELS: Record<ConvertNoteKind, string> = {
+  doctype: 'Doctype',
+  script: 'Script',
+  event: 'Event handler',
+  attribute: 'Attribute',
+  style: 'Style',
+}
 
 const sampleHtml = `<div class="card" style="padding: 20px; background-color: #f8fafc; border-radius: 8px;">
   <!-- User Profile Section -->
@@ -34,6 +43,7 @@ const targetFormat = ref<TargetFormat>('jsx')
 const wrapJsxComponent = ref(true)
 const componentName = ref('UserProfileCard')
 const spreadProps = ref(false)
+const titleProp = ref(false)
 
 const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
 const { downloadText } = useDownload()
@@ -61,24 +71,29 @@ function handleClear() {
   htmlInput.value = ''
 }
 
-const convertedOutput = computed(() => {
-  if (!htmlInput.value.trim())
-    return ''
+// `DOMParser` exists in the browser only, so the first render must match the server.
+const isMounted = useMounted()
+
+const conversion = computed<ConvertResult>(() => {
+  if (!isMounted.value || !htmlInput.value.trim())
+    return { code: '', notes: [] }
 
   if (targetFormat.value === 'jsx') {
     return convertHtmlToJsx(htmlInput.value, {
       wrapComponent: wrapJsxComponent.value,
       componentName: componentName.value,
       spreadProps: spreadProps.value,
+      titleProp: titleProp.value,
     })
   }
 
-  if (targetFormat.value === 'vue-sfc') {
-    return convertHtmlToVue(htmlInput.value, { wrapSfc: true })
-  }
-
-  return convertHtmlToVue(htmlInput.value, { wrapSfc: false })
+  return convertHtmlToVue(htmlInput.value, { wrapSfc: targetFormat.value === 'vue-sfc' })
 })
+
+useLiveTool(conversion, { runLocation: 'browser', option: () => targetFormat.value })
+
+const convertedOutput = computed(() => conversion.value.code)
+const notes = computed(() => conversion.value.notes)
 
 const editorLang = computed<ToolEditorLang>(() => {
   if (targetFormat.value === 'jsx')
@@ -113,7 +128,11 @@ function handleDownload() {
     <div class="space-y-6">
       <!-- Toolbar Controls -->
       <div class="flex flex-wrap items-center justify-between gap-3 p-3 border border-default rounded-xl bg-elevated/40">
-        <div class="flex flex-wrap items-center gap-2">
+        <div
+          role="group"
+          aria-label="Load sample"
+          class="flex flex-wrap items-center gap-2"
+        >
           <span class="text-xs font-medium text-muted">Load Sample:</span>
           <UButton
             size="xs"
@@ -172,10 +191,15 @@ function handleDownload() {
           <!-- Target Options Bar -->
           <div class="flex flex-wrap items-center justify-between gap-2">
             <!-- Format selector -->
-            <div class="flex items-center rounded-lg border border-default p-0.5 bg-default">
+            <div
+              role="group"
+              aria-label="Target format"
+              class="flex items-center rounded-lg border border-default p-0.5 bg-default"
+            >
               <UButton
                 size="xs"
                 :variant="targetFormat === 'jsx' ? 'solid' : 'ghost'"
+                :aria-pressed="targetFormat === 'jsx'"
                 color="neutral"
                 label="JSX (React)"
                 @click="targetFormat = 'jsx'"
@@ -183,6 +207,7 @@ function handleDownload() {
               <UButton
                 size="xs"
                 :variant="targetFormat === 'vue-template' ? 'solid' : 'ghost'"
+                :aria-pressed="targetFormat === 'vue-template'"
                 color="neutral"
                 label="Vue Template"
                 @click="targetFormat = 'vue-template'"
@@ -190,6 +215,7 @@ function handleDownload() {
               <UButton
                 size="xs"
                 :variant="targetFormat === 'vue-sfc' ? 'solid' : 'ghost'"
+                :aria-pressed="targetFormat === 'vue-sfc'"
                 color="neutral"
                 label="Vue SFC"
                 @click="targetFormat = 'vue-sfc'"
@@ -238,6 +264,14 @@ function handleDownload() {
               title="Adds a props parameter and spreads it on the root tag. An icon needs this."
             />
 
+            <UCheckbox
+              v-if="wrapJsxComponent"
+              v-model="titleProp"
+              label="Title prop"
+              size="xs"
+              title="Adds a title parameter and writes the SVG title element from it."
+            />
+
             <div
               v-if="wrapJsxComponent"
               class="flex items-center gap-2 ml-auto"
@@ -262,6 +296,35 @@ function handleDownload() {
             :rows="targetFormat === 'jsx' && wrapJsxComponent ? 19 : 22"
             readonly
           />
+
+          <!-- Constructs that the target cannot hold -->
+          <div
+            v-if="notes.length"
+            class="space-y-2 p-3 rounded-lg border border-default bg-elevated/20"
+          >
+            <p class="text-xs font-semibold text-highlighted flex items-center gap-1.5">
+              <UIcon
+                name="i-lucide-triangle-alert"
+                class="size-4 text-warning"
+              />
+              Not converted ({{ notes.length }})
+            </p>
+            <ul class="space-y-1.5">
+              <li
+                v-for="note in notes"
+                :key="`${note.kind}:${note.detail}`"
+                class="flex items-start gap-2 text-xs text-muted"
+              >
+                <UBadge
+                  :label="NOTE_LABELS[note.kind]"
+                  color="neutral"
+                  variant="subtle"
+                  size="sm"
+                />
+                <span class="font-mono break-all">{{ note.detail }}</span>
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
     </div>

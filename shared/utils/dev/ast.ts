@@ -38,26 +38,64 @@ const SKIP_KEYS = new Set([
   'directive',
 ])
 
-export function offsetToPosition(source: string, offset: number): SourcePosition {
-  const safe = Math.max(0, Math.min(offset, source.length))
-  let line = 1
-  let column = 1
-  for (let i = 0; i < safe; i += 1) {
+export type PositionMapper = (offset: number) => SourcePosition
+
+/** The offset of the first character of every line. Line 1 starts at offset 0. */
+export function createLineStarts(source: string): number[] {
+  const starts = [0]
+  for (let i = 0; i < source.length; i += 1) {
     if (source[i] === '\n') {
-      line += 1
-      column = 1
-    }
-    else {
-      column += 1
+      starts.push(i + 1)
     }
   }
-  return { line, column, offset: safe }
+  return starts
+}
+
+/** The index of the last line that starts at or before the offset. */
+function lineIndexAt(lineStarts: number[], offset: number): number {
+  let low = 0
+  let high = lineStarts.length - 1
+  while (low < high) {
+    const mid = (low + high + 1) >> 1
+    if ((lineStarts[mid] ?? 0) <= offset) {
+      low = mid
+    }
+    else {
+      high = mid - 1
+    }
+  }
+  return low
+}
+
+/**
+ * Builds the line-start table one time. Each lookup is then a binary search.
+ * A tree of one large file asks for two positions per node, so a scan of the
+ * source for each lookup makes the tree build quadratic.
+ */
+export function createPositionMapper(source: string): PositionMapper {
+  const lineStarts = createLineStarts(source)
+  const length = source.length
+
+  return (offset: number): SourcePosition => {
+    const safe = Math.max(0, Math.min(offset, length))
+    const index = lineIndexAt(lineStarts, safe)
+    return {
+      line: index + 1,
+      column: safe - (lineStarts[index] ?? 0) + 1,
+      offset: safe,
+    }
+  }
+}
+
+export function offsetToPosition(source: string, offset: number): SourcePosition {
+  return createPositionMapper(source)(offset)
 }
 
 export function createSpan(source: string, start: number, end: number): SourceSpan {
+  const at = createPositionMapper(source)
   return {
-    start: offsetToPosition(source, start),
-    end: offsetToPosition(source, end),
+    start: at(start),
+    end: at(end),
   }
 }
 
@@ -90,10 +128,10 @@ function isAstNode(value: unknown): value is Record<string, unknown> & { type: s
     && typeof (value as { type?: unknown }).type === 'string'
 }
 
-export function buildAstTree(
+function buildNode(
   node: unknown,
-  source: string,
-  path = '0',
+  at: PositionMapper,
+  path: string,
 ): AstTreeNode | null {
   if (!isAstNode(node)) {
     return null
@@ -111,7 +149,7 @@ export function buildAstTree(
 
     if (Array.isArray(value)) {
       value.forEach((item, index) => {
-        const child = buildAstTree(item, source, `${path}.${key}.${index}`)
+        const child = buildNode(item, at, `${path}.${key}.${index}`)
         if (child) {
           children.push(child)
         }
@@ -119,7 +157,7 @@ export function buildAstTree(
       continue
     }
 
-    const child = buildAstTree(value, source, `${path}.${key}.${childIndex}`)
+    const child = buildNode(value, at, `${path}.${key}.${childIndex}`)
     if (child) {
       children.push(child)
       childIndex += 1
@@ -132,9 +170,72 @@ export function buildAstTree(
     label: nodeLabel(node),
     start,
     end,
-    span: createSpan(source, start, end),
+    span: { start: at(start), end: at(end) },
     children,
   }
+}
+
+export function buildAstTree(
+  node: unknown,
+  source: string,
+  path = '0',
+): AstTreeNode | null {
+  return buildNode(node, createPositionMapper(source), path)
+}
+
+/** The nodes that contain the offset, from the root to the deepest node. */
+export function findAstPathAtOffset(tree: AstTreeNode | null, offset: number): AstTreeNode[] {
+  const path: AstTreeNode[] = []
+  let current = tree
+
+  while (current) {
+    path.push(current)
+    current = current.children.find(child => child.start <= offset && offset <= child.end) ?? null
+  }
+
+  return path
+}
+
+export function findAstNodeAtOffset(tree: AstTreeNode | null, offset: number): AstTreeNode | null {
+  const path = findAstPathAtOffset(tree, offset)
+  return path[path.length - 1] ?? null
+}
+
+export interface AstTypeSearch {
+  /** The ids of the nodes with a matched type name. */
+  matches: Set<string>
+  /** The ids of the parents of a match, to open the branch. */
+  expand: Set<string>
+}
+
+export function searchAstTypes(tree: AstTreeNode | null, query: string): AstTypeSearch {
+  const matches = new Set<string>()
+  const expand = new Set<string>()
+  const needle = query.trim().toLowerCase()
+
+  if (!tree || !needle) {
+    return { matches, expand }
+  }
+
+  const ancestors: string[] = []
+
+  function walk(node: AstTreeNode): void {
+    if (node.type.toLowerCase().includes(needle)) {
+      matches.add(node.id)
+      for (const id of ancestors) {
+        expand.add(id)
+      }
+    }
+
+    ancestors.push(node.id)
+    for (const child of node.children) {
+      walk(child)
+    }
+    ancestors.pop()
+  }
+
+  walk(tree)
+  return { matches, expand }
 }
 
 export function sliceSource(source: string, start: number, end: number): string {

@@ -72,11 +72,11 @@ defineExpose({ resolve, clear })
       <UFormField
         label="From directory"
         class="min-w-56 flex-1"
-        hint="Defaults to the server working directory."
+        description="A path inside this site. It reads only the dependencies of this site."
       >
         <UInput
           v-model="directory"
-          placeholder="Leave empty for project root"
+          placeholder="Leave empty for the project root"
           class="w-full"
           :ui="{ base: 'font-mono' }"
         />

@@ -10,7 +10,10 @@
             An SVG icon in a React project works best as a component. A component takes props, so a caller can set the size, the color, and a click handler. This tool converts SVG markup into such a component.
           </p>
           <p>
-            The tool renames each attribute for JSX. stroke-width becomes strokeWidth, fill-rule becomes fillRule, and viewbox keeps the name viewBox. It turns an inline style into an object. With Spread props on, the component takes props and spreads them on the root svg tag.
+            The tool renames each attribute for JSX. stroke-width becomes strokeWidth, fill-rule becomes fillRule, and viewbox keeps the name viewBox. It turns an inline style into an object. With Spread props on, the component takes props and spreads them on the root svg tag. With Title prop on, the component takes a title prop and writes the SVG title element from it, which gives the icon an accessible name.
+          </p>
+          <p>
+            Two icons in one input can use the same id. The tool gives the second id a new unique name and updates each reference to it, such as url(#id), href, clip-path, mask, and filter. A gradient and a clip path continue to work. An aria attribute and a data attribute stay as they are.
           </p>
           <p>
             Paste an SVG from an icon set or from a design export, then set the component name. Copy the result into a .jsx or .tsx file. Set fill or stroke to currentColor in the SVG, so the icon takes the text color of its parent.

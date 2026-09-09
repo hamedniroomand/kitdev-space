@@ -64,7 +64,7 @@
     "@nuxt/ui": "^4.11.1",
     "@nuxtjs/seo": "5.3.14",
     "@resvg/resvg-js": "^2.6.2",
-    "@sentry/nuxt": "^10.73.0",
+    "@sentry/nuxt": "^10.74.0",
     "@takumi-rs/core": "^2.13.7",
     "@vueuse/nuxt": "14.4.0",
     "confbox": "^0.3.1",
@@ -80,6 +80,7 @@
     "oxc-parser": "^0.149.0",
     "oxc-resolver": "^11.24.2",
     "oxc-transform": "^0.149.0",
+    "picomatch": "^4.0.7",
     "prettier": "^3.9.6",
     "semver": "^7.8.5",
     "sql-formatter": "^15.8.2",
@@ -100,6 +101,7 @@
     "@playwright/test": "^1.63.0",
     "@types/bun": "^1.4.2",
     "@types/csso": "^5.0.5",
+    "@types/picomatch": "^4.0.3",
     "@types/semver": "^7.8.0",
     "@types/sql.js": "^1.4.11",
     "@vue/test-utils": "^2.5.0",
@@ -110,7 +112,7 @@
     "typescript": "^6",
     "vitest": "^5.0.0",
     "vue-tsc": "^3.3.11",
-    "zod": "^4.5.4"
+    "zod": "^4.6.0"
   },
   "lint-staged": {
     "*.{ts,mts,cts,js,mjs,cjs,vue}": "bun lint --fix"

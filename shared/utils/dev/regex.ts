@@ -1,4 +1,4 @@
-export type RegexFlag = 'g' | 'i' | 'm' | 's' | 'u' | 'y' | 'd'
+export type RegexFlag = 'g' | 'i' | 'm' | 's' | 'u' | 'v' | 'y' | 'd'
 
 export interface RegexTokenExplanation {
   token: string
@@ -22,23 +22,16 @@ export interface RegexMatchResult {
   groups: RegexGroupMatch[]
 }
 
-export interface RegexHighlightSegment {
-  text: string
-  matched: boolean
-  matchIndex: number | null
-}
-
 export interface RegexTestResult {
   pattern: string
   flags: string
   valid: boolean
   error: string | null
   matches: RegexMatchResult[]
-  highlights: RegexHighlightSegment[]
   explanations: RegexTokenExplanation[]
 }
 
-const FLAG_SET = new Set<RegexFlag>(['g', 'i', 'm', 's', 'u', 'y', 'd'])
+const FLAG_SET = new Set<RegexFlag>(['g', 'i', 'm', 's', 'u', 'v', 'y', 'd'])
 
 export function normalizeRegexFlags(input: string): string {
   const unique = new Set<string>()
@@ -60,25 +53,17 @@ export function compileRegex(pattern: string, flagsInput = ''): {
     return { regex: null, flags, error: 'Enter a regular expression.' }
   }
 
+  // The caller sets the d flag to read group positions. The page offers that
+  // flag only when the engine supports it, so no fallback is needed here.
   try {
-    const withIndices = flags.includes('d') ? flags : `${flags}d`
-    return { regex: new RegExp(pattern, withIndices), flags, error: null }
+    return { regex: new RegExp(pattern, flags), flags, error: null }
   }
   catch (cause) {
-    try {
-      return { regex: new RegExp(pattern, flags), flags, error: null }
-    }
-    catch (inner) {
-      const message = inner instanceof Error
-        ? inner.message
-        : cause instanceof Error
-          ? cause.message
-          : 'Invalid regular expression.'
-      return {
-        regex: null,
-        flags,
-        error: message.replace(/^Invalid regular expression:\s*/i, 'Invalid regular expression.\n\n'),
-      }
+    const message = cause instanceof Error ? cause.message : 'Invalid regular expression.'
+    return {
+      regex: null,
+      flags,
+      error: message.replace(/^Invalid regular expression:\s*/i, 'Invalid regular expression.\n\n'),
     }
   }
 }
@@ -171,6 +156,36 @@ export function explainRegex(pattern: string): RegexTokenExplanation[] {
   while (i < pattern.length) {
     const char = pattern[i]!
     const index = i
+
+    if (char === '\\' && (pattern[i + 1] === 'p' || pattern[i + 1] === 'P') && pattern[i + 2] === '{') {
+      const close = pattern.indexOf('}', i + 3)
+      if (close > i) {
+        const property = pattern.slice(i + 3, close)
+        const negated = pattern[i + 1] === 'P'
+        explanations.push({
+          token: pattern.slice(i, close + 1),
+          meaning: negated
+            ? `Unicode property escape. Matches one character without the property "${property}". Set the u flag or the v flag.`
+            : `Unicode property escape. Matches one character with the property "${property}". Set the u flag or the v flag.`,
+          index,
+        })
+        i = close + 1
+        continue
+      }
+    }
+
+    if (char === '\\' && pattern[i + 1] === 'k' && pattern[i + 2] === '<') {
+      const close = pattern.indexOf('>', i + 3)
+      if (close > i) {
+        explanations.push({
+          token: pattern.slice(i, close + 1),
+          meaning: `Backreference to the named group "${pattern.slice(i + 3, close)}".`,
+          index,
+        })
+        i = close + 1
+        continue
+      }
+    }
 
     if (char === '\\' && i + 1 < pattern.length) {
       const token = pattern.slice(i, i + 2)
@@ -352,40 +367,207 @@ function collectMatches(regex: RegExp, sample: string, pattern = ''): RegexMatch
   return matches
 }
 
-export function buildHighlights(sample: string, matches: RegexMatchResult[]): RegexHighlightSegment[] {
-  if (matches.length === 0) {
-    return sample ? [{ text: sample, matched: false, matchIndex: null }] : []
+/**
+ * Expands one replacement template against one match.
+ *
+ * It follows the rules of `String.prototype.replace`. A group reference that
+ * points past the last group stays literal. `$<name>` stays literal when the
+ * pattern holds no named group.
+ */
+function expandTemplate(template: string, sample: string, match: RegexMatchResult): string {
+  const hasNames = match.groups.some(group => group.name !== null)
+  let out = ''
+  let i = 0
+
+  while (i < template.length) {
+    const char = template[i]!
+    if (char !== '$' || i + 1 >= template.length) {
+      out += char
+      i += 1
+      continue
+    }
+
+    const next = template[i + 1]!
+
+    if (next === '$') {
+      out += '$'
+      i += 2
+      continue
+    }
+    if (next === '&') {
+      out += match.match
+      i += 2
+      continue
+    }
+    if (next === '`') {
+      out += sample.slice(0, match.start)
+      i += 2
+      continue
+    }
+    if (next === '\'') {
+      out += sample.slice(match.end)
+      i += 2
+      continue
+    }
+    if (next === '<' && hasNames) {
+      const close = template.indexOf('>', i + 2)
+      if (close > i) {
+        const name = template.slice(i + 2, close)
+        out += match.groups.find(group => group.name === name)?.value ?? ''
+        i = close + 1
+        continue
+      }
+    }
+    if (next >= '0' && next <= '9') {
+      const two = Number(template.slice(i + 1, i + 3))
+      if (template.length > i + 2 && Number.isInteger(two) && two >= 1 && two <= match.groups.length) {
+        out += match.groups[two - 1]?.value ?? ''
+        i += 3
+        continue
+      }
+      const one = Number(next)
+      if (one >= 1 && one <= match.groups.length) {
+        out += match.groups[one - 1]?.value ?? ''
+        i += 2
+        continue
+      }
+    }
+
+    out += char
+    i += 1
   }
 
-  const segments: RegexHighlightSegment[] = []
+  return out
+}
+
+/**
+ * Builds the replacement preview from matches that are already collected.
+ *
+ * It reads the matches, so the pattern never runs again. This keeps every
+ * regular expression inside the worker.
+ *
+ * ponytail: `collectMatches` stops after 10,000 matches, so the preview
+ * leaves later matches unchanged. Raise the guard in `collectMatches` and
+ * stream the result if a user ever needs more.
+ */
+export function applyReplacement(
+  sample: string,
+  matches: RegexMatchResult[],
+  template: string,
+): string {
+  if (matches.length === 0) {
+    return sample
+  }
+
+  let out = ''
   let cursor = 0
 
   for (const match of matches) {
-    if (match.start > cursor) {
-      segments.push({
-        text: sample.slice(cursor, match.start),
-        matched: false,
-        matchIndex: null,
-      })
+    if (match.start < cursor) {
+      continue
     }
-    segments.push({
-      text: sample.slice(match.start, match.end),
-      matched: true,
-      matchIndex: match.index,
-    })
+    out += sample.slice(cursor, match.start)
+    out += expandTemplate(template, sample, match)
     cursor = match.end
   }
 
-  if (cursor < sample.length) {
-    segments.push({
-      text: sample.slice(cursor),
-      matched: false,
-      matchIndex: null,
+  return out + sample.slice(cursor)
+}
+
+export interface RegexTestCase {
+  text: string
+  expectMatch: boolean
+}
+
+export interface RegexTestCaseFile {
+  pattern: string
+  flags: string
+  cases: RegexTestCase[]
+}
+
+export function serializeRegexTestCases(file: RegexTestCaseFile): string {
+  return `${JSON.stringify(file, null, 2)}\n`
+}
+
+/** Reads a dropped test case file. It never throws. */
+export function parseRegexTestCases(json: string): {
+  file: RegexTestCaseFile | null
+  error: string | null
+} {
+  let data: unknown
+  try {
+    data = JSON.parse(json)
+  }
+  catch {
+    return { file: null, error: 'The file is not valid JSON.' }
+  }
+
+  if (typeof data !== 'object' || data === null || Array.isArray(data)) {
+    return { file: null, error: 'The file must hold a JSON object.' }
+  }
+
+  const record = data as Record<string, unknown>
+  if (!Array.isArray(record.cases)) {
+    return { file: null, error: 'The file must hold a "cases" array.' }
+  }
+
+  const cases: RegexTestCase[] = []
+  for (const entry of record.cases) {
+    if (
+      typeof entry !== 'object'
+      || entry === null
+      || typeof (entry as RegexTestCase).text !== 'string'
+      || typeof (entry as RegexTestCase).expectMatch !== 'boolean'
+    ) {
+      return {
+        file: null,
+        error: 'Each test case needs a "text" string and an "expectMatch" boolean.',
+      }
+    }
+    cases.push({
+      text: (entry as RegexTestCase).text,
+      expectMatch: (entry as RegexTestCase).expectMatch,
     })
   }
 
-  return segments
+  return {
+    file: {
+      pattern: typeof record.pattern === 'string' ? record.pattern : '',
+      flags: typeof record.flags === 'string' ? normalizeRegexFlags(record.flags) : '',
+      cases,
+    },
+    error: null,
+  }
 }
+
+export interface RegexSyntaxNote {
+  title: string
+  syntax: string
+  meaning: string
+  example: string
+}
+
+/** Modern syntax that the browser engine supports. */
+export const REGEX_SYNTAX_NOTES: RegexSyntaxNote[] = [
+  {
+    title: 'Unicode properties',
+    syntax: '\\p{…} and \\P{…}',
+    meaning: 'Matches one character by a Unicode property. Set the u flag or the v flag.',
+    example: '\\p{Script=Greek} matches α',
+  },
+  {
+    title: 'Lookbehind',
+    syntax: '(?<=…) and (?<!…)',
+    meaning: 'Tests the text before the current position. The engine does not consume that text.',
+    example: '(?<=\\$)\\d+ matches 42 in $42',
+  },
+  {
+    title: 'Named groups',
+    syntax: '(?<name>…)',
+    meaning: 'Gives a name to a capture group. Read the group back with \\k<name> or $<name>.',
+    example: '(?<year>\\d{4}) captures 2026',
+  },
+]
 
 export function testRegex(pattern: string, sample: string, flagsInput = 'g'): RegexTestResult {
   const { regex, flags, error } = compileRegex(pattern, flagsInput)
@@ -398,7 +580,6 @@ export function testRegex(pattern: string, sample: string, flagsInput = 'g'): Re
       valid: false,
       error,
       matches: [],
-      highlights: sample ? [{ text: sample, matched: false, matchIndex: null }] : [],
       explanations,
     }
   }
@@ -410,7 +591,6 @@ export function testRegex(pattern: string, sample: string, flagsInput = 'g'): Re
     valid: true,
     error: null,
     matches,
-    highlights: buildHighlights(sample, matches),
     explanations,
   }
 }

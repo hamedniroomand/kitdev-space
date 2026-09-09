@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  convertLines,
   splitIntoWords,
   toCamelCase,
   toConstantCase,
@@ -57,6 +58,46 @@ describe('case utilities', () => {
   it('splits unicode letters across non-Latin scripts', () => {
     expect(splitIntoWords('приветМир')).toEqual(['привет', 'Мир'])
     expect(splitIntoWords('مرحبا بالعالم')).toEqual(['مرحبا', 'بالعالم'])
+  })
+
+  it('splits words on acronym boundaries', () => {
+    expect(splitIntoWords('XMLParser')).toEqual(['XML', 'Parser'])
+    expect(splitIntoWords('parseHTML')).toEqual(['parse', 'HTML'])
+    expect(splitIntoWords('getURLFromID')).toEqual(['get', 'URL', 'From', 'ID'])
+    expect(splitIntoWords('HTML')).toEqual(['HTML'])
+    expect(splitIntoWords('aB')).toEqual(['a', 'B'])
+  })
+
+  it('splits words on digit boundaries', () => {
+    expect(splitIntoWords('v2Build')).toEqual(['v2', 'Build'])
+    expect(splitIntoWords('v10Beta2')).toEqual(['v10', 'Beta2'])
+    expect(splitIntoWords('9Lives')).toEqual(['9', 'Lives'])
+  })
+
+  it('splits words on mixed separators', () => {
+    expect(splitIntoWords('report_final-draft version')).toEqual([
+      'report',
+      'final',
+      'draft',
+      'version',
+    ])
+    expect(splitIntoWords('  spaced   out  ')).toEqual(['spaced', 'out'])
+  })
+
+  it('keeps combining marks inside accented words', () => {
+    // These accents are separate combining marks, not precomposed letters.
+    expect(splitIntoWords('cafe\u0301Latte')).toEqual(['cafe\u0301', 'Latte'])
+    expect(splitIntoWords('E\u0301coleNormale')).toEqual(['E\u0301cole', 'Normale'])
+    expect(splitIntoWords('caf\u00E9AuLait')).toEqual(['caf\u00E9', 'Au', 'Lait'])
+    expect(splitIntoWords('\u00C9coleNormale')).toEqual(['\u00C9cole', 'Normale'])
+  })
+
+  it('converts each line on its own', () => {
+    expect(convertLines('hello world\nsecond line', toCamelCase)).toBe('helloWorld\nsecondLine')
+    expect(convertLines('first one\r\nsecond one', toKebabCase)).toBe('first-one\r\nsecond-one')
+    expect(convertLines('one\n\ntwo', toSnakeCase)).toBe('one\n\ntwo')
+    expect(convertLines('trailing\n', toPascalCase)).toBe('Trailing\n')
+    expect(convertLines('', toCamelCase)).toBe('')
   })
 
   it('transliterates special characters in toSlug', () => {

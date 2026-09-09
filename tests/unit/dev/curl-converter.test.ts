@@ -1,12 +1,17 @@
 import { describe, expect, it } from 'vitest'
 import {
   convertCurl,
+  encodeUrlencodedParam,
   parseCurl,
   toAxios,
   toFetch,
   toGoHttp,
   toPythonRequests,
 } from '#shared/utils/dev/curl-converter'
+
+function noticeFlags(command: string): string[] {
+  return parseCurl(command).notices.map(notice => notice.flag)
+}
 
 describe('parseCurl', () => {
   it('parses basic GET command', () => {
@@ -91,6 +96,103 @@ describe('converters', () => {
     expect(res.method).toBe('GET')
     expect(res.url).toBe('https://api.example.com/search?q=hello&page=1')
     expect(res.data).toBeUndefined()
+  })
+
+  it('reports an ignored flag for -b, -A, -F, and --json', () => {
+    const cmd = 'curl https://api.example.com/x -b session=abc -A my-agent -F file=@photo.png --json {"a":1}'
+    const flags = noticeFlags(cmd)
+    expect(flags).toContain('-b')
+    expect(flags).toContain('-A')
+    expect(flags).toContain('-F')
+    expect(flags).toContain('--json')
+  })
+
+  it('marks a security flag in the notice list', () => {
+    const cmd = 'curl -k --proxy http://127.0.0.1:8080 --cert client.pem --key client.key https://api.example.com/x'
+    const secure = parseCurl(cmd).notices.filter(notice => notice.security).map(notice => notice.flag)
+    expect(secure).toEqual(['-k', '--proxy', '--cert', '--key'])
+  })
+
+  it('drops no security option in silence', () => {
+    for (const flag of ['-k', '--insecure', '--cert client.pem', '--key client.key', '--proxy http://127.0.0.1:8080']) {
+      const name = flag.split(' ')[0]!
+      const notices = parseCurl(`curl ${flag} https://api.example.com/x`).notices
+      expect(notices.map(notice => notice.flag)).toContain(name)
+      expect(notices.every(notice => notice.security)).toBe(true)
+    }
+
+    // The code applies `-u`, so the output holds it and the notice list stays empty.
+    const user = parseCurl('curl -u admin:secret123 https://api.example.com/x')
+    expect(user.notices).toEqual([])
+    expect(toFetch(user)).toContain('"Authorization": "Basic ')
+    expect(toPythonRequests(user)).toContain('auth=("admin", "secret123")')
+  })
+
+  it('reports an unknown flag and keeps no notice for a clean command', () => {
+    expect(noticeFlags('curl --frobnicate https://api.example.com/x')).toEqual(['--frobnicate'])
+    expect(noticeFlags('curl -X POST https://api.example.com/x -d a=1')).toEqual([])
+  })
+
+  it('consumes the value of an ignored flag so the URL stays correct', () => {
+    const res = parseCurl('curl -o report.json -m 30 https://api.example.com/x')
+    expect(res.url).toBe('https://api.example.com/x')
+    expect(res.notices.map(notice => notice.flag)).toEqual(['-o', '-m'])
+  })
+
+  it('reports a joined short flag such as -Amy-agent', () => {
+    expect(noticeFlags('curl -Amy-agent https://api.example.com/x')).toEqual(['-A'])
+  })
+
+  it('url-encodes each form of --data-urlencode', () => {
+    expect(encodeUrlencodedParam('a b&c')).toEqual({ part: 'a%20b%26c' })
+    expect(encodeUrlencodedParam('=a b')).toEqual({ part: 'a%20b' })
+    expect(encodeUrlencodedParam('q=a b/c')).toEqual({ part: 'q=a%20b%2Fc' })
+    expect(encodeUrlencodedParam('q@body.txt')).toEqual({ part: 'q=<contents of body.txt>', file: 'body.txt' })
+    expect(encodeUrlencodedParam('@body.txt')).toEqual({ part: '<contents of body.txt>', file: 'body.txt' })
+  })
+
+  it('url-encodes --data-urlencode values in a query string', () => {
+    const res = parseCurl('curl -G https://api.example.com/search --data-urlencode "q=a b" --data-urlencode "tag=x&y"')
+    expect(res.url).toBe('https://api.example.com/search?q=a%20b&tag=x%26y')
+  })
+
+  it('shows a placeholder and a notice for --data-urlencode with a file', () => {
+    const res = parseCurl('curl -X POST https://api.example.com/x --data-urlencode q@body.txt')
+    expect(res.data).toBe('q=<contents of body.txt>')
+    expect(res.notices[0]?.flag).toBe('@body.txt')
+    expect(res.notices[0]?.message).toContain('body.txt')
+  })
+
+  it('shows a placeholder and a notice for a @filename body', () => {
+    const res = parseCurl('curl -X POST https://api.example.com/x -d @body.json')
+    expect(res.data).toBe('<contents of body.json>')
+    expect(res.notices[0]?.flag).toBe('@body.json')
+    expect(res.notices[0]?.message).toContain('body.json')
+    expect(toFetch(res)).toContain('<contents of body.json>')
+  })
+
+  it('keeps a literal @ value for --data-raw', () => {
+    const res = parseCurl('curl -X POST https://api.example.com/x --data-raw @literal')
+    expect(res.data).toBe('@literal')
+    expect(res.notices).toEqual([])
+  })
+
+  it('masks an authorization header, a cookie, and a password', () => {
+    const cmd = 'curl https://api.example.com/x -H "Authorization: Bearer secret-token" -H "Cookie: sid=abc123; theme=dark"'
+    const masked = convertCurl(cmd, 'fetch', { maskCredentials: true })
+    expect(masked).toContain('Bearer <redacted>')
+    expect(masked).toContain('sid=<redacted>; theme=<redacted>')
+    expect(masked).not.toContain('secret-token')
+    expect(masked).not.toContain('abc123')
+
+    const python = convertCurl('curl -u admin:secret123 https://api.example.com/x', 'python', { maskCredentials: true })
+    expect(python).toContain('auth=("admin", "<redacted>")')
+    expect(python).not.toContain('secret123')
+  })
+
+  it('keeps the credentials when the mask option is off', () => {
+    const code = convertCurl('curl https://api.example.com/x -H "Authorization: Bearer secret-token"', 'fetch')
+    expect(code).toContain('Bearer secret-token')
   })
 
   it('escapes quotes in headers during Go code generation', () => {

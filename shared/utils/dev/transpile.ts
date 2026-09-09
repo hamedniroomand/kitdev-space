@@ -1,10 +1,25 @@
 export type TranspileLoader = 'ts' | 'tsx' | 'js' | 'jsx'
+export type NewSyntaxMode = 'compile' | 'keep'
+export type JsxRuntime = 'classic' | 'automatic'
+
+export interface TranspileOptions {
+  /**
+   * Sucrase has no ECMAScript target option. It compiles five newer syntax
+   * features only: optional chaining, nullish coalescing, class fields,
+   * numeric separators, and optional catch binding. `keep` leaves them.
+   */
+  newSyntax?: NewSyntaxMode
+  jsxRuntime?: JsxRuntime
+  /** Only the automatic runtime reads this. An empty value keeps `react`. */
+  jsxImportSource?: string
+}
 
 const MAX_INPUT_CHARS = 500_000
 
 export async function transpileSource(
   code: string,
   loader: TranspileLoader,
+  options: TranspileOptions = {},
 ): Promise<{ code: string }> {
   const text = code ?? ''
   if (!text.trim()) {
@@ -24,10 +39,15 @@ export async function transpileSource(
     transforms.push('jsx')
   }
 
+  const importSource = options.jsxImportSource?.trim()
+
   try {
     const result = transform(text, {
       transforms,
       filePath: `input.${loader}`,
+      disableESTransforms: options.newSyntax === 'keep',
+      jsxRuntime: options.jsxRuntime ?? 'classic',
+      ...(importSource ? { jsxImportSource: importSource } : {}),
     })
     return { code: result.code }
   }

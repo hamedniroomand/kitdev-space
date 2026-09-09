@@ -48,8 +48,8 @@ a converter. Use `yaml` only when a tool must show the line and the column of ea
 
 A tool with a browser path and a server path keeps one source. Put the browser code in
 `shared/utils/`, export a `can*InBrowser()` guard next to it, and let the server route import the
-same module. `shared/utils/data/convert.ts`, `shared/utils/dev/code-format.ts`, and
-`shared/utils/dev/semver.ts` show the pattern.
+same module. `shared/utils/data/convert.ts` and
+`shared/utils/dev/code-format.ts` show the pattern.
 
 ## Why this rule exists
 

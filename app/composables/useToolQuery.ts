@@ -15,6 +15,7 @@ export const SECRET_TOOL_IDS = new Set<string>([
   'totp',
   'hash',
   'cookie-inspector',
+  'curl-to-code',
   'password-benchmark',
 ])
 

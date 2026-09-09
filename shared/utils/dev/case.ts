@@ -1,3 +1,8 @@
+// A combining mark (\p{M}) is part of the letter before it. Accents in decomposed text are marks.
+const LOWER_TO_UPPER = /([\p{Ll}\p{N}]\p{M}*)(\p{Lu})/gu
+const ACRONYM_TO_WORD = /((?:\p{Lu}\p{M}*)+)(\p{Lu}\p{M}*[\p{Ll}\p{N}])/gu
+const SEPARATORS = /[^\p{L}\p{N}\p{M}]+/u
+
 export function splitIntoWords(input: string): string[] {
   if (!input) {
     return []
@@ -5,12 +10,24 @@ export function splitIntoWords(input: string): string[] {
 
   // Insert space between lower/digit and upper, and between acronym and capitalized word
   const expanded = input
-    .replace(/([\p{Ll}\p{N}])(\p{Lu})/gu, '$1 $2')
-    .replace(/(\p{Lu}+)(\p{Lu}[\p{Ll}\p{N}])/gu, '$1 $2')
+    .replace(LOWER_TO_UPPER, '$1 $2')
+    .replace(ACRONYM_TO_WORD, '$1 $2')
 
   return expanded
-    .split(/[^\p{L}\p{N}]+/u)
+    .split(SEPARATORS)
     .filter(Boolean)
+}
+
+/**
+ * Convert each line of the text on its own.
+ *
+ * It keeps empty lines and the original line endings.
+ */
+export function convertLines(input: string, convert: (line: string) => string): string {
+  return input
+    .split(/(\r\n|\r|\n)/)
+    .map((part, index) => (index % 2 === 0 ? convert(part) : part))
+    .join('')
 }
 
 export function toCamelCase(input: string): string {

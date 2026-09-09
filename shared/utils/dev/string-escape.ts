@@ -1,4 +1,4 @@
-export type EscapeMode = 'json' | 'javascript' | 'html' | 'sql' | 'shell'
+export type EscapeMode = 'json' | 'javascript' | 'sql' | 'shell'
 
 export function escapeString(text: string, mode: EscapeMode): string {
   switch (mode) {
@@ -12,13 +12,6 @@ export function escapeString(text: string, mode: EscapeMode): string {
         .replace(/\n/g, '\\n')
         .replace(/\r/g, '\\r')
         .replace(/\t/g, '\\t')
-    case 'html':
-      return text
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;')
     case 'sql':
       return text.replace(/'/g, '\'\'')
     case 'shell':
@@ -60,13 +53,6 @@ export function unescapeString(text: string, mode: EscapeMode): string {
         return match
       })
     }
-    case 'html':
-      return text
-        .replace(/&quot;/g, '"')
-        .replace(/&#039;/g, '\'')
-        .replace(/&lt;/g, '<')
-        .replace(/&gt;/g, '>')
-        .replace(/&amp;/g, '&')
     case 'sql':
       return text.replace(/''/g, '\'')
     case 'shell':

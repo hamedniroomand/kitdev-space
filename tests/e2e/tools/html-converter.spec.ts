@@ -15,6 +15,12 @@ test.describe('HTML & SVG to JSX / Vue Tool', () => {
       expect(outputText).toContain('export default function UserProfileCard()')
       expect(outputText).toContain('className="card"')
       expect(outputText).toContain('htmlFor="username-input"')
+      expect(outputText).not.toContain('onclick')
+    })
+
+    await test.step('names the constructs that it did not convert', async () => {
+      await expect(page.getByText('Not converted (1)')).toBeVisible()
+      await expect(page.getByText('onclick on <button>: saveProfile()')).toBeVisible()
     })
 
     await test.step('switches target format to Vue Template and Vue SFC', async () => {
