@@ -1,19 +1,19 @@
 <script setup lang="ts">
 import type { CsvDelimiter, CsvEmptyRepresentation, CsvMissingFieldHandling, CsvNullRepresentation } from '#shared/utils/data/csv'
 import type { ColumnDataType, ColumnSchema, CsvExportFormat } from '#shared/utils/data/csv-preview'
-import { CSV_SAMPLE, DataError, JSON_SAMPLE, SQL_SAMPLE } from '#shared/utils/data/csv'
 import {
   exportFilteredDataset,
   extractPreviewData,
   getDownloadFilename,
+  processHeavyCsvWorker,
 } from '#shared/utils/data/csv-preview'
+import { DataError } from '#shared/utils/data/errors'
 import { getTextStats } from '#shared/utils/data/stats'
 
-const SAMPLES: Record<string, string> = {
-  csv: CSV_SAMPLE,
-  json: JSON_SAMPLE,
-  sql: SQL_SAMPLE,
-}
+const CSV_SAMPLE = `name,age,active,city
+Ada,36,true,"London, UK"
+Grace,45,false,New York
+Alan,null,true,Manchester`
 
 const input = ref(CSV_SAMPLE)
 const output = ref('')
@@ -29,26 +29,28 @@ const nullValue = ref<CsvNullRepresentation>('null')
 const emptyStringValue = ref<CsvEmptyRepresentation>('quoted')
 const missingFieldValue = ref<CsvMissingFieldHandling>('null')
 
-const { copy, copyLabel, copyColor, copyIcon } = useCopyFeedback()
+const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
 const { downloadText } = useDownload()
-const { run, status, error, reset } = useAsyncAction()
+const { status, error, result, run, reset } = useTool<string>()
 
 const WORKER_CHARS = 100_000
 const isHeavy = computed(() => input.value.length >= WORKER_CHARS)
 
 const {
+  execute: workerScan,
   isRunning: workerRunning,
   stop: stopWorker,
 } = useToolWorker(
-  (data: {
+  (payload: {
     text: string
-    delimiter: string
-    filter?: string
-  }) => {
-    const lines = data.text.split('\n')
-    return `Processed ${lines.length} lines in worker`
+    filterText?: string
+    filterColIndex?: number
+    delimiter?: string
+  }) => processHeavyCsvWorker(payload),
+  {
+    timeout: 30_000,
+    localDependencies: [processHeavyCsvWorker],
   },
-  { timeout: 30_000 },
 )
 
 const nullValueItems = [
@@ -170,7 +172,22 @@ function getMimeType(format: CsvExportFormat): string {
   }
 }
 
+async function scanHeavyInput() {
+  const payload = {
+    text: input.value,
+    delimiter: delimiter.value === 'auto' ? undefined : delimiter.value,
+  }
+  try {
+    return await workerScan(payload)
+  }
+  catch {
+    return processHeavyCsvWorker(payload)
+  }
+}
+
 async function convert() {
+  const heavyScan = isHeavy.value ? await scanHeavyInput() : null
+
   await run(() => {
     try {
       const result = exportFilteredDataset({
@@ -203,7 +220,10 @@ async function convert() {
   if (status.value === 'success' && result.value !== null) {
     output.value = result.value
     const stats = getTextStats(output.value)
-    statusMeta.value = `${stats.lines} lines · format: ${exportFormat.value.toUpperCase()}`
+    const scanned = heavyScan
+      ? ` · scanned ${heavyScan.totalRows} rows in worker`
+      : ''
+    statusMeta.value = `${stats.lines} lines · format: ${exportFormat.value.toUpperCase()}${scanned}`
   }
 }
 
@@ -334,7 +354,7 @@ watch(input, () => {
 
 function handleSample() {
   reportInput('sample')
-  input.value = SAMPLES.csv ?? ''
+  input.value = CSV_SAMPLE
 }
 
 useToolShortcuts({
@@ -441,7 +461,7 @@ useToolShortcuts({
         label="Convert"
         color="primary"
         icon="i-lucide-play"
-        :loading="status === 'running' || workerRunning"
+        :loading="status === 'processing' || workerRunning"
         @click="convert"
       />
       <UButton
