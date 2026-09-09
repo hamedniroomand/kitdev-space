@@ -18,11 +18,13 @@
           </p>
           <p>
             Use the arrow keys to move the box by one pixel. Hold Shift to move by ten pixels. The
-            size under the image shows the crop in pixels of the original image.
+            fields under the image show the crop in pixels of the original image. You can type an
+            exact x, y, width, and height.
           </p>
           <p>
-            The crop runs in your browser. Only the cropped pixels go to the server, where Bun resizes
-            and encodes them in one pass. The file is processed in memory and is not stored.
+            The crop runs in your browser. A WebP, JPEG, or PNG output also runs in your browser,
+            so no image data leaves your device. An AVIF output, or a file that your browser cannot
+            decode, runs on the server with Bun. Then only the cropped pixels leave your device.
           </p>
         </div>
         <RelatedTools
