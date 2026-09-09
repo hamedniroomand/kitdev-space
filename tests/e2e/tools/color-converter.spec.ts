@@ -24,7 +24,6 @@ test('converts color formats', { tag: '@smoke' }, async ({ page }) => {
   await test.step('converts user-provided color', async () => {
     const colorInput = page.getByRole('textbox', { name: 'Color' })
     await colorInput.fill('#ff0000')
-    await page.getByRole('button', { name: 'Convert' }).click()
 
     await expect(page.getByText('#ff0000').first()).toBeVisible()
     await expect(page.getByText('rgb(255, 0, 0)')).toBeVisible()
@@ -33,7 +32,6 @@ test('converts color formats', { tag: '@smoke' }, async ({ page }) => {
   await test.step('keeps the alpha value in every format', async () => {
     const colorInput = page.getByRole('textbox', { name: 'Color' })
     await colorInput.fill('rgba(124, 58, 237, 0.4)')
-    await page.getByRole('button', { name: 'Convert' }).click()
 
     await expect(page.getByText('#7c3aed66').first()).toBeVisible()
     await expect(page.getByText('rgb(124 58 237 / 0.4)')).toBeVisible()
@@ -42,10 +40,16 @@ test('converts color formats', { tag: '@smoke' }, async ({ page }) => {
   await test.step('warns when a color is outside the sRGB gamut', async () => {
     const colorInput = page.getByRole('textbox', { name: 'Color' })
     await colorInput.fill('oklch(86.6% 0.295 142.5)')
-    await page.getByRole('button', { name: 'Convert' }).click()
 
     await expect(page.getByText('sRGB: outside', { exact: true })).toBeVisible()
     await expect(page.getByText('Outside the sRGB gamut', { exact: true })).toBeVisible()
+  })
+
+  await test.step('shows the picked color in the native color picker', async () => {
+    const colorInput = page.getByRole('textbox', { name: 'Color' })
+    await colorInput.fill('#7c3aed')
+
+    await expect(page.getByLabel('Color picker')).toHaveValue('#7c3aed')
   })
 
   await test.step('clears color and conversion results', async () => {
