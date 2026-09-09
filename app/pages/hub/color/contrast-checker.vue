@@ -2,13 +2,15 @@
 import type { LightnessFix } from '#shared/utils/color/contrast-fix'
 import { contrastRatio, wcagLevel } from '#shared/utils/color/contrast'
 import { suggestLightnessFix } from '#shared/utils/color/contrast-fix'
+import { parseColor } from '#shared/utils/color/parse'
 
-const foreground = ref('#ffffff')
-const background = ref('#7c3aed')
-const ratio = ref<number | null>(null)
-const { status, error, run, reset } = useTool<string>()
+const DEFAULT_COLORS = { fg: '#ffffff', bg: '#7c3aed' }
+
+const colors = reactive({ ...DEFAULT_COLORS })
 
 useToolSeo('contrast')
+
+const { error, result: ratio } = useLiveTool(() => contrastRatio(colors.fg, colors.bg))
 
 const WCAG_TARGETS = [
   { label: 'AA', target: 4.5 },
@@ -29,7 +31,7 @@ const fixes = computed(() => {
 
   return WCAG_TARGETS.flatMap(({ label, target }) => {
     try {
-      const fix = suggestLightnessFix(foreground.value, background.value, target)
+      const fix = suggestLightnessFix(colors.fg, colors.bg, target)
       return fix ? [{ label, ...fix }] : []
     }
     catch {
@@ -50,52 +52,92 @@ const results = computed(() => {
   ]
 })
 
-async function check() {
-  await run(() => {
-    const next = contrastRatio(foreground.value, background.value)
-    ratio.value = next
-    return String(next)
-  })
+/** The picker needs a 6 digit hex value. An invalid input keeps the swatch black. */
+function pickerHex(color: string): string {
+  try {
+    return parseColor(color).hex
+  }
+  catch {
+    return '#000000'
+  }
 }
 
-function handleClear() {
-  ratio.value = null
-  reset()
+function alphaSuffix(color: string): string {
+  try {
+    const { alpha } = parseColor(color)
+    return alpha === undefined ? '' : Math.round(alpha * 255).toString(16).padStart(2, '0')
+  }
+  catch {
+    return ''
+  }
+}
+
+/** The picker holds no alpha, so it writes the opaque part and keeps the alpha. */
+function applyPicker(field: 'fg' | 'bg', hex: string) {
+  colors[field] = hex + alphaSuffix(colors[field])
+}
+
+function swapColors() {
+  const previous = colors.fg
+  colors.fg = colors.bg
+  colors.bg = previous
+}
+
+function handleReset() {
+  Object.assign(colors, DEFAULT_COLORS)
 }
 
 function applyFix(fix: LightnessFix) {
-  if (fix.target === 'foreground') {
-    foreground.value = fix.hex
-  }
-  else {
-    background.value = fix.hex
-  }
-  check()
+  colors[fix.target === 'foreground' ? 'fg' : 'bg'] = fix.hex
 }
-
-useToolShortcuts({
-  onRun: () => check(),
-})
-
-onMounted(() => {
-  check()
-})
 </script>
 
 <template>
   <ToolPage>
     <div class="grid gap-4 sm:grid-cols-2">
       <UFormField label="Text">
-        <UInput v-model="foreground" />
+        <div class="flex items-center gap-2">
+          <input
+            :value="pickerHex(colors.fg)"
+            type="color"
+            class="h-9 w-12 shrink-0 cursor-pointer rounded-md border border-default bg-transparent p-1"
+            aria-label="Text color picker"
+            @input="applyPicker('fg', ($event.target as HTMLInputElement).value)"
+          >
+          <UInput
+            v-model="colors.fg"
+            class="flex-1"
+            :ui="{ base: 'font-mono' }"
+          />
+        </div>
       </UFormField>
       <UFormField label="Background">
-        <UInput v-model="background" />
+        <div class="flex items-center gap-2">
+          <input
+            :value="pickerHex(colors.bg)"
+            type="color"
+            class="h-9 w-12 shrink-0 cursor-pointer rounded-md border border-default bg-transparent p-1"
+            aria-label="Background color picker"
+            @input="applyPicker('bg', ($event.target as HTMLInputElement).value)"
+          >
+          <UInput
+            v-model="colors.bg"
+            class="flex-1"
+            :ui="{ base: 'font-mono' }"
+          />
+        </div>
       </UFormField>
     </div>
 
+    <p class="text-xs text-muted">
+      Each field accepts HEX, RGB, HSL, and OKLCH. The picker sets the opaque color and keeps the
+      alpha of the field. The ratio uses the opaque color, because WCAG needs the color that the
+      user sees.
+    </p>
+
     <div
       class="space-y-4 rounded-md border border-default p-6"
-      :style="{ color: foreground, backgroundColor: background }"
+      :style="{ color: colors.fg, backgroundColor: colors.bg }"
     >
       <p
         v-for="sample in TEXT_SAMPLES"
@@ -108,8 +150,8 @@ onMounted(() => {
       <span
         class="inline-block rounded-md border px-4 py-2"
         :style="{
-          color: foreground,
-          borderColor: foreground,
+          color: colors.fg,
+          borderColor: colors.fg,
           fontSize: '14px',
           fontWeight: 500,
         }"
@@ -120,17 +162,17 @@ onMounted(() => {
 
     <ToolActions>
       <UButton
-        label="Check"
-        icon="i-lucide-contrast"
-        :loading="status === 'processing'"
-        @click="check"
+        label="Swap"
+        icon="i-lucide-arrow-left-right"
+        aria-label="Swap the text color and the background"
+        @click="swapColors"
       />
       <UButton
-        label="Clear"
+        label="Reset"
         color="neutral"
         variant="ghost"
         icon="i-lucide-eraser"
-        @click="handleClear"
+        @click="handleReset"
       />
     </ToolActions>
 
@@ -248,6 +290,10 @@ onMounted(() => {
           <p>
             Large text has a lower bar. Text of 24px, or 18.66px in bold, needs 3:1 for AA and 4.5:1
             for AAA. The table shows both results, so you can see where a color pair is usable.
+          </p>
+          <p>
+            The tool calculates the ratio while you type. Use Swap to exchange the text color and
+            the background, which is the quickest test of a dark theme.
           </p>
           <p>
             The preview shows the pair at 14px regular, 18.66px bold, and 24px regular. It also
