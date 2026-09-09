@@ -28,6 +28,23 @@ export function canProcessInBrowser(format: ImageEncodeFormat): boolean {
   return format === 'webp' || format === 'jpeg' || format === 'png'
 }
 
+/**
+ * Decodes the file to learn if the browser can read it, and to get the size
+ * after the EXIF orientation applies. Null means the browser cannot decode the
+ * file, so the run needs the server. HEIC, TIFF, and most SVG files land here.
+ */
+export async function probeImageInBrowser(file: Blob): Promise<{ width: number, height: number } | null> {
+  try {
+    const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' })
+    const size = { width: bitmap.width, height: bitmap.height }
+    bitmap.close()
+    return size
+  }
+  catch {
+    return null
+  }
+}
+
 export async function processImageInBrowser(
   file: Blob,
   options: BrowserImageProcessOptions,

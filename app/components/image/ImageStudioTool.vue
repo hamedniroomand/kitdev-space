@@ -7,7 +7,7 @@ import { imageExtensionFor } from '#shared/utils/image/format'
 import { PRESET_SIZES } from '#shared/utils/image/presets'
 import { readImageResponse } from '#shared/utils/image/response'
 import { cropImageFile } from '~/utils/image/crop-file'
-import { canProcessInBrowser, processImageInBrowser } from '~/utils/image/process-browser'
+import { canProcessInBrowser, probeImageInBrowser, processImageInBrowser } from '~/utils/image/process-browser'
 
 type SizeMode = ImagePresetId | 'original' | 'custom'
 
@@ -70,6 +70,8 @@ const rotateItems = [
 
 const file = ref<File | null>(null)
 const source = ref<{ width: number | null, height: number | null, bytes: number } | null>(null)
+/** False when the browser cannot decode the file, so the run needs the server. */
+const decodable = ref(true)
 
 const sizeMode = ref<SizeMode>(props.sizeMode)
 const width = ref(1200)
@@ -99,6 +101,8 @@ const { status, error, run, reset } = useTool<Blob>()
 useToolSeo(props.toolId)
 
 const sourceUrl = useObjectUrl(() => file.value)
+/** The server runs the pass only when the browser cannot encode or decode the image. */
+const runsOnServer = computed(() => !canProcessInBrowser(format.value) || !decodable.value)
 const isCustom = computed(() => sizeMode.value === 'custom')
 const resizes = computed(() => sizeMode.value !== 'original')
 const filename = computed(() => `studio.${imageExtensionFor(format.value)}`)
@@ -127,11 +131,18 @@ watch(file, async (selected) => {
 
   // The size is read in the browser, so the preset fields start from the real size.
   const meta = readImageMetadata(new Uint8Array(await selected.arrayBuffer()))
-  source.value = { width: meta.width, height: meta.height, bytes: selected.size }
+  const probe = await probeImageInBrowser(selected)
+  decodable.value = probe !== null
 
-  if (meta.width && meta.height) {
-    width.value = meta.width
-    height.value = meta.height
+  source.value = {
+    width: probe?.width ?? meta.width,
+    height: probe?.height ?? meta.height,
+    bytes: selected.size,
+  }
+
+  if (source.value.width && source.value.height) {
+    width.value = source.value.width
+    height.value = source.value.height
   }
 })
 
@@ -146,7 +157,7 @@ watch(sizeMode, (mode) => {
 async function process() {
   outputBlob.value = null
 
-  const isBrowser = canProcessInBrowser(format.value)
+  const isBrowser = !runsOnServer.value
   const runLocation = isBrowser ? 'browser' : 'server'
 
   await run(async () => {
@@ -178,7 +189,7 @@ async function process() {
       return result.blob
     }
 
-    // Server path (e.g. for AVIF format)
+    // Server path: an AVIF output, or a file that the browser cannot decode.
     const upload = cropEnabled.value && cropRect.value
       ? await cropImageFile(file.value, cropRect.value)
       : file.value
@@ -224,6 +235,7 @@ async function process() {
 function handleClear() {
   file.value = null
   source.value = null
+  decodable.value = true
   outputBlob.value = null
   cropRect.value = null
   inputBytes.value = null
@@ -237,12 +249,12 @@ function handleClear() {
 <template>
   <ToolPage>
     <UAlert
-      v-if="format === 'avif'"
+      v-if="runsOnServer"
       color="info"
       variant="subtle"
       icon="i-lucide-server"
       title="Processed with Bun"
-      description="AVIF encoding runs on the server with Bun. The file is processed in memory and is not stored."
+      description="An AVIF output, and a file that your browser cannot decode, run on the server with Bun. The file is processed in memory and is not stored."
     />
     <UAlert
       v-else
