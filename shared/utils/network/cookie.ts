@@ -37,6 +37,18 @@ export interface CookieReport {
   requestCookies: RequestCookie[]
 }
 
+/** How the browser makes the request that carries the cookie. */
+export type RequestContext = 'same-site' | 'cross-site' | 'cross-site-navigation'
+
+export interface CookieDelivery {
+  /** True when the browser sends the cookie to the request URL. */
+  sent: boolean
+  /** One message for each rule that stops the cookie. Empty when sent is true. */
+  blocks: string[]
+  /** One message for each limit of the check. */
+  notes: string[]
+}
+
 const MAX_COOKIE_BYTES = 4096
 /** Chrome caps a cookie lifetime at 400 days. */
 const MAX_LIFETIME_SECONDS = 400 * 24 * 60 * 60
@@ -214,4 +226,117 @@ export function inspectCookies(input: string, now = Date.now()): CookieReport {
   }
 
   return report
+}
+
+/** RFC 6265 domain match. A leading dot in the Domain attribute has no effect. */
+function domainMatches(host: string, domain: string): boolean {
+  const target = domain.replace(/^\./, '').toLowerCase()
+  const name = host.toLowerCase()
+  return name === target || name.endsWith(`.${target}`)
+}
+
+/** RFC 6265 path match. The cookie path must end at a path segment boundary. */
+function pathMatches(requestPath: string, cookiePath: string): boolean {
+  if (requestPath === cookiePath) {
+    return true
+  }
+  if (!requestPath.startsWith(cookiePath)) {
+    return false
+  }
+  return cookiePath.endsWith('/') || requestPath[cookiePath.length] === '/'
+}
+
+/** A browser gives a secure context to localhost over plain HTTP. */
+function isSecureContext(url: URL): boolean {
+  return url.protocol === 'https:'
+    || url.hostname === 'localhost'
+    || url.hostname.endsWith('.localhost')
+    || url.hostname === '127.0.0.1'
+    || url.hostname === '[::1]'
+}
+
+/**
+ * Checks whether the browser sends one Set-Cookie cookie to a request URL.
+ *
+ * The Set-Cookie header does not name the host that sent it, so the check uses
+ * the host of the request URL for a host-only cookie and for a default path.
+ */
+export function evaluateCookieDelivery(cookie: SetCookie, requestUrl: string, context: RequestContext = 'same-site'): CookieDelivery {
+  let url: URL
+  try {
+    url = new URL(requestUrl)
+  }
+  catch {
+    return { sent: false, blocks: ['The request URL is not valid. Use a full URL, such as https://example.com/app.'], notes: [] }
+  }
+
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+    return { sent: false, blocks: ['The browser sends a cookie over HTTP and HTTPS only.'], notes: [] }
+  }
+
+  // An error finding is a rejection rule. The browser does not keep the cookie,
+  // so it never sends it.
+  if (cookie.findings.some(finding => finding.level === 'error')) {
+    return { sent: false, blocks: ['The browser rejects this cookie. Correct the errors below first.'], notes: [] }
+  }
+
+  const blocks: string[] = []
+  const notes: string[] = []
+
+  if (cookie.lifetimeSeconds !== null && cookie.lifetimeSeconds <= 0) {
+    blocks.push('The lifetime is zero or in the past. This header deletes the cookie, so the browser sends nothing.')
+  }
+
+  if (cookie.domain) {
+    if (!domainMatches(url.hostname, cookie.domain)) {
+      blocks.push(`Domain mismatch. Domain=${cookie.domain} does not cover the host ${url.hostname}.`)
+    }
+  }
+  else {
+    notes.push(`Host only. The cookie has no Domain attribute, so the check uses the host of the request URL, ${url.hostname}.`)
+  }
+
+  if (cookie.path?.startsWith('/')) {
+    if (!pathMatches(url.pathname, cookie.path)) {
+      blocks.push(`Path mismatch. Path=${cookie.path} does not cover the request path ${url.pathname}.`)
+    }
+  }
+  else if (cookie.path) {
+    notes.push(`Path=${cookie.path} does not start with a slash. The browser ignores it and uses the directory of the URL that set the cookie.`)
+  }
+  else {
+    notes.push('No Path attribute. The browser uses the directory of the URL that set the cookie.')
+  }
+
+  if (cookie.secure && !isSecureContext(url)) {
+    blocks.push('Secure over HTTP. The cookie has the Secure attribute, so the browser sends it over HTTPS only.')
+  }
+
+  const sameSite = cookie.sameSite?.toLowerCase()
+  const effective = sameSite === 'strict' || sameSite === 'none' ? sameSite : 'lax'
+  if (context !== 'same-site' && effective === 'strict') {
+    blocks.push('SameSite=Strict. The browser sends the cookie with a same-site request only.')
+  }
+  if (context === 'cross-site' && effective === 'lax') {
+    blocks.push(cookie.sameSite === undefined
+      ? 'No SameSite attribute, so Chrome uses Lax. The browser sends the cookie with a top-level navigation only, not with a subresource or a POST.'
+      : 'SameSite=Lax. The browser sends the cookie with a top-level navigation only, not with a subresource or a POST.')
+  }
+
+  return { sent: blocks.length === 0, blocks, notes }
+}
+
+/** The mask that replaces a cookie value in the JSON export. */
+export const REDACTED_VALUE = '[redacted]'
+
+/**
+ * Replaces every cookie value with one fixed mask. The mask has a constant
+ * length, because the length of a secret is also information. The size field
+ * keeps the byte count of the true value.
+ */
+export function redactCookieReport(report: CookieReport): CookieReport {
+  return {
+    setCookies: report.setCookies.map(cookie => ({ ...cookie, value: REDACTED_VALUE })),
+    requestCookies: report.requestCookies.map(cookie => ({ ...cookie, value: REDACTED_VALUE })),
+  }
 }

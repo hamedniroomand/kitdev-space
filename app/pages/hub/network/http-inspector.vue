@@ -43,6 +43,17 @@ const setCookieLines = computed(() =>
   (result.value?.headers['set-cookie'] ?? '').split('\n').filter(Boolean),
 )
 
+const { setHandoffCookies } = useCookieHandoff()
+
+// The cookie values go to the other tool in memory, never in the URL.
+function handleOpenInCookieInspector() {
+  setHandoffCookies({
+    headers: setCookieLines.value.map(line => `Set-Cookie: ${line}`).join('\n'),
+    url: result.value?.url,
+  })
+  return navigateTo('/hub/network/cookie-inspector')
+}
+
 const hopCount = computed(() => Math.max(0, (result.value?.hops.length ?? 1) - 1))
 
 const scoreColor = computed(() => {
@@ -264,6 +275,14 @@ useToolShortcuts({
           >
             {{ cookie }}
           </p>
+          <UButton
+            size="xs"
+            color="neutral"
+            variant="subtle"
+            icon="i-lucide-cookie"
+            label="Open in Cookie Inspector"
+            @click="handleOpenInCookieInspector"
+          />
         </div>
 
         <div
