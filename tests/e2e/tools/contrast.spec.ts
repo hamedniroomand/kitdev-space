@@ -55,3 +55,11 @@ test('checks color contrast ratio and WCAG rating', { tag: '@smoke' }, async ({ 
     await expect(page.getByText('Body text, 14px regular and larger')).toBeVisible()
   })
 })
+
+test('loads a color pair from a shared link', async ({ page }) => {
+  await gotoHydrated(page, '/hub/color/contrast-checker?fg=%23000000&bg=%23ffffff')
+
+  await expect(page.getByRole('textbox', { name: 'Text', exact: true })).toHaveValue('#000000')
+  await expect(page.getByRole('textbox', { name: 'Background', exact: true })).toHaveValue('#ffffff')
+  await expect(page.getByText('21.00:1', { exact: true })).toBeVisible()
+})

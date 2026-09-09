@@ -9,6 +9,11 @@ const DEFAULT_COLORS = { fg: '#ffffff', bg: '#7c3aed' }
 
 const colors = reactive({ ...DEFAULT_COLORS })
 
+// The colors are not secret, so they go in the query string, not in the hash.
+const { buildShareUrl, canShare } = useToolQuery({ options: colors, autoRestore: false })
+const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
+const { consumeHandoffColor } = useColorHandoff()
+
 useToolSeo('contrast')
 
 const { error, result: ratio } = useLiveTool(() => contrastRatio(colors.fg, colors.bg))
@@ -107,6 +112,25 @@ function handleReset() {
 function applyFix(fix: LightnessFix) {
   colors[fix.target === 'foreground' ? 'fg' : 'bg'] = fix.hex
 }
+
+async function handleShare() {
+  const url = buildShareUrl()
+  if (url) {
+    await copy(url, 'share', 'snippet')
+  }
+}
+
+useToolShortcuts({
+  onCopy: () => handleShare(),
+})
+
+// A color from another tool arrives in memory. It wins over a shared link.
+onMounted(() => {
+  const handoff = consumeHandoffColor()
+  if (handoff) {
+    colors.bg = handoff
+  }
+})
 </script>
 
 <template>
@@ -183,6 +207,15 @@ function applyFix(fix: LightnessFix) {
         icon="i-lucide-arrow-left-right"
         aria-label="Swap the text color and the background"
         @click="swapColors"
+      />
+      <UButton
+        v-if="canShare"
+        :label="copyLabel('share', 'Share')"
+        :color="copyColor('share')"
+        variant="subtle"
+        :icon="copyIcon('share', 'i-lucide-share-2')"
+        aria-label="Copy a link to this color pair"
+        @click="handleShare"
       />
       <UButton
         label="Reset"
@@ -383,6 +416,10 @@ function applyFix(fix: LightnessFix) {
           <p>
             The preview shows the pair at 14px regular, 18.66px bold, and 24px regular. It also
             shows a button. Use it to see the pair at the sizes that the table reports.
+          </p>
+          <p>
+            Share puts the pair in the link. The link opens the tool with both colors, and it
+            shows the ratio. The tool sends no color to a server.
           </p>
           <p>
             APCA is the Accessible Perceptual Contrast Algorithm. It is a draft candidate for
