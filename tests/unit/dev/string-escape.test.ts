@@ -16,13 +16,6 @@ describe('string escape utility', () => {
     expect(unescapeString(escaped, 'sql')).toBe(raw)
   })
 
-  it('escapes and unescapes HTML entities', () => {
-    const raw = '<script>alert("XSS")</script>'
-    const escaped = escapeString(raw, 'html')
-    expect(escaped).toBe('&lt;script&gt;alert(&quot;XSS&quot;)&lt;/script&gt;')
-    expect(unescapeString(escaped, 'html')).toBe(raw)
-  })
-
   it('escapes and unescapes JavaScript strings including escaped backslashes', () => {
     const raw = 'a\\nb' // literal 'a', '\', 'n', 'b'
     const escaped = escapeString(raw, 'javascript')

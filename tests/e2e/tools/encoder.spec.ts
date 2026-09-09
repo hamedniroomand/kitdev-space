@@ -24,4 +24,17 @@ test.describe('Encoder & Escaper tool', () => {
     const clearedInput = await getCodeMirrorValue(page, 'Input')
     expect(clearedInput.replace('Paste text here', '').trim()).toBe('')
   })
+
+  test('switches the URL scope between a component and a full URL', async ({ page }) => {
+    await gotoHydrated(page, '/hub/dev/url-encoder')
+
+    await fillCodeMirror(page, 'Input', 'https://a.dev/p?q=1&r=2#top')
+
+    const output = page.getByRole('textbox', { name: 'Output' })
+    await expect(output).toContainText('%3F')
+
+    await page.getByRole('tab', { name: 'Full URL', exact: true }).click()
+    await expect(output).toContainText('?q=1&r=2#top')
+    await expect(output).not.toContainText('%3F')
+  })
 })
