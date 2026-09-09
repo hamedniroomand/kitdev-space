@@ -43,7 +43,7 @@ test('generates Tailwind shades and configuration code', { tag: '@smoke' }, asyn
     await page.getByLabel('Override shade 700').fill('#ff0000')
     await expect(output).toContainText('\'700\': \'#ff0000\'')
 
-    await page.getByRole('button', { name: 'CSS Variables' }).click()
+    await page.getByRole('button', { name: 'CSS Variables', exact: true }).click()
     await expect(output).toContainText('--accent-700: #ff0000')
   })
 })

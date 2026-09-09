@@ -14,7 +14,7 @@ test('generates color palette', { tag: '@smoke' }, async ({ page }) => {
   })
 
   await test.step('generates a new palette from another base color', async () => {
-    await page.getByRole('textbox', { name: 'Base color' }).fill('#059669')
+    await page.getByRole('textbox', { name: 'Base color', exact: true }).fill('#059669')
 
     await expect(output).toContainText('--brand-500: #059669')
     expect(await swatches.count()).toBe(11)
