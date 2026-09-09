@@ -45,3 +45,13 @@ test.describe('CIDR Calculator tool', () => {
     await expect(main.getByText('1208925819614629174706176', { exact: true })).toBeVisible()
   })
 })
+
+// The IP Info tool links here as `/hub/network/cidr?ip=<address>`. The two
+// pages were built apart, so this pins the contract between them.
+test('fills the IP field from the ip query parameter', async ({ page }) => {
+  await gotoHydrated(page, '/hub/network/cidr?ip=192.168.1.55')
+
+  await expect(
+    page.locator('main').getByRole('textbox', { name: 'Test an IP address' }),
+  ).toHaveValue('192.168.1.55')
+})

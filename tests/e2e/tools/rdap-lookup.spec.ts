@@ -69,3 +69,10 @@ test.describe('RDAP Lookup tool', () => {
     ).toBeVisible()
   })
 })
+
+// The IP Info tool links here as `/hub/network/rdap-lookup?query=<address>`.
+test('fills the query field from the query parameter', async ({ page }) => {
+  await gotoHydrated(page, '/hub/network/rdap-lookup?query=9.9.9.9')
+
+  await expect(page.locator('main').getByRole('textbox').first()).toHaveValue('9.9.9.9')
+})
