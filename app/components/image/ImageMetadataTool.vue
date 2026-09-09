@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import type { ImageMetadata, MetadataGroup } from '#shared/utils/image/exif'
+import type { ZipEntries } from '~/utils/image/zip'
 import { formatBytes } from '#shared/utils/format'
 import { readImageMetadata } from '#shared/utils/image/exif'
+import { IMAGE_BATCH_LIMIT } from '#shared/utils/image/limits'
 import { readImageResponse } from '#shared/utils/image/response'
 import { canStripInPlace, stripImageMetadata } from '#shared/utils/image/strip'
 import { readMetadata } from '~/utils/image/metadata-read'
+import { textToBytes, uniqueZipName, zipInBrowser } from '~/utils/image/zip'
 
 /**
  * Reads the metadata of an image and removes it. Two paths remove it: the
@@ -37,12 +40,30 @@ interface CleanResult {
   name: string
 }
 
+/** One line of the batch audit report. */
+interface AuditRow {
+  file: string
+  container: string
+  removed: string[]
+  kept: string[]
+  /** The color profile that the clean file still holds. */
+  colorProfile: string | null
+  beforeBytes: number
+  afterBytes: number
+  /** False when the container has no in-browser path, so the file stays as it is. */
+  cleaned: boolean
+}
+
 const EXIF_ITEMS = [
   { label: 'All EXIF', value: 'all' as const },
   { label: 'GPS only', value: 'gps' as const },
 ]
 
-const file = ref<File | null>(null)
+const files = ref<File[]>([])
+const file = computed(() => (files.value.length === 1 ? files.value[0]! : null))
+const isBatch = computed(() => files.value.length > 1)
+const audit = ref<AuditRow[]>([])
+const batchZip = ref<Blob | null>(null)
 const meta = ref<ImageMetadata | null>(null)
 /** True when the file is set but the browser parser does not know the container. */
 const unreadable = ref(false)
@@ -73,6 +94,19 @@ const mapLink = computed(() => {
 })
 
 const baseName = computed(() => (file.value?.name ?? 'image').replace(/\.[^.]+$/, ''))
+
+const stripOptions = computed(() => ({
+  exif: stripExif.value,
+  xmp: stripXmp.value,
+  iptc: stripIptc.value,
+  comments: stripComments.value,
+  keepOrientation: true,
+}))
+
+watch(files, () => {
+  audit.value = []
+  batchZip.value = null
+})
 
 watch(file, async (selected) => {
   meta.value = null
@@ -109,13 +143,7 @@ async function handleStrip() {
 
   await run(async () => {
     const bytes = new Uint8Array(await file.value!.arrayBuffer())
-    const result = stripImageMetadata(bytes, {
-      exif: stripExif.value,
-      xmp: stripXmp.value,
-      iptc: stripIptc.value,
-      comments: stripComments.value,
-      keepOrientation: true,
-    })
+    const result = stripImageMetadata(bytes, stripOptions.value)
 
     if (!result) {
       throw new Error('This format has no in-browser path. Use the server option.')
@@ -134,6 +162,62 @@ async function handleStrip() {
     }
     return 'cleaned'
   }, 'The metadata could not be removed.', { runLocation: 'browser', option: stripExif.value })
+}
+
+/** Strips every dropped file in the browser and packages the results in one zip. */
+async function handleBatch() {
+  audit.value = []
+  batchZip.value = null
+
+  await run(async () => {
+    const entries: ZipEntries = {}
+    const taken = new Set<string>()
+    const rows: AuditRow[] = []
+
+    for (const item of files.value) {
+      const bytes = new Uint8Array(await item.arrayBuffer())
+      const before = readImageMetadata(bytes)
+      const result = stripImageMetadata(bytes, stripOptions.value)
+
+      if (!result) {
+        rows.push({
+          file: item.name,
+          container: before.container,
+          removed: [],
+          kept: [],
+          colorProfile: before.colorProfile,
+          beforeBytes: item.size,
+          afterBytes: item.size,
+          cleaned: false,
+        })
+        continue
+      }
+
+      const copy = result.bytes.slice()
+      entries[uniqueZipName(taken, `clean-${item.name}`)] = copy
+      rows.push({
+        file: item.name,
+        container: before.container,
+        removed: result.removed,
+        kept: result.kept,
+        colorProfile: readImageMetadata(copy).colorProfile,
+        beforeBytes: item.size,
+        afterBytes: copy.byteLength,
+        cleaned: true,
+      })
+    }
+
+    audit.value = rows
+    entries['audit.json'] = textToBytes(JSON.stringify(rows, null, 2))
+    batchZip.value = zipInBrowser(entries)
+    return `${rows.length} files`
+  }, 'The batch could not be processed.', { runLocation: 'browser', option: stripExif.value })
+}
+
+function handleBatchDownload() {
+  if (batchZip.value) {
+    downloadBlob('clean-images.zip', batchZip.value)
+  }
 }
 
 async function handleServerClean() {
@@ -192,10 +276,12 @@ function handleReport() {
 }
 
 function handleClear() {
-  file.value = null
+  files.value = []
   meta.value = null
   unreadable.value = false
   cleaned.value = null
+  audit.value = []
+  batchZip.value = null
   reset()
 }
 </script>
@@ -211,15 +297,140 @@ function handleClear() {
     />
 
     <ImageDropzone
-      v-model="file"
-      prompt="Drop a photo here, or click to choose a file."
+      :model-value="files"
+      multiple
+      :max-files="IMAGE_BATCH_LIMIT"
+      prompt="Drop one photo here, or up to 50 photos for a batch. Click to choose files."
       hint="JPEG, PNG, and WebP are cleaned in place in the browser. Every other format uses the server option."
+      @update:files="files = $event"
     />
 
     <ToolError
       v-if="error"
       :message="error"
     />
+
+    <section
+      v-if="isBatch || (meta && inPlace)"
+      class="space-y-3 rounded-md border border-default p-4"
+    >
+      <h2 class="text-sm font-medium text-highlighted">
+        Blocks to remove
+      </h2>
+      <div class="grid gap-3 sm:grid-cols-2">
+        <UFormField
+          label="EXIF tags"
+          hint="GPS only keeps the camera settings."
+        >
+          <USelect
+            v-model="stripExif"
+            :items="EXIF_ITEMS"
+            class="w-full"
+          />
+        </UFormField>
+        <UFormField label="XMP packet">
+          <USwitch v-model="stripXmp" />
+        </UFormField>
+        <UFormField label="IPTC block">
+          <USwitch v-model="stripIptc" />
+        </UFormField>
+        <UFormField label="Comments and text">
+          <USwitch v-model="stripComments" />
+        </UFormField>
+      </div>
+      <p class="text-xs text-muted">
+        The browser option always keeps the ICC color profile and the orientation marker, so the
+        image keeps its color and its rotation. These choices apply to the browser option only.
+      </p>
+    </section>
+
+    <template v-if="isBatch">
+      <ToolActions>
+        <UButton
+          label="Remove from all files"
+          icon="i-lucide-eraser"
+          :loading="status === 'processing'"
+          @click="handleBatch"
+        />
+        <UButton
+          v-if="batchZip"
+          label="Download the zip"
+          color="neutral"
+          variant="subtle"
+          icon="i-lucide-download"
+          @click="handleBatchDownload"
+        />
+        <UButton
+          label="Clear"
+          color="neutral"
+          variant="ghost"
+          icon="i-lucide-x"
+          @click="handleClear"
+        />
+      </ToolActions>
+
+      <section
+        v-if="audit.length"
+        class="space-y-3"
+      >
+        <h2 class="text-sm font-medium text-highlighted">
+          Audit report for {{ audit.length }} files
+        </h2>
+        <div class="overflow-x-auto rounded-md border border-default">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-default">
+                <th class="px-3 py-2 text-left font-medium text-highlighted">
+                  File
+                </th>
+                <th class="px-3 py-2 text-left font-medium text-highlighted">
+                  Removed
+                </th>
+                <th class="px-3 py-2 text-left font-medium text-highlighted">
+                  Color profile
+                </th>
+                <th class="px-3 py-2 text-left font-medium text-highlighted">
+                  Size
+                </th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-default">
+              <tr
+                v-for="row in audit"
+                :key="row.file"
+              >
+                <td class="break-all px-3 py-2 font-mono text-highlighted">
+                  {{ row.file }}
+                  <span class="text-muted uppercase">{{ row.container }}</span>
+                </td>
+                <td class="px-3 py-2 text-muted">
+                  <template v-if="!row.cleaned">
+                    No in-browser path. Use the server option.
+                  </template>
+                  <template v-else>
+                    {{ row.removed.join(', ') || 'nothing' }}
+                    <template v-if="row.kept.length">
+                      (kept {{ row.kept.join(', ') }})
+                    </template>
+                  </template>
+                </td>
+                <td class="px-3 py-2 text-muted">
+                  {{ row.colorProfile ?? 'none' }}
+                </td>
+                <td class="px-3 py-2 font-mono text-muted">
+                  {{ formatBytes(row.beforeBytes) }} → {{ formatBytes(row.afterBytes) }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="text-xs text-muted">
+          Every file stayed in your browser. The zip holds the clean images and the same report as
+          <span class="font-mono">audit.json</span>. The report lists the blocks that the tool
+          removed and the color profile that each clean file still holds.
+        </p>
+      </section>
+    </template>
 
     <template v-if="unreadable && file">
       <UAlert
@@ -377,40 +588,6 @@ function handleClear() {
             </tbody>
           </table>
         </div>
-      </section>
-
-      <section
-        v-if="inPlace"
-        class="space-y-3 rounded-md border border-default p-4"
-      >
-        <h2 class="text-sm font-medium text-highlighted">
-          Blocks to remove
-        </h2>
-        <div class="grid gap-3 sm:grid-cols-2">
-          <UFormField
-            label="EXIF tags"
-            hint="GPS only keeps the camera settings."
-          >
-            <USelect
-              v-model="stripExif"
-              :items="EXIF_ITEMS"
-              class="w-full"
-            />
-          </UFormField>
-          <UFormField label="XMP packet">
-            <USwitch v-model="stripXmp" />
-          </UFormField>
-          <UFormField label="IPTC block">
-            <USwitch v-model="stripIptc" />
-          </UFormField>
-          <UFormField label="Comments and text">
-            <USwitch v-model="stripComments" />
-          </UFormField>
-        </div>
-        <p class="text-xs text-muted">
-          The browser option always keeps the ICC color profile and the orientation marker, so the
-          image keeps its color and its rotation. These choices apply to the browser option only.
-        </p>
       </section>
 
       <ToolActions>
