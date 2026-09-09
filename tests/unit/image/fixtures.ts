@@ -154,6 +154,38 @@ export function buildJpeg(): Uint8Array {
   ])
 }
 
+function segment(marker: number, payload: number[]): number[] {
+  return [0xFF, marker, ...u16be(payload.length + 2), ...payload]
+}
+
+/**
+ * A four component CMYK JPEG. It holds an ICC profile in an APP2 segment, an
+ * Adobe APP14 segment that names the color transform, and an EXIF block.
+ */
+export function buildCmykJpeg(): Uint8Array {
+  const icc = [
+    ...chars('ICC_PROFILE\0'),
+    1,
+    1,
+    // A short stand-in for the profile body. The parser reads the marker only.
+    ...chars('CMYK profile body'),
+  ]
+  const adobe = [...chars('Adobe'), 0x00, 0x64, 0, 0, 0, 0, 0, 0, 2]
+  const exif = [...chars('Exif\0\0'), ...buildTiffBlock()]
+  const sof = [8, ...u16be(30), ...u16be(40), 4, 1, 0x11, 0, 2, 0x11, 0, 3, 0x11, 0, 4, 0x11, 0]
+  const scan = [0xFF, 0xDA, ...u16be(8), 1, 1, 0, 0, 63, 0, 0x44, 0x55, 0x66, 0xFF, 0xD9]
+
+  return new Uint8Array([
+    0xFF,
+    0xD8,
+    ...segment(0xE1, exif),
+    ...segment(0xE2, icc),
+    ...segment(0xEE, adobe),
+    ...segment(0xC0, sof),
+    ...scan,
+  ])
+}
+
 const CRC_TABLE = (() => {
   const table = new Uint32Array(256)
   for (let index = 0; index < 256; index += 1) {

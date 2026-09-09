@@ -1,11 +1,23 @@
 import type { ImageContainer } from './exif'
-import { detectContainer } from './exif'
+import { detectContainer, readTiffOrientation } from './exif'
 
 export interface StripResult {
   bytes: Uint8Array
   mime: string
   /** Names of the removed blocks, such as "EXIF" or "Comment". */
   removed: string[]
+  /** Names of the blocks that the strip kept on purpose, such as "Orientation". */
+  kept: string[]
+}
+
+export interface StripOptions {
+  /**
+   * Keep the Orientation tag of a JPEG in a small EXIF block. A viewer needs
+   * that tag to show the image in the correct rotation.
+   * ponytail: JPEG only. A PNG eXIf chunk needs a CRC, and a WebP EXIF chunk
+   * needs the VP8X flag. Both formats almost never hold an orientation tag.
+   */
+  keepOrientation?: boolean
 }
 
 const MIME: Partial<Record<ImageContainer, string>> = {
@@ -50,10 +62,34 @@ function join(parts: Uint8Array[]): Uint8Array {
   return out
 }
 
-function stripJpeg(bytes: Uint8Array): StripResult {
+/** Builds an APP1 segment that holds one EXIF Orientation tag and nothing else. */
+function orientationSegment(orientation: number): Uint8Array {
+  // Exif\0\0, then a big-endian TIFF with one IFD0 entry.
+  const payload = new Uint8Array(32)
+  payload.set([0x45, 0x78, 0x69, 0x66, 0, 0])
+  const tiff = new DataView(payload.buffer, 6)
+  tiff.setUint16(0, 0x4D4D)
+  tiff.setUint16(2, 42)
+  tiff.setUint32(4, 8)
+  tiff.setUint16(8, 1)
+  tiff.setUint16(10, 0x0112)
+  tiff.setUint16(12, 3)
+  tiff.setUint32(14, 1)
+  tiff.setUint16(18, orientation)
+  tiff.setUint32(22, 0)
+
+  const out = new Uint8Array(4 + payload.length)
+  out.set([0xFF, 0xE1], 0)
+  new DataView(out.buffer).setUint16(2, payload.length + 2)
+  out.set(payload, 4)
+  return out
+}
+
+function stripJpeg(bytes: Uint8Array, options: StripOptions): StripResult {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength)
   const parts: Uint8Array[] = [bytes.subarray(0, 2)]
   const removed: string[] = []
+  const kept: string[] = []
   let offset = 2
 
   while (offset + 4 <= bytes.length) {
@@ -89,7 +125,16 @@ function stripJpeg(bytes: Uint8Array): StripResult {
     let drop: string | null = null
 
     if (marker === 0xE1) {
-      drop = matches(bytes, payload, 'Exif\0\0') ? 'EXIF' : 'XMP'
+      const isExif = matches(bytes, payload, 'Exif\0\0')
+      drop = isExif ? 'EXIF' : 'XMP'
+
+      if (isExif && options.keepOrientation) {
+        const orientation = readTiffOrientation(view, payload + 6)
+        if (orientation !== null && orientation > 1 && orientation <= 8) {
+          parts.push(orientationSegment(orientation))
+          kept.push('Orientation')
+        }
+      }
     }
     else if (marker === 0xED) {
       drop = 'IPTC'
@@ -118,7 +163,7 @@ function stripJpeg(bytes: Uint8Array): StripResult {
     parts.push(bytes.subarray(offset))
   }
 
-  return { bytes: join(parts), mime: 'image/jpeg', removed: [...new Set(removed)] }
+  return { bytes: join(parts), mime: 'image/jpeg', removed: [...new Set(removed)], kept }
 }
 
 function stripPng(bytes: Uint8Array): StripResult {
@@ -151,7 +196,7 @@ function stripPng(bytes: Uint8Array): StripResult {
     }
   }
 
-  return { bytes: join(parts), mime: 'image/png', removed: [...new Set(removed)] }
+  return { bytes: join(parts), mime: 'image/png', removed: [...new Set(removed)], kept: [] }
 }
 
 function stripWebp(bytes: Uint8Array): StripResult {
@@ -192,7 +237,7 @@ function stripWebp(bytes: Uint8Array): StripResult {
   // The RIFF size counts every byte after the size field.
   new DataView(out.buffer).setUint32(4, out.length - 8, true)
 
-  return { bytes: out, mime: 'image/webp', removed: [...new Set(removed)] }
+  return { bytes: out, mime: 'image/webp', removed: [...new Set(removed)], kept: [] }
 }
 
 /** True when the metadata can be removed with no re-encode of the pixels. */
@@ -204,12 +249,12 @@ export function canStripInPlace(container: ImageContainer): boolean {
  * Removes the metadata blocks and keeps the pixel data byte for byte.
  * Returns null when the container has no in-place path.
  */
-export function stripImageMetadata(bytes: Uint8Array): StripResult | null {
+export function stripImageMetadata(bytes: Uint8Array, options: StripOptions = {}): StripResult | null {
   const container = detectContainer(bytes)
 
   switch (container) {
     case 'jpeg':
-      return stripJpeg(bytes)
+      return stripJpeg(bytes, options)
     case 'png':
       return stripPng(bytes)
     case 'webp':

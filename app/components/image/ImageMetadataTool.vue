@@ -28,6 +28,8 @@ interface CleanResult {
   blob: Blob
   bytes: number
   removed: string[]
+  /** Blocks that the strip kept on purpose, such as the orientation marker. */
+  kept: string[]
   path: 'browser' | 'server'
   /** Tags that the browser parser still finds in the result. Null when it cannot read the format. */
   remainingTags: number | null
@@ -97,7 +99,7 @@ async function handleStrip() {
 
   await run(async () => {
     const bytes = new Uint8Array(await file.value!.arrayBuffer())
-    const result = stripImageMetadata(bytes)
+    const result = stripImageMetadata(bytes, { keepOrientation: true })
 
     if (!result) {
       throw new Error('This format has no in-browser path. Use the server option.')
@@ -109,6 +111,7 @@ async function handleStrip() {
       blob: new Blob([copy], { type: result.mime }),
       bytes: copy.byteLength,
       removed: result.removed,
+      kept: result.kept,
       path: 'browser',
       remainingTags: readImageMetadata(copy).tags.length,
       name: `clean-${file.value!.name}`,
@@ -140,6 +143,7 @@ async function handleServerClean() {
       blob: result.blob,
       bytes: result.outputBytes,
       removed: meta.value?.blocks.length ? meta.value.blocks : ['every metadata block'],
+      kept: [],
       path: 'server',
       remainingTags: check.container === 'unknown' ? null : check.tags.length,
       name: `clean-${baseName.value}.${extension}`,
@@ -425,6 +429,9 @@ function handleClear() {
         class="text-sm text-muted"
       >
         The pixel data did not change. Only the metadata blocks were removed.
+        <template v-if="cleaned.kept.length">
+          The tool kept {{ cleaned.kept.join(', ') }}, so the image keeps its rotation and its color.
+        </template>
       </p>
       <p
         v-else

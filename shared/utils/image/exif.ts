@@ -26,6 +26,8 @@ export interface ImageMetadata {
   gps: GpsPosition | null
   /** Names of the blocks that hold the metadata, such as "EXIF" or "XMP". */
   blocks: string[]
+  /** The color profile that the file holds, such as "ICC profile". Null when it holds none. */
+  colorProfile: string | null
 }
 
 // A malformed file must not make the parser read a large range.
@@ -318,6 +320,31 @@ export function parseTiffBlock(
   return { tags, gps }
 }
 
+/**
+ * Reads the Orientation tag of a TIFF block. A strip that keeps this tag keeps
+ * the rotation that a viewer applies to the pixels.
+ */
+export function readTiffOrientation(view: DataView, tiffStart: number): number | null {
+  if (tiffStart + 8 > view.byteLength) {
+    return null
+  }
+
+  const order = view.getUint16(tiffStart, false)
+  if (order !== 0x4949 && order !== 0x4D4D) {
+    return null
+  }
+
+  const little = order === 0x4949
+  if (view.getUint16(tiffStart + 2, little) !== 42) {
+    return null
+  }
+
+  const ifd0 = readIfd(view, tiffStart, tiffStart + view.getUint32(tiffStart + 4, little), little)
+  const entry = ifd0.entries.find(item => item.tag === 0x0112)
+  const value = entry?.values[0]
+  return typeof value === 'number' ? value : null
+}
+
 export function detectContainer(bytes: Uint8Array): ImageContainer {
   if (bytes.length >= 3 && bytes[0] === 0xFF && bytes[1] === 0xD8 && bytes[2] === 0xFF) {
     return 'jpeg'
@@ -395,6 +422,9 @@ function readJpeg(view: DataView, result: ImageMetadata) {
       result.blocks.push('Comment')
       result.tags.push({ group: 'Text', name: 'Comment', value: ascii(view, payload, payloadLength), private: true })
     }
+    else if (marker === 0xE2 && startsWith(view, payload, 'ICC_PROFILE\0')) {
+      result.colorProfile = 'ICC profile'
+    }
 
     offset = payload + payloadLength
   }
@@ -448,6 +478,12 @@ function readPng(view: DataView, bytes: Uint8Array, result: ImageMetadata) {
         private: true,
       })
     }
+    else if (type === 'iCCP') {
+      result.colorProfile = 'ICC profile'
+    }
+    else if (type === 'sRGB') {
+      result.colorProfile = result.colorProfile ?? 'sRGB'
+    }
     else if (type === 'IDAT' || type === 'IEND') {
       break
     }
@@ -484,6 +520,9 @@ function readWebp(view: DataView, result: ImageMetadata) {
       result.blocks.push('XMP')
       result.tags.push({ group: 'XMP', name: 'XMP packet', value: `${length} bytes`, private: true })
     }
+    else if (type === 'ICCP') {
+      result.colorProfile = 'ICC profile'
+    }
 
     // Each RIFF chunk has even padding.
     offset = payload + length + (length % 2)
@@ -501,6 +540,7 @@ export function readImageMetadata(bytes: Uint8Array): ImageMetadata {
     tags: [],
     gps: null,
     blocks: [],
+    colorProfile: null,
   }
 
   try {
