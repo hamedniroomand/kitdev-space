@@ -211,7 +211,7 @@ const CRC_TABLE = (() => {
   return table
 })()
 
-function crc32(bytes: number[]): number {
+export function crc32(bytes: number[]): number {
   let value = 0xFFFFFFFF
   for (const byte of bytes) {
     value = CRC_TABLE[(value ^ byte) & 0xFF]! ^ (value >>> 8)

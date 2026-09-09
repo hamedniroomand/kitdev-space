@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { readImageMetadata } from '#shared/utils/image/exif'
 import { canStripInPlace, stripImageMetadata } from '#shared/utils/image/strip'
-import { buildCmykJpeg, buildJpeg, buildPng, buildWebp } from './fixtures'
+import { buildCmykJpeg, buildJpeg, buildPng, buildWebp, crc32 } from './fixtures'
 
 function scanData(bytes: Uint8Array) {
   // The bytes after the start of scan marker hold the pixels.
@@ -211,7 +211,24 @@ describe('stripImageMetadata with the GPS option', () => {
     expect(after.gps).toBeNull()
     expect(after.blocks).toContain('EXIF')
     expect(after.tags.find(item => item.name === 'Make')?.value).toBe('TestCam')
-    expect(String.fromCharCode(...result.bytes)).toContain('eXIf')
+
+    // A decoder rejects a chunk with a wrong CRC, so check the stored value.
+    const view = new DataView(result.bytes.buffer, result.bytes.byteOffset, result.bytes.byteLength)
+    let offset = 8
+    let checked = false
+
+    while (offset + 8 <= result.bytes.length) {
+      const length = view.getUint32(offset, false)
+      const name = String.fromCharCode(...result.bytes.subarray(offset + 4, offset + 8))
+      if (name === 'eXIf') {
+        const body = [...result.bytes.subarray(offset + 4, offset + 8 + length)]
+        expect(view.getUint32(offset + 8 + length, false)).toBe(crc32(body))
+        checked = true
+      }
+      offset += 12 + length
+    }
+
+    expect(checked).toBe(true)
   })
 
   it('removes the GPS block of a WebP and keeps the EXIF chunk', () => {

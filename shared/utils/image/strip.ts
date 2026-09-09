@@ -284,7 +284,7 @@ function stripJpeg(bytes: Uint8Array, options: StripPlan): StripResult {
     parts.push(bytes.subarray(offset))
   }
 
-  return { bytes: join(parts), mime: 'image/jpeg', removed: [...new Set(removed)], kept }
+  return { bytes: join(parts), mime: 'image/jpeg', removed: [...new Set(removed)], kept: [...new Set(kept)] }
 }
 
 const CRC_TABLE = /* @__PURE__ */ (() => {
@@ -351,7 +351,7 @@ function stripPng(bytes: Uint8Array, options: StripPlan): StripResult {
     }
   }
 
-  return { bytes: join(parts), mime: 'image/png', removed: [...new Set(removed)], kept }
+  return { bytes: join(parts), mime: 'image/png', removed: [...new Set(removed)], kept: [...new Set(kept)] }
 }
 
 function stripWebp(bytes: Uint8Array, options: StripPlan): StripResult {
@@ -404,7 +404,7 @@ function stripWebp(bytes: Uint8Array, options: StripPlan): StripResult {
   // The RIFF size counts every byte after the size field.
   new DataView(out.buffer).setUint32(4, out.length - 8, true)
 
-  return { bytes: out, mime: 'image/webp', removed: [...new Set(removed)], kept }
+  return { bytes: out, mime: 'image/webp', removed: [...new Set(removed)], kept: [...new Set(kept)] }
 }
 
 /** True when the metadata can be removed with no re-encode of the pixels. */

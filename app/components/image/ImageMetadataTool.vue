@@ -44,7 +44,10 @@ interface CleanResult {
 interface AuditRow {
   file: string
   container: string
+  /** Names of the removed segments, such as "EXIF" or "Comment". */
   removed: string[]
+  /** Names of the tags that the file held and the clean file does not. */
+  removedTags: string[]
   kept: string[]
   /** The color profile that the clean file still holds. */
   colorProfile: string | null
@@ -176,7 +179,7 @@ async function handleBatch() {
 
     for (const item of files.value) {
       const bytes = new Uint8Array(await item.arrayBuffer())
-      const before = readImageMetadata(bytes)
+      const before = await readMetadata(bytes)
       const result = stripImageMetadata(bytes, stripOptions.value)
 
       if (!result) {
@@ -184,6 +187,7 @@ async function handleBatch() {
           file: item.name,
           container: before.container,
           removed: [],
+          removedTags: [],
           kept: [],
           colorProfile: before.colorProfile,
           beforeBytes: item.size,
@@ -194,13 +198,17 @@ async function handleBatch() {
       }
 
       const copy = result.bytes.slice()
+      const after = readImageMetadata(copy)
+      const left = new Set(after.tags.map(row => row.name))
+
       entries[uniqueZipName(taken, `clean-${item.name}`)] = copy
       rows.push({
         file: item.name,
         container: before.container,
         removed: result.removed,
+        removedTags: before.tags.filter(row => !left.has(row.name)).map(row => row.name),
         kept: result.kept,
-        colorProfile: readImageMetadata(copy).colorProfile,
+        colorProfile: after.colorProfile,
         beforeBytes: item.size,
         afterBytes: copy.byteLength,
         cleaned: true,
@@ -403,6 +411,9 @@ function handleClear() {
                   Removed
                 </th>
                 <th class="px-3 py-2 text-left font-medium text-highlighted">
+                  Tags removed
+                </th>
+                <th class="px-3 py-2 text-left font-medium text-highlighted">
                   Color profile
                 </th>
                 <th class="px-3 py-2 text-left font-medium text-highlighted">
@@ -430,6 +441,12 @@ function handleClear() {
                     </template>
                   </template>
                 </td>
+                <td
+                  class="px-3 py-2 text-muted"
+                  :title="row.removedTags.join(', ')"
+                >
+                  {{ row.removedTags.length }}
+                </td>
                 <td class="px-3 py-2 text-muted">
                   {{ row.colorProfile ?? 'none' }}
                 </td>
@@ -442,8 +459,8 @@ function handleClear() {
         </div>
         <p class="text-xs text-muted">
           Every file stayed in your browser. The zip holds the clean images and the same report as
-          <span class="font-mono">audit.json</span>. The report lists the blocks that the tool
-          removed and the color profile that each clean file still holds.
+          <span class="font-mono">audit.json</span>. The report names the segments and the tags that
+          the tool removed, and the color profile that each clean file still holds.
         </p>
       </section>
     </template>
