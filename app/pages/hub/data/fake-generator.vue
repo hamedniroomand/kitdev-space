@@ -1,11 +1,16 @@
 <script setup lang="ts">
-import type { FakeFieldConfig, FieldType } from '#shared/utils/data/fake-generator'
+import type { FakeFieldConfig, FakeValue, FieldType } from '#shared/utils/data/fake-generator'
 import type { ToolEditorLang } from '#shared/utils/dev/editor-lang'
+import { useFileDialog } from '@vueuse/core'
+import { DataError } from '#shared/utils/data/errors'
 import {
+  buildRecipe,
   formatAsCsv,
   formatAsSqlInserts,
-  generateRowValues,
+  generateFieldValues,
   mapValuesToRows,
+  parseRecipe,
+  validateFields,
 } from '#shared/utils/data/fake-generator'
 
 useToolSeo('fake-data')
@@ -15,7 +20,19 @@ type OutputFormat = 'json' | 'csv' | 'sql'
 const format = ref<OutputFormat>('json')
 const rowCount = ref(10)
 const tableName = ref('users')
-const generatedValues = ref<(string | number | boolean)[][]>([])
+const seed = ref<number | undefined>(undefined)
+const refDate = ref('')
+const sqlDialect = ref('sql')
+const includeCreateTable = ref(false)
+const generateError = ref<string | null>(null)
+const generatedValues = ref<FakeValue[][]>([])
+
+const sqlDialectItems = [
+  { label: 'Standard SQL', value: 'sql' },
+  { label: 'PostgreSQL', value: 'postgresql' },
+  { label: 'MySQL', value: 'mysql' },
+  { label: 'SQLite', value: 'sqlite' },
+]
 
 const availableTypes: { label: string, value: FieldType }[] = [
   { label: 'UUID', value: 'uuid' },
@@ -32,6 +49,9 @@ const availableTypes: { label: string, value: FieldType }[] = [
   { label: 'Past Date', value: 'date' },
   { label: 'Boolean', value: 'boolean' },
   { label: 'Price ($)', value: 'price' },
+  { label: 'Integer (range)', value: 'integer' },
+  { label: 'Float (range)', value: 'float' },
+  { label: 'Enum (custom list)', value: 'enum' },
 ]
 
 const fields = ref<FakeFieldConfig[]>([
@@ -46,20 +66,31 @@ const fields = ref<FakeFieldConfig[]>([
 const { copy, label, color, icon } = useCopyFeedback()
 const { downloadText } = useDownload()
 
+const fieldError = computed(() => validateFields(fields.value))
+
 function regenerate() {
-  generatedValues.value = generateRowValues(
-    fields.value.map(f => f.type),
-    rowCount.value,
-  )
+  generateError.value = null
+  try {
+    generatedValues.value = generateFieldValues({
+      count: rowCount.value,
+      fields: fields.value,
+      seed: seed.value,
+      refDate: refDate.value || undefined,
+    })
+  }
+  catch (cause) {
+    generatedValues.value = []
+    generateError.value = cause instanceof DataError || cause instanceof Error
+      ? cause.message
+      : 'Cannot generate the data.'
+  }
 }
 
-watch(
-  [rowCount, () => fields.value.map(f => f.type).join(',')],
-  () => {
-    regenerate()
-  },
-  { immediate: true },
-)
+// Only an explicit Regenerate creates new data, so switching the output format
+// or renaming a field reuses the rows that are already generated.
+onMounted(() => {
+  regenerate()
+})
 
 function applyPreset(preset: 'users' | 'products' | 'contacts') {
   if (preset === 'users') {
@@ -123,7 +154,12 @@ const outputText = computed(() => {
   if (format.value === 'csv') {
     return formatAsCsv(rows.value)
   }
-  return formatAsSqlInserts(rows.value, tableName.value || 'table_name')
+  return formatAsSqlInserts(
+    rows.value,
+    tableName.value || 'table_name',
+    sqlDialect.value,
+    includeCreateTable.value,
+  )
 })
 useLiveTool(outputText)
 
@@ -140,6 +176,46 @@ function handleCopy() {
     copy(outputText.value)
   }
 }
+
+function handleDownloadRecipe() {
+  const recipe = buildRecipe({
+    count: rowCount.value,
+    fields: fields.value,
+    seed: seed.value,
+    refDate: refDate.value || undefined,
+    tableName: tableName.value,
+  })
+  downloadText(
+    `${tableName.value || 'recipe'}-recipe.json`,
+    JSON.stringify(recipe, null, 2),
+    'application/json',
+  )
+}
+
+const { open: openRecipeFile, onChange: onRecipeChange } = useFileDialog({
+  accept: 'application/json,.json',
+  multiple: false,
+})
+
+onRecipeChange(async (files) => {
+  const file = files?.[0]
+  if (!file) {
+    return
+  }
+  generateError.value = null
+  try {
+    const recipe = parseRecipe(await file.text())
+    fields.value = recipe.fields
+    rowCount.value = recipe.count
+    seed.value = recipe.seed
+    refDate.value = recipe.refDate ?? ''
+    tableName.value = recipe.tableName ?? tableName.value
+    regenerate()
+  }
+  catch (cause) {
+    generateError.value = cause instanceof Error ? cause.message : 'Cannot read the recipe file.'
+  }
+})
 
 function handleDownload() {
   if (!outputText.value)
@@ -185,17 +261,39 @@ function handleDownload() {
           />
         </div>
 
-        <div class="flex items-center gap-2">
+        <div class="flex flex-wrap items-center gap-2">
+          <UButton
+            size="xs"
+            variant="ghost"
+            color="neutral"
+            icon="i-lucide-folder-open"
+            label="Open Recipe"
+            @click="openRecipeFile()"
+          />
+          <UButton
+            size="xs"
+            variant="ghost"
+            color="neutral"
+            icon="i-lucide-download"
+            label="Download Recipe"
+            @click="handleDownloadRecipe"
+          />
           <UButton
             size="xs"
             color="primary"
             variant="solid"
             icon="i-lucide-refresh-cw"
             label="Generate Fresh Data"
+            :disabled="!!fieldError"
             @click="regenerate"
           />
         </div>
       </div>
+
+      <ToolError
+        v-if="fieldError || generateError"
+        :message="fieldError ?? generateError ?? ''"
+      />
 
       <!-- Settings & Schema Grid -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -237,36 +335,38 @@ function handleDownload() {
                 class="w-full font-mono text-xs"
               />
             </UFormField>
+            <UFormField
+              label="Seed"
+              help="Same seed and date give the same rows."
+            >
+              <UInput
+                v-model.number="seed"
+                type="number"
+                placeholder="random"
+                aria-label="Generation seed"
+                class="w-full font-mono text-xs"
+              />
+            </UFormField>
+            <UFormField label="Reference Date">
+              <UInput
+                v-model="refDate"
+                type="date"
+                aria-label="Reference date for relative dates"
+                class="w-full text-xs"
+              />
+            </UFormField>
           </div>
 
           <!-- Field List -->
           <div class="space-y-2 max-h-96 overflow-y-auto pr-1">
-            <div
+            <FakeFieldRow
               v-for="(f, idx) in fields"
               :key="idx"
-              class="p-2.5 rounded-lg border border-default bg-default space-y-2"
-            >
-              <div class="flex items-center justify-between gap-2">
-                <UInput
-                  v-model="f.name"
-                  placeholder="Field name"
-                  class="font-mono text-xs flex-1"
-                />
-                <UButton
-                  size="xs"
-                  variant="ghost"
-                  color="neutral"
-                  icon="i-lucide-trash-2"
-                  :disabled="fields.length <= 1"
-                  @click="removeField(idx)"
-                />
-              </div>
-              <USelect
-                v-model="f.type"
-                :items="availableTypes"
-                class="w-full text-xs"
-              />
-            </div>
+              v-model="fields[idx]!"
+              :type-items="availableTypes"
+              :can-remove="fields.length > 1"
+              @remove="removeField(idx)"
+            />
           </div>
         </div>
 
@@ -295,6 +395,26 @@ function handleDownload() {
                 label="SQL Inserts"
                 @click="format = 'sql'"
               />
+            </div>
+
+            <div
+              v-if="format === 'sql'"
+              class="flex flex-wrap items-center gap-2"
+            >
+              <USelect
+                v-model="sqlDialect"
+                :items="sqlDialectItems"
+                size="xs"
+                aria-label="SQL dialect"
+              />
+              <div class="flex items-center gap-1.5">
+                <USwitch
+                  v-model="includeCreateTable"
+                  size="sm"
+                  aria-label="Include CREATE TABLE statement"
+                />
+                <span class="text-xs text-muted">CREATE TABLE</span>
+              </div>
             </div>
 
             <div class="flex items-center gap-2">
@@ -340,6 +460,22 @@ function handleDownload() {
           </p>
           <p>
             Every value is generated in your browser. No real person is in the data, so you can share the output and put it in a test suite.
+          </p>
+          <p>
+            <strong>Repeatable output:</strong>
+            Set a seed and a reference date to get the same rows every time. The reference date anchors a relative date such as a past date, so a seeded run gives the same result on a later day.
+          </p>
+          <p>
+            <strong>Generate once:</strong>
+            Only Generate Fresh Data makes new values. A change to the output format, the table name, or a field name reuses the rows that exist.
+          </p>
+          <p>
+            <strong>Field rules:</strong>
+            An integer or float field takes a minimum and a maximum. An enum field takes your own list of values. A date field takes an interval. Each field takes a null rate as a percent, and a Unique switch that stops a repeated value.
+          </p>
+          <p>
+            <strong>Recipes:</strong>
+            Download Recipe saves the field schema, the seed, and the row count as JSON. It never holds the generated data. Open Recipe reads that file back.
           </p>
         </div>
         <RelatedTools
