@@ -503,7 +503,7 @@ export const tools: Tool[] = [
     id: 'dns',
     slug: 'dns-lookup',
     name: 'DNS Lookup',
-    description: 'Look up A, AAAA, CNAME, MX, NS, TXT, and CAA records for a domain.',
+    description: 'Look up A, AAAA, CNAME, MX, NS, SOA, TXT, and CAA records for a domain.',
     category: 'network',
     icon: 'i-lucide-globe',
     keywords: ['dns', 'lookup', 'a', 'mx', 'txt'],

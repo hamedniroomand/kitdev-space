@@ -1,11 +1,10 @@
 import { getClientKey } from '#server/utils/network/client-ip'
-import { isDnsRecordType, lookupDns } from '#server/utils/network/dns'
+import { lookupAllDns } from '#server/utils/network/dns'
 import { inspectEmailHealth } from '#server/utils/network/email-health'
 import { enforceRateLimit } from '#server/utils/network/rate-limit'
 
 interface DnsBody {
   domain?: string
-  type?: string
   mode?: string
   dkimSelectors?: string[] | string
 }
@@ -44,17 +43,9 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const type = body.type ?? ''
-
-  if (!isDnsRecordType(type)) {
-    throw createError({
-      statusCode: 400,
-      message: 'Choose a valid record type.',
-    })
-  }
-
   try {
-    const result = await lookupDns(domain, type)
+    // One request reads every common record type. The page filters the result.
+    const result = await lookupAllDns(domain)
     return { result }
   }
   catch (cause) {
