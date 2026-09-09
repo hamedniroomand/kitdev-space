@@ -13,40 +13,62 @@ const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeed
 
 useToolSeo('jwt')
 
-const verifyLabel = computed(() => {
-  switch (verifyStatus.value) {
-    case 'valid':
-      return 'Signature is valid.'
-    case 'invalid':
-      return 'Signature is not valid.'
-    case 'unsupported':
-      return 'This algorithm has no browser signature check.'
-    case 'missing-key':
-      return 'Enter a secret or a public key to verify the signature.'
-    default:
-      return null
-  }
-})
-
 const issuerMatch = computed(() => matchJwtClaim(expectedIssuer.value, decoded.value?.payload.iss))
 const audienceMatch = computed(() => matchJwtClaim(expectedAudience.value, decoded.value?.payload.aud))
 
-function claimLabel(name: string, match: JwtClaimMatch): string {
-  if (match === 'match') {
-    return `${name} matches`
-  }
-  return `${name} does not match`
+/** One check with its own state. A check never reads the state of another check. */
+interface JwtCheck {
+  label: string
+  value: string
+  description: string
+  color: 'success' | 'error' | 'highlighted'
 }
 
-const verifyColor = computed(() => {
-  if (verifyStatus.value === 'valid') {
-    return 'success'
+function claimCheck(label: string, match: JwtClaimMatch, claim: unknown): JwtCheck {
+  if (match === 'not-checked') {
+    return { label, value: 'Not checked', description: 'No expected value', color: 'highlighted' }
   }
-  if (verifyStatus.value === 'invalid') {
-    return 'error'
+  const found = Array.isArray(claim) ? claim.join(', ') : String(claim ?? 'no claim')
+  return match === 'match'
+    ? { label, value: 'Match', description: found, color: 'success' }
+    : { label, value: 'Mismatch', description: `Token holds ${found}`, color: 'error' }
+}
+
+function signatureCheck(): JwtCheck {
+  const label = 'Signature'
+  switch (verifyStatus.value) {
+    case 'valid':
+      return { label, value: 'Valid', description: decoded.value?.algorithm ?? '', color: 'success' }
+    case 'invalid':
+      return { label, value: 'Invalid', description: 'The signature does not match', color: 'error' }
+    case 'unsupported':
+      return { label, value: 'Not checked', description: 'Algorithm not supported', color: 'highlighted' }
+    default:
+      return { label, value: 'Not checked', description: 'No secret or public key', color: 'highlighted' }
   }
-  return 'warning'
-})
+}
+
+function timeCheck(): JwtCheck {
+  const label = 'Time validity'
+  const { expired, notBeforeValid } = decoded.value ?? {}
+  if (expired == null && notBeforeValid == null) {
+    return { label, value: 'Not checked', description: 'No exp or nbf claim', color: 'highlighted' }
+  }
+  if (expired === true) {
+    return { label, value: 'Expired', description: 'The exp claim is in the past', color: 'error' }
+  }
+  if (notBeforeValid === false) {
+    return { label, value: 'Too early', description: 'The nbf claim is in the future', color: 'error' }
+  }
+  return { label, value: 'Valid', description: 'Inside the exp and nbf window', color: 'success' }
+}
+
+const checks = computed<JwtCheck[]>(() => [
+  signatureCheck(),
+  timeCheck(),
+  claimCheck('Issuer', issuerMatch.value, decoded.value?.payload.iss),
+  claimCheck('Audience', audienceMatch.value, decoded.value?.payload.aud),
+])
 
 async function handleDecode() {
   verifyStatus.value = null
@@ -164,49 +186,19 @@ useToolShortcuts({
         >
           alg: {{ decoded.algorithm }}
         </UBadge>
-        <UBadge
-          v-if="decoded.expired === true"
-          color="error"
-          variant="subtle"
-        >
-          Expired
-        </UBadge>
-        <UBadge
-          v-else-if="decoded.expired === false"
-          color="success"
-          variant="subtle"
-        >
-          Not expired
-        </UBadge>
-        <UBadge
-          v-if="decoded.notBeforeValid === false"
-          color="warning"
-          variant="subtle"
-        >
-          Not valid yet (nbf)
-        </UBadge>
-        <UBadge
-          v-if="issuerMatch !== 'not-checked'"
-          :color="issuerMatch === 'match' ? 'success' : 'error'"
-          variant="subtle"
-        >
-          {{ claimLabel('iss', issuerMatch) }}
-        </UBadge>
-        <UBadge
-          v-if="audienceMatch !== 'not-checked'"
-          :color="audienceMatch === 'match' ? 'success' : 'error'"
-          variant="subtle"
-        >
-          {{ claimLabel('aud', audienceMatch) }}
-        </UBadge>
       </div>
 
-      <UAlert
-        v-if="verifyLabel"
-        :color="verifyColor"
-        variant="subtle"
-        :title="verifyLabel"
-      />
+      <div class="grid gap-3 grid-cols-2 lg:grid-cols-4">
+        <StatCard
+          v-for="check in checks"
+          :key="check.label"
+          :label="check.label"
+          :value="check.value"
+          :description="check.description"
+          :color="check.color"
+          :aria-label="`${check.label} check`"
+        />
+      </div>
 
       <div class="grid gap-4 lg:grid-cols-2">
         <div class="space-y-2">
@@ -264,6 +256,9 @@ useToolShortcuts({
           </p>
           <p>
             Give an expected issuer or an expected audience to check the <code>iss</code> and <code>aud</code> claims. An empty field is not checked. The <code>aud</code> claim can hold one value or a list, and a match on one entry of the list counts as a match.
+          </p>
+          <p>
+            Each check has its own card. The signature, the time claims, the issuer, and the audience pass or fail on their own. A card shows "Not checked" when the tool has no data for that check.
           </p>
         </div>
         <RelatedTools
