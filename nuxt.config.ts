@@ -262,7 +262,7 @@ export default defineNuxtConfig({
 
   vite: {
     optimizeDeps: {
-      include: ['@codemirror/lang-css', '@codemirror/lang-html', '@codemirror/lang-javascript', '@codemirror/lang-json', '@codemirror/lang-markdown', '@codemirror/lang-sql', '@codemirror/lint', '@codemirror/theme-one-dark', '@codemirror/view', 'sql-formatter', 'sql.js', 'vue-codemirror6', '@unhead/schema-org/vue', '@codemirror/commands', '@vue/devtools-core', '@vue/devtools-kit', 'uqr'],
+      include: ['@codemirror/lang-css', '@codemirror/lang-html', '@codemirror/lang-javascript', '@codemirror/lang-json', '@codemirror/lang-markdown', '@codemirror/lang-sql', '@codemirror/lint', '@codemirror/theme-one-dark', '@codemirror/view', 'sql-formatter', 'sql.js', 'vue-codemirror6', '@unhead/schema-org/vue', '@codemirror/commands', '@vue/devtools-core', '@vue/devtools-kit', 'uqr', '@lezer/json', '@codemirror/lang-yaml', '@codemirror/autocomplete'],
     },
     // No manualChunks here. Rollup pulls every static dependency of a manual
     // chunk into it, so a "codemirror" chunk also swallowed Vue and every page
