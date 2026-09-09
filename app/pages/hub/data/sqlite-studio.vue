@@ -117,6 +117,49 @@ const shownResult = computed(() => {
                 it. Then download the database to keep your changes, because the browser does not save
                 the file for you.
               </p>
+              <p>
+                <strong>Unsaved changes:</strong>
+                The toolbar counts each change that you have not downloaded. The tool asks for
+                confirmation before it closes a database that holds a change, because closing loses
+                it.
+              </p>
+              <p>
+                <strong>Two kinds of export:</strong>
+                Export results gives the rows of the current result as CSV or JSON. Export database
+                gives the whole <code>.sqlite</code> file. A result export is not a backup.
+              </p>
+              <p>
+                <strong>Many statements:</strong>
+                Run more than one statement at a time, and the tool gives a tab for each one. An
+                <code>INSERT</code>, an <code>UPDATE</code>, and a <code>DELETE</code> show the count
+                of the rows that changed.
+              </p>
+              <p>
+                <strong>Stop a query:</strong>
+                Select Stop to end a query that runs too long. SQLite cannot interrupt a busy call,
+                so the tool restarts the database engine and loads the last saved state. A change
+                that you did not download is lost.
+              </p>
+              <p>
+                <strong>Import a CSV file:</strong>
+                Drop a <code>.csv</code> file to open a preview. Set the type of each column, then
+                import. The tool writes a typed <code>CREATE TABLE</code> and inserts every row
+                inside one transaction, so a failure writes nothing. A value with a leading zero,
+                such as a postal code, stays text.
+              </p>
+              <p>
+                <strong>Autocompletion:</strong>
+                The editor completes a table name and a column name from the schema of the open
+                database, next to the SQLite keywords. The sidebar lists the tables, the views, the
+                indexes, and the triggers.
+              </p>
+              <p>
+                <strong>Limits:</strong>
+                The database stays in memory, so the browser keeps nothing after you close the tab.
+                A result shows the first 1000 rows; add a <code>LIMIT</code> or a filter to see the
+                rest. A BLOB cell shows its size and the first bytes as hex, never the whole value.
+                The tool reads no remote database and sends no file to a server.
+              </p>
             </div>
             <RelatedTools
               class="mt-8"
