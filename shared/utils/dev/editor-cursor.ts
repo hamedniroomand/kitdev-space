@@ -1,6 +1,5 @@
 import type { Extension } from '@codemirror/state'
-import type { EditorView } from '@codemirror/view'
-import { ViewPlugin } from '@codemirror/view'
+import { EditorView, ViewPlugin } from '@codemirror/view'
 
 /**
  * Gives the `EditorView` to a callback when the editor mounts, so a page can
@@ -32,4 +31,31 @@ export function goToOffset(view: EditorView, offset: number): void {
     scrollIntoView: true,
   })
   view.focus()
+}
+
+/**
+ * Reports the caret offset when the user moves the caret with no edit. An edit
+ * moves each offset after it, so a caret position in changed text no longer
+ * agrees with a result that came from the text before the edit.
+ */
+export function onCursorOffset(onMove: (offset: number) => void): Extension {
+  return EditorView.updateListener.of((update) => {
+    if (update.selectionSet && !update.docChanged) {
+      onMove(update.state.selection.main.head)
+    }
+  })
+}
+
+/**
+ * Selects a character range. It does not take the focus, so a control outside
+ * the editor keeps the focus and its own keyboard navigation.
+ */
+export function selectRange(view: EditorView, start: number, end: number): void {
+  const max = view.state.doc.length
+  const from = Math.min(Math.max(start, 0), max)
+  const to = Math.min(Math.max(end, from), max)
+  view.dispatch({
+    selection: { anchor: from, head: to },
+    scrollIntoView: true,
+  })
 }

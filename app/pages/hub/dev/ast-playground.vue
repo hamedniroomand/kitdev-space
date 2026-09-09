@@ -1,7 +1,11 @@
 <script setup lang="ts">
+import type { EditorView } from '@codemirror/view'
 import type { AstLanguage, AstTreeNode } from '#shared/utils/dev/ast'
-import { sliceSource } from '#shared/utils/dev/ast'
-import { AST_LANGUAGE_ITEMS, AST_SAMPLES } from '~/utils/dev/ast-samples'
+import type { AstSampleKey, AstSampleLevel } from '~/utils/dev/ast-samples'
+import { refDebounced } from '@vueuse/core'
+import { findAstPathAtOffset, searchAstTypes, sliceSource } from '#shared/utils/dev/ast'
+import { captureEditorView, onCursorOffset, selectRange } from '#shared/utils/dev/editor-cursor'
+import { AST_LANGUAGE_ITEMS, AST_SAMPLE_LEVEL_ITEMS, AST_SAMPLES } from '~/utils/dev/ast-samples'
 
 type Panel = 'ast' | 'json' | 'transform' | 'resolve'
 
@@ -22,18 +26,63 @@ const PANEL_ITEMS: { label: string, value: Panel }[] = [
 ]
 
 const language = ref<AstLanguage>('tsx')
-const input = ref(AST_SAMPLES.tsx)
+const level = ref<AstSampleLevel>('intermediate')
+const sampleKey = computed<AstSampleKey>(() => `${language.value}-${level.value}`)
+const input = ref(AST_SAMPLES['tsx-intermediate'])
 const { applySample, syncSample } = useSampleInput(input, AST_SAMPLES)
 const panel = ref<Panel>('ast')
-const parseResult = ref<ParseResult | null>(null)
-const selected = ref<AstTreeNode | null>(null)
+// A large file gives a tree of tens of thousands of nodes. Keep it shallow, so
+// Vue does not make a proxy for every node.
+const parseResult = shallowRef<ParseResult | null>(null)
+const selected = shallowRef<AstTreeNode | null>(null)
 const transformed = ref('')
+const typeFilter = ref('')
 const resolvePanel = useTemplateRef('resolvePanel')
 const { status, error, run, reset } = useTool<string>()
 const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
 
 useToolSeo('ast-playground')
-const { reportInput } = useToolInput()
+
+const editorView = shallowRef<EditorView | null>(null)
+const caretOffset = ref(0)
+// The caret reports every keystroke. Debounce it, so a large tree does not
+// rebuild the open branches on each character.
+const debouncedCaret = refDebounced(caretOffset, 250)
+const debouncedFilter = refDebounced(typeFilter, 250)
+// A click in the tree moves the caret. Hold the caret reaction, or the tool
+// selects a deeper node at the same offset.
+let holdCaret = false
+
+const editorExtensions = [
+  captureEditorView((view) => {
+    editorView.value = view
+  }),
+  onCursorOffset((offset) => {
+    if (!holdCaret) {
+      caretOffset.value = offset
+    }
+  }),
+]
+
+const caretPath = computed(() => (
+  findAstPathAtOffset(parseResult.value?.tree ?? null, debouncedCaret.value)
+))
+
+const typeSearch = computed(() => (
+  searchAstTypes(parseResult.value?.tree ?? null, debouncedFilter.value)
+))
+
+const expandIds = computed(() => new Set([
+  ...typeSearch.value.expand,
+  ...caretPath.value.slice(0, -1).map(node => node.id),
+]))
+
+watch(debouncedCaret, () => {
+  const node = caretPath.value.at(-1)
+  if (node) {
+    selected.value = node
+  }
+})
 
 const selectedSnippet = computed(() => {
   if (!selected.value) {
@@ -57,10 +106,16 @@ function clearResults() {
   reset()
 }
 
-watch(language, (next) => {
+watch(language, () => {
   // The tree belongs to the old language, so clear it. Keep pasted code.
-  syncSample(next)
   clearResults()
+})
+
+watch(sampleKey, (key) => {
+  // The sample loads only while the editor holds no text of the user.
+  if (syncSample(key)) {
+    parseAst()
+  }
 })
 
 async function parseAst() {
@@ -104,6 +159,13 @@ function showResolver() {
 
 function handleSelect(node: AstTreeNode) {
   selected.value = node
+  const view = editorView.value
+  if (!view) {
+    return
+  }
+  holdCaret = true
+  selectRange(view, node.start, node.end)
+  holdCaret = false
 }
 
 async function handleCopy(text: string, key: string) {
@@ -112,12 +174,13 @@ async function handleCopy(text: string, key: string) {
 
 function handleClear() {
   input.value = ''
+  typeFilter.value = ''
   clearResults()
 }
 
-function handleSample() {
-  reportInput('sample')
-  applySample(language.value)
+async function handleSample() {
+  applySample(sampleKey.value)
+  await parseAst()
 }
 
 useToolShortcuts({
@@ -132,7 +195,7 @@ useToolShortcuts({
       variant="subtle"
       icon="i-lucide-server"
       title="Processed with OXC"
-      description="Parse uses oxc-parser. Transform uses oxc-transform. Resolve uses oxc-resolver with Node and ESM rules."
+      description="Parse uses oxc-parser. Transform uses oxc-transform. Resolve uses oxc-resolver against the dependencies of this site."
     />
 
     <div class="flex flex-wrap gap-4">
@@ -141,6 +204,13 @@ useToolShortcuts({
           v-model="language"
           :items="AST_LANGUAGE_ITEMS"
           class="w-44"
+        />
+      </UFormField>
+      <UFormField label="Sample level">
+        <USelect
+          v-model="level"
+          :items="AST_SAMPLE_LEVEL_ITEMS"
+          class="w-40"
         />
       </UFormField>
       <UFormField label="Panel">
@@ -158,6 +228,7 @@ useToolShortcuts({
       label="Source"
       placeholder="Paste JavaScript or TypeScript"
       :lang="language"
+      :extensions="editorExtensions"
     />
 
     <ToolActions>
@@ -222,13 +293,41 @@ useToolShortcuts({
 
     <div
       v-if="panel === 'ast' && parseResult"
-      class="max-h-[32rem] overflow-auto rounded-md border border-default p-2"
+      class="space-y-2"
     >
-      <AstTreeNode
-        :node="parseResult.tree"
-        :selected-id="selected?.id ?? null"
-        @select="handleSelect"
-      />
+      <div class="flex flex-wrap items-end gap-4">
+        <UFormField
+          label="Node type filter"
+          class="min-w-56 flex-1"
+        >
+          <UInput
+            v-model="typeFilter"
+            placeholder="Identifier"
+            class="w-full"
+            icon="i-lucide-search"
+            :ui="{ base: 'font-mono' }"
+          />
+        </UFormField>
+        <p
+          v-if="debouncedFilter.trim()"
+          class="pb-2 text-sm text-muted"
+        >
+          {{ typeSearch.matches.size }} marked nodes
+        </p>
+      </div>
+      <div
+        role="tree"
+        aria-label="AST nodes"
+        class="max-h-[32rem] overflow-auto rounded-md border border-default p-2"
+      >
+        <AstTreeNode
+          :node="parseResult.tree"
+          :selected-id="selected?.id ?? null"
+          :match-ids="typeSearch.matches"
+          :expand-ids="expandIds"
+          @select="handleSelect"
+        />
+      </div>
     </div>
 
     <div
@@ -288,14 +387,39 @@ useToolShortcuts({
     <template #docs>
       <ToolDocs title="About the AST playground">
         <div class="space-y-4 text-muted">
+          <h3 class="text-highlighted">
+            Active parsers
+          </h3>
           <p>
-            This tool parses JavaScript, TypeScript, and JSX with oxc-parser into an ESTree JSON tree.
+            oxc-parser reads the source and gives an ESTree JSON tree. It accepts the
+            four languages in the list: JavaScript, JSX, TypeScript, and TSX. It reads
+            the source as an ECMAScript module, and it accepts the syntax of the current
+            ECMAScript standard, ES2025. Earlier standards are a subset of ES2025, so no
+            version switch is necessary. TypeScript and TSX add the TypeScript type
+            syntax. JSON is not a parser option.
           </p>
           <p>
-            Select a node in the tree to see the exact source span for that node.
+            oxc-transform removes the TypeScript types and compiles JSX with the
+            automatic runtime. oxc-resolver reads the module paths with ESM or Node
+            condition names.
           </p>
+          <h3 class="text-highlighted">
+            Scope of the resolver
+          </h3>
           <p>
-            Transform runs oxc-transform. Resolve tests module paths with oxc-resolver using ESM or Node condition names.
+            The resolver reads only the dependencies that this site installs. It cannot
+            read the dependencies of your own project, and the directory field cannot
+            leave the project root of the site. Use it to compare ESM and Node
+            resolution rules, not to test your own lockfile.
+          </p>
+          <h3 class="text-highlighted">
+            Navigation
+          </h3>
+          <p>
+            Move the caret in the editor to select the deepest node at that position.
+            Select a node in the tree to highlight the same character range in the
+            editor. The tree accepts the arrow keys: up and down move between the open
+            nodes, right opens a node, and left closes it.
           </p>
           <p>
             This tool does not store your input.
