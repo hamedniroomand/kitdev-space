@@ -49,6 +49,12 @@ export async function generateFaviconPackageInBrowser(
 
   const srcW = source.width
   const srcH = source.height
+  // An SVG with only a viewBox reports no pixel size. Scaling from zero gives NaN.
+  if (!srcW || !srcH) {
+    source.close?.()
+    throw new Error('The image reports no pixel size. Give the SVG a width and a height.')
+  }
+
   // `contain` scales the long edge to the square. `cover` scales the short edge.
   // Both keep the source aspect ratio, so a non-square icon never distorts.
   const fitDim = options.fit === 'cover' ? Math.min(srcW, srcH) : Math.max(srcW, srcH)

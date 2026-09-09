@@ -2,7 +2,7 @@
 import type { FaviconFit, FaviconPackageResult } from '#shared/utils/image/favicon'
 import { generateFaviconPackageInBrowser } from '~/utils/image/favicon-browser'
 
-const FIT_ITEMS = [
+const FIT_ITEMS: { label: string, value: FaviconFit }[] = [
   { label: 'Contain with padding', value: 'contain' },
   { label: 'Cover crop', value: 'cover' },
 ]
@@ -24,7 +24,7 @@ useToolSeo('favicon-generator')
 const { reportInput } = useToolInput()
 
 // Sample SVG icon for quick testing
-const sampleSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+const sampleSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
   <rect width="100" height="100" rx="20" fill="#2563eb" />
   <circle cx="50" cy="50" r="28" fill="#ffffff" />
   <path d="M40 35 L65 50 L40 65 Z" fill="#2563eb" />
