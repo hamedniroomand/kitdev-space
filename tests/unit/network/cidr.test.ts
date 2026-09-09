@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseCidr } from '#shared/utils/network/cidr'
+import { cidrContainsIp, compareCidr, parseCidr } from '#shared/utils/network/cidr'
 
 describe('parseCidr', () => {
   it('calculates standard /24 subnet correctly', () => {
@@ -53,5 +53,69 @@ describe('parseCidr', () => {
     const res = parseCidr('169.254.1.1/16')
     expect(res.isLinkLocal).toBe(true)
     expect(res.isPrivate).toBe(false)
+  })
+})
+
+describe('cidrContainsIp', () => {
+  it('accepts an address inside the block', () => {
+    expect(cidrContainsIp('192.168.1.0/24', '192.168.1.200')).toBe(true)
+    expect(cidrContainsIp('10.0.0.0/8', '10.255.255.255')).toBe(true)
+  })
+
+  it('rejects an address outside the block', () => {
+    expect(cidrContainsIp('192.168.1.0/24', '192.168.2.1')).toBe(false)
+    expect(cidrContainsIp('10.0.0.0/8', '11.0.0.1')).toBe(false)
+  })
+
+  it('accepts the network and the broadcast address', () => {
+    expect(cidrContainsIp('192.168.1.0/24', '192.168.1.0')).toBe(true)
+    expect(cidrContainsIp('192.168.1.0/24', '192.168.1.255')).toBe(true)
+  })
+
+  it('handles a host route and a full range', () => {
+    expect(cidrContainsIp('8.8.8.8/32', '8.8.8.8')).toBe(true)
+    expect(cidrContainsIp('8.8.8.8/32', '8.8.8.9')).toBe(false)
+    expect(cidrContainsIp('0.0.0.0/0', '203.0.113.9')).toBe(true)
+  })
+
+  it('throws on an invalid address', () => {
+    expect(() => cidrContainsIp('192.168.1.0/24', '999.1.1.1')).toThrow()
+    expect(() => cidrContainsIp('192.168.1.0/24', '')).toThrow()
+  })
+})
+
+describe('compareCidr', () => {
+  it('detects two identical blocks', () => {
+    const res = compareCidr('192.168.1.0/24', '192.168.1.0/24')
+    expect(res.relation).toBe('equal')
+    expect(res.overlaps).toBe(true)
+    expect(res.sharedAddresses).toBe('256')
+  })
+
+  it('detects a block that encloses the second block', () => {
+    const res = compareCidr('10.0.0.0/8', '10.1.2.0/24')
+    expect(res.relation).toBe('contains')
+    expect(res.overlaps).toBe(true)
+    expect(res.sharedAddresses).toBe('256')
+  })
+
+  it('detects a block inside the second block', () => {
+    const res = compareCidr('172.16.5.0/24', '172.16.0.0/16')
+    expect(res.relation).toBe('within')
+    expect(res.overlaps).toBe(true)
+    expect(res.sharedAddresses).toBe('256')
+  })
+
+  it('detects two blocks that do not overlap', () => {
+    const res = compareCidr('192.168.1.0/24', '192.168.2.0/24')
+    expect(res.relation).toBe('disjoint')
+    expect(res.overlaps).toBe(false)
+    expect(res.sharedAddresses).toBe('0')
+  })
+
+  it('normalizes a host bit before the comparison', () => {
+    const res = compareCidr('192.168.1.77/24', '192.168.1.0/26')
+    expect(res.relation).toBe('contains')
+    expect(res.sharedAddresses).toBe('64')
   })
 })
