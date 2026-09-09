@@ -85,4 +85,37 @@ test.describe('SQLite Studio', () => {
       await expect(page.getByText('CREATE TABLE products')).toBeVisible()
     })
   })
+
+  test('stops a long query and recovers the database', async ({ page }) => {
+    await gotoHydrated(page, '/hub/data/sqlite-studio')
+    await page.getByRole('button', { name: 'Load Sample Database' }).click()
+
+    const tableList = page.locator('aside').filter({
+      has: page.getByPlaceholder('Filter tables...'),
+    })
+    await expect(tableList.getByText('products', { exact: true })).toBeVisible()
+
+    // A recursive CTE keeps the worker busy, so Stop has something to interrupt.
+    await fillCodeMirror(
+      page,
+      'SQL query',
+      'WITH RECURSIVE c(x) AS (SELECT 1 UNION ALL SELECT x + 1 FROM c WHERE x < 900000000) SELECT count(*) FROM c;',
+    )
+    await page.getByRole('button', { name: 'Run Query' }).click()
+
+    const stop = page.getByRole('button', { name: 'Stop' })
+    await expect(stop).toBeVisible()
+    await stop.click()
+
+    await expect(page.getByText('The query was stopped. The sample database reloaded.')).toBeVisible()
+
+    // Recovery: the worker restarted and the sample tables are back and usable.
+    await expect(tableList.getByText('products', { exact: true })).toBeVisible()
+    await tableList.getByText('products', { exact: true }).click()
+    await expect(page.getByText('Mechanical Keyboard', { exact: true })).toBeVisible()
+
+    await fillCodeMirror(page, 'SQL query', 'SELECT count(*) AS total FROM products;')
+    await page.getByRole('button', { name: 'Run Query' }).click()
+    await expect(page.getByRole('button', { name: 'Stop' })).not.toBeVisible()
+  })
 })

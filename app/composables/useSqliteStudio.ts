@@ -37,6 +37,8 @@ export function useSqliteStudio() {
   /** The last bytes the user downloaded. A cancelled query reloads from here. */
   let savedBytes: Uint8Array | null = null
   let lastLoadedBytes: Uint8Array | null = null
+  /** How to rebuild the database after a cancelled query terminates the worker. */
+  let reloadPlan: 'blank' | 'sample' | 'bytes' = 'blank'
   /** The queries that the user ran, newest first. Kept for the browser tab only. */
   const history = useSessionStorage<string[]>('kitdev:sqlite:history', [])
 
@@ -152,6 +154,7 @@ export function useSqliteStudio() {
       const bytes = new Uint8Array(await file.arrayBuffer())
       lastLoadedBytes = bytes.slice()
       savedBytes = bytes.slice()
+      reloadPlan = 'bytes'
       pendingEdits.value = 0
       // The transfer list moves the buffer to the worker instead of copying it,
       // so a large database needs memory once. The copies above stay behind for
@@ -169,6 +172,7 @@ export function useSqliteStudio() {
     databaseName.value = 'blank.sqlite'
     lastLoadedBytes = null
     savedBytes = null
+    reloadPlan = 'blank'
     pendingEdits.value = 0
     post({ type: 'INIT_DB' })
   }
@@ -177,6 +181,10 @@ export function useSqliteStudio() {
     reportInput('sample')
     initWorker()
     databaseName.value = 'ecommerce-sample.sqlite'
+    lastLoadedBytes = null
+    savedBytes = null
+    reloadPlan = 'sample'
+    pendingEdits.value = 0
     post({ type: 'LOAD_SAMPLE' })
   }
 
@@ -391,14 +399,19 @@ export function useSqliteStudio() {
 
     const restoreFrom = savedBytes ?? lastLoadedBytes
     initWorker()
-    if (restoreFrom) {
-      pendingEdits.value = 0
+    pendingEdits.value = 0
+
+    if (reloadPlan === 'bytes' && restoreFrom) {
       post({ type: 'INIT_DB', bytes: restoreFrom.slice() })
       error.value = 'The query was stopped. The database reloaded from the last saved state.'
     }
+    else if (reloadPlan === 'sample') {
+      post({ type: 'LOAD_SAMPLE' })
+      error.value = 'The query was stopped. The sample database reloaded.'
+    }
     else {
       post({ type: 'INIT_DB' })
-      error.value = 'The query was stopped. The database restarted empty.'
+      error.value = 'The query was stopped. The database reloaded empty, which was its last saved state.'
     }
   }
 
@@ -419,6 +432,7 @@ export function useSqliteStudio() {
     pendingEdits.value = 0
     savedBytes = null
     lastLoadedBytes = null
+    reloadPlan = 'blank'
     error.value = null
   }
 
