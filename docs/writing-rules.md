@@ -33,6 +33,7 @@ Rules:
 - Use common words.
 - Avoid idioms.
 - Avoid unnecessary words.
+- Do not add comments unless needed. If the code is clear, a comment is not required. Add a comment only to explain an edge case or something that is not obvious.
 - Use the same term for the same concept.
 - Use "user" for a person who uses the product.
 - Use "tool" for a KitDev Space utility.
