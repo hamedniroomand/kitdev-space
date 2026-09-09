@@ -24,6 +24,18 @@ export function base64ToBytes(base64: string): Uint8Array {
  */
 export const AES_ENVELOPE_VERSION = 1
 
+const BASE64_PATTERN = /^[a-z0-9+/]+={0,2}$/i
+
+export const BASE64_ERROR = 'Invalid Base64 input. Use only A-Z, a-z, 0-9, "+", "/", and the "=" padding.'
+
+export const ENVELOPE_ERROR = 'The envelope is not complete. It must hold a salt, an IV, and a 16-byte tag. Copy the full output again.'
+
+/**
+ * GCM gives one signal for a wrong password and for changed data: the tag check
+ * fails. The tool cannot tell the two causes apart, so the message names both.
+ */
+export const AUTH_ERROR = 'The tag check failed. The password is wrong, or the data changed after encryption. Test the same password on an output that you know is good. If that output decrypts, the password is correct and this data changed.'
+
 const SALT_BYTES = 16
 const IV_BYTES = 12
 const TAG_BYTES = 16
@@ -137,21 +149,25 @@ export async function decryptAesGcm(
     throw new Error('Enter a password to decrypt the text.')
   }
 
-  const trimmed = ciphertextBase64.trim()
-  if (!trimmed) {
+  const compact = ciphertextBase64.replace(/\s+/g, '')
+  if (!compact) {
     throw new Error('Encrypted ciphertext cannot be empty.')
+  }
+
+  if (!BASE64_PATTERN.test(compact) || compact.length % 4 !== 0) {
+    throw new Error(BASE64_ERROR)
   }
 
   let packed: Uint8Array
   try {
-    packed = base64ToBytes(trimmed)
+    packed = base64ToBytes(compact)
   }
   catch {
-    throw new Error('Invalid Base64 ciphertext format.')
+    throw new Error(BASE64_ERROR)
   }
 
   if (packed.length < LEGACY_HEADER_BYTES + TAG_BYTES) {
-    throw new Error('Ciphertext payload is too short.')
+    throw new Error(ENVELOPE_ERROR)
   }
 
   if (!globalThis.crypto?.subtle) {
@@ -177,6 +193,6 @@ export async function decryptAesGcm(
     return await decryptEnvelope(packed, password, iterations, 0)
   }
   catch {
-    throw new Error('Decryption failed. Incorrect password or corrupted ciphertext.')
+    throw new Error(AUTH_ERROR)
   }
 }

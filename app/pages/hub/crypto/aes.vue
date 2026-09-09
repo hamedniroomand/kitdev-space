@@ -244,6 +244,12 @@ useToolShortcuts({
             An earlier release wrote no version byte. A random salt byte can hold the value 1, so the tool cannot read the layout from the first byte. The tool tries the version 1 layout first. GCM checks its tag, so a wrong layout always fails. The tool then tries the old layout. An old output therefore still decrypts.
           </p>
           <p>
+            A failed decryption gives one of three errors. An invalid Base64 input reports a format error. A payload that is too short for a salt, an IV, and a tag reports an incomplete envelope. A tag check that fails reports a tag error.
+          </p>
+          <p>
+            The tag error names two causes: a wrong password, or data that changed after encryption. GCM gives one signal for both, so the tool cannot tell them apart. To find the cause, use the same password on an output that you know is good. If that output decrypts, the password is correct and the other data changed.
+          </p>
+          <p>
             The strength comes from the password. A short password gives weak encryption, whatever the algorithm. Use the ID & Secret Generator to make a strong passphrase.
           </p>
         </div>
