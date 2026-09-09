@@ -7,9 +7,11 @@ test.describe('Markdown Table Generator tool', () => {
 
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
 
-    // Expect initial markdown output to contain default headers
-    const output = page.locator('textarea[readonly]')
-    await expect(output).toHaveValue(/Feature.*Status.*Notes/s)
+    // The output is a read-only CodeMirror editor, so assert on its text.
+    const output = page.getByRole('textbox', { name: 'Markdown Output' })
+    await expect(output).toContainText('Feature')
+    await expect(output).toContainText('Status')
+    await expect(output).toContainText('Notes')
 
     // Add a row
     await page.getByRole('button', { name: 'Add Row' }).click()
@@ -19,6 +21,6 @@ test.describe('Markdown Table Generator tool', () => {
     const lastInput = inputs.nth(9) // 3 existing rows * 3 cols = 9
     await lastInput.fill('New Feature')
 
-    await expect(output).toHaveValue(/New Feature/)
+    await expect(output).toContainText('New Feature')
   })
 })

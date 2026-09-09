@@ -26,7 +26,7 @@ test.describe('Image Resizer tool', () => {
 
     await test.step('processes image resize', async () => {
       await page.getByRole('button', { name: 'Process' }).click()
-      await expect(page.getByText('Result', { exact: true })).toBeVisible({ timeout: 15_000 })
+      await expect(page.getByText('Image Result')).toBeVisible({ timeout: 15_000 })
       await expect(page.getByRole('button', { name: 'Download' })).toBeVisible()
     })
 
