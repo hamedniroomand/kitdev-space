@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import { bytesToBase64 } from '#shared/utils/crypto/base64'
 import { hexToBytes } from '#shared/utils/crypto/hex'
-import { decodeHmacKey, generateHmac, generateRandomSecret } from '#shared/utils/crypto/hmac'
+import {
+  decodeHmacKey,
+  generateHmac,
+  generateRandomSecret,
+  verifyHmacSignature,
+} from '#shared/utils/crypto/hmac'
 
 // RFC 2202, HMAC-SHA-1 test case 1: key 0x0b repeated 20 times, data "Hi There".
 const RFC2202_CASE1_KEY_HEX = '0b'.repeat(20)
@@ -75,5 +80,46 @@ describe('hmac key encodings against RFC 2202', () => {
       'hex',
     )
     expect(res).toBe(RFC2202_CASE2_DIGEST)
+  })
+})
+
+describe('verifyHmacSignature', () => {
+  const actual = hexToBytes(RFC2202_CASE1_DIGEST)
+
+  it('does not check an empty expected value', () => {
+    expect(verifyHmacSignature('', actual)).toBe('not-checked')
+    expect(verifyHmacSignature('  ', actual)).toBe('not-checked')
+    expect(verifyHmacSignature('sha256=', actual)).toBe('not-checked')
+  })
+
+  it('reports a match for an equal hex signature', () => {
+    expect(verifyHmacSignature(RFC2202_CASE1_DIGEST, actual)).toBe('match')
+  })
+
+  it('reports a match for upper case hex', () => {
+    expect(verifyHmacSignature(RFC2202_CASE1_DIGEST.toUpperCase(), actual)).toBe('match')
+  })
+
+  it('strips an algorithm prefix', () => {
+    expect(verifyHmacSignature(`sha256=${RFC2202_CASE1_DIGEST}`, actual)).toBe('match')
+    expect(verifyHmacSignature(`SHA1=${RFC2202_CASE1_DIGEST}`, actual)).toBe('match')
+  })
+
+  it('reports a match for an equal Base64 signature', () => {
+    expect(verifyHmacSignature(bytesToBase64(actual), actual)).toBe('match')
+  })
+
+  it('reports a mismatch for an unequal signature', () => {
+    const other = `${RFC2202_CASE1_DIGEST.slice(0, -2)}ff`
+    expect(verifyHmacSignature(other, actual)).toBe('mismatch')
+  })
+
+  it('reports a mismatch for a length mismatch', () => {
+    expect(verifyHmacSignature(RFC2202_CASE1_DIGEST.slice(0, 8), actual)).toBe('mismatch')
+    expect(verifyHmacSignature(`${RFC2202_CASE1_DIGEST}0000`, actual)).toBe('mismatch')
+  })
+
+  it('throws for an expected value that is neither hex nor Base64', () => {
+    expect(() => verifyHmacSignature('not a signature!', actual)).toThrow(/invalid base64/i)
   })
 })

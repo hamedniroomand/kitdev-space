@@ -1,6 +1,12 @@
 <script setup lang="ts">
 import type { HmacAlgorithm, HmacEncoding, HmacKeyFormat } from '#shared/utils/crypto/hmac'
-import { decodeHmacKey, generateHmac, generateRandomSecret } from '#shared/utils/crypto/hmac'
+import {
+  decodeHmacKey,
+  encodeHmac,
+  generateRandomSecret,
+  hmacBytes,
+  verifyHmacSignature,
+} from '#shared/utils/crypto/hmac'
 
 useToolSeo('hmac')
 
@@ -10,7 +16,9 @@ const algorithm = ref<HmacAlgorithm>('SHA-256')
 const keyFormat = ref<HmacKeyFormat>('text')
 const encoding = ref<HmacEncoding>('hex')
 const uppercase = ref(false)
+const expected = ref('')
 const signature = ref('')
+const signatureBytes = ref<Uint8Array | null>(null)
 const errorMessage = ref<string | null>(null)
 
 const { copy, label, color, icon } = useCopyFeedback()
@@ -29,21 +37,25 @@ const encodings: { label: string, value: HmacEncoding }[] = [
 async function computeSignature() {
   if (!message.value || !secret.value) {
     signature.value = ''
+    signatureBytes.value = null
     errorMessage.value = null
     return
   }
 
   try {
     const keyBytes = decodeHmacKey(secret.value, keyFormat.value)
-    let sig = await generateHmac(message.value, keyBytes, algorithm.value, encoding.value)
+    const bytes = await hmacBytes(message.value, keyBytes, algorithm.value)
+    let sig = encodeHmac(bytes, encoding.value)
     if (encoding.value === 'hex' && uppercase.value) {
       sig = sig.toUpperCase()
     }
     signature.value = sig
+    signatureBytes.value = bytes
     errorMessage.value = null
   }
   catch (err) {
     signature.value = ''
+    signatureBytes.value = null
     errorMessage.value = err instanceof Error ? err.message : 'Failed to compute HMAC signature.'
   }
 }
@@ -51,6 +63,19 @@ async function computeSignature() {
 watch([message, secret, algorithm, keyFormat, encoding, uppercase], () => {
   computeSignature()
 }, { immediate: true })
+
+/** The expected signature check. It never uses `===` on the signature bytes. */
+const expectedMatch = computed(() => {
+  if (!signatureBytes.value) {
+    return 'not-checked'
+  }
+  try {
+    return verifyHmacSignature(expected.value, signatureBytes.value)
+  }
+  catch {
+    return 'unreadable'
+  }
+})
 
 function handleGenerateKey() {
   keyFormat.value = 'hex'
@@ -66,7 +91,9 @@ function handleCopy() {
 function handleClear() {
   message.value = ''
   secret.value = ''
+  expected.value = ''
   signature.value = ''
+  signatureBytes.value = null
   errorMessage.value = null
 }
 </script>
@@ -213,6 +240,28 @@ function handleClear() {
         </output>
       </UFormField>
 
+      <!-- Expected signature check -->
+      <UFormField
+        label="Expected signature"
+        description="Paste the signature of the sender in hex or Base64. A sha256= prefix is removed for you."
+      >
+        <template #hint>
+          <UBadge
+            v-if="expectedMatch !== 'not-checked'"
+            :color="expectedMatch === 'match' ? 'success' : 'error'"
+            variant="subtle"
+            :aria-label="`Expected signature ${expectedMatch}`"
+          >
+            {{ expectedMatch === 'match' ? 'Match' : expectedMatch === 'mismatch' ? 'Mismatch' : 'Unreadable' }}
+          </UBadge>
+        </template>
+        <UInput
+          v-model="expected"
+          placeholder="sha256=..."
+          class="font-mono text-sm w-full"
+        />
+      </UFormField>
+
       <ToolError
         v-if="errorMessage"
         :message="errorMessage"
@@ -227,6 +276,9 @@ function handleClear() {
           </p>
           <p>
             A webhook uses an HMAC. The sender puts the signature in a header. Your server computes the same HMAC over the raw body and compares the two values. Compare them with a constant-time function, never with a plain equals.
+          </p>
+          <p>
+            Paste the signature of the sender into "Expected signature" to check it. The tool accepts hex or Base64, in upper case or lower case, and it removes a prefix such as <code>sha256=</code>. It compares the bytes with a constant-time check, so the run time does not leak where the first difference is.
           </p>
           <p>
             A key is bytes, not text. Select the key format that matches your key. "Text (UTF-8)" reads the key as UTF-8 text. "Hex" and "Base64" decode the key to the same bytes that the sender uses. The tool reports an error when the key holds a character that the selected format does not allow.

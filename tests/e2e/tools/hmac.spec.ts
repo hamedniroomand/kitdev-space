@@ -15,6 +15,16 @@ test('computes HMAC signature', { tag: '@smoke' }, async ({ page }) => {
     expect(sigText).toMatch(/^[0-9a-f]{64}$/i)
   })
 
+  await test.step('verifies an expected signature', async () => {
+    const sigText = (await signature.textContent()) ?? ''
+    const expectedField = page.getByRole('textbox', { name: 'Expected signature' })
+    await expectedField.fill(`sha256=${sigText}`)
+    await expect(page.getByLabel('Expected signature match')).toHaveText('Match')
+    await expectedField.fill('deadbeef')
+    await expect(page.getByLabel('Expected signature mismatch')).toHaveText('Mismatch')
+    await expectedField.fill('')
+  })
+
   await test.step('switches to SHA-512 algorithm', async () => {
     await algorithms.getByRole('button', { name: 'SHA-512' }).click()
     const sigText = (await signature.textContent()) ?? ''

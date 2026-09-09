@@ -1,4 +1,5 @@
 import { base64ToBytes, bytesToBase64 } from './base64'
+import { timingSafeEqual } from './constant-time'
 import { bytesToHex, hexToBytes } from './hex'
 
 export type HmacAlgorithm = 'SHA-256' | 'SHA-384' | 'SHA-512' | 'SHA-1'
@@ -46,14 +47,47 @@ export async function hmacBytes(
   return new Uint8Array(signature)
 }
 
+export function encodeHmac(bytes: Uint8Array, encoding: HmacEncoding = 'hex'): string {
+  return encoding === 'base64' ? bytesToBase64(bytes) : bytesToHex(bytes)
+}
+
 export async function generateHmac(
   message: string,
   key: Uint8Array,
   algorithm: HmacAlgorithm = 'SHA-256',
   encoding: HmacEncoding = 'hex',
 ): Promise<string> {
-  const bytes = await hmacBytes(message, key, algorithm)
-  return encoding === 'base64' ? bytesToBase64(bytes) : bytesToHex(bytes)
+  return encodeHmac(await hmacBytes(message, key, algorithm), encoding)
+}
+
+export type HmacSignatureMatch = 'match' | 'mismatch' | 'not-checked'
+
+/** Removes an optional algorithm prefix, such as `sha256=`, and all whitespace. */
+function normalizeSignature(value: string): string {
+  return value.trim().replace(/^sha(?:1|256|384|512)=/i, '').replace(/\s+/g, '')
+}
+
+/** Reads the expected signature bytes. It accepts hex or Base64, in any case. */
+export function parseHmacSignature(value: string): Uint8Array {
+  const cleaned = normalizeSignature(value)
+  if (/^[0-9a-f]+$/i.test(cleaned) && cleaned.length % 2 === 0) {
+    return hexToBytes(cleaned)
+  }
+  return base64ToBytes(cleaned)
+}
+
+/**
+ * Compares an expected signature with the computed signature.
+ *
+ * The parse of the expected text runs first and is not constant time. Only the
+ * byte compare must be constant time, and `timingSafeEqual` does that compare.
+ * An empty expected value is not checked.
+ */
+export function verifyHmacSignature(expected: string, actual: Uint8Array): HmacSignatureMatch {
+  if (!normalizeSignature(expected)) {
+    return 'not-checked'
+  }
+  return timingSafeEqual(parseHmacSignature(expected), actual) ? 'match' : 'mismatch'
 }
 
 export function generateRandomSecret(length = 32): string {
