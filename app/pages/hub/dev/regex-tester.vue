@@ -148,6 +148,9 @@ function requestRun(text: string): Promise<RegexTestResult> {
 const runTest = useDebounceFn(async () => {
   if (!import.meta.client || typeof Worker === 'undefined') {
     result.value = testRegex(pattern.value, sample.value, flagString.value)
+    caseMatched.value = testCases.value.map(
+      item => testRegex(pattern.value, item.text, flagString.value).matches.length > 0,
+    )
     return
   }
 
@@ -179,6 +182,8 @@ watch([pattern, sample, flagString, testCases], () => {
 
 onMounted(() => {
   initWorker()
+  // The watcher fires on a change only, so the first evaluation happens here.
+  runTest()
 })
 
 onUnmounted(() => {
