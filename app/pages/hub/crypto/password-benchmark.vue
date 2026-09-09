@@ -12,6 +12,15 @@ const durationMs = ref<number | null>(null)
 const verified = ref<boolean | null>(null)
 const { status, error, run, reset } = useTool<string>()
 const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
+const { reportInput } = useToolInput()
+
+// A dummy password. The tool never keeps a password after a run.
+const SAMPLE = {
+  password: 'correct-horse-battery-staple',
+  memoryCost: 4096,
+  timeCost: 2,
+  cost: 10,
+}
 
 const algorithmItems = [
   { label: 'Argon2id', value: 'argon2id' },
@@ -50,6 +59,14 @@ async function execute() {
     verified.value = data.result.verified ?? null
     return data.result.hash
   }, 'The benchmark failed.')
+}
+
+function handleLoadSample() {
+  password.value = SAMPLE.password
+  memoryCost.value = SAMPLE.memoryCost
+  timeCost.value = SAMPLE.timeCost
+  cost.value = SAMPLE.cost
+  reportInput('sample')
 }
 
 async function handleCopy() {
@@ -162,6 +179,13 @@ useToolShortcuts({
         variant="ghost"
         :disabled="!hash"
         @click="handleCopy"
+      />
+      <UButton
+        color="neutral"
+        variant="ghost"
+        icon="i-lucide-file-text"
+        label="Load Sample"
+        @click="handleLoadSample"
       />
       <UButton
         color="neutral"

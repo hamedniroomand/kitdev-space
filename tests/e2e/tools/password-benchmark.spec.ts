@@ -4,7 +4,9 @@ import { gotoHydrated } from '../utils'
 test('benchmarks password hashing algorithms', { tag: '@smoke' }, async ({ page }) => {
   await gotoHydrated(page, '/hub/crypto/password-benchmark')
 
-  await page.getByPlaceholder('Enter a sample password').fill('TestPass123!')
+  await page.getByRole('button', { name: 'Load Sample' }).click()
+  await expect(page.getByPlaceholder('Enter a sample password')).not.toHaveValue('')
+
   await page.getByRole('button', { name: 'Benchmark' }).click()
 
   await expect(page.getByText(/Duration/)).toBeVisible({ timeout: 10_000 })
