@@ -331,6 +331,7 @@ onMounted(() => {
         <USwitch
           v-model="showApca"
           label="APCA score (draft WCAG 3)"
+          aria-label="Show the APCA score"
         />
 
         <div

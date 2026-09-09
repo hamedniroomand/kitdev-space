@@ -46,7 +46,7 @@ test('checks color contrast ratio and WCAG rating', { tag: '@smoke' }, async ({ 
   })
 
   await test.step('shows the draft APCA score', async () => {
-    const toggle = page.getByRole('switch', { name: 'APCA score (draft WCAG 3)' })
+    const toggle = page.getByRole('switch', { name: 'Show the APCA score' })
     await expect(page.getByText('Lc -82.8', { exact: true })).not.toBeVisible()
 
     await toggle.click()
