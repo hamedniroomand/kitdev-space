@@ -17,6 +17,8 @@ test.describe('CIDR Calculator tool', () => {
     // Test invalid input
     const input = page.locator('main').getByPlaceholder('e.g. 192.168.1.0/24')
     await input.fill('invalid/99')
-    await expect(page.locator('main').getByText('Invalid CIDR Input')).toBeVisible()
+    await expect(
+      page.locator('main').getByText('Prefix length must be between 0 and 32.'),
+    ).toBeVisible()
   })
 })

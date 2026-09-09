@@ -10,5 +10,6 @@ test('creates share link with input in hash and restores on load', async ({ page
 
   const input = page.getByRole('textbox', { name: 'Input' })
   await expect(input).toBeVisible()
-  await expect(input).toHaveValue(sharedText)
+  // The input is a CodeMirror editor, so it holds text rather than a value.
+  await expect(input).toContainText(sharedText)
 })
