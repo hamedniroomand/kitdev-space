@@ -1,24 +1,71 @@
 <script setup lang="ts">
 import type { RdapResult } from '#shared/utils/network/types'
+import { describeExpiry, EXPIRY_WARNING_DAYS, explainEppStatus } from '#shared/utils/network/epp-status'
 
-const query = ref('github.com')
+/** The API adds the source of the answer. The server module holds the same shape. */
+interface RdapLookupResult extends RdapResult {
+  server?: string
+  queriedAt?: string
+  durationMs?: number
+  redactedFields?: string[]
+  referrals?: string[]
+}
 
-const { status, error, result, run, reset } = useTool<RdapResult>()
+// The query is a domain name or an IP address, so it goes in the query string.
+// The IP Info tool links to this page with `?ip=`.
+const params = reactive({ query: 'github.com', ip: '' })
+useToolQuery({ options: params })
+
+if (params.ip) {
+  params.query = params.ip
+  params.ip = ''
+}
+
+const { status, error, result, run, reset } = useTool<RdapLookupResult>()
 const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
 
 useToolSeo('rdap-lookup')
 const { reportInput } = useToolInput()
 
+const expiryWarning = computed(() => {
+  const days = result.value?.daysUntilExpiration
+  if (!result.value?.found || days === undefined || days > EXPIRY_WARNING_DAYS) {
+    return null
+  }
+  return describeExpiry(days)
+})
+
+const expiryLabel = computed(() => {
+  const days = result.value?.daysUntilExpiration
+  if (days === undefined) {
+    return '—'
+  }
+  return days < 0 ? 'Expired' : `${days} days`
+})
+
+const redactedFields = computed(() => new Set(result.value?.redactedFields ?? []))
+
+function isRedacted(label: string): boolean {
+  return redactedFields.value.has(label)
+}
+
+const queriedAtLabel = useDateFormat(() => result.value?.queriedAt ?? '', 'YYYY-MM-DD HH:mm:ss')
+
+const statusList = computed(() => (result.value?.status ?? []).map(code => ({
+  code,
+  text: explainEppStatus(code),
+})))
+
 async function lookup() {
   reportInput('url')
-  if (!query.value.trim())
+  if (!params.query.trim())
     return
 
   await run(async () => {
-    const data = await $fetch<{ result: RdapResult }>('/api/network/rdap', {
+    const data = await $fetch<{ result: RdapLookupResult }>('/api/network/rdap', {
       method: 'POST',
       body: {
-        query: query.value.trim(),
+        query: params.query.trim(),
       },
     })
     return data.result
@@ -32,7 +79,7 @@ function handleCopy() {
 }
 
 function handleReset() {
-  query.value = ''
+  params.query = ''
   reset()
 }
 </script>
@@ -45,7 +92,7 @@ function handleReset() {
         <UFormField label="Domain Name or IP Address">
           <div class="flex gap-2">
             <UInput
-              v-model="query"
+              v-model="params.query"
               placeholder="e.g. example.com or 1.1.1.1"
               icon="i-lucide-globe"
               class="w-full flex-1"
@@ -70,21 +117,21 @@ function handleReset() {
               variant="ghost"
               color="neutral"
               label="github.com"
-              @click="query = 'github.com'; lookup()"
+              @click="params.query = 'github.com'; lookup()"
             />
             <UButton
               size="xs"
               variant="ghost"
               color="neutral"
               label="google.com"
-              @click="query = 'google.com'; lookup()"
+              @click="params.query = 'google.com'; lookup()"
             />
             <UButton
               size="xs"
               variant="ghost"
               color="neutral"
               label="1.1.1.1"
-              @click="query = '1.1.1.1'; lookup()"
+              @click="params.query = '1.1.1.1'; lookup()"
             />
           </div>
 
@@ -95,7 +142,7 @@ function handleReset() {
               variant="ghost"
               color="neutral"
               icon="i-lucide-eraser"
-              :disabled="!query && !result"
+              :disabled="!params.query && !result"
               @click="handleReset"
             />
           </ToolActions>
@@ -132,6 +179,16 @@ function handleReset() {
 
         <!-- Registered Domain / IP Report -->
         <template v-else>
+          <!-- Expiry Warning -->
+          <UAlert
+            v-if="expiryWarning"
+            color="warning"
+            variant="subtle"
+            icon="i-lucide-calendar-clock"
+            :title="expiryLabel === 'Expired' ? 'The registration expired' : 'The domain expires soon'"
+            :description="expiryWarning"
+          />
+
           <!-- Top Metric Cards -->
           <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             <div class="p-4 rounded-xl border border-default bg-elevated/20 space-y-1">
@@ -162,8 +219,11 @@ function handleReset() {
               <div class="text-xs text-muted font-medium">
                 Time Until Expiration
               </div>
-              <div class="text-xl font-bold font-mono text-default pt-1">
-                {{ result.daysUntilExpiration !== undefined ? `${result.daysUntilExpiration} days` : '—' }}
+              <div
+                class="text-xl font-bold font-mono pt-1"
+                :class="expiryWarning ? 'text-warning' : 'text-default'"
+              >
+                {{ expiryLabel }}
               </div>
             </div>
 
@@ -199,21 +259,44 @@ function handleReset() {
               </h3>
 
               <div class="space-y-2 text-xs">
-                <div class="grid grid-cols-3 gap-1 py-1 border-b border-default">
-                  <span class="text-muted">Name:</span>
-                  <span class="col-span-2 text-default font-medium">{{ result.registrar?.name || '—' }}</span>
-                </div>
-                <div class="grid grid-cols-3 gap-1 py-1 border-b border-default">
-                  <span class="text-muted">IANA ID:</span>
-                  <span class="col-span-2 text-default font-mono">{{ result.registrar?.ianaId || '—' }}</span>
-                </div>
-                <div class="grid grid-cols-3 gap-1 py-1 border-b border-default">
-                  <span class="text-muted">Abuse Email:</span>
-                  <span class="col-span-2 text-default font-mono">{{ result.registrar?.abuseEmail || '—' }}</span>
-                </div>
-                <div class="grid grid-cols-3 gap-1 py-1">
-                  <span class="text-muted">Abuse Phone:</span>
-                  <span class="col-span-2 text-default font-mono">{{ result.registrar?.abusePhone || '—' }}</span>
+                <RdapField
+                  label="Name"
+                  :value="result.registrar?.name"
+                  :redacted="isRedacted('Name')"
+                />
+                <RdapField
+                  label="IANA ID"
+                  :value="result.registrar?.ianaId"
+                />
+                <RdapField
+                  label="Abuse Email"
+                  :value="result.registrar?.abuseEmail"
+                  :redacted="isRedacted('Abuse Email')"
+                />
+                <RdapField
+                  label="Abuse Phone"
+                  :value="result.registrar?.abusePhone"
+                  :redacted="isRedacted('Abuse Phone')"
+                />
+              </div>
+
+              <div
+                v-if="result.redactedFields?.length"
+                class="pt-1 space-y-1"
+              >
+                <p class="text-xs text-muted">
+                  The registry hides these fields for privacy. The data exists, but the registry does not publish it.
+                </p>
+                <div class="flex flex-wrap gap-1.5">
+                  <UBadge
+                    v-for="field in result.redactedFields"
+                    :key="field"
+                    size="xs"
+                    color="warning"
+                    variant="subtle"
+                  >
+                    {{ field }}
+                  </UBadge>
                 </div>
               </div>
             </div>
@@ -228,18 +311,34 @@ function handleReset() {
                 Domain Status Flags
               </h3>
 
-              <div class="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto">
-                <UBadge
-                  v-for="st in result.status"
-                  :key="st"
-                  size="xs"
-                  color="neutral"
-                  variant="subtle"
-                  class="font-mono text-[11px]"
+              <ul
+                v-if="statusList.length > 0"
+                class="space-y-2 max-h-56 overflow-y-auto"
+              >
+                <li
+                  v-for="st in statusList"
+                  :key="st.code"
+                  class="space-y-1"
                 >
-                  {{ st }}
-                </UBadge>
-              </div>
+                  <UBadge
+                    size="xs"
+                    color="neutral"
+                    variant="subtle"
+                    class="font-mono text-[11px]"
+                  >
+                    {{ st.code }}
+                  </UBadge>
+                  <p class="text-xs text-muted">
+                    {{ st.text }}
+                  </p>
+                </li>
+              </ul>
+              <p
+                v-else
+                class="text-xs text-muted"
+              >
+                The registry reports no status code.
+              </p>
 
               <div
                 v-if="result.updatedDate"
@@ -305,6 +404,57 @@ function handleReset() {
             />
           </div>
         </template>
+
+        <!-- Query Source -->
+        <div
+          v-if="result.server"
+          class="p-4 rounded-xl border border-default bg-elevated/10 space-y-2 text-xs"
+        >
+          <h3 class="text-sm font-semibold text-default flex items-center gap-2">
+            <UIcon
+              name="i-lucide-database"
+              class="w-4 h-4 text-primary"
+            />
+            Query Source
+          </h3>
+          <div class="grid grid-cols-3 gap-1 py-1 border-b border-default">
+            <span class="text-muted">RDAP server:</span>
+            <span class="col-span-2 text-default font-mono break-all">{{ result.server }}</span>
+          </div>
+          <div
+            v-if="result.queriedAt"
+            class="grid grid-cols-3 gap-1 py-1 border-b border-default"
+          >
+            <span class="text-muted">Query time:</span>
+            <span class="col-span-2 text-default font-mono">{{ queriedAtLabel }}</span>
+          </div>
+          <div
+            v-if="result.durationMs !== undefined"
+            class="grid grid-cols-3 gap-1 py-1"
+          >
+            <span class="text-muted">Answer after:</span>
+            <span class="col-span-2 text-default font-mono">{{ result.durationMs }} ms</span>
+          </div>
+          <div
+            v-if="result.referrals?.length"
+            class="pt-1 space-y-1"
+          >
+            <span class="text-muted">Registrar server:</span>
+            <p
+              v-for="url in result.referrals"
+              :key="url"
+              class="text-default font-mono break-all"
+            >
+              {{ url }}
+            </p>
+            <p class="text-muted">
+              The registry keeps a thin record. The tool read the registrar server for the missing contact data.
+            </p>
+          </div>
+          <p class="text-muted pt-1">
+            This result is one answer from one server at that time. The tool keeps no copy of it.
+          </p>
+        </div>
       </div>
     </div>
 
@@ -318,7 +468,10 @@ function handleReset() {
             The result shows the registrar, the creation date, the expiry date, the name servers, and the status codes. A status such as clientTransferProhibited means that the domain has a transfer lock.
           </p>
           <p>
-            Personal contact data is usually hidden by privacy rules. The registrar and the dates are still public, which is enough to see who to contact and when a domain expires.
+            Personal contact data is usually hidden by privacy rules. A field with the mark "Hidden for privacy" holds data that the registry keeps back. A field with the mark "Not in the registry record" holds no data at all.
+          </p>
+          <p>
+            The result shows the RDAP server that answered and the time of the query. The tool keeps no copy of the answer, so each lookup reads the server again. A thin registry, such as .com, keeps only a small record. For a thin answer the tool reads the registrar server for the missing contact data. It follows a maximum of two registrar links.
           </p>
         </div>
         <RelatedTools

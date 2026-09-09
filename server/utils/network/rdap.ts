@@ -1,4 +1,5 @@
 import { isIPv4, isIPv6 } from 'node:net'
+import { assertSafeUrl } from './ssrf'
 
 const MAX_DOMAIN_LENGTH = 253
 
@@ -10,6 +11,8 @@ const BOOTSTRAP_TIMEOUT_MS = 3000
 const FALLBACK_BASE = 'https://rdap.org/'
 const REQUEST_TIMEOUT_MS = 4500
 const REQUEST_ATTEMPTS = 2
+/** A registrar referral can point to one more referral. Two fetches are enough. */
+const MAX_REFERRAL_HOPS = 2
 const DOMAIN_NAME = /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+$/
 
 function assertDomainName(value: string): void {
@@ -20,8 +23,49 @@ function assertDomainName(value: string): void {
 
 export type { RdapRegistrar, RdapResult } from '#shared/utils/network/types'
 
-export function parseRdapEntity(entity: Record<string, unknown>): RdapRegistrar {
-  const result: RdapRegistrar = {}
+/**
+ * The lookup adds the source of the answer to the parsed record. Every field is
+ * optional, so a caller that reads `RdapResult` keeps its shape.
+ */
+export interface RdapLookupResult extends RdapResult {
+  /** The RDAP endpoint that answered the first query. */
+  server?: string
+  /** The start time of the query, in ISO 8601 format. */
+  queriedAt?: string
+  /** The time that the query needed, in milliseconds. */
+  durationMs?: number
+  /** Labels of the fields that the registry hides for privacy. */
+  redactedFields?: string[]
+  /** Registrar RDAP endpoints that the lookup followed after the registry answer. */
+  referrals?: string[]
+}
+
+/** A registry writes this text in a field that it hides for privacy. */
+const REDACTED_VALUE = /redacted|not disclosed|data protected/i
+
+export interface ParsedRdapEntity extends RdapRegistrar {
+  /** Labels of the fields that the registry hides for privacy. */
+  redacted?: string[]
+}
+
+export function parseRdapEntity(entity: Record<string, unknown>): ParsedRdapEntity {
+  const result: ParsedRdapEntity = {}
+  const redacted = new Set<string>()
+
+  function take(label: string, value: string): string | undefined {
+    if (REDACTED_VALUE.test(value)) {
+      redacted.add(label)
+      return undefined
+    }
+    return value
+  }
+
+  /** A redacted field must stay absent. An empty key would hide a value from a registrar answer. */
+  function keep(target: ParsedRdapEntity, field: 'name' | 'abuseEmail' | 'abusePhone', value?: string): void {
+    if (value) {
+      target[field] = value
+    }
+  }
 
   // Check publicIds for IANA ID
   if (Array.isArray(entity.publicIds)) {
@@ -41,13 +85,13 @@ export function parseRdapEntity(entity: Record<string, unknown>): RdapRegistrar 
       const val = v[3]
 
       if (fieldName === 'fn' && typeof val === 'string' && !result.name) {
-        result.name = val
+        keep(result, 'name', take('Name', val))
       }
       else if (fieldName === 'email' && typeof val === 'string' && !result.abuseEmail) {
-        result.abuseEmail = val
+        keep(result, 'abuseEmail', take('Abuse Email', val))
       }
       else if (fieldName === 'tel' && typeof val === 'string' && !result.abusePhone) {
-        result.abusePhone = val
+        keep(result, 'abusePhone', take('Abuse Phone', val))
       }
     }
   }
@@ -63,14 +107,44 @@ export function parseRdapEntity(entity: Record<string, unknown>): RdapRegistrar 
           result.abuseEmail = subParsed.abuseEmail
         if (!result.abusePhone && subParsed.abusePhone)
           result.abusePhone = subParsed.abusePhone
+        for (const label of subParsed.redacted ?? [])
+          redacted.add(label)
       }
     }
+  }
+
+  if (redacted.size > 0) {
+    result.redacted = [...redacted]
   }
 
   return result
 }
 
-export function parseRdapData(data: Record<string, unknown>, query: string, type: 'domain' | 'ip'): RdapResult {
+/**
+ * Reads the redaction list of RFC 9537. It names the fields that the registry
+ * removed or emptied, so the page can separate privacy from missing data.
+ */
+export function collectRedactedNames(data: Record<string, unknown>): string[] {
+  if (!Array.isArray(data.redacted)) {
+    return []
+  }
+  const names = new Set<string>()
+  for (const item of data.redacted) {
+    if (!item || typeof item !== 'object') {
+      continue
+    }
+    const name = (item as Record<string, unknown>).name as Record<string, unknown> | undefined
+    const label = typeof name?.type === 'string'
+      ? name.type
+      : typeof name?.description === 'string' ? name.description : ''
+    if (label) {
+      names.add(label)
+    }
+  }
+  return [...names]
+}
+
+export function parseRdapData(data: Record<string, unknown>, query: string, type: 'domain' | 'ip'): RdapLookupResult {
   const status: string[] = Array.isArray(data.status) ? data.status.map(String) : []
 
   let registrationDate: string | undefined
@@ -108,7 +182,7 @@ export function parseRdapData(data: Record<string, unknown>, query: string, type
   }
 
   // Extract Registrar
-  let registrar: RdapRegistrar | undefined
+  let registrar: ParsedRdapEntity | undefined
   if (Array.isArray(data.entities)) {
     // Find entity with role 'registrar' or 'registrant'
     const regEntity = data.entities.find((e) => {
@@ -144,11 +218,17 @@ export function parseRdapData(data: Record<string, unknown>, query: string, type
     dnssec = Boolean((data.secureDNS as Record<string, unknown>).delegationSigned)
   }
 
+  const redactedFields = new Set<string>(collectRedactedNames(data))
+  for (const label of registrar?.redacted ?? []) {
+    redactedFields.add(label)
+  }
+
   return {
     query,
     type,
     found: true,
     status,
+    redactedFields: [...redactedFields],
     registrationDate,
     expirationDate,
     updatedDate,
@@ -237,7 +317,89 @@ async function fetchRdap(url: string): Promise<Response> {
   throw lastCause
 }
 
-export async function lookupRdap(rawQuery: string): Promise<RdapResult> {
+/**
+ * Finds the registrar RDAP link in a payload. RFC 9083 gives it the relation
+ * `related` and the media type `application/rdap+json`.
+ */
+export function findRelatedRdapLink(data: Record<string, unknown>): string | null {
+  if (!Array.isArray(data.links)) {
+    return null
+  }
+  for (const link of data.links) {
+    if (!link || typeof link !== 'object') {
+      continue
+    }
+    const item = link as Record<string, unknown>
+    if (String(item.rel ?? '').toLowerCase() !== 'related') {
+      continue
+    }
+    const href = typeof item.href === 'string' ? item.href : ''
+    const mediaType = String(item.type ?? '').toLowerCase()
+    if (!href.startsWith('https://') || (mediaType && !mediaType.includes('rdap'))) {
+      continue
+    }
+    return href
+  }
+  return null
+}
+
+/** A thin registry keeps the domain record and gives the contact data to the registrar. */
+export function isThinResult(result: RdapLookupResult): boolean {
+  return !result.registrar?.name || !result.registrar?.abuseEmail
+}
+
+/** Adds registrar fields that the registry answer does not have. It changes no other field. */
+function mergeRegistrar(target: RdapLookupResult, source: RdapLookupResult): void {
+  const merged = { ...source.registrar, ...target.registrar }
+  if (merged.name || merged.ianaId || merged.abuseEmail || merged.abusePhone) {
+    target.registrar = merged
+  }
+  const fields = new Set([...(target.redactedFields ?? []), ...(source.redactedFields ?? [])])
+  target.redactedFields = [...fields]
+}
+
+/**
+ * Follows the registrar link of a thin registry answer. It stops after
+ * `MAX_REFERRAL_HOPS` fetches, and it never reads the same URL twice.
+ */
+async function followRegistrarReferrals(
+  result: RdapLookupResult,
+  registryPayload: Record<string, unknown>,
+  startUrl: string,
+): Promise<void> {
+  const visited = new Set<string>([startUrl])
+  const referrals: string[] = []
+  let payload = registryPayload
+
+  for (let hop = 0; hop < MAX_REFERRAL_HOPS && isThinResult(result); hop++) {
+    const href = findRelatedRdapLink(payload)
+    if (!href || visited.has(href)) {
+      break
+    }
+    visited.add(href)
+
+    try {
+      const safe = await assertSafeUrl(href)
+      const res = await fetchRdap(safe.href)
+      if (!res.ok) {
+        break
+      }
+      payload = await res.json() as Record<string, unknown>
+      mergeRegistrar(result, parseRdapData(payload, result.query, result.type))
+      referrals.push(safe.href)
+    }
+    catch {
+      // The registrar server is optional data. Keep the registry answer.
+      break
+    }
+  }
+
+  if (referrals.length > 0) {
+    result.referrals = referrals
+  }
+}
+
+export async function lookupRdap(rawQuery: string): Promise<RdapLookupResult> {
   const clean = rawQuery.trim().toLowerCase().replace(/^https?:\/\//i, '').replace(/\/.*$/, '').split(':')[0]!
   if (!clean) {
     throw new Error('Enter a domain or IP address.')
@@ -258,6 +420,12 @@ export async function lookupRdap(rawQuery: string): Promise<RdapResult> {
   // rdap.org redirector, because the IP bootstrap needs a CIDR match.
   const base = isIp ? null : resolveRdapBase(clean, (await loadDnsBootstrap()) ?? [])
   const targetUrl = `${base ?? FALLBACK_BASE}${type}/${encodeURIComponent(clean)}`
+  const startedAt = Date.now()
+  const source = () => ({
+    server: targetUrl,
+    queriedAt: new Date(startedAt).toISOString(),
+    durationMs: Date.now() - startedAt,
+  })
 
   try {
     const res = await fetchRdap(targetUrl)
@@ -270,6 +438,7 @@ export async function lookupRdap(rawQuery: string): Promise<RdapResult> {
         status: ['available'],
         nameservers: [],
         raw: { message: 'Object does not exist or domain is available.' },
+        ...source(),
       }
     }
 
@@ -278,7 +447,14 @@ export async function lookupRdap(rawQuery: string): Promise<RdapResult> {
     }
 
     const data = await res.json() as Record<string, unknown>
-    return parseRdapData(data, clean, type)
+    const result: RdapLookupResult = { ...parseRdapData(data, clean, type), ...source() }
+
+    if (type === 'domain') {
+      await followRegistrarReferrals(result, data, targetUrl)
+      result.durationMs = Date.now() - startedAt
+    }
+
+    return result
   }
   catch (cause) {
     if (isTimeout(cause)) {

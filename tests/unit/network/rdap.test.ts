@@ -1,6 +1,6 @@
 import type { RdapBootstrapService } from '#server/utils/network/rdap'
 import { describe, expect, it } from 'vitest'
-import { parseRdapData, parseRdapEntity, resolveRdapBase } from '#server/utils/network/rdap'
+import { collectRedactedNames, parseRdapData, parseRdapEntity, resolveRdapBase } from '#server/utils/network/rdap'
 
 describe('rdap parser', () => {
   it('parses entity vcard fields', () => {
@@ -61,6 +61,51 @@ describe('rdap parser', () => {
     expect(result.dnssec).toBe(true)
     expect(result.registrar?.name).toBe('RESERVED-Internet Assigned Numbers Authority')
     expect(result.status).toContain('clientDeleteProhibited')
+  })
+
+  it('marks a privacy redacted vcard field instead of showing the placeholder', () => {
+    const rawEntity = {
+      roles: ['registrant'],
+      vcardArray: [
+        'vcard',
+        [
+          ['fn', {}, 'text', 'REDACTED FOR PRIVACY'],
+          ['email', {}, 'text', 'abuse@example.com'],
+        ],
+      ],
+    }
+
+    const registrar = parseRdapEntity(rawEntity)
+    expect(registrar.name).toBeUndefined()
+    expect(registrar.redacted).toEqual(['Name'])
+    expect(registrar.abuseEmail).toBe('abuse@example.com')
+  })
+
+  it('reads the RFC 9537 redaction list', () => {
+    const names = collectRedactedNames({
+      redacted: [
+        { name: { type: 'Registrant Name' }, method: 'removal' },
+        { name: { description: 'Registrant Email' }, method: 'emptyValue' },
+        { method: 'removal' },
+      ],
+    })
+    expect(names).toEqual(['Registrant Name', 'Registrant Email'])
+  })
+
+  it('separates privacy redaction from missing registry data', () => {
+    const payload = {
+      redacted: [{ name: { type: 'Registrant Phone' } }],
+      entities: [
+        {
+          roles: ['registrar'],
+          vcardArray: ['vcard', [['fn', {}, 'text', 'Redacted for Privacy']]],
+        },
+      ],
+    }
+
+    const result = parseRdapData(payload, 'example.com', 'domain')
+    expect(result.registrar?.name).toBeUndefined()
+    expect(result.redactedFields).toEqual(['Registrant Phone', 'Name'])
   })
 
   it('safely skips invalid event dates without throwing', () => {
