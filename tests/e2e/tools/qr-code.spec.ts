@@ -54,6 +54,8 @@ test.describe('QR Code Studio tool', () => {
     await expect(page.locator('main img[alt="QR code preview"]')).toBeVisible()
 
     await page.getByRole('button', { name: 'Download PNG' }).click()
+    // `convertToBlob` is async, so the click returns before the blob exists.
+    await page.waitForFunction(() => Boolean((window as unknown as { __qrBlob?: Blob }).__qrBlob))
 
     const read = await page.evaluate<PngRead>(async () => {
       const blob = (window as unknown as { __qrBlob?: Blob }).__qrBlob

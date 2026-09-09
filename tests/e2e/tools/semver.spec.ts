@@ -11,7 +11,8 @@ test.describe('Semver Calculator Tool', () => {
     await test.step('expands the range and marks each candidate version', async () => {
       await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
       await page.getByRole('button', { name: 'Run' }).click()
-      await expect(page.getByText('>=1.0.0 <2.0.0', { exact: true })).toBeVisible()
+      // The docs prose repeats the expansion, so the result row is the first hit.
+      await expect(page.getByText('>=1.0.0 <2.0.0', { exact: true }).first()).toBeVisible()
       await expect(page.getByText('Match', { exact: true }).first()).toBeVisible()
       await expect(page.getByText('No match', { exact: true }).first()).toBeVisible()
     })
