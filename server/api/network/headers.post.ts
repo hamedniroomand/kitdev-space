@@ -7,6 +7,14 @@ interface HeadersBody {
   url?: string
   origin?: string
   method?: string
+  requestMethod?: string
+}
+
+const PREFLIGHT_METHODS = new Set(['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE'])
+
+function preflightMethod(input?: string): string {
+  const value = input?.trim().toUpperCase() ?? ''
+  return PREFLIGHT_METHODS.has(value) ? value : 'GET'
 }
 
 /**
@@ -20,20 +28,31 @@ export default defineEventHandler(async (event) => {
   const body = await readBody<HeadersBody>(event)
   const url = body.url ?? ''
   const origin = body.origin?.trim() || undefined
-  const method = body.method === 'OPTIONS' ? 'OPTIONS' : undefined
+  const preflight = body.method === 'OPTIONS'
+  const requestMethod = preflightMethod(body.requestMethod)
 
   try {
     const hops = await walkRedirects(url)
     // Read the headers of the final URL, not of the first redirect.
     const target = hops[hops.length - 1]?.url ?? url
-    const result = await fetchHeaders(target, { origin, method })
+    // A preflight must not redirect, so it goes to the URL of the user.
+    const result = await fetchHeaders(preflight ? url : target, {
+      origin,
+      method: preflight ? 'OPTIONS' : undefined,
+      requestMethod,
+    })
 
     return {
       result: {
         ...result,
         hops,
+        checkedAt: new Date().toISOString(),
+        requestedUrl: url,
+        requestOrigin: origin ?? null,
         security: analyzeSecurityHeaders(result.headers, {
           requestOrigin: origin ?? null,
+          requestMethod: preflight ? requestMethod : null,
+          preflightStatus: preflight ? result.status : null,
         }),
       },
     }

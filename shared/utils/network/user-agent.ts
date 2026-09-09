@@ -1,15 +1,39 @@
+/**
+ * Parse a User Agent string with `ua-parser-js`.
+ *
+ * The library is large, so it loads on demand with a dynamic import. It stays
+ * out of the first bundle. A token that the library does not know gives
+ * "Unknown". The parser never guesses a default browser.
+ */
+
+export const UNKNOWN = 'Unknown'
+
+export type UserAgentDeviceType
+  = | 'desktop'
+    | 'mobile'
+    | 'tablet'
+    | 'bot'
+    | 'console'
+    | 'smarttv'
+    | 'wearable'
+    | 'xr'
+    | 'embedded'
+    | 'unknown'
+
 export interface UserAgentInfo {
   browser: {
     name: string
     version: string
     major: string
+    /** Library class of a non-browser client, such as `crawler`, `cli`, or `library`. */
+    type: string
   }
   os: {
     name: string
     version: string
   }
   device: {
-    type: 'desktop' | 'mobile' | 'tablet' | 'bot' | 'unknown'
+    type: UserAgentDeviceType
     vendor?: string
     model?: string
   }
@@ -17,182 +41,168 @@ export interface UserAgentInfo {
     name: string
     version: string
   }
+  /** True for a crawler, a command line client, or an HTTP library. */
   isBot: boolean
+  /** True when the browser sends a reduced User Agent string with a frozen version. */
+  isFrozen: boolean
 }
 
-export function parseUserAgent(uaString: string): UserAgentInfo {
-  const ua = uaString.trim()
-  if (!ua) {
-    return {
-      browser: { name: 'Unknown', version: '', major: '' },
-      os: { name: 'Unknown', version: '' },
-      device: { type: 'unknown' },
-      engine: { name: 'Unknown', version: '' },
-      isBot: false,
-    }
-  }
+export interface ClientHintBrand {
+  brand: string
+  version: string
+}
 
-  // 1. Detect Bots
-  const botMatch = ua.match(/(Googlebot|bingbot|Baiduspider|YandexBot|DuckDuckBot|facebookexternalhit|Twitterbot|Applebot|curl|Wget|PostmanRuntime)/i)
-  if (botMatch) {
-    return {
-      browser: { name: botMatch[1] || 'Bot', version: '', major: '' },
-      os: { name: 'Unknown', version: '' },
-      device: { type: 'bot' },
-      engine: { name: 'Bot', version: '' },
-      isBot: true,
-    }
-  }
+/**
+ * The low entropy values of `navigator.userAgentData`.
+ *
+ * The tool reads them only to show them. It does not store them and it does
+ * not send them.
+ */
+export interface ClientHints {
+  brands: ClientHintBrand[]
+  mobile: boolean
+  platform: string
+}
 
-  // 2. Detect OS
-  let osName = 'Unknown'
-  let osVersion = ''
+export function unknownUserAgentInfo(): UserAgentInfo {
+  return {
+    browser: { name: UNKNOWN, version: '', major: '', type: '' },
+    os: { name: UNKNOWN, version: '' },
+    device: { type: 'unknown' },
+    engine: { name: UNKNOWN, version: '' },
+    isBot: false,
+    isFrozen: false,
+  }
+}
 
-  if (/Windows NT 10\.0/i.test(ua)) {
-    osName = 'Windows'
-    osVersion = '10 / 11'
-  }
-  else if (/Windows NT 6\.3/i.test(ua)) {
-    osName = 'Windows'
-    osVersion = '8.1'
-  }
-  else if (/Windows NT 6\.1/i.test(ua)) {
-    osName = 'Windows'
-    osVersion = '7'
-  }
-  else if (/Android/i.test(ua)) {
-    osName = 'Android'
-    const match = ua.match(/Android\s+([\d.]+)/i)
-    if (match?.[1])
-      osVersion = match[1]
-  }
-  else if (/iPhone|iPad|iPod/i.test(ua)) {
-    osName = 'iOS'
-    const match = ua.match(/OS\s+([\d_]+)/i)
-    if (match?.[1])
-      osVersion = match[1].replace(/_/g, '.')
-  }
-  else if (/Mac OS X/i.test(ua)) {
-    osName = 'macOS'
-    const match = ua.match(/Mac OS X\s+([\d_]+)/i)
-    if (match?.[1])
-      osVersion = match[1].replace(/_/g, '.')
-  }
-  else if (/CrOS/i.test(ua)) {
-    osName = 'ChromeOS'
-  }
-  else if (/Linux/i.test(ua)) {
-    osName = 'Linux'
-  }
+type ParserBundle = Awaited<ReturnType<typeof importParser>>
 
-  // 3. Detect Device Type
-  let deviceType: 'desktop' | 'mobile' | 'tablet' | 'unknown' = 'desktop'
-  let vendor: string | undefined
-  let model: string | undefined
+let parserBundle: Promise<ParserBundle> | null = null
 
-  if (/iPad|Tablet|Android(?!.*Mobile)/i.test(ua)) {
-    deviceType = 'tablet'
-    if (/iPad/i.test(ua)) {
-      vendor = 'Apple'
-      model = 'iPad'
-    }
-  }
-  else if (/iPhone|iPod|Mobile|webOS|BlackBerry|IEMobile|Opera Mini/i.test(ua)) {
-    deviceType = 'mobile'
-    if (/iPhone/i.test(ua)) {
-      vendor = 'Apple'
-      model = 'iPhone'
-    }
-  }
-  else if (osName === 'macOS' || osName === 'Windows' || osName === 'Linux' || osName === 'ChromeOS') {
-    deviceType = 'desktop'
-  }
-
-  // 4. Detect Engine
-  let engineName = 'Unknown'
-  let engineVersion = ''
-
-  if (/Blink/i.test(ua) || (/Chrome/i.test(ua) && !/Edge|Edg\//i.test(ua))) {
-    engineName = 'Blink'
-  }
-  else if (/WebKit/i.test(ua)) {
-    engineName = 'WebKit'
-    const match = ua.match(/AppleWebKit\/([\d.]+)/i)
-    if (match?.[1])
-      engineVersion = match[1]
-  }
-  else if (/Gecko/i.test(ua) && /Firefox/i.test(ua)) {
-    engineName = 'Gecko'
-    const match = ua.match(/rv:([\d.]+)/i)
-    if (match?.[1])
-      engineVersion = match[1]
-  }
-  else if (/Trident/i.test(ua)) {
-    engineName = 'Trident'
-  }
-
-  // 5. Detect Browser
-  let browserName = 'Unknown'
-  let browserVersion = ''
-
-  if (/Edg\//i.test(ua)) {
-    browserName = 'Microsoft Edge'
-    const match = ua.match(/Edg\/([\d.]+)/i)
-    if (match?.[1])
-      browserVersion = match[1]
-  }
-  else if (/OPR\/|Opera\//i.test(ua)) {
-    browserName = 'Opera'
-    const match = ua.match(/(?:OPR|Opera)\/([\d.]+)/i)
-    if (match?.[1])
-      browserVersion = match[1]
-  }
-  else if (/SamsungBrowser\//i.test(ua)) {
-    browserName = 'Samsung Internet'
-    const match = ua.match(/SamsungBrowser\/([\d.]+)/i)
-    if (match?.[1])
-      browserVersion = match[1]
-  }
-  else if (/Chrome\//i.test(ua)) {
-    browserName = 'Chrome'
-    const match = ua.match(/Chrome\/([\d.]+)/i)
-    if (match?.[1])
-      browserVersion = match[1]
-  }
-  else if (/Firefox\//i.test(ua)) {
-    browserName = 'Firefox'
-    const match = ua.match(/Firefox\/([\d.]+)/i)
-    if (match?.[1])
-      browserVersion = match[1]
-  }
-  else if (/Safari\//i.test(ua) && !/Chrome\//i.test(ua)) {
-    browserName = 'Safari'
-    const match = ua.match(/Version\/([\d.]+)/i)
-    if (match?.[1])
-      browserVersion = match[1]
-  }
-
-  const major = browserVersion ? browserVersion.split('.')[0] || '' : ''
+async function importParser() {
+  const [core, extensions, botDetection, helpers] = await Promise.all([
+    import('ua-parser-js'),
+    import('ua-parser-js/extensions'),
+    import('ua-parser-js/bot-detection'),
+    import('ua-parser-js/helpers'),
+  ])
 
   return {
-    browser: {
-      name: browserName,
-      version: browserVersion,
-      major,
-    },
-    os: {
-      name: osName,
-      version: osVersion,
-    },
-    device: {
-      type: deviceType,
-      vendor,
-      model,
-    },
-    engine: {
-      name: engineName,
-      version: engineVersion,
-    },
-    isBot: false,
+    UAParser: core.UAParser,
+    // The core parser knows browsers only. These sets add crawlers, command
+    // line clients, and HTTP libraries.
+    extensions: [
+      extensions.Bots,
+      extensions.CLIs,
+      extensions.Crawlers,
+      extensions.Fetchers,
+      extensions.Libraries,
+    ],
+    isBot: botDetection.isBot,
+    isFrozenUA: helpers.isFrozenUA,
+  }
+}
+
+function loadParser(): Promise<ParserBundle> {
+  parserBundle ??= importParser()
+  return parserBundle
+}
+
+function named(value: string | undefined): string {
+  return value && value.trim() ? value : UNKNOWN
+}
+
+function optional(value: string | undefined): string {
+  return value ?? ''
+}
+
+function deviceType(raw: string | undefined, osName: string, isBot: boolean): UserAgentDeviceType {
+  if (isBot) {
+    return 'bot'
+  }
+  if (raw) {
+    return raw as UserAgentDeviceType
+  }
+  // The library omits the type for a desktop. It gives no operating system for
+  // a string that it does not know, so that stays unknown.
+  return osName === UNKNOWN ? 'unknown' : 'desktop'
+}
+
+/**
+ * Parse a User Agent string into browser, operating system, device, and engine.
+ *
+ * An empty input, an unknown token, or a parser error gives "Unknown".
+ */
+export async function parseUserAgent(uaString: string): Promise<UserAgentInfo> {
+  const ua = uaString.trim()
+  if (!ua) {
+    return unknownUserAgentInfo()
+  }
+
+  try {
+    const { UAParser, extensions, isBot, isFrozenUA } = await loadParser()
+    const parser = new UAParser(ua)
+    for (const extension of extensions) {
+      parser.useExtension(extension)
+    }
+    const result = parser.getResult()
+    const bot = isBot(ua)
+    const osName = named(result.os.name)
+
+    return {
+      browser: {
+        name: named(result.browser.name),
+        version: optional(result.browser.version),
+        major: optional(result.browser.major),
+        type: optional(result.browser.type),
+      },
+      os: {
+        name: osName,
+        version: optional(result.os.version),
+      },
+      device: {
+        type: deviceType(result.device.type, osName, bot),
+        vendor: result.device.vendor,
+        model: result.device.model,
+      },
+      engine: {
+        name: named(result.engine.name),
+        version: optional(result.engine.version),
+      },
+      isBot: bot,
+      isFrozen: isFrozenUA(ua),
+    }
+  }
+  catch {
+    return unknownUserAgentInfo()
+  }
+}
+
+/**
+ * Read the low entropy Client Hints of a browser.
+ *
+ * `navigator.userAgentData` is not in every browser. The function gives `null`
+ * when the value is absent or has a different shape.
+ */
+export function normalizeClientHints(raw: unknown): ClientHints | null {
+  if (!raw || typeof raw !== 'object') {
+    return null
+  }
+
+  const data = raw as { brands?: unknown, mobile?: unknown, platform?: unknown }
+  const brands = Array.isArray(data.brands)
+    ? data.brands
+        .filter((item): item is ClientHintBrand => Boolean(item) && typeof item === 'object' && typeof (item as ClientHintBrand).brand === 'string')
+        .map(item => ({ brand: item.brand, version: String(item.version ?? '') }))
+    : []
+
+  if (!brands.length && typeof data.platform !== 'string') {
+    return null
+  }
+
+  return {
+    brands,
+    mobile: data.mobile === true,
+    platform: typeof data.platform === 'string' && data.platform ? data.platform : UNKNOWN,
   }
 }

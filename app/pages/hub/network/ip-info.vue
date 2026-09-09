@@ -8,7 +8,12 @@ interface ExtendedIpInfo extends IpInfo {
   clientIp?: string
 }
 
-const inputIp = ref('')
+// The address goes in the query string, so a share link can carry it. It holds
+// only the address that the user typed. The address of the user never goes in
+// the URL.
+const params = reactive({ ip: '' })
+useToolQuery({ options: params })
+
 const { status, error, result: info, run } = useTool<ExtendedIpInfo>()
 
 const { copy } = useCopyFeedback()
@@ -20,45 +25,53 @@ const presets = [
   { label: 'Localhost IPv6', ip: '::1' },
 ]
 
+const scopeEvidence = computed(() => {
+  if (!info.value) {
+    return null
+  }
+  if (!info.value.matchedRange) {
+    return 'Global unicast. No special-purpose range holds this address.'
+  }
+  return `${info.value.matchedRange} (${info.value.rfc})`
+})
+
+const cidrLink = computed(() => `/hub/network/cidr?ip=${encodeURIComponent(info.value?.ip ?? '')}`)
+const rdapLink = computed(() => `/hub/network/rdap-lookup?query=${encodeURIComponent(info.value?.ip ?? '')}`)
+
 async function fetchInfo(targetIp?: string) {
   reportInput('url')
   await run(async () => {
     const url = targetIp ? `/api/network/ip-info?ip=${encodeURIComponent(targetIp)}` : '/api/network/ip-info'
-    const res = await $fetch<ExtendedIpInfo>(url)
-    if (!targetIp && res.ip) {
-      inputIp.value = res.ip
-    }
-    return res
+    return await $fetch<ExtendedIpInfo>(url)
   }, 'Failed to fetch IP details.')
 }
 
 function handleLookup() {
-  if (inputIp.value.trim()) {
-    fetchInfo(inputIp.value.trim())
-  }
-  else {
-    fetchInfo()
-  }
+  fetchInfo(params.ip.trim() || undefined)
 }
 
 function handleMyIp() {
-  inputIp.value = ''
+  params.ip = ''
   fetchInfo()
 }
 
 function handlePreset(ip: string) {
-  inputIp.value = ip
+  params.ip = ip
   fetchInfo(ip)
 }
-
-onMounted(() => {
-  fetchInfo()
-})
 </script>
 
 <template>
   <ToolPage>
     <div class="space-y-6">
+      <UAlert
+        color="info"
+        variant="subtle"
+        icon="i-lucide-server"
+        title="The lookup runs on the server"
+        description="The page starts no lookup. Press Lookup IP or My IP to start one. The server gives two attributes: the client IP address that the server sees for your connection, which My IP returns, and the reverse DNS (PTR) name. The other attributes come from the address itself: the version, the scope, the matched range with its RFC, and the decimal, hexadecimal, and binary forms."
+      />
+
       <!-- Search & Presets Toolbar -->
       <div class="flex flex-wrap items-center justify-between gap-3 p-3 border border-default rounded-xl bg-elevated/40">
         <div class="flex flex-wrap items-center gap-2">
@@ -87,7 +100,7 @@ onMounted(() => {
       <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
         <div class="flex-1">
           <UInput
-            v-model="inputIp"
+            v-model="params.ip"
             placeholder="Enter IPv4 or IPv6 address (leave blank for your IP)..."
             class="font-mono text-sm w-full"
             @keydown.enter="handleLookup"
@@ -114,6 +127,31 @@ onMounted(() => {
         v-if="info"
         class="space-y-6"
       >
+        <!-- Result actions and links to the related tools -->
+        <div class="flex flex-wrap items-center gap-2">
+          <ToolResultActions
+            tool-id="ip-info"
+            :result="info"
+            filename="ip-info.json"
+          />
+          <UButton
+            :to="cidrLink"
+            size="sm"
+            variant="soft"
+            color="neutral"
+            icon="i-lucide-network"
+            label="Inspect Subnet in CIDR"
+          />
+          <UButton
+            :to="rdapLink"
+            size="sm"
+            variant="soft"
+            color="neutral"
+            icon="i-lucide-book-open"
+            label="Lookup in RDAP"
+          />
+        </div>
+
         <!-- Highlights -->
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <StatCard
@@ -124,6 +162,7 @@ onMounted(() => {
           <StatCard
             label="Address Scope"
             :value="info.type"
+            :description="info.rfc"
             :color="info.type === 'public' ? 'success' : 'warning'"
           />
           <StatCard
@@ -158,6 +197,17 @@ onMounted(() => {
                     icon="i-lucide-copy"
                     @click="copy(info.ip)"
                   />
+                </td>
+              </tr>
+              <tr class="hover:bg-elevated/20">
+                <td class="p-3 font-medium text-muted">
+                  Matched Range
+                </td>
+                <td
+                  class="p-3 font-mono text-default"
+                  colspan="2"
+                >
+                  {{ scopeEvidence }}
                 </td>
               </tr>
               <tr
@@ -251,6 +301,12 @@ onMounted(() => {
           </p>
           <p>
             The reverse DNS name often names the hosting company or the internet provider of the address.
+          </p>
+          <p>
+            The result shows the special-purpose range that holds the address and the RFC that defines the range, such as 10.0.0.0/8 from RFC 1918, 100.64.0.0/10 from RFC 6598, or 169.254.0.0/16 from RFC 3927. A public address matches no such range.
+          </p>
+          <p>
+            The tool does not show a location. An address database gives a city at best. It does not give a building.
           </p>
         </div>
         <RelatedTools

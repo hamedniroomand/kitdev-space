@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { inspectCookies, parseCookieHeader, parseSetCookie } from '#shared/utils/network/cookie'
+import { evaluateCookieDelivery, inspectCookies, parseCookieHeader, parseSetCookie, redactCookieReport, REDACTED_VALUE } from '#shared/utils/network/cookie'
 
 const NOW = Date.parse('2026-09-07T00:00:00Z')
 
@@ -77,5 +77,87 @@ describe('inspectCookies', () => {
     ].join('\n'), NOW)
     expect(report.setCookies.map(c => c.name)).toEqual(['sid', 'plain'])
     expect(report.requestCookies.map(c => c.name)).toEqual(['a', 'b', 'x', 'y', 'z'])
+  })
+})
+
+describe('evaluateCookieDelivery', () => {
+  const secure = (line: string) => parseSetCookie(line, NOW)
+
+  it('sends a cookie that matches the domain, the path, and the scheme', () => {
+    const cookie = secure('sid=1; Domain=example.com; Path=/app; Secure; HttpOnly; SameSite=Lax')
+    const result = evaluateCookieDelivery(cookie, 'https://api.example.com/app/users', 'same-site')
+    expect(result.sent).toBe(true)
+    expect(result.blocks).toEqual([])
+  })
+
+  it('reports a domain mismatch and a path mismatch', () => {
+    const cookie = secure('sid=1; Domain=example.com; Path=/app; Secure; HttpOnly; SameSite=Lax')
+    const result = evaluateCookieDelivery(cookie, 'https://example.org/other', 'same-site')
+    expect(result.sent).toBe(false)
+    expect(result.blocks.some(block => block.startsWith('Domain mismatch'))).toBe(true)
+    expect(result.blocks.some(block => block.startsWith('Path mismatch'))).toBe(true)
+  })
+
+  it('matches a path at a segment boundary only', () => {
+    const cookie = secure('sid=1; Path=/app; Secure; HttpOnly; SameSite=Lax')
+    expect(evaluateCookieDelivery(cookie, 'https://example.com/application', 'same-site').sent).toBe(false)
+    expect(evaluateCookieDelivery(cookie, 'https://example.com/app', 'same-site').sent).toBe(true)
+  })
+
+  it('blocks a Secure cookie over HTTP, but not on localhost', () => {
+    const cookie = secure('sid=1; Path=/; Secure; HttpOnly; SameSite=Lax')
+    const overHttp = evaluateCookieDelivery(cookie, 'http://example.com/', 'same-site')
+    expect(overHttp.sent).toBe(false)
+    expect(overHttp.blocks.some(block => block.startsWith('Secure over HTTP'))).toBe(true)
+    expect(evaluateCookieDelivery(cookie, 'http://localhost:3000/', 'same-site').sent).toBe(true)
+  })
+
+  it('applies the SameSite rules for each request context', () => {
+    const strict = secure('sid=1; Path=/; Secure; HttpOnly; SameSite=Strict')
+    const lax = secure('sid=1; Path=/; Secure; HttpOnly; SameSite=Lax')
+    const none = secure('sid=1; Path=/; Secure; HttpOnly; SameSite=None')
+    const url = 'https://example.com/'
+    expect(evaluateCookieDelivery(strict, url, 'cross-site-navigation').sent).toBe(false)
+    expect(evaluateCookieDelivery(lax, url, 'cross-site-navigation').sent).toBe(true)
+    expect(evaluateCookieDelivery(lax, url, 'cross-site').sent).toBe(false)
+    expect(evaluateCookieDelivery(lax, url, 'cross-site').blocks[0]).toContain('SameSite=Lax')
+    expect(evaluateCookieDelivery(none, url, 'cross-site').sent).toBe(true)
+    expect(evaluateCookieDelivery(strict, url, 'same-site').sent).toBe(true)
+  })
+
+  it('treats a missing SameSite attribute as Lax', () => {
+    const cookie = secure('sid=1; Path=/; Secure; HttpOnly')
+    const result = evaluateCookieDelivery(cookie, 'https://example.com/', 'cross-site')
+    expect(result.sent).toBe(false)
+    expect(result.blocks[0]).toContain('No SameSite attribute')
+  })
+
+  it('blocks a rejected cookie and a deleted cookie', () => {
+    const rejected = secure('a=1; SameSite=None')
+    expect(evaluateCookieDelivery(rejected, 'https://example.com/', 'same-site').blocks).toEqual([
+      'The browser rejects this cookie. Correct the errors below first.',
+    ])
+    const deleted = secure('a=1; Path=/; Max-Age=0; Secure; HttpOnly; SameSite=Lax')
+    const result = evaluateCookieDelivery(deleted, 'https://example.com/', 'same-site')
+    expect(result.sent).toBe(false)
+    expect(result.blocks[0]).toContain('deletes the cookie')
+  })
+
+  it('notes a host-only cookie and rejects an invalid URL', () => {
+    const cookie = secure('sid=1; Path=/; Secure; HttpOnly; SameSite=Lax')
+    expect(evaluateCookieDelivery(cookie, 'https://example.com/', 'same-site').notes[0]).toContain('Host only')
+    expect(evaluateCookieDelivery(cookie, 'example.com', 'same-site').sent).toBe(false)
+    expect(evaluateCookieDelivery(cookie, 'ftp://example.com/', 'same-site').sent).toBe(false)
+  })
+})
+
+describe('redactCookieReport', () => {
+  it('masks every value and keeps the size', () => {
+    const report = inspectCookies('Set-Cookie: sid=secret; Path=/\nCookie: a=1; b=2', NOW)
+    const masked = redactCookieReport(report)
+    expect(masked.setCookies[0]!.value).toBe(REDACTED_VALUE)
+    expect(masked.setCookies[0]!.size).toBe(report.setCookies[0]!.size)
+    expect(masked.requestCookies.map(cookie => cookie.value)).toEqual([REDACTED_VALUE, REDACTED_VALUE])
+    expect(JSON.stringify(masked)).not.toContain('secret')
   })
 })

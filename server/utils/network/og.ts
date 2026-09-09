@@ -1,84 +1,132 @@
-export interface OgPreviewData {
-  title: string
-  description: string
-  image: string
-  url: string
-  siteName: string
-  twitterCard: string
-}
+import type { OgImageProbe, OgMetaTag, OgPreviewData } from '#shared/utils/network/og-meta'
+import { readImageMetadata } from '#shared/utils/image/exif'
+import { buildOgData } from '#shared/utils/network/og-meta'
+import { assertSafeUrl } from './ssrf'
 
+export type { OgImageProbe, OgPreviewData }
+
+const IMAGE_TIMEOUT_MS = 8000
+/** Read cap for the image. The header of the file holds the pixel size. */
+const MAX_IMAGE_BYTES = 3_000_000
+
+/** Read the meta tags of an HTML string with `HTMLRewriter`. */
 export async function extractOgFromHtml(html: string, pageUrl: string): Promise<OgPreviewData> {
-  const data: OgPreviewData = {
-    title: '',
-    description: '',
-    image: '',
-    url: pageUrl,
-    siteName: '',
-    twitterCard: '',
-  }
-
-  let fallbackTitle = ''
+  const tags: OgMetaTag[] = []
+  let titleText = ''
+  let canonical = ''
 
   const rewriter = new HTMLRewriter()
     .on('title', {
       text(text) {
-        fallbackTitle += text.text
+        titleText += text.text
+      },
+    })
+    .on('link', {
+      element(element) {
+        const rel = (element.getAttribute('rel') || '').toLowerCase()
+        if (rel === 'canonical' && !canonical) {
+          canonical = element.getAttribute('href') || ''
+        }
       },
     })
     .on('meta', {
       element(element) {
-        const prop = element.getAttribute('property') || element.getAttribute('name') || ''
+        const key = element.getAttribute('property') || element.getAttribute('name') || ''
         const content = element.getAttribute('content') || ''
-        if (!content) {
-          return
-        }
-        if (prop === 'og:title') {
-          data.title = content
-        }
-        if (prop === 'og:description' || prop === 'description') {
-          data.description = data.description || content
-        }
-        if (prop === 'og:image') {
-          data.image = content
-        }
-        if (prop === 'og:url') {
-          data.url = content
-        }
-        if (prop === 'og:site_name') {
-          data.siteName = content
-        }
-        if (prop === 'twitter:card') {
-          data.twitterCard = content
-        }
-        if (prop === 'twitter:title' && !data.title) {
-          data.title = content
-        }
-        if (prop === 'twitter:description' && !data.description) {
-          data.description = content
-        }
-        if (prop === 'twitter:image' && !data.image) {
-          data.image = content
+        if (key && content) {
+          tags.push({ key, content })
         }
       },
     })
 
-  const transformed = rewriter.transform(new Response(html))
-  await transformed.arrayBuffer()
+  await rewriter.transform(new Response(html)).arrayBuffer()
 
-  if (!data.title) {
-    data.title = fallbackTitle.trim()
-  }
-  data.title = data.title.trim()
-  data.description = data.description.trim()
+  return buildOgData({ tags, titleText, canonical }, pageUrl)
+}
 
-  if (data.image) {
-    try {
-      data.image = new URL(data.image, pageUrl).href
-    }
-    catch {
-      // Keep data.image as-is if URL resolution fails
-    }
+async function readCappedImage(response: Response): Promise<Uint8Array> {
+  const reader = response.body?.getReader()
+  if (!reader) {
+    return new Uint8Array(0)
   }
 
-  return data
+  const chunks: Uint8Array[] = []
+  let total = 0
+
+  try {
+    for (;;) {
+      const { done, value } = await reader.read()
+      if (done) {
+        break
+      }
+      if (!value) {
+        continue
+      }
+      chunks.push(value)
+      total += value.byteLength
+      if (total >= MAX_IMAGE_BYTES) {
+        break
+      }
+    }
+  }
+  finally {
+    void reader.cancel().catch(() => {})
+  }
+
+  const bytes = new Uint8Array(total)
+  let offset = 0
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset)
+    offset += chunk.byteLength
+  }
+  return bytes
+}
+
+/**
+ * Download the image of `og:image` and read its content type, byte size, and
+ * pixel size. The function reports an error in the result and does not throw,
+ * so a bad image does not stop the preview.
+ */
+export async function inspectOgImage(imageUrl: string): Promise<OgImageProbe> {
+  const probe: OgImageProbe = {
+    url: imageUrl,
+    ok: false,
+    contentType: null,
+    byteSize: null,
+    width: null,
+    height: null,
+    error: null,
+  }
+
+  try {
+    const safe = await assertSafeUrl(imageUrl)
+    const response = await Bun.fetch(safe, {
+      method: 'GET',
+      redirect: 'follow',
+      signal: AbortSignal.timeout(IMAGE_TIMEOUT_MS),
+      headers: { Accept: 'image/*,*/*;q=0.8' },
+    })
+
+    probe.contentType = response.headers.get('content-type')
+
+    if (!response.ok) {
+      void response.body?.cancel()
+      probe.error = `The image request failed with status ${response.status}.`
+      return probe
+    }
+
+    const declared = Number(response.headers.get('content-length'))
+    const bytes = await readCappedImage(response)
+    probe.byteSize = Number.isFinite(declared) && declared > 0 ? declared : bytes.byteLength
+
+    const metadata = readImageMetadata(bytes)
+    probe.width = metadata.width
+    probe.height = metadata.height
+    probe.ok = true
+    return probe
+  }
+  catch (cause) {
+    probe.error = cause instanceof Error ? cause.message : 'The image request failed.'
+    return probe
+  }
 }

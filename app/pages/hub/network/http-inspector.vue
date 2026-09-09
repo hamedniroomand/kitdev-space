@@ -1,36 +1,34 @@
 <script setup lang="ts">
-import type { FindingLevel, SecurityHeaderReport } from '#shared/utils/network/security-headers'
+import type { HttpInspectResult } from '#shared/utils/network/http-report'
+import { diffHttpReports, parseHttpReport } from '#shared/utils/network/http-diff'
+import { buildHttpReport } from '#shared/utils/network/http-report'
+import { groupFindingsBySeverity } from '#shared/utils/network/security-headers'
 
-interface RedirectHop {
-  url: string
-  status: number
-  location?: string
-}
-
-interface HttpInspectResult {
-  status: number
-  statusText: string
-  headers: Record<string, string>
-  url: string
-  hops: RedirectHop[]
-  security: SecurityHeaderReport
-}
-
-type View = 'security' | 'headers' | 'redirects'
+type View = 'security' | 'headers' | 'redirects' | 'compare'
 
 const VIEW_ITEMS: { label: string, value: View, icon: string }[] = [
   { label: 'Security', value: 'security', icon: 'i-lucide-shield-check' },
   { label: 'Headers', value: 'headers', icon: 'i-lucide-list-tree' },
   { label: 'Redirects', value: 'redirects', icon: 'i-lucide-route' },
+  { label: 'Compare', value: 'compare', icon: 'i-lucide-git-compare-arrows' },
 ]
 
 const url = ref('')
-const origin = ref('')
-const usePreflight = ref(false)
 const view = ref<View>('security')
 
+const PREFLIGHT_METHODS = ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE']
+
+// One stable object. The share action reads it and writes it to the query string.
+const options = reactive({
+  origin: '',
+  preflight: false,
+  requestMethod: 'GET',
+})
+
+// A preflight needs an Origin. Without it the request is not a CORS request.
+const canPreflight = computed(() => options.origin.trim().length > 0)
+
 const { status, error, result, run, reset } = useTool<HttpInspectResult>()
-const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
 
 useToolSeo('http-inspector')
 const { reportInput } = useToolInput()
@@ -39,6 +37,23 @@ const headerRows = computed(() =>
   Object.entries(result.value?.headers ?? {}).map(([name, value]) => ({ name, value })),
 )
 
+// One line for each Set-Cookie value of the response. The Cookie Inspector
+// reads the same text.
+const setCookieLines = computed(() =>
+  (result.value?.headers['set-cookie'] ?? '').split('\n').filter(Boolean),
+)
+
+const { setHandoffCookies } = useCookieHandoff()
+
+// The cookie values go to the other tool in memory, never in the URL.
+function handleOpenInCookieInspector() {
+  setHandoffCookies({
+    headers: setCookieLines.value.map(line => `Set-Cookie: ${line}`).join('\n'),
+    url: result.value?.url,
+  })
+  return navigateTo('/hub/network/cookie-inspector')
+}
+
 const hopCount = computed(() => Math.max(0, (result.value?.hops.length ?? 1) - 1))
 
 const scoreColor = computed(() => {
@@ -46,18 +61,22 @@ const scoreColor = computed(() => {
   return score >= 75 ? 'success' : score >= 50 ? 'warning' : 'error'
 })
 
-function levelColor(level: FindingLevel) {
-  switch (level) {
-    case 'ok':
-      return 'success'
-    case 'info':
-      return 'info'
-    case 'warning':
-      return 'warning'
-    case 'error':
-      return 'error'
-  }
-}
+const findingGroups = computed(() =>
+  groupFindingsBySeverity(result.value?.security.findings ?? []),
+)
+
+/** The JSON file of the Download JSON action, and the input of the diff view. */
+const report = computed(() => (result.value ? buildHttpReport(result.value) : null))
+
+// The comparison runs in the browser. The prior report never goes to the server.
+const priorText = ref('')
+const priorReport = computed(() => (priorText.value.trim() ? parseHttpReport(priorText.value) : null))
+const priorError = computed(() =>
+  priorText.value.trim() && !priorReport.value ? 'This file is not an HTTP Inspector report.' : null,
+)
+const diff = computed(() =>
+  priorReport.value && report.value ? diffHttpReports(priorReport.value, report.value) : null,
+)
 
 async function inspect() {
   reportInput('url')
@@ -66,25 +85,21 @@ async function inspect() {
       method: 'POST',
       body: {
         url: url.value,
-        origin: origin.value || undefined,
-        method: usePreflight.value ? 'OPTIONS' : undefined,
+        origin: options.origin || undefined,
+        method: options.preflight && canPreflight.value ? 'OPTIONS' : undefined,
+        requestMethod: options.requestMethod,
       },
     })
     return data.result
   }, 'The request failed.')
 }
 
-async function handleCopy() {
-  if (status.value !== 'success' || result.value === null) {
-    return
-  }
-  await copy(JSON.stringify(result.value, null, 2))
-}
-
 function handleClear() {
   url.value = ''
-  origin.value = ''
-  usePreflight.value = false
+  options.origin = ''
+  options.preflight = false
+  options.requestMethod = 'GET'
+  priorText.value = ''
   reset()
 }
 
@@ -100,7 +115,7 @@ useToolShortcuts({
       variant="subtle"
       icon="i-lucide-server"
       title="Processed with Bun"
-      description="This tool uses Bun.fetch on the server. One request gives all three views."
+      description="This tool uses Bun.fetch on the server. One request gives the security report, the headers, and the redirect chain. The comparison runs in your browser."
     />
 
     <div class="flex flex-wrap gap-4">
@@ -121,17 +136,31 @@ useToolShortcuts({
         hint="Sent as the Origin request header. Leave it empty to skip the CORS check."
       >
         <UInput
-          v-model="origin"
+          v-model="options.origin"
           placeholder="https://app.example.com"
           class="w-full"
           :ui="{ base: 'font-mono' }"
         />
       </UFormField>
       <UFormField
-        label="CORS preflight"
-        hint="Send OPTIONS."
+        label="Request Method"
+        hint="Sent as Access-Control-Request-Method."
       >
-        <USwitch v-model="usePreflight" />
+        <USelect
+          v-model="options.requestMethod"
+          :items="PREFLIGHT_METHODS"
+          :disabled="!canPreflight"
+          class="w-32"
+        />
+      </UFormField>
+      <UFormField
+        label="CORS preflight"
+        :hint="canPreflight ? 'Send OPTIONS.' : 'Enter a request Origin first.'"
+      >
+        <USwitch
+          v-model="options.preflight"
+          :disabled="!canPreflight"
+        />
       </UFormField>
     </div>
 
@@ -142,13 +171,12 @@ useToolShortcuts({
         :loading="status === 'processing'"
         @click="inspect"
       />
-      <UButton
-        :label="copyLabel('default', 'Copy JSON')"
-        :color="copyColor()"
-        variant="subtle"
-        :icon="copyIcon()"
-        :disabled="status !== 'success' || !result"
-        @click="handleCopy"
+      <ToolResultActions
+        :result="report"
+        :input="url"
+        tool-id="http-inspector"
+        filename="http-inspector.json"
+        :options="options"
       />
       <UButton
         label="Clear"
@@ -225,45 +253,38 @@ useToolShortcuts({
           <h2 class="text-sm font-medium text-highlighted">
             Findings
           </h2>
-          <ul class="divide-y divide-default rounded-md border border-default">
-            <li
-              v-for="item in result.security.findings"
-              :key="item.id + item.header"
-              class="space-y-2 px-3 py-3"
-            >
-              <div class="flex flex-wrap items-center gap-2">
-                <UBadge
-                  :color="levelColor(item.level)"
-                  variant="subtle"
-                  class="capitalize"
-                >
-                  {{ item.level }}
-                </UBadge>
-                <p class="text-sm font-medium text-highlighted">
-                  {{ item.title }}
-                </p>
-                <p class="font-mono text-xs text-muted">
-                  {{ item.header }}
-                </p>
-              </div>
-              <p class="break-all text-sm text-muted">
-                {{ item.detail }}
-              </p>
-              <p
-                v-if="item.fix"
-                class="text-sm text-highlighted"
-              >
-                Fix: {{ item.fix }}
-              </p>
-            </li>
-          </ul>
+          <HttpFindingGroups :groups="findingGroups" />
         </div>
       </section>
 
       <section
         v-else-if="view === 'headers'"
-        class="space-y-2"
+        class="space-y-4"
       >
+        <div
+          v-if="setCookieLines.length"
+          class="space-y-1"
+        >
+          <h2 class="text-sm font-medium text-highlighted">
+            Set-Cookie
+          </h2>
+          <p
+            v-for="(cookie, index) in setCookieLines"
+            :key="index"
+            class="break-all font-mono text-sm text-muted"
+          >
+            {{ cookie }}
+          </p>
+          <UButton
+            size="xs"
+            color="neutral"
+            variant="subtle"
+            icon="i-lucide-cookie"
+            label="Open in Cookie Inspector"
+            @click="handleOpenInCookieInspector"
+          />
+        </div>
+
         <div
           v-if="headerRows.length"
           class="overflow-x-auto rounded-md border border-default"
@@ -287,7 +308,7 @@ useToolShortcuts({
                 <td class="px-3 py-2 font-mono text-highlighted">
                   {{ row.name }}
                 </td>
-                <td class="break-all px-3 py-2 font-mono text-highlighted">
+                <td class="whitespace-pre-line break-all px-3 py-2 font-mono text-highlighted">
                   {{ row.value }}
                 </td>
               </tr>
@@ -303,56 +324,45 @@ useToolShortcuts({
       </section>
 
       <section
-        v-else
+        v-else-if="view === 'redirects'"
         class="space-y-2"
       >
-        <div
-          v-if="result.hops.length"
-          class="overflow-x-auto rounded-md border border-default"
-        >
-          <table class="w-full text-sm">
-            <thead>
-              <tr class="border-b border-default">
-                <th class="px-3 py-2 text-left font-medium text-highlighted">
-                  Hop
-                </th>
-                <th class="px-3 py-2 text-left font-medium text-highlighted">
-                  Status
-                </th>
-                <th class="px-3 py-2 text-left font-medium text-highlighted">
-                  URL
-                </th>
-                <th class="px-3 py-2 text-left font-medium text-highlighted">
-                  Location
-                </th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-default">
-              <tr
-                v-for="(hop, index) in result.hops"
-                :key="`${index}-${hop.url}`"
-              >
-                <td class="px-3 py-2 font-mono text-highlighted">
-                  {{ index + 1 }}
-                </td>
-                <td class="px-3 py-2 font-mono text-highlighted">
-                  {{ hop.status }}
-                </td>
-                <td class="break-all px-3 py-2 font-mono text-highlighted">
-                  {{ hop.url }}
-                </td>
-                <td class="break-all px-3 py-2 font-mono text-muted">
-                  {{ hop.location || '—' }}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <HttpRedirectTable :hops="result.hops" />
+        <p class="text-sm text-muted">
+          The tool follows at most 10 redirects. It stops when a Location points back to a URL that
+          is already in the chain.
+        </p>
+      </section>
+
+      <section
+        v-else
+        class="space-y-4"
+      >
+        <LazyToolEditor
+          v-model="priorText"
+          hydrate-on-idle
+          label="Prior report"
+          lang="json"
+          :rows="8"
+          accept="application/json,.json"
+          placeholder="Drop a report file here, or paste the JSON of an earlier check."
+        />
+
+        <ToolError
+          v-if="priorError"
+          :message="priorError"
+        />
+
+        <HttpReportDiff
+          v-else-if="diff"
+          :diff="diff"
+        />
+
         <p
           v-else
           class="text-sm text-muted"
         >
-          No hops.
+          Drop an earlier report to see the added, resolved, and modified findings.
         </p>
       </section>
     </div>
@@ -361,17 +371,29 @@ useToolShortcuts({
       <ToolDocs title="About the HTTP Inspector">
         <div class="space-y-4 text-muted">
           <p>
-            This tool sends one request to a URL. It then shows three views of the answer: the security
-            report, the response headers, and the redirect chain.
+            This tool sends one request to a URL. It then shows four views of the answer: the
+            security report, the response headers, the redirect chain, and a comparison with an
+            earlier report.
           </p>
           <p>
-            The security view scores CSP, HSTS, X-Content-Type-Options, X-Frame-Options, and the
-            Access-Control-Allow-* headers, and it gives a fix for each problem. The header view lists
-            every response header. The redirect view lists each hop, with a maximum of 5.
+            The security view groups the findings into Critical, Warning, Info, and Pass, and it
+            gives a fix for each problem. It reads CSP directives, HSTS and its preload
+            requirements, X-Content-Type-Options, X-Frame-Options, Referrer-Policy,
+            Permissions-Policy, the three Cross-Origin-* policies, the deprecated
+            X-XSS-Protection header, the Server and X-Powered-By values, Cache-Control on an HTML
+            response, and the Access-Control-Allow-* headers.
           </p>
           <p>
-            Enter a URL. To test CORS, set a request Origin. To send an OPTIONS preflight, turn on
-            CORS preflight. Then select Inspect. The tool does not store your input.
+            The header view lists every response header, and it lists each Set-Cookie value on its
+            own line. The redirect view lists each hop with its status, its time, and its headers.
+            It follows at most 10 redirects, and it stops on a loop.
+          </p>
+          <p>
+            Enter a URL. To test CORS, set a request Origin, select a request method, and turn on
+            CORS preflight. Then select Inspect. Select Download JSON to save the report with the
+            time of the check, the URL, the method, and the raw header map. To see what changed,
+            open Compare and drop an earlier report file. The comparison runs in your browser. The
+            tool does not store your input.
           </p>
         </div>
         <RelatedTools

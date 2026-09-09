@@ -10,6 +10,10 @@ export interface IpClassification {
   isMulticast: boolean
   isReserved: boolean
   isSpecial: boolean
+  /** The special-purpose block that holds the address, such as `10.0.0.0/8`. */
+  matchedRange?: string
+  /** The RFC that defines the matched block, such as `RFC 1918`. */
+  rfc?: string
   decimal?: string
   hex?: string
   binary?: string
@@ -85,34 +89,78 @@ export function classifyIp(ipString: string): IpClassification {
     const num = ((first << 24) | (second << 16) | (third << 8) | fourth) >>> 0
 
     let type: IpClassificationType = 'public'
+    let matchedRange: string | undefined
+    let rfc: string | undefined
 
     if (first === 127) {
       type = 'loopback'
+      matchedRange = '127.0.0.0/8'
+      rfc = 'RFC 1122'
     }
-    else if (
-      first === 10
-      || (first === 172 && second >= 16 && second <= 31)
-      || (first === 192 && second === 168)
-    ) {
+    else if (first === 10) {
       type = 'private'
+      matchedRange = '10.0.0.0/8'
+      rfc = 'RFC 1918'
+    }
+    else if (first === 172 && second >= 16 && second <= 31) {
+      type = 'private'
+      matchedRange = '172.16.0.0/12'
+      rfc = 'RFC 1918'
+    }
+    else if (first === 192 && second === 168) {
+      type = 'private'
+      matchedRange = '192.168.0.0/16'
+      rfc = 'RFC 1918'
     }
     else if (first === 169 && second === 254) {
       type = 'link-local'
+      matchedRange = '169.254.0.0/16'
+      rfc = 'RFC 3927'
     }
     else if (first >= 224 && first <= 239) {
       type = 'multicast'
+      matchedRange = '224.0.0.0/4'
+      rfc = 'RFC 5771'
     }
-    else if (
-      first === 0
-      || (first === 100 && second >= 64 && second <= 127)
-      || (first === 192 && second === 0 && third === 0)
-      || (first === 192 && second === 0 && third === 2)
-      || (first === 198 && (second === 18 || second === 19))
-      || (first === 198 && second === 51 && third === 100)
-      || (first === 203 && second === 0 && third === 113)
-      || first >= 240
-    ) {
+    else if (first === 0) {
       type = 'reserved'
+      matchedRange = '0.0.0.0/8'
+      rfc = 'RFC 1122'
+    }
+    else if (first === 100 && second >= 64 && second <= 127) {
+      type = 'reserved'
+      matchedRange = '100.64.0.0/10'
+      rfc = 'RFC 6598'
+    }
+    else if (first === 192 && second === 0 && third === 0) {
+      type = 'reserved'
+      matchedRange = '192.0.0.0/24'
+      rfc = 'RFC 6890'
+    }
+    else if (first === 192 && second === 0 && third === 2) {
+      type = 'reserved'
+      matchedRange = '192.0.2.0/24'
+      rfc = 'RFC 5737'
+    }
+    else if (first === 198 && (second === 18 || second === 19)) {
+      type = 'reserved'
+      matchedRange = '198.18.0.0/15'
+      rfc = 'RFC 2544'
+    }
+    else if (first === 198 && second === 51 && third === 100) {
+      type = 'reserved'
+      matchedRange = '198.51.100.0/24'
+      rfc = 'RFC 5737'
+    }
+    else if (first === 203 && second === 0 && third === 113) {
+      type = 'reserved'
+      matchedRange = '203.0.113.0/24'
+      rfc = 'RFC 5737'
+    }
+    else if (first >= 240) {
+      type = 'reserved'
+      matchedRange = '240.0.0.0/4'
+      rfc = 'RFC 1112'
     }
 
     return {
@@ -125,6 +173,8 @@ export function classifyIp(ipString: string): IpClassification {
       isMulticast: type === 'multicast',
       isReserved: type === 'reserved',
       isSpecial: type !== 'public',
+      matchedRange,
+      rfc,
       decimal: num.toString(10),
       hex: `0x${num.toString(16).toUpperCase().padStart(8, '0')}`,
       binary: [
@@ -141,14 +191,20 @@ export function classifyIp(ipString: string): IpClassification {
     const first = hextets[0]!
 
     let type: IpClassificationType = 'public'
+    let matchedRange: string | undefined
+    let rfc: string | undefined
 
     // ::1 loopback
     if (hextets.slice(0, 7).every(h => h === 0) && hextets[7] === 1) {
       type = 'loopback'
+      matchedRange = '::1/128'
+      rfc = 'RFC 4291'
     }
     // :: unspecified
     else if (hextets.every(h => h === 0)) {
       type = 'reserved'
+      matchedRange = '::/128'
+      rfc = 'RFC 4291'
     }
     // IPv4-mapped ::ffff:x.x.x.x
     else if (hextets.slice(0, 5).every(h => h === 0) && hextets[5] === 0xFFFF) {
@@ -158,18 +214,27 @@ export function classifyIp(ipString: string): IpClassification {
       const v4_4 = hextets[7]! & 0xFF
       const mappedClassification = classifyIp(`${v4_1}.${v4_2}.${v4_3}.${v4_4}`)
       type = mappedClassification.type
+      // The IPv4 block is the better evidence when the mapped address matched one.
+      matchedRange = mappedClassification.matchedRange ?? '::ffff:0:0/96'
+      rfc = mappedClassification.rfc ?? 'RFC 4291'
     }
     // fe80::/10 link-local (fe80 to febf)
     else if ((first & 0xFFC0) === 0xFE80) {
       type = 'link-local'
+      matchedRange = 'fe80::/10'
+      rfc = 'RFC 4291'
     }
     // fc00::/7 unique local / private (fc00 to fdff)
     else if ((first & 0xFE00) === 0xFC00) {
       type = 'private'
+      matchedRange = 'fc00::/7'
+      rfc = 'RFC 4193'
     }
     // ff00::/8 multicast
     else if ((first & 0xFF00) === 0xFF00) {
       type = 'multicast'
+      matchedRange = 'ff00::/8'
+      rfc = 'RFC 4291'
     }
     // 2001:db8::/32 documentation or 64:ff9b::/96 NAT64 or 2002::/16 6to4
     else if (
@@ -179,6 +244,22 @@ export function classifyIp(ipString: string): IpClassification {
       || first === 0x0100
     ) {
       type = 'reserved'
+      if (first === 0x2002) {
+        matchedRange = '2002::/16'
+        rfc = 'RFC 3056'
+      }
+      else if (first === 0x2001) {
+        matchedRange = '2001:db8::/32'
+        rfc = 'RFC 3849'
+      }
+      else if (first === 0x0064) {
+        matchedRange = '64:ff9b::/96'
+        rfc = 'RFC 6052'
+      }
+      else if (hextets[1] === 0 && hextets[2] === 0 && hextets[3] === 0) {
+        matchedRange = '100::/64'
+        rfc = 'RFC 6666'
+      }
     }
 
     return {
@@ -191,6 +272,8 @@ export function classifyIp(ipString: string): IpClassification {
       isMulticast: type === 'multicast',
       isReserved: type === 'reserved',
       isSpecial: type !== 'public',
+      matchedRange,
+      rfc,
     }
   }
 

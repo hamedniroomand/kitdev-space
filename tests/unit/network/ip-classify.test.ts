@@ -61,4 +61,41 @@ describe('classifyIp', () => {
     expect(() => classifyIp('999.999.999.999')).toThrow()
     expect(() => classifyIp('invalid')).toThrow()
   })
+
+  it('reports the matched IPv4 range and the RFC', () => {
+    expect(classifyIp('10.1.2.3')).toMatchObject({ matchedRange: '10.0.0.0/8', rfc: 'RFC 1918' })
+    expect(classifyIp('172.20.0.1')).toMatchObject({ matchedRange: '172.16.0.0/12', rfc: 'RFC 1918' })
+    expect(classifyIp('192.168.1.1')).toMatchObject({ matchedRange: '192.168.0.0/16', rfc: 'RFC 1918' })
+    expect(classifyIp('100.100.0.1')).toMatchObject({ matchedRange: '100.64.0.0/10', rfc: 'RFC 6598' })
+    expect(classifyIp('169.254.169.254')).toMatchObject({ matchedRange: '169.254.0.0/16', rfc: 'RFC 3927' })
+    expect(classifyIp('127.0.0.1')).toMatchObject({ matchedRange: '127.0.0.0/8', rfc: 'RFC 1122' })
+    expect(classifyIp('224.0.0.1')).toMatchObject({ matchedRange: '224.0.0.0/4', rfc: 'RFC 5771' })
+  })
+
+  it('reports the matched IPv6 range and the RFC', () => {
+    expect(classifyIp('::1')).toMatchObject({ matchedRange: '::1/128', rfc: 'RFC 4291' })
+    expect(classifyIp('fe80::1')).toMatchObject({ matchedRange: 'fe80::/10', rfc: 'RFC 4291' })
+    expect(classifyIp('fd12:3456:789a::1')).toMatchObject({ matchedRange: 'fc00::/7', rfc: 'RFC 4193' })
+    expect(classifyIp('ff02::1')).toMatchObject({ matchedRange: 'ff00::/8', rfc: 'RFC 4291' })
+    expect(classifyIp('2001:db8::1')).toMatchObject({ matchedRange: '2001:db8::/32', rfc: 'RFC 3849' })
+  })
+
+  it('takes the range of the mapped IPv4 address for ::ffff: addresses', () => {
+    expect(classifyIp('::ffff:a00:1')).toMatchObject({
+      type: 'private',
+      matchedRange: '10.0.0.0/8',
+      rfc: 'RFC 1918',
+    })
+    expect(classifyIp('::ffff:808:808')).toMatchObject({
+      type: 'public',
+      matchedRange: '::ffff:0:0/96',
+      rfc: 'RFC 4291',
+    })
+  })
+
+  it('reports no range for a public address', () => {
+    const res = classifyIp('8.8.8.8')
+    expect(res.matchedRange).toBeUndefined()
+    expect(res.rfc).toBeUndefined()
+  })
 })

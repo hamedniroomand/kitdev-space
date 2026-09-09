@@ -1,6 +1,10 @@
+import type { CidrV6Calculation } from './cidr-ipv6'
+import type { IpClassificationType } from './ip-classify'
+import { ipv6Range, ipv6ToBigInt, parseCidrV6 } from './cidr-ipv6'
 import { classifyIp } from './ip-classify'
 
 export interface CidrCalculation {
+  version: 4
   ip: string
   prefix: number
   netmask: string
@@ -12,11 +16,28 @@ export interface CidrCalculation {
   totalHosts: number
   usableHosts: number
   ipClass: 'A' | 'B' | 'C' | 'D' | 'E'
+  scope: IpClassificationType
   isPrivate: boolean
   isLoopback: boolean
   isLinkLocal: boolean
   ipBinary: string
   maskBinary: string
+}
+
+/** How two CIDR blocks relate to each other. */
+export type CidrRelation = 'equal' | 'contains' | 'within' | 'disjoint'
+
+export interface CidrComparison {
+  relation: CidrRelation
+  overlaps: boolean
+  /** Count of addresses in both blocks, as a plain decimal string. */
+  sharedAddresses: string
+}
+
+interface CidrRange {
+  version: 4 | 6
+  start: bigint
+  end: bigint
 }
 
 const IPV4_STRICT_RE = /^(?:0|[1-9]\d{0,2})\.(?:0|[1-9]\d{0,2})\.(?:0|[1-9]\d{0,2})\.(?:0|[1-9]\d{0,2})$/
@@ -105,6 +126,7 @@ export function parseCidr(cidrInput: string): CidrCalculation {
   const classification = classifyIp(intToIp(ipInt))
 
   return {
+    version: 4,
     ip: classification.ip,
     prefix,
     netmask: intToIp(maskInt),
@@ -116,10 +138,70 @@ export function parseCidr(cidrInput: string): CidrCalculation {
     totalHosts,
     usableHosts,
     ipClass,
+    scope: classification.type,
     isPrivate: classification.isPrivate,
     isLoopback: classification.isLoopback,
     isLinkLocal: classification.isLinkLocal,
     ipBinary: toBinaryString(ipInt),
     maskBinary: toBinaryString(maskInt),
   }
+}
+
+function cidrRange(cidr: string): CidrRange {
+  if (cidr.includes(':')) {
+    const { start, end } = ipv6Range(cidr)
+    return { version: 6, start, end }
+  }
+  const calculation = parseCidr(cidr)
+  return {
+    version: 4,
+    start: BigInt(ipToInt(calculation.networkAddress)),
+    end: BigInt(ipToInt(calculation.broadcastAddress)),
+  }
+}
+
+/** Test if an IP address is inside a CIDR block. */
+export function cidrContainsIp(cidr: string, ip: string): boolean {
+  const range = cidrRange(cidr)
+  const trimmed = ip.trim()
+  const version = trimmed.includes(':') ? 6 : 4
+  if (version !== range.version) {
+    throw new Error('The IP version must match the subnet version.')
+  }
+  const address = version === 6 ? ipv6ToBigInt(trimmed) : BigInt(ipToInt(trimmed))
+  return address >= range.start && address <= range.end
+}
+
+/** Compare two CIDR blocks. Two blocks nest or stay fully apart. */
+export function compareCidr(first: string, second: string): CidrComparison {
+  const a = cidrRange(first)
+  const b = cidrRange(second)
+
+  if (a.version !== b.version) {
+    throw new Error('Compare two blocks that use the same IP version.')
+  }
+
+  const start = a.start > b.start ? a.start : b.start
+  const end = a.end < b.end ? a.end : b.end
+  const shared = end >= start ? end - start + 1n : 0n
+
+  let relation: CidrRelation = 'disjoint'
+  if (shared > 0n) {
+    if (a.start === b.start && a.end === b.end) {
+      relation = 'equal'
+    }
+    else if (a.start <= b.start && a.end >= b.end) {
+      relation = 'contains'
+    }
+    else {
+      relation = 'within'
+    }
+  }
+
+  return { relation, overlaps: shared > 0n, sharedAddresses: shared.toString() }
+}
+
+/** Read an IPv4 or an IPv6 block. The address family comes from the input. */
+export function analyzeCidr(cidrInput: string): CidrCalculation | CidrV6Calculation {
+  return cidrInput.includes(':') ? parseCidrV6(cidrInput) : parseCidr(cidrInput)
 }

@@ -38,6 +38,16 @@ describe('enforceRateLimit', () => {
     expect(() => enforceRateLimit(ip, 'headers')).not.toThrow()
   })
 
+  it('keeps the DNS and Email Health buckets apart', () => {
+    const ip = '203.0.113.5'
+
+    for (let i = 0; i < 20; i++) {
+      enforceRateLimit(ip, 'network:dns')
+    }
+
+    expect(() => enforceRateLimit(ip, 'network:email-health')).not.toThrow()
+  })
+
   it('accepts a custom max request count', () => {
     const ip = '203.0.113.4'
     const key = 'password'

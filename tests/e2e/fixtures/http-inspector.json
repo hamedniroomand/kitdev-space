@@ -13,7 +13,12 @@
     "hops": [
       {
         "url": "https://example.com",
-        "status": 200
+        "status": 200,
+        "statusText": "OK",
+        "headers": {
+          "content-type": "text/html; charset=utf-8"
+        },
+        "durationMs": 42
       }
     ],
     "security": {
@@ -101,6 +106,10 @@
           }
         ]
       }
-    }
+    },
+    "checkedAt": "2026-01-15T10:30:00.000Z",
+    "requestedUrl": "https://example.com",
+    "requestOrigin": null,
+    "method": "HEAD"
   }
 }

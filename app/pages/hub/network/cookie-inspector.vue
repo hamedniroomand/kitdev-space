@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { FindingLevel } from '#shared/utils/network/cookie'
-import { inspectCookies } from '#shared/utils/network/cookie'
+import type { FindingLevel, RequestContext } from '#shared/utils/network/cookie'
+import { evaluateCookieDelivery, inspectCookies, redactCookieReport } from '#shared/utils/network/cookie'
 
 useToolSeo('cookie-inspector')
 
@@ -16,12 +16,33 @@ const presets: { label: string, value: string }[] = [
   { label: 'Request header', value: 'Cookie: sid=abc123; theme=dark; consent=1' },
 ]
 
-const input = ref(SAMPLE)
+const CONTEXT_ITEMS: { label: string, value: RequestContext }[] = [
+  { label: 'Same-site request', value: 'same-site' },
+  { label: 'Cross-site subresource or POST', value: 'cross-site' },
+  { label: 'Cross-site top-level navigation', value: 'cross-site-navigation' },
+]
+
+// The headers arrive from the HTTP Inspector in memory, never in the URL.
+const handoff = useCookieHandoff().consumeHandoffCookies()
+
+const input = ref(handoff?.headers || SAMPLE)
+const requestUrl = ref(handoff?.url ?? '')
+const context = ref<RequestContext>('same-site')
+const maskValues = ref(true)
 const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()
 
 const report = computed(() => inspectCookies(input.value))
 useLiveTool(report)
 const total = computed(() => report.value.setCookies.length + report.value.requestCookies.length)
+
+// The check applies to Set-Cookie lines. A Cookie request header has no attributes.
+const deliveries = computed(() => {
+  const target = requestUrl.value.trim()
+  if (!target) {
+    return null
+  }
+  return report.value.setCookies.map(cookie => evaluateCookieDelivery(cookie, target, context.value))
+})
 
 const LEVEL_COLOR: Record<FindingLevel, 'error' | 'warning' | 'info'> = {
   error: 'error',
@@ -54,7 +75,8 @@ function lifetimeLabel(seconds: number | null): string {
 }
 
 async function handleCopy() {
-  await copy(JSON.stringify(report.value, null, 2))
+  const payload = maskValues.value ? redactCookieReport(report.value) : report.value
+  await copy(JSON.stringify(payload, null, 2))
 }
 
 function handleClear() {
@@ -93,6 +115,32 @@ function handleClear() {
       :rows="6"
     />
 
+    <div class="grid gap-4 sm:grid-cols-2">
+      <UFormField
+        label="Request URL"
+        hint="Optional"
+        description="The URL that the browser calls next. The check tells you if the browser sends each cookie to it."
+      >
+        <UInput
+          v-model="requestUrl"
+          placeholder="https://example.com/app"
+          class="w-full"
+          :ui="{ base: 'font-mono' }"
+        />
+      </UFormField>
+      <UFormField
+        label="Request context"
+        description="A cross-site request starts on another site."
+      >
+        <USelect
+          v-model="context"
+          :items="CONTEXT_ITEMS"
+          :disabled="!requestUrl.trim()"
+          class="w-full"
+        />
+      </UFormField>
+    </div>
+
     <ToolActions>
       <UButton
         :label="copyLabel('default', 'Copy the report as JSON')"
@@ -108,6 +156,11 @@ function handleClear() {
         variant="ghost"
         icon="i-lucide-eraser"
         @click="handleClear"
+      />
+      <USwitch
+        v-model="maskValues"
+        label="Mask values in JSON"
+        class="self-center"
       />
     </ToolActions>
 
@@ -200,6 +253,8 @@ function handleClear() {
         </div>
       </dl>
 
+      <CookieDeliveryCard :delivery="deliveries?.[index]" />
+
       <ul
         v-if="cookie.findings.length"
         class="space-y-2"
@@ -288,8 +343,21 @@ function handleClear() {
             the lifetime, and the 4096 byte limit that every browser applies.
           </p>
           <p>
+            Give a target URL to see if the browser sends each cookie to it. The check applies the Domain,
+            Path, Secure, and SameSite rules, and it names each rule that stops the cookie. Select the
+            context of the request, because SameSite blocks a cross-site request only. A Set-Cookie header
+            does not name the host that sent it, so a cookie with no Domain and a cookie with no Path use
+            the host and the directory of that URL.
+          </p>
+          <p>
+            The JSON report masks each cookie value. Switch the mask off only when you must copy the
+            values. The check applies to Set-Cookie lines, because a Cookie request header has no
+            attributes.
+          </p>
+          <p>
             Paste one header per line. Copy the header from the Network panel of the browser, from a curl
-            response, or from the HTTP Inspector on this site. The parser runs in your browser.
+            response, or from the HTTP Inspector on this site. The HTTP Inspector has an Open in Cookie
+            Inspector button that sends the headers in memory. The parser runs in your browser.
           </p>
         </div>
         <RelatedTools

@@ -1,11 +1,28 @@
+import type { TlsChainCertificate, TlsReport } from '#shared/utils/network/tls-report'
+import { X509Certificate } from 'node:crypto'
+import { isIP, isIPv6 } from 'node:net'
 import tls from 'node:tls'
+import {
+  extendedKeyUsageName,
+  readCrlUrls,
+  readOcspUrls,
+  readSignatureAlgorithmOid,
+  signatureAlgorithmName,
+} from '#shared/utils/network/tls-report'
 import { assertSafeUrl, TLS_PORTS } from './ssrf'
+
+export type { TlsChainCertificate, TlsReport } from '#shared/utils/network/tls-report'
 
 export type {
   TlsCertItem,
   TlsCertSubject,
   TlsInspectionResult,
 } from '#shared/utils/network/types'
+
+export interface TlsTarget {
+  host: string
+  port?: number
+}
 
 export function parseSubject(peerSubject: tls.Certificate | tls.DetailedPeerCertificate['subject']): TlsCertSubject {
   if (!peerSubject || typeof peerSubject !== 'object') {
@@ -28,18 +45,34 @@ export function parseSans(altnames?: string): string[] {
   return altnames
     .split(',')
     .map(entry => entry.trim())
-    .map(entry => (entry.startsWith('DNS:') ? entry.slice(4).trim() : entry))
+    // Only a DNS name and an IP address are host names. A URI or an email SAN
+    // keeps its prefix, so the host match cannot read it as a host name.
+    .map(entry => entry.replace(/^(?:DNS|IP Address):/i, '').trim())
     .filter(Boolean)
 }
 
+/** Write one host in the form that `URL` and a certificate name comparison accept. */
+function normalizeHostValue(value: string): string {
+  const bare = value.replace(/^\[|\]$/g, '')
+  if (isIPv6(bare)) {
+    try {
+      return new URL(`http://[${bare}]`).hostname
+    }
+    catch {
+      return bare.toLowerCase()
+    }
+  }
+  return value.toLowerCase()
+}
+
 export function checkHostMatch(host: string, sans: string[], cn?: string): boolean {
-  const target = host.toLowerCase()
+  const target = normalizeHostValue(host)
   const candidates = [...sans]
   if (cn)
     candidates.push(cn)
 
   return candidates.some((cand) => {
-    const pattern = cand.toLowerCase()
+    const pattern = normalizeHostValue(cand)
     if (pattern === target)
       return true
     if (pattern.startsWith('*.')) {
@@ -54,33 +87,81 @@ export function checkHostMatch(host: string, sans: string[], cn?: string): boole
   })
 }
 
-export async function inspectTlsCertificate(
-  rawHost: string,
-  port = 443,
-  timeoutMs = 6000,
-): Promise<TlsInspectionResult> {
-  const cleanHost = rawHost.trim().replace(/^https?:\/\//i, '').replace(/\/.*$/, '').split(':')[0]!
-  if (!cleanHost) {
-    throw new Error('Enter a valid hostname.')
+/**
+ * Read a host and an optional port from user input.
+ * The input can have a scheme, a path, and an IPv6 address in brackets,
+ * such as `https://[2001:db8::1]:8443/status`.
+ */
+export function parseHostInput(raw: string): TlsTarget {
+  const withoutScheme = raw.trim().replace(/^[a-z][\w+.-]*:\/\//i, '')
+  const authority = withoutScheme.split(/[/?#]/)[0]!.replace(/^.*@/, '')
+
+  const bracketed = authority.match(/^\[([^\]]+)\](?::(\d+))?$/)
+  if (bracketed) {
+    return { host: bracketed[1]!, port: bracketed[2] ? Number(bracketed[2]) : undefined }
   }
 
-  // Enforce SSRF validation. Restrict the port to ports that serve TLS, so
-  // this tool cannot scan arbitrary ports on a third-party host.
-  await assertSafeUrl(`https://${cleanHost}:${port}`, { allowedPorts: TLS_PORTS })
+  if (isIPv6(authority)) {
+    return { host: authority }
+  }
 
+  const withPort = authority.match(/^([^:]+):(\d+)$/)
+  if (withPort) {
+    return { host: withPort[1]!, port: Number(withPort[2]) }
+  }
+
+  return { host: authority.split(':')[0]! }
+}
+
+/** Put an IPv6 address in brackets, so `URL` accepts it. */
+export function formatHostForUrl(host: string): string {
+  return isIPv6(host) ? `[${host}]` : host
+}
+
+/** Read the X.509 details that the TLS peer certificate does not give. */
+function certificateDetails(raw?: Uint8Array): Partial<TlsChainCertificate> {
+  if (!raw || raw.length === 0) {
+    return {}
+  }
+  try {
+    const certificate = new X509Certificate(raw)
+    const key = certificate.publicKey
+    const details = key.asymmetricKeyDetails
+    return {
+      keyType: key.asymmetricKeyType,
+      keySize: typeof details?.modulusLength === 'number' ? details.modulusLength : undefined,
+      curve: typeof details?.namedCurve === 'string' ? details.namedCurve : undefined,
+      signatureAlgorithm: signatureAlgorithmName(readSignatureAlgorithmOid(certificate.raw)),
+      extendedKeyUsage: certificate.keyUsage?.map(extendedKeyUsageName),
+      ocspUrls: readOcspUrls(certificate.infoAccess),
+      crlUrls: readCrlUrls(certificate.raw),
+      pem: certificate.toString(),
+    }
+  }
+  catch {
+    return {}
+  }
+}
+
+/**
+ * Open one TLS connection and read the certificate chain.
+ * This function does no SSRF check. Use `inspectTlsCertificate` for user input.
+ */
+export function readTlsCertificate(host: string, port = 443, timeoutMs = 6000): Promise<TlsReport> {
   return new Promise((resolve, reject) => {
     // Declared before the timer, which destroys it on a timeout.
     let socket: tls.TLSSocket
     const timer = setTimeout(() => {
       socket.destroy()
-      reject(new Error(`Connection to ${cleanHost}:${port} timed out.`))
+      reject(new Error(`Connection to ${formatHostForUrl(host)}:${port} timed out.`))
     }, timeoutMs)
 
     socket = tls.connect(
       {
-        host: cleanHost,
+        host,
         port,
-        servername: cleanHost,
+        // RFC 6066 does not permit an IP address in the server name extension.
+        ...(isIP(host) === 0 ? { servername: host } : {}),
         rejectUnauthorized: false,
       },
       () => {
@@ -101,7 +182,7 @@ export async function inspectTlsCertificate(
           const subject = parseSubject(peer.subject)
           const issuer = parseSubject(peer.issuer)
           const sans = parseSans(peer.subjectaltname)
-          const matchesHost = checkHostMatch(cleanHost, sans, subject.commonName)
+          const matchesHost = checkHostMatch(host, sans, subject.commonName)
 
           const validFrom = new Date(peer.valid_from).toISOString()
           const validTo = new Date(peer.valid_to).toISOString()
@@ -118,8 +199,8 @@ export async function inspectTlsCertificate(
             status = 'expiring_soon'
           }
 
-          // Build certificate chain
-          const chain: TlsCertItem[] = []
+          // Build the certificate chain, from the leaf to the last certificate sent.
+          const chain: TlsChainCertificate[] = []
           let curr: tls.DetailedPeerCertificate | null = peer
           const seenFingerprints = new Set<string>()
 
@@ -133,6 +214,7 @@ export async function inspectTlsCertificate(
               serialNumber: curr.serialNumber,
               fingerprint256: curr.fingerprint256,
               fingerprint: curr.fingerprint,
+              ...certificateDetails(curr.raw),
             })
 
             if (curr.issuerCertificate && curr.issuerCertificate !== curr) {
@@ -151,7 +233,7 @@ export async function inspectTlsCertificate(
           socket.end()
 
           resolve({
-            host: cleanHost,
+            host,
             port,
             authorized,
             authorizationError,
@@ -187,4 +269,23 @@ export async function inspectTlsCertificate(
       reject(err)
     })
   })
+}
+
+export async function inspectTlsCertificate(
+  rawHost: string,
+  port = 443,
+  timeoutMs = 6000,
+): Promise<TlsReport> {
+  const target = parseHostInput(rawHost)
+  if (!target.host) {
+    throw new Error('Enter a valid hostname.')
+  }
+  // A port in the host input wins, because the user wrote it last.
+  const targetPort = target.port ?? port
+
+  // Enforce SSRF validation. Restrict the port to ports that serve TLS, so
+  // this tool cannot scan arbitrary ports on a third-party host.
+  await assertSafeUrl(`https://${formatHostForUrl(target.host)}:${targetPort}`, { allowedPorts: TLS_PORTS })
+
+  return readTlsCertificate(target.host, targetPort, timeoutMs)
 }
