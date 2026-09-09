@@ -296,12 +296,28 @@ function handleClear() {
       description="The tool reads the tags and removes them on your device. Only the button marked as the server option sends the file anywhere."
     />
 
+    <div class="space-y-2 rounded-md border border-default bg-elevated/40 p-4 text-sm text-muted">
+      <p class="font-medium text-highlighted">
+        Supported formats and metadata
+      </p>
+      <p>
+        The browser reads the metadata of JPEG, PNG, WebP, AVIF, and TIFF files. It reads the EXIF,
+        the IPTC, the XMP, and the text segments, and it shows the GPS position when the file holds
+        one. It removes the metadata in place in JPEG, PNG, and WebP files. Every other format, such
+        as GIF or HEIC, needs the server option.
+      </p>
+      <p>
+        A removal covers the metadata segments in this list. It cannot promise that no private
+        detail stays in the pixels of the image.
+      </p>
+    </div>
+
     <ImageDropzone
       :model-value="files"
       multiple
       :max-files="IMAGE_BATCH_LIMIT"
       prompt="Drop one photo here, or up to 50 photos for a batch. Click to choose files."
-      hint="JPEG, PNG, and WebP are cleaned in place in the browser. Every other format uses the server option."
+      hint="JPEG, PNG, and WebP are cleaned in place in the browser. Every other format uses the server option. Max size 25 MB for each file."
       @update:files="files = $event"
     />
 
@@ -528,8 +544,8 @@ function handleClear() {
         color="success"
         variant="subtle"
         icon="i-lucide-shield-check"
-        title="No metadata found"
-        description="This image holds no EXIF tag, no GPS position, and no text block."
+        title="No supported metadata found"
+        description="This file holds no EXIF tag, no IPTC block, no XMP packet, no text block, and no GPS position. A file that a tool already stripped gives this result."
       />
 
       <section

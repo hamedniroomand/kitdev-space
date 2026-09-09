@@ -30,6 +30,20 @@ test.describe('EXIF & Metadata Inspector tool', () => {
     await expect(page.locator('main').getByText('Format', { exact: true })).not.toBeVisible()
   })
 
+  test('lists the supported formats and shows the empty state', async ({ page }) => {
+    await gotoHydrated(page, '/hub/image/metadata')
+
+    await expect(page.locator('main').getByText(/JPEG, PNG, WebP, AVIF, and TIFF/)).toBeVisible()
+
+    await page.locator('input[type="file"]').setInputFiles({
+      name: 'sample.png',
+      mimeType: 'image/png',
+      buffer: pngBuffer,
+    })
+
+    await expect(page.locator('main').getByText('No supported metadata found', { exact: true })).toBeVisible()
+  })
+
   test('strips a batch of photos and shows the audit report', async ({ page }) => {
     await gotoHydrated(page, '/hub/image/metadata')
 
