@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   formatAsCssVars,
+  formatAsSemanticTokens,
   formatAsTailwindV3,
   formatAsTailwindV4,
   generateTailwindPalette,
@@ -93,6 +94,17 @@ describe('generateTailwindPalette', () => {
     const css = formatAsCssVars(shades, 'brand')
     expect(css).toContain(':root {')
     expect(css).toContain('--brand-500: #3b82f6;')
+  })
+
+  it('maps the semantic roles to CSS custom properties', () => {
+    const shades = generateTailwindPalette('#3b82f6')
+    const tokens = formatAsSemanticTokens(shades, { surface: '50', text: '900' }, 'brand')
+    expect(tokens).toBe([
+      ':root {',
+      '  --brand-surface: #eff6ff;',
+      '  --brand-text: #1e3a8a;',
+      '}',
+    ].join('\n'))
   })
 
   it('keeps saturation zero for pure gray inputs', () => {

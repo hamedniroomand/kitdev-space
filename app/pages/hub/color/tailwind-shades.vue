@@ -4,6 +4,7 @@ import { contrastRatio, wcagLevel } from '#shared/utils/color/contrast'
 import {
   DEFAULT_ANCHOR,
   formatAsCssVars,
+  formatAsSemanticTokens,
   formatAsTailwindV3,
   formatAsTailwindV4,
   generateTailwindPalette,
@@ -15,9 +16,25 @@ useToolSeo('tailwind-shades')
 const inputColor = ref('#3b82f6')
 const colorName = ref('brand')
 const anchorShade = ref<ShadeKey>(DEFAULT_ANCHOR)
-const format = ref<'v4' | 'v3' | 'css'>('v4')
+const format = ref<'v4' | 'v3' | 'css' | 'tokens'>('v4')
 
 const anchorItems = SHADE_KEYS.map(shade => ({ label: shade, value: shade }))
+
+const ROLE_ITEMS = [
+  { key: 'surface', label: 'Surface' },
+  { key: 'border', label: 'Border' },
+  { key: 'text', label: 'Text' },
+  { key: 'primary', label: 'Primary' },
+]
+
+const ROLE_DEFAULTS: Record<string, ShadeKey> = {
+  surface: '50',
+  border: '200',
+  text: '900',
+  primary: '500',
+}
+
+const roleShades = ref<Record<string, ShadeKey>>({ ...ROLE_DEFAULTS })
 
 const { copy, label, color, icon } = useCopyFeedback()
 
@@ -71,6 +88,9 @@ const codeOutput = computed(() => {
   }
   if (format.value === 'v3') {
     return formatAsTailwindV3(palette.value, name)
+  }
+  if (format.value === 'tokens') {
+    return formatAsSemanticTokens(palette.value, roleShades.value, name)
   }
   return formatAsCssVars(palette.value, name)
 })
@@ -288,6 +308,13 @@ useToolShortcuts({
               label="CSS Variables"
               @click="format = 'css'"
             />
+            <UButton
+              size="xs"
+              :variant="format === 'tokens' ? 'solid' : 'ghost'"
+              color="neutral"
+              label="Semantic Tokens"
+              @click="format = 'tokens'"
+            />
           </div>
 
           <UButton
@@ -298,6 +325,25 @@ useToolShortcuts({
             variant="subtle"
             @click="handleCopyCode"
           />
+        </div>
+
+        <!-- One shade step for each semantic role of a theme. -->
+        <div
+          v-if="format === 'tokens'"
+          class="grid grid-cols-2 gap-3 sm:grid-cols-4"
+        >
+          <UFormField
+            v-for="role in ROLE_ITEMS"
+            :key="role.key"
+            :label="role.label"
+          >
+            <USelect
+              v-model="roleShades[role.key]"
+              :items="anchorItems"
+              :aria-label="`${role.label} shade`"
+              class="font-mono text-sm w-full"
+            />
+          </UFormField>
         </div>
 
         <LazyToolEditor

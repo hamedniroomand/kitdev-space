@@ -116,3 +116,16 @@ export function formatAsCssVars(shades: TailwindShade[], colorName = 'primary'):
   const lines = shades.map(s => `  --${colorName}-${s.shade}: ${s.hex};`)
   return `:root {\n${lines.join('\n')}\n}`
 }
+
+/** Give each semantic role the color of the shade step that the map selects. */
+export function formatAsSemanticTokens(
+  shades: TailwindShade[],
+  roles: Record<string, string>,
+  colorName = 'primary',
+): string {
+  const byShade = new Map(shades.map(s => [s.shade, s.hex]))
+  const lines = Object.entries(roles)
+    .filter(([, shade]) => byShade.has(shade))
+    .map(([role, shade]) => `  --${colorName}-${role}: ${byShade.get(shade)};`)
+  return `:root {\n${lines.join('\n')}\n}`
+}
