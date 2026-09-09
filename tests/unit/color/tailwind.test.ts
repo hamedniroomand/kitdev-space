@@ -6,6 +6,35 @@ import {
   generateTailwindPalette,
 } from '#shared/utils/color/tailwind'
 
+/** The official Tailwind blue scale, for an accuracy check of the generator. */
+const TAILWIND_BLUE = {
+  500: '#3b82f6',
+  600: '#2563eb',
+  700: '#1d4ed8',
+}
+
+function toLab(hex: string): [number, number, number] {
+  const channel = (value: number) => {
+    const part = value / 255
+    return part <= 0.04045 ? part / 12.92 : ((part + 0.055) / 1.055) ** 2.4
+  }
+  const r = channel(Number.parseInt(hex.slice(1, 3), 16))
+  const g = channel(Number.parseInt(hex.slice(3, 5), 16))
+  const b = channel(Number.parseInt(hex.slice(5, 7), 16))
+  const x = (0.4124564 * r + 0.3575761 * g + 0.1804375 * b) / 0.95047
+  const y = 0.2126729 * r + 0.7151522 * g + 0.0721750 * b
+  const z = (0.0193339 * r + 0.1191920 * g + 0.9503041 * b) / 1.08883
+  const f = (value: number) => value > 0.008856 ? Math.cbrt(value) : 7.787 * value + 16 / 116
+  return [116 * f(y) - 16, 500 * (f(x) - f(y)), 200 * (f(y) - f(z))]
+}
+
+/** CIE76 color difference. A value below 2 is hard to see. */
+function deltaE(a: string, b: string): number {
+  const first = toLab(a)
+  const second = toLab(b)
+  return Math.hypot(first[0] - second[0], first[1] - second[1], first[2] - second[2])
+}
+
 describe('generateTailwindPalette', () => {
   it('generates 11 shades from hex color', () => {
     const shades = generateTailwindPalette('#3b82f6')
@@ -25,6 +54,12 @@ describe('generateTailwindPalette', () => {
     ])
     // 500 should be the input color
     expect(shades.find(s => s.shade === '500')?.hex).toBe('#3b82f6')
+  })
+
+  it('matches the official Tailwind blue values for the darker steps', () => {
+    const shades = generateTailwindPalette(TAILWIND_BLUE[500])
+    expect(deltaE(shades.find(s => s.shade === '600')!.hex, TAILWIND_BLUE[600])).toBeLessThan(2)
+    expect(deltaE(shades.find(s => s.shade === '700')!.hex, TAILWIND_BLUE[700])).toBeLessThan(2)
   })
 
   it('formats as Tailwind v4 theme CSS', () => {
@@ -71,5 +106,10 @@ describe('generateTailwindPalette', () => {
     // Darker shades should not all be identical
     const unique = new Set(darkShades)
     expect(unique.size).toBeGreaterThan(1)
+  })
+
+  it('normalizes an input that is not a lowercase hex value', () => {
+    expect(generateTailwindPalette('rgb(59, 130, 246)').find(s => s.shade === '500')?.hex)
+      .toBe('#3b82f6')
   })
 })

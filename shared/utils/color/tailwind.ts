@@ -1,4 +1,6 @@
-import { parseColor } from './parse'
+import type { Oklch } from './types'
+import { isOutOfSrgbGamut, oklchToRgb, rgbToOklch } from './oklch'
+import { parseColor, rgbToHex } from './parse'
 
 export interface TailwindShade {
   shade: string
@@ -8,101 +10,87 @@ export interface TailwindShade {
 
 export type TailwindPalette = Record<string, string>
 
-function hslToHex(h: number, s: number, l: number): string {
-  const normH = h / 360
-  const normS = s / 100
-  const normL = l / 100
+export const SHADE_KEYS = ['50', '100', '200', '300', '400', '500', '600', '700', '800', '900', '950'] as const
 
-  let r: number, g: number, b: number
+export type ShadeKey = typeof SHADE_KEYS[number]
 
-  if (normS === 0) {
-    r = g = b = normL
+export const DEFAULT_ANCHOR: ShadeKey = '500'
+
+const DEFAULT_ANCHOR_INDEX = SHADE_KEYS.indexOf(DEFAULT_ANCHOR)
+
+/**
+ * The shape of the scale, as the OKLCH form of the Tailwind blue ramp.
+ *
+ * The hue column is part of the shape: a Tailwind ramp turns the hue a few
+ * degrees between the light steps and the dark steps.
+ */
+const REFERENCE_RAMP: Oklch[] = [
+  { l: 97.05, c: 0.0142, h: 254.60 },
+  { l: 93.19, c: 0.0316, h: 255.59 },
+  { l: 88.23, c: 0.0571, h: 254.13 },
+  { l: 80.91, c: 0.0956, h: 251.81 },
+  { l: 71.37, c: 0.1434, h: 254.62 },
+  { l: 62.31, c: 0.1880, h: 259.81 },
+  { l: 54.62, c: 0.2152, h: 262.88 },
+  { l: 48.82, c: 0.2172, h: 264.38 },
+  { l: 42.45, c: 0.1809, h: 265.64 },
+  { l: 37.91, c: 0.1378, h: 265.52 },
+  { l: 28.23, c: 0.0874, h: 267.94 },
+]
+
+/** Lower the chroma until the color is inside sRGB. It keeps the lightness and the hue. */
+function fitToSrgb(color: Oklch): Oklch {
+  if (!isOutOfSrgbGamut(color)) {
+    return color
   }
-  else {
-    const hue2rgb = (p: number, q: number, t: number) => {
-      let curT = t
-      if (curT < 0)
-        curT += 1
-      if (curT > 1)
-        curT -= 1
-      if (curT < 1 / 6)
-        return p + (q - p) * 6 * curT
-      if (curT < 1 / 2)
-        return q
-      if (curT < 2 / 3)
-        return p + (q - p) * (2 / 3 - curT) * 6
-      return p
-    }
-
-    const q = normL < 0.5 ? normL * (1 + normS) : normL + normS - normL * normS
-    const p = 2 * normL - q
-    r = hue2rgb(p, q, normH + 1 / 3)
-    g = hue2rgb(p, q, normH)
-    b = hue2rgb(p, q, normH - 1 / 3)
-  }
-
-  const toHex = (x: number) => Math.round(Math.min(255, Math.max(0, x * 255))).toString(16).padStart(2, '0')
-  return `#${toHex(r)}${toHex(g)}${toHex(b)}`
-}
-
-export function generateTailwindPalette(colorInput: string): TailwindShade[] {
-  const parsed = parseColor(colorInput)
-  const { h, s, l } = parsed.hsl
-
-  const lighter = [
-    { key: '50', t: 0.95 },
-    { key: '100', t: 0.82 },
-    { key: '200', t: 0.65 },
-    { key: '300', t: 0.45 },
-    { key: '400', t: 0.22 },
-  ]
-
-  const darker = [
-    { key: '600', t: 0.16 },
-    { key: '700', t: 0.35 },
-    { key: '800', t: 0.55 },
-    { key: '900', t: 0.74 },
-    { key: '950', t: 0.88 },
-  ]
-
-  const isAchromatic = s === 0
-  const shades: TailwindShade[] = []
-
-  for (const item of lighter) {
-    const curL = l + (97 - l) * item.t
-    const curS = isAchromatic ? 0 : Math.max(15, s - 10 * item.t)
-    shades.push({
-      shade: item.key,
-      hex: hslToHex(h, curS, curL),
-      isDark: curL < 50,
-    })
-  }
-
-  shades.push({
-    shade: '500',
-    hex: parsed.hex.toLowerCase(),
-    isDark: l < 50,
-  })
-
-  for (const item of darker) {
-    let curL: number
-    if (l <= 15) {
-      curL = Math.max(0.5, l * (1 - item.t * 0.9))
+  let low = 0
+  let high = color.c
+  for (let step = 0; step < 12; step++) {
+    const middle = (low + high) / 2
+    if (isOutOfSrgbGamut({ ...color, c: middle })) {
+      high = middle
     }
     else {
-      curL = Math.max(4, l - (l - 4) * item.t)
+      low = middle
     }
-    const curS = isAchromatic
-      ? 0
-      : Math.min(100, Math.max(20, s + (item.t > 0.5 ? -15 * item.t : 5 * item.t)))
-    shades.push({
-      shade: item.key,
-      hex: hslToHex(h, curS, curL),
-      isDark: curL < 50,
-    })
   }
+  return { ...color, c: low }
+}
 
-  return shades
+/**
+ * Generate a full 50 to 950 scale from one color.
+ *
+ * The color of the anchor step stays exact. The other steps follow the
+ * reference ramp: the lightness moves to the same fraction of the distance to
+ * white or to black, and the chroma keeps the same ratio to the anchor.
+ */
+export function generateTailwindPalette(
+  colorInput: string,
+  anchorShade: ShadeKey = DEFAULT_ANCHOR,
+): TailwindShade[] {
+  const parsed = parseColor(colorInput)
+  const base = rgbToOklch(parsed.rgb)
+  const requested = SHADE_KEYS.indexOf(anchorShade)
+  const anchorIndex = requested < 0 ? DEFAULT_ANCHOR_INDEX : requested
+  const anchor = REFERENCE_RAMP[anchorIndex]!
+
+  return SHADE_KEYS.map((shade, index) => {
+    if (index === anchorIndex) {
+      return { shade, hex: parsed.hex.toLowerCase(), isDark: base.l < 60 }
+    }
+
+    const step = REFERENCE_RAMP[index]!
+    const lightness = step.l >= anchor.l
+      ? base.l + (100 - base.l) * ((step.l - anchor.l) / (100 - anchor.l))
+      : base.l * (step.l / anchor.l)
+    const color = fitToSrgb({
+      l: lightness,
+      c: anchor.c === 0 ? 0 : base.c * (step.c / anchor.c),
+      h: (base.h + step.h - anchor.h + 360) % 360,
+    })
+
+    return { shade, hex: rgbToHex(oklchToRgb(color)), isDark: lightness < 60 }
+  })
 }
 
 export function formatAsTailwindV4(shades: TailwindShade[], colorName = 'primary'): string {
