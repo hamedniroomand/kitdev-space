@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { decryptAesGcm, encryptAesGcm } from '#shared/utils/crypto/aes'
+import { base64ToBytes, decryptAesGcm, encryptAesGcm } from '#shared/utils/crypto/aes'
 
 useToolSeo('aes')
 
@@ -15,6 +15,17 @@ const errorMsg = ref<string | null>(null)
 const loading = ref(false)
 
 const { copy, label, color, icon } = useCopyFeedback()
+const { downloadBlob } = useDownload()
+
+const canDownload = computed(() => mode.value === 'encrypt' && Boolean(output.value))
+
+function handleDownload() {
+  if (!canDownload.value) {
+    return
+  }
+  const bytes = base64ToBytes(output.value)
+  downloadBlob('ciphertext.enc', new Blob([bytes as unknown as BlobPart], { type: 'application/octet-stream' }))
+}
 
 async function handleRun() {
   if (!input.value.trim() || !password.value) {
@@ -64,6 +75,29 @@ function handleClear() {
   errorMsg.value = null
 }
 
+const NODE_SNIPPET = `import { createDecipheriv, pbkdf2Sync } from 'node:crypto'
+import { readFileSync } from 'node:fs'
+
+const env = readFileSync(process.argv[2])
+const key = pbkdf2Sync(process.argv[3], env.subarray(1, 17), 100000, 32, 'sha256')
+const decipher = createDecipheriv('aes-256-gcm', key, env.subarray(17, 29))
+decipher.setAuthTag(env.subarray(env.length - 16))
+const body = env.subarray(29, env.length - 16)
+process.stdout.write(Buffer.concat([decipher.update(body), decipher.final()]).toString('utf8'))`
+
+const NODE_RUN = 'node decrypt.mjs ciphertext.enc \'your password\''
+
+const OPENSSL_SNIPPET = `PASSWORD='your password'
+SIZE=$(wc -c ciphertext.enc | awk '{print $1}')
+SALT=$(dd if=ciphertext.enc bs=1 skip=1 count=16 2>/dev/null | xxd -p -c 16)
+IV=$(dd if=ciphertext.enc bs=1 skip=17 count=12 2>/dev/null | xxd -p -c 12)
+dd if=ciphertext.enc bs=1 skip=29 count=$((SIZE - 45)) of=cipher.bin 2>/dev/null
+
+KEY=$(openssl kdf -keylen 32 -kdfopt digest:SHA256 -kdfopt pass:"$PASSWORD" \\
+  -kdfopt hexsalt:"$SALT" -kdfopt iter:100000 PBKDF2 | tr -d ':' | tr 'A-Z' 'a-z')
+
+openssl enc -aes-256-ctr -d -K "$KEY" -iv "\${IV}00000002" -in cipher.bin`
+
 useToolShortcuts({
   onRun: handleRun,
   onCopy: handleCopy,
@@ -106,6 +140,15 @@ useToolShortcuts({
             variant="subtle"
             :disabled="!output"
             @click="handleCopy"
+          />
+          <UButton
+            label="Download .enc"
+            icon="i-lucide-download"
+            size="xs"
+            color="neutral"
+            variant="subtle"
+            :disabled="!canDownload"
+            @click="handleDownload"
           />
           <UButton
             label="Clear"
@@ -202,6 +245,30 @@ useToolShortcuts({
           </p>
           <p>
             The strength comes from the password. A short password gives weak encryption, whatever the algorithm. Use the ID & Secret Generator to make a strong passphrase.
+          </p>
+        </div>
+      </ToolDocs>
+
+      <ToolDocs
+        title="Decrypt a .enc file on the command line"
+        class="mt-10"
+      >
+        <div class="space-y-4 text-muted">
+          <p>
+            The <strong>Download .enc</strong> button writes the raw envelope bytes. It does not write the Base64 text. Each command below was run against the output of this tool.
+          </p>
+          <p>
+            Node.js gives the full check. It reads the salt, the IV, and the tag from the envelope, and it stops with an error when the tag does not match. Save this file as <code>decrypt.mjs</code>:
+          </p>
+          <pre class="overflow-x-auto rounded-md border border-default bg-elevated/40 p-3 font-mono text-xs text-highlighted">{{ NODE_SNIPPET }}</pre>
+          <p>Then run it:</p>
+          <pre class="overflow-x-auto rounded-md border border-default bg-elevated/40 p-3 font-mono text-xs text-highlighted">{{ NODE_RUN }}</pre>
+          <p>
+            OpenSSL needs two steps. The <code>openssl enc</code> command refuses an AEAD cipher and prints <code>enc: AEAD ciphers not supported</code>. Step one derives the key with PBKDF2. Step two decrypts with AES-256-CTR, because GCM builds its keystream with CTR. The counter of the first data block of GCM is 2, so the CTR command takes the 12-byte IV plus <code>00000002</code>.
+          </p>
+          <pre class="overflow-x-auto rounded-md border border-default bg-elevated/40 p-3 font-mono text-xs text-highlighted">{{ OPENSSL_SNIPPET }}</pre>
+          <p>
+            The OpenSSL flow recovers the text, but it does not check the tag. Use the Node.js command when you need the integrity check.
           </p>
         </div>
         <RelatedTools

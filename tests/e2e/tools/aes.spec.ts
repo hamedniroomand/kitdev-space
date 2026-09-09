@@ -11,4 +11,8 @@ test('encrypts text using AES-GCM', { tag: '@smoke' }, async ({ page }) => {
   await expect(output).not.toBeEmpty()
   const ciphertext = await output.textContent()
   expect(ciphertext?.trim().length).toBeGreaterThan(20)
+
+  const download = page.waitForEvent('download')
+  await page.getByRole('button', { name: 'Download .enc' }).click()
+  expect((await download).suggestedFilename()).toBe('ciphertext.enc')
 })
