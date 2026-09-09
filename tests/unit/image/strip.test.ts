@@ -190,6 +190,67 @@ describe('stripImageMetadata with a CMYK JPEG', () => {
   })
 })
 
+describe('stripImageMetadata with the GPS option', () => {
+  it('removes the GPS block of a JPEG and keeps the camera settings', () => {
+    const result = stripImageMetadata(buildJpeg(), { exif: 'gps' })!
+    const after = readImageMetadata(result.bytes)
+
+    expect(result.removed).toContain('GPS')
+    expect(after.gps).toBeNull()
+    expect(after.blocks).toContain('EXIF')
+    expect(after.tags.find(item => item.name === 'Make')?.value).toBe('TestCam')
+    expect(after.tags.find(item => item.name === 'Model')?.value).toBe('Model X')
+    expect(after.tags.find(item => item.name === 'ISO')?.value).toBe('400')
+    expect(after.tags.some(item => item.group === 'GPS')).toBe(false)
+  })
+
+  it('removes the GPS block of a PNG and writes a valid chunk CRC', () => {
+    const result = stripImageMetadata(buildPng(), { exif: 'gps' })!
+    const after = readImageMetadata(result.bytes)
+
+    expect(after.gps).toBeNull()
+    expect(after.blocks).toContain('EXIF')
+    expect(after.tags.find(item => item.name === 'Make')?.value).toBe('TestCam')
+    expect(String.fromCharCode(...result.bytes)).toContain('eXIf')
+  })
+
+  it('removes the GPS block of a WebP and keeps the EXIF chunk', () => {
+    const result = stripImageMetadata(buildWebp(), { exif: 'gps' })!
+    const after = readImageMetadata(result.bytes)
+
+    expect(after.gps).toBeNull()
+    expect(after.blocks).toEqual(['EXIF'])
+    expect(after.tags.find(item => item.name === 'Make')?.value).toBe('TestCam')
+    expect(result.removed).toContain('XMP')
+  })
+})
+
+describe('stripImageMetadata with the block options off', () => {
+  it('keeps the comment of a JPEG', () => {
+    const result = stripImageMetadata(buildJpeg(), { comments: false })!
+    const after = readImageMetadata(result.bytes)
+
+    expect(after.tags.find(item => item.name === 'Comment')?.value).toBe('private note')
+    expect(result.removed).toContain('EXIF')
+  })
+
+  it('keeps the XMP packet of a WebP', () => {
+    const result = stripImageMetadata(buildWebp(), { xmp: false })!
+    const after = readImageMetadata(result.bytes)
+
+    expect(after.blocks).toEqual(['XMP'])
+    expect(result.removed).toEqual(['EXIF'])
+  })
+
+  it('keeps the text chunk of a PNG', () => {
+    const result = stripImageMetadata(buildPng(), { comments: false })!
+    const after = readImageMetadata(result.bytes)
+
+    expect(after.tags.find(item => item.name === 'Author')?.value).toBe('Jane')
+    expect(result.removed).toEqual(['EXIF'])
+  })
+})
+
 describe('stripImageMetadata with another container', () => {
   it('returns null', () => {
     expect(stripImageMetadata(new Uint8Array([0x47, 0x49, 0x46, 0x38, 0x39, 0x61]))).toBeNull()

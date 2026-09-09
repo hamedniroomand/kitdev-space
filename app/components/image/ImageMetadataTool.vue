@@ -37,12 +37,21 @@ interface CleanResult {
   name: string
 }
 
+const EXIF_ITEMS = [
+  { label: 'All EXIF', value: 'all' as const },
+  { label: 'GPS only', value: 'gps' as const },
+]
+
 const file = ref<File | null>(null)
 const meta = ref<ImageMetadata | null>(null)
 /** True when the file is set but the browser parser does not know the container. */
 const unreadable = ref(false)
 const cleaned = ref<CleanResult | null>(null)
 const showAllTags = ref(false)
+const stripExif = ref<'all' | 'gps'>('all')
+const stripXmp = ref(true)
+const stripIptc = ref(true)
+const stripComments = ref(true)
 
 const { status, error, run, reset } = useTool<string>()
 const { downloadBlob, downloadText } = useDownload()
@@ -100,7 +109,13 @@ async function handleStrip() {
 
   await run(async () => {
     const bytes = new Uint8Array(await file.value!.arrayBuffer())
-    const result = stripImageMetadata(bytes, { keepOrientation: true })
+    const result = stripImageMetadata(bytes, {
+      exif: stripExif.value,
+      xmp: stripXmp.value,
+      iptc: stripIptc.value,
+      comments: stripComments.value,
+      keepOrientation: true,
+    })
 
     if (!result) {
       throw new Error('This format has no in-browser path. Use the server option.')
@@ -118,7 +133,7 @@ async function handleStrip() {
       name: `clean-${file.value!.name}`,
     }
     return 'cleaned'
-  }, 'The metadata could not be removed.', { runLocation: 'browser' })
+  }, 'The metadata could not be removed.', { runLocation: 'browser', option: stripExif.value })
 }
 
 async function handleServerClean() {
@@ -362,6 +377,40 @@ function handleClear() {
             </tbody>
           </table>
         </div>
+      </section>
+
+      <section
+        v-if="inPlace"
+        class="space-y-3 rounded-md border border-default p-4"
+      >
+        <h2 class="text-sm font-medium text-highlighted">
+          Blocks to remove
+        </h2>
+        <div class="grid gap-3 sm:grid-cols-2">
+          <UFormField
+            label="EXIF tags"
+            hint="GPS only keeps the camera settings."
+          >
+            <USelect
+              v-model="stripExif"
+              :items="EXIF_ITEMS"
+              class="w-full"
+            />
+          </UFormField>
+          <UFormField label="XMP packet">
+            <USwitch v-model="stripXmp" />
+          </UFormField>
+          <UFormField label="IPTC block">
+            <USwitch v-model="stripIptc" />
+          </UFormField>
+          <UFormField label="Comments and text">
+            <USwitch v-model="stripComments" />
+          </UFormField>
+        </div>
+        <p class="text-xs text-muted">
+          The browser option always keeps the ICC color profile and the orientation marker, so the
+          image keeps its color and its rotation. These choices apply to the browser option only.
+        </p>
       </section>
 
       <ToolActions>

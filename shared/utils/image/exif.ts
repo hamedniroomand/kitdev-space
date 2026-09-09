@@ -49,6 +49,11 @@ const TYPE_SIZES: Record<number, number> = {
   12: 8,
 }
 
+/** The byte count of a TIFF entry value. Zero when the type is not known. */
+export function tiffValueSize(type: number, count: number): number {
+  return (TYPE_SIZES[type] ?? 0) * count
+}
+
 function ascii(view: DataView, offset: number, length: number): string {
   let out = ''
   for (let index = 0; index < length; index += 1) {
