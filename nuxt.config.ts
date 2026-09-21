@@ -6,6 +6,7 @@ function nitroPreset(): string {
   return process.env.NITRO_PRESET ?? (process.env.VERCEL ? 'vercel' : 'bun')
 }
 
+const umamiHostUrl = process.env.NUXT_PUBLIC_UMAMI_HOST_URL || ''
 const sentryDsn = process.env.NUXT_PUBLIC_SENTRY_DSN || ''
 const sentryEnvironment = process.env.VERCEL_ENV || process.env.NODE_ENV || 'development'
 const sentryOrigin = sentryDsn ? new URL(sentryDsn).origin : ''
@@ -163,6 +164,7 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
+      umamiHostUrl,
       sentry: {
         dsn: sentryDsn,
         environment: sentryEnvironment,
@@ -293,7 +295,7 @@ export default defineNuxtConfig({
     registry: {
       umamiAnalytics: {
         websiteId: '',
-        hostUrl: '',
+        hostUrl: umamiHostUrl,
         partytown: true,
         trigger: 'onNuxtReady',
       },
