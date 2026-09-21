@@ -6,7 +6,6 @@ function nitroPreset(): string {
   return process.env.NITRO_PRESET ?? (process.env.VERCEL ? 'vercel' : 'bun')
 }
 
-const googleAnalyticsId = process.env.NUXT_PUBLIC_GOOGLE_ANALYTICS_ID || ''
 const sentryDsn = process.env.NUXT_PUBLIC_SENTRY_DSN || ''
 const sentryEnvironment = process.env.VERCEL_ENV || process.env.NODE_ENV || 'development'
 const sentryOrigin = sentryDsn ? new URL(sentryDsn).origin : ''
@@ -37,6 +36,8 @@ const prerenderRoutes = [
  * is not possible and inline scripts need `'unsafe-inline'`. The policy still
  * blocks plugins, framing, base-tag rewrites, and unexpected network egress.
  * `'wasm-unsafe-eval'` lets sql.js compile its WebAssembly module.
+ * `'unsafe-eval'` lets Partytown run third-party scripts in its worker
+ * with `new Function` (`partytown-ww-sw.js`).
  */
 const contentSecurityPolicy = [
   'default-src \'self\'',
@@ -47,7 +48,7 @@ const contentSecurityPolicy = [
   'img-src \'self\' data: blob: https:',
   'font-src \'self\' data: https://fonts.gstatic.com',
   'style-src \'self\' \'unsafe-inline\'',
-  'script-src \'self\' \'unsafe-inline\' \'wasm-unsafe-eval\' https://www.googletagmanager.com https://va.vercel-scripts.com',
+  'script-src \'self\' \'unsafe-inline\' \'unsafe-eval\' \'wasm-unsafe-eval\' https://www.googletagmanager.com https://va.vercel-scripts.com',
   `connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://www.googletagmanager.com https://va.vercel-scripts.com${sentryOrigin ? ` ${sentryOrigin}` : ''}`,
   'worker-src \'self\' blob:',
   'upgrade-insecure-requests',
@@ -100,6 +101,7 @@ export default defineNuxtConfig({
     '@vueuse/nuxt',
     'nuxt-llms',
     '@sentry/nuxt/module',
+    '@nuxtjs/partytown',
   ],
 
   /**
@@ -161,7 +163,6 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      googleAnalyticsId,
       sentry: {
         dsn: sentryDsn,
         environment: sentryEnvironment,
@@ -287,22 +288,17 @@ export default defineNuxtConfig({
     },
   },
 
-  scripts: googleAnalyticsId
-    ? {
-        registry: {
-          googleAnalytics: {
-            id: googleAnalyticsId,
-            trigger: { idleTimeout: 3500 },
-            defaultConsent: {
-              ad_storage: 'denied',
-              ad_user_data: 'denied',
-              ad_personalization: 'denied',
-              analytics_storage: 'granted',
-            },
-          },
-        },
-      }
-    : {},
+  scripts: {
+    privacy: { ip: true, language: true, hardware: true },
+    registry: {
+      umamiAnalytics: {
+        websiteId: '',
+        hostUrl: '',
+        partytown: true,
+        trigger: 'onNuxtReady',
+      },
+    },
+  },
 
   sitemap: {
     exclude: [
