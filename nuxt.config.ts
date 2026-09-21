@@ -164,7 +164,6 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      umamiHostUrl,
       sentry: {
         dsn: sentryDsn,
         environment: sentryEnvironment,
@@ -294,7 +293,6 @@ export default defineNuxtConfig({
     privacy: { ip: true, language: true, hardware: true },
     registry: {
       umamiAnalytics: {
-        websiteId: '',
         hostUrl: umamiHostUrl,
         partytown: true,
         trigger: 'onNuxtReady',
