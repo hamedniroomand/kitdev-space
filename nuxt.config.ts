@@ -6,6 +6,7 @@ function nitroPreset(): string {
   return process.env.NITRO_PRESET ?? (process.env.VERCEL ? 'vercel' : 'bun')
 }
 
+const umamiWebsiteId = process.env.NUXT_PUBLIC_SCRIPTS_UMAMI_ANALYTICS_WEBSITE_ID || ''
 const umamiHostUrl = process.env.NUXT_PUBLIC_UMAMI_HOST_URL || ''
 const sentryDsn = process.env.NUXT_PUBLIC_SENTRY_DSN || ''
 const sentryEnvironment = process.env.VERCEL_ENV || process.env.NODE_ENV || 'development'
@@ -37,8 +38,8 @@ const prerenderRoutes = [
  * is not possible and inline scripts need `'unsafe-inline'`. The policy still
  * blocks plugins, framing, base-tag rewrites, and unexpected network egress.
  * `'wasm-unsafe-eval'` lets sql.js compile its WebAssembly module.
- * `'unsafe-eval'` lets Partytown run third-party scripts in its worker
- * with `new Function` (`partytown-ww-sw.js`).
+ * Umami needs no host here: Nuxt Scripts serves its script and its events
+ * from `/_scripts` on this origin.
  */
 const contentSecurityPolicy = [
   'default-src \'self\'',
@@ -49,8 +50,8 @@ const contentSecurityPolicy = [
   'img-src \'self\' data: blob: https:',
   'font-src \'self\' data: https://fonts.gstatic.com',
   'style-src \'self\' \'unsafe-inline\'',
-  'script-src \'self\' \'unsafe-inline\' \'unsafe-eval\' \'wasm-unsafe-eval\' https://www.googletagmanager.com https://va.vercel-scripts.com',
-  `connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://www.googletagmanager.com https://va.vercel-scripts.com${sentryOrigin ? ` ${sentryOrigin}` : ''}`,
+  'script-src \'self\' \'unsafe-inline\' \'wasm-unsafe-eval\' https://va.vercel-scripts.com',
+  `connect-src 'self' https://va.vercel-scripts.com${sentryOrigin ? ` ${sentryOrigin}` : ''}`,
   'worker-src \'self\' blob:',
   'upgrade-insecure-requests',
 ].join('; ')
@@ -102,7 +103,6 @@ export default defineNuxtConfig({
     '@vueuse/nuxt',
     'nuxt-llms',
     '@sentry/nuxt/module',
-    '@nuxtjs/partytown',
   ],
 
   /**
@@ -297,13 +297,17 @@ export default defineNuxtConfig({
 
   scripts: {
     privacy: { ip: true, language: true, hardware: true },
-    registry: {
-      umamiAnalytics: {
-        hostUrl: umamiHostUrl,
-        partytown: true,
-        trigger: 'onNuxtReady',
-      },
-    },
+    // Register Umami only when a website ID is set, so an empty ID loads no script.
+    // Do not put `websiteId` here: the module reads it from the environment.
+    // An empty `hostUrl` sends the events through the `/_scripts` proxy.
+    registry: umamiWebsiteId
+      ? {
+          umamiAnalytics: {
+            hostUrl: umamiHostUrl,
+            trigger: 'onNuxtReady',
+          },
+        }
+      : {},
   },
 
   sitemap: {
