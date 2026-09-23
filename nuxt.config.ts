@@ -201,6 +201,12 @@ export default defineNuxtConfig({
 
   nitro: {
     preset: nitroPreset(),
+    // Nitro defaults esbuild to es2019, which rejects BigInt literals such as `1n`.
+    esbuild: {
+      options: {
+        target: 'es2022',
+      },
+    },
     prerender: {
       crawlLinks: true,
       routes: prerenderRoutes,
