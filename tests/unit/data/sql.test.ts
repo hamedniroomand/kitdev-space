@@ -1,5 +1,6 @@
+import { supportedDialects } from 'sql-formatter'
 import { describe, expect, it } from 'vitest'
-import { formatSql, SQL_DIALECT_OPTIONS, supportedDialects, validateSql } from '#shared/utils/data/sql'
+import { formatSql, SQL_DIALECT_OPTIONS, validateSql } from '#shared/utils/data/sql'
 
 describe('formatSql', () => {
   it('formats simple SELECT query with default options', () => {
