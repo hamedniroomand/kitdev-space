@@ -22,8 +22,7 @@ This checklist records security controls for KitDev Space.
    value defeats every limit.
 9. Do not store tool input or output.
 10. Analytics events may include the tool id only. Do not include input or output.
-10a. Google Analytics must not receive tool input or output. Ads consent stays
-   denied by default.
+10a. Umami must not receive tool input or output. Umami sets no cookies.
 11. Image and archive uploads must stay in memory. Do not write user files to disk.
 12. Pass user image bytes into `Bun.Image`. Do not pass user-controlled
    filesystem paths.
@@ -56,7 +55,7 @@ This checklist records security controls for KitDev Space.
 | Safe fetch | `server/utils/network/http.ts` |
 | Security response headers and CSP | `nuxt.config.ts` (`routeRules`) |
 | Analytics stub | `app/composables/useToolAnalytics.ts` |
-| Google Analytics (tool id only) | `app/composables/useToolAnalytics.ts`, `app/plugins/google-analytics.client.ts` |
+| Umami analytics (tool id only) | `app/composables/useToolAnalytics.ts`, `app/plugins/umami-analytics.client.ts` |
 | Image size limit | `server/utils/image/limits.ts` |
 | Image SVG rasterize | `server/utils/image/svg.ts` |
 | Image upload reader | `server/utils/image/read-upload.ts` |

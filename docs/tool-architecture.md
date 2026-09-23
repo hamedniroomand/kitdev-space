@@ -119,14 +119,18 @@ from a plain input calls `reportInput('url')` in its run handler.
 The event names live in the `ToolAnalyticsEvent` union in `useToolAnalytics.ts`, and the
 parameters of each event in `ToolAnalyticsParams`. Add an event in both places.
 
-GA4 needs each parameter registered once as a custom dimension or metric. Event-scoped dimensions:
-`tool_id`, `tool_category`, `run_location`, `tool_variant_of`, `error_kind`, `source`, `method`,
-`file_format`, `option`, `input_bytes_bucket`, `query_length`, `target`, `cta`. Event-scoped metric:
-`duration_ms`. User-scoped dimension: `color_mode`.
+Umami receives each event with `umami.track(event, data)`. The parameters show as event data on
+the event, so they need no registration. The session also carries `color_mode`, from
+`umami-analytics.client.ts`.
 
-Internal traffic: open `/?internal=1` once in a browser to mark it. Every event from that browser
-then carries `traffic_type: internal`, which the GA4 internal traffic filter drops. `/?internal=0`
-clears the mark.
+Umami records the page views itself, also on client-side navigation. Do not send a page view event.
+
+Set `NUXT_PUBLIC_SCRIPTS_UMAMI_ANALYTICS_WEBSITE_ID` at build time. The pages are prerendered, so a
+change needs a new build. When the ID is empty, the site loads no Umami script and sends no event.
+
+Internal traffic: open `/?internal=1` once in a browser to mark it. The mark sets
+`umami.disabled` in local storage, and Umami then sends no event from that browser.
+`/?internal=0` clears the mark.
 
 ## Page structure
 

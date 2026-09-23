@@ -60,12 +60,12 @@ export type ToolAnalyticsPayload<E extends ToolAnalyticsEvent> = ToolAnalyticsPa
  * An event carries a tool id, the registry facts about that tool, and the
  * parameters of `ToolAnalyticsParams`. It never carries input, output, a file
  * name, a URL, a search query, or an error message.
- * @see https://scripts.nuxt.com/scripts/google-analytics
+ * @see https://scripts.nuxt.com/scripts/umami-analytics
  */
 export function useToolAnalytics() {
   const config = useRuntimeConfig()
-  const gaId = String(config.public.googleAnalyticsId || '')
-  const analytics = gaId ? useScriptGoogleAnalytics() : null
+  const umamiId = String(config.public.scripts?.umamiAnalytics?.websiteId || '')
+  const analytics = umamiId ? useScriptUmamiAnalytics() : null
 
   const currentToolId = useCurrentToolId()
 
@@ -101,7 +101,7 @@ export function useToolAnalytics() {
       return
     }
 
-    analytics.proxy.gtag('event', event, data)
+    analytics.proxy.track(event, data)
   }
 
   return { track }
