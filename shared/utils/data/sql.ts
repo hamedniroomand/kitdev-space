@@ -4,11 +4,10 @@ import type { Parser, SyntaxNodeRef } from '@lezer/common'
 import type { SqlLanguage } from 'sql-formatter'
 import { MSSQL, MySQL, PostgreSQL, sql, SQLite } from '@codemirror/lang-sql'
 import { linter } from '@codemirror/lint'
-import { format, supportedDialects } from 'sql-formatter'
+import { format } from 'sql-formatter'
 import { DataError, positionToLineColumn } from './errors'
 
 export type SqlDialect = SqlLanguage
-export { supportedDialects }
 
 export const SQL_DIALECT_OPTIONS: Array<{ label: string, value: SqlDialect }> = [
   { label: 'Standard SQL', value: 'sql' },
