@@ -1,6 +1,6 @@
-# Tool architecture
+# Architecture
 
-Rules for a new tool or a change to a tool in the hub.
+The rules for a new tool or a change to a tool.
 
 ## Where the work runs
 

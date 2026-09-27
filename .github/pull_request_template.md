@@ -13,4 +13,4 @@
 - [ ] The work runs in the browser, or the pull request tells why it needs the server.
 - [ ] A tool that reads a private file does not upload it.
 - [ ] New pure logic in `shared/utils/` has a unit test.
-- [ ] The prose follows `docs/writing-rules.md`.
+- [ ] The prose follows the writing style in `CONTRIBUTING.md`.

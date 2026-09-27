@@ -1,6 +1,6 @@
-# Security Baseline
+# Security controls
 
-This checklist records security controls for KitDev Space.
+The security rules for code in this repository, and where each control lives. To report a vulnerability, read [SECURITY.md](../SECURITY.md).
 
 ## Rules
 

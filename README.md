@@ -67,7 +67,7 @@ bun run preview
 | `app/components/` | Shared components, such as the tool frame and the editors |
 | `shared/utils/` | Pure logic that the browser and the server share, with the tool registry in `tools.ts` |
 | `server/api/` | The routes for work that needs the server |
-| `docs/` | The rules for tools, writing, accessibility, and security |
+| `docs/` | The architecture and the security controls |
 
 ## Contributing
 
