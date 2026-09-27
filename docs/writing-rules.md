@@ -21,9 +21,9 @@ Rules:
 - No abstractions that weren't explicitly requested.
 - No new dependency if it can be avoided.
 - No boilerplate nobody asked for.
-- Deletion over addition. Boring over clever. Fewest files possible.
+- Deletion over addition. Boring over clever. Do not add a file that the task does not need.
 - Shortest working diff wins, but only once you understand the problem. The smallest change in the wrong place isn't lazy, it's a second bug.
-- Question complex requests: "Do you actually need X, or does Y cover it?"
+- When a request adds a dependency or an abstraction, ask if a smaller solution covers it: "Do you actually need X, or does Y cover it?"
 - Pick the edge-case-correct option when two stdlib approaches are the same size, lazy means less code, not the flimsier algorithm.
 - Mark deliberate simplifications that cut a real corner with a known ceiling (global lock, O(n²) scan, naive heuristic) with a `ponytail:` comment naming the ceiling and upgrade path.
 - Use ASD-STE100 for all technical English.
@@ -33,7 +33,7 @@ Rules:
 - Use common words.
 - Avoid idioms.
 - Avoid unnecessary words.
-- Do not add comments unless needed. If the code is clear, a comment is not required. Add a comment only to explain an edge case or something that is not obvious.
+- Add a comment only to explain an edge case or behavior that is not obvious.
 - Use the same term for the same concept.
 - Use "user" for a person who uses the product.
 - Use "tool" for a KitDev Space utility.
@@ -48,4 +48,4 @@ Rules:
 - Use "download" for file output.
 - Do not use marketing language in technical documentation.
 - Code syntax, identifiers, API names, and library names do not need to follow ASD-STE100.
-- Breakdown files to unit parts. components, utilities, composables and all codes must be follow clean code and unit structure.
+- Give each new component, utility, and composable one concern. Apply this rule only to code that the task creates or changes. Do not split other code.

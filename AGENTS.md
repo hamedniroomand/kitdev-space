@@ -1,21 +1,15 @@
-Write in ASD-STE100.
+Write all technical English in ASD-STE100.
 
-Follow `docs/writing-rules.md` for all human-readable technical English.
+Follow `docs/writing-rules.md` for all code and all human-readable technical English.
 
 Follow `docs/tool-architecture.md` for every tool in the hub. It states where the work runs, how
 the registry drives the page copy, and how analytics is wired.
 
 ### VueUse First
 
-Use VueUse before writing custom Vue composables or utility logic.
+Use a VueUse composable or utility when one meets the requirement.
 
-When you need functionality in a Vue component, first check if VueUse provides a suitable composable or utility.
-
-Prefer an existing VueUse solution when it meets the requirement.
-
-Do not create a custom composable when VueUse already provides the required functionality.
-
-If VueUse does not provide a suitable solution, implement the smallest custom solution that meets the requirement.
+Write custom code only when no VueUse function meets it. Then write the smallest solution that works.
 
 ### Icon Rules
 
