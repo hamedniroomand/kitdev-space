@@ -12,7 +12,7 @@ Open an issue on GitHub. Give these details:
 - The browser and the operating system.
 
 Do not open a public issue for a security problem. Use the "Report a vulnerability" form on the
-Security tab of the repository instead.
+Security tab of the repository instead. Read [SECURITY.md](SECURITY.md) for the details.
 
 ## Send a change
 

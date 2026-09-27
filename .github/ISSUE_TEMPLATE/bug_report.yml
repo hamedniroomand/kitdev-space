@@ -1,0 +1,39 @@
+name: Bug report
+description: Report a tool that does not work correctly.
+labels: [bug]
+body:
+  - type: input
+    id: url
+    attributes:
+      label: Page URL
+      description: The URL of the tool page.
+      placeholder: https://kitdev.space/...
+    validations:
+      required: true
+  - type: textarea
+    id: input
+    attributes:
+      label: Input
+      description: The input that caused the problem. Remove private data first.
+      render: text
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected result
+      description: What you expected the tool to do.
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual result
+      description: What the tool did. Add the error text or a screenshot, if you have one.
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Browser and operating system
+      placeholder: Chrome 140 on macOS 26
+    validations:
+      required: true
