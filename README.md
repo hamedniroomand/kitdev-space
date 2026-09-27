@@ -1,78 +1,53 @@
 # KitDev Space
 
+[![CI](https://github.com/hamedniroomand/kitdev-space/actions/workflows/ci.yml/badge.svg)](https://github.com/hamedniroomand/kitdev-space/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 Developer tools that run in the browser. Convert, inspect, and clean data without an upload.
 
-Live site: [kitdev.space](https://kitdev.space)
+**[kitdev.space](https://kitdev.space)**
 
-## What it is
+The hub has JSON, YAML, TOML, and XML converters, a SQLite studio, an EXIF remover, hash and ID
+generators, DNS and TLS inspectors, and more. The work runs in the browser. A tool calls the server
+only when the browser cannot do the work, such as a DNS lookup. Each page states where its work
+runs.
 
-A hub of small tools for people who build software: JSON, YAML, TOML, and XML converters, a
-SQLite studio, an EXIF viewer and remover, an image cropper, hash and ID generators, DNS and TLS
-inspectors, and more. Every tool has one page, one job, and prose that explains it.
+Built with [Nuxt 4](https://nuxt.com), [Nuxt UI](https://ui.nuxt.com), and [Bun](https://bun.sh).
+The pages are prerendered, and the server routes run on Vercel.
 
-The rule for every tool: run the work in the browser. A tool calls the server only when the
-browser cannot do the work, such as a DNS lookup, a TLS handshake, or an AVIF encode. A tool that
-reads a private file never uploads it. Each page states where its work runs.
-
-## Stack
-
-- [Nuxt 4](https://nuxt.com) with [Nuxt UI](https://ui.nuxt.com) and Tailwind CSS
-- [Bun](https://bun.sh) for the runtime, the package manager, the test runner, and the server tools
-- CodeMirror for the editors, sql.js for SQLite in the browser
-- Every page is prerendered. The server routes run on Vercel.
-
-## Setup
+## Development
 
 Bun 1.4 or later is required.
 
 ```bash
 bun install
-cp .env.example .env
-```
-
-The `.env` file is optional. It holds the Umami settings, the OG image secret, and the Sentry
-settings. All are empty by default, and each feature stays off until its value is set. The Sentry
-auth token is needed at build time only, to upload source maps, so it belongs in the Vercel build
-environment and never in the browser.
-
-## Development
-
-```bash
 bun run dev
 ```
 
-## Tests
+`.env` is optional. Copy `.env.example` to enable analytics, error monitoring, or the OG image
+secret. Each feature stays off while its value is empty.
 
 ```bash
-bun run test            # unit tests with Vitest, server tests with bun test
-bunx playwright install chromium
-bun run test:e2e        # builds, then runs the browser tests with Playwright
-bun run test:e2e:run    # runs the browser tests against the last build
 bun run lint
 bun run typecheck
-```
-
-## Production
-
-```bash
-bun run build
-bun run preview
+bun run test            # Vitest and bun test
+bun run test:e2e        # build, then Playwright (run `bunx playwright install chromium` once)
+bun run build           # production build; `bun run preview` serves it
 ```
 
 ## Project layout
 
 | Path | Holds |
 | --- | --- |
-| `app/pages/hub/` | One page per tool, grouped by lab |
+| `app/pages/hub/` | One page per tool, grouped by category |
 | `app/components/` | Shared components, such as the tool frame and the editors |
-| `shared/utils/` | Pure logic that the browser and the server share, with the tool registry in `tools.ts` |
-| `server/api/` | The routes for work that needs the server |
-| `docs/` | The architecture and the security controls |
+| `shared/utils/` | Logic for the browser and the server, and the tool registry in `tools.ts` |
+| `server/api/` | Routes for work that needs the server |
+| `docs/` | [Architecture](docs/architecture.md) and [security controls](docs/security-controls.md) |
 
 ## Contributing
 
-Read [CONTRIBUTING.md](CONTRIBUTING.md). It says how to report a problem, how to send a change,
-and which rules a tool must follow.
+Read [CONTRIBUTING.md](CONTRIBUTING.md). To report a vulnerability, read [SECURITY.md](SECURITY.md).
 
 ## License
 
