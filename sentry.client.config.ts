@@ -15,7 +15,6 @@ Sentry.init({
   dsn,
   enabled: Boolean(dsn),
   environment,
-  sendDefaultPii: false,
   tracesSampleRate: 0,
   tunnel: '/tunnel',
   ignoreErrors: [

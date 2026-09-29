@@ -14,7 +14,6 @@ Sentry.init({
   dsn,
   enabled: Boolean(dsn),
   environment: process.env.VERCEL_ENV || process.env.NODE_ENV || 'development',
-  sendDefaultPii: false,
   tracesSampleRate: 0,
   beforeSend(event) {
     if (event.request) {
