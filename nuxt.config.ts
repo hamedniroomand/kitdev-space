@@ -126,7 +126,6 @@ export default defineNuxtConfig({
     sourcemaps: {
       filesToDeleteAfterUpload: ['.*/**/*.map'],
     },
-    autoInjectServerSentry: 'top-level-import',
     telemetry: false,
     // Both Sentry configs send errors only. Remove unused tracing code.
     bundleSizeOptimizations: {
