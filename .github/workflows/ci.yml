@@ -8,8 +8,7 @@ on:
 permissions:
   contents: read
 
-# A pull request cancels its older runs. A push to main never does, so a
-# deployment in progress is not cut off halfway.
+# A pull request cancels its older runs.
 concurrency:
   group: ci-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
@@ -20,18 +19,12 @@ env:
   SENTRY_LOG_LEVEL: error
 
 jobs:
-  # One job, in order: install, lint and check, build, test, deploy.
+  # One job, in order: install, lint and check, build, test.
   # The first build is a local server that the browser tests run against.
-  # On main a second build makes the Vercel output from the same code, and
-  # that output is deployed. A failed test never reaches the deploy.
+  # Vercel deploys main on its own after a push.
   pipeline:
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    env:
-      IS_MAIN: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
     steps:
       # 1. Install
       - uses: actions/checkout@v7
@@ -44,63 +37,3 @@ jobs:
       - run: bun lint
       - run: bun typecheck
       - run: bun run test
-
-      # 3. Build the local server. No Vercel environment here, so analytics
-      #    and Sentry stay off and the tests see a plain build.
-      # - name: Build for the browser tests
-      #   run: bun run build
-
-      # 4. Browser tests against that build
-      # - name: Playwright version
-      #   id: playwright
-      #   run: echo "version=$(bun -e 'console.log(require("@playwright/test/package.json").version)')" >> "$GITHUB_OUTPUT"
-      # - name: Cache Playwright browsers
-      #   id: playwright-cache
-      #   uses: actions/cache@v4
-      #   with:
-      #     path: ~/.cache/ms-playwright
-      #     key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
-      # - name: Install Chromium
-      #   if: steps.playwright-cache.outputs.cache-hit != 'true'
-      #   run: bunx playwright install --with-deps chromium
-      # - name: Install Chromium system libraries
-      #   if: steps.playwright-cache.outputs.cache-hit == 'true'
-      #   run: bunx playwright install-deps chromium
-      # - name: Test the build
-      #   run: bun run test:e2e:run
-      # - uses: actions/upload-artifact@v4
-      #   if: failure()
-      #   with:
-      #     name: playwright-report
-      #     path: |
-      #       playwright-report
-      #       test-results
-      #     if-no-files-found: ignore
-      #     retention-days: 7
-
-      # 5. Deploy, main only. The Vercel CLI runs on the Node that the runner
-      #    ships. The production environment comes from Vercel, so the build
-      #    below gets the analytics id, the Sentry DSN, and the source map token.
-      - name: Install the Vercel CLI
-        if: env.IS_MAIN == 'true'
-        run: bun i -g vercel@59
-      - name: Pull the production settings and environment
-        if: env.IS_MAIN == 'true'
-        run: vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
-      # The first build must not leak into this one. A Vercel-preset build that
-      # runs after a Bun-preset build in the same tree mixes the two outputs,
-      # and the deployment then serves HTML that points at missing chunks.
-      - name: Build for Vercel
-        if: env.IS_MAIN == 'true'
-        env:
-          NITRO_PRESET: vercel
-        run: |
-          rm -rf .output .vercel/output node_modules/.cache/nuxt
-          set -a
-          # shellcheck disable=SC1091
-          . .vercel/.env.production.local
-          set +a
-          bun run build
-      - name: Deploy to production
-        if: env.IS_MAIN == 'true'
-        run: vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN"
