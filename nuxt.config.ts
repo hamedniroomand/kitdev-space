@@ -294,6 +294,14 @@ export default defineNuxtConfig({
     },
   },
 
+  hints: {
+    features: {
+      // The lazy-load check wraps the self-import of a recursive component
+      // (AstTreeNode, TarTreeNode). The import is circular, so it is undefined.
+      lazyLoad: false,
+    },
+  },
+
   scripts: {
     privacy: { ip: true, language: true, hardware: true },
     // Register Umami only when a website ID is set, so an empty ID loads no script.
