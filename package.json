@@ -114,6 +114,11 @@
     "vue-tsc": "^3.3.11",
     "zod": "^4.6.5"
   },
+  "overrides": {
+    "unhead": "3.4.1",
+    "@unhead/vue": "3.4.1",
+    "@unhead/bundler": "3.4.1"
+  },
   "lint-staged": {
     "*.{ts,mts,cts,js,mjs,cjs,vue}": "bun lint --fix"
   }
