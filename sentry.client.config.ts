@@ -16,7 +16,7 @@ Sentry.init({
   enabled: Boolean(dsn),
   environment,
   tracesSampleRate: 0,
-  tunnel: '/tunnel',
+  // tunnel: '/tunnel',
   ignoreErrors: [
     'ResizeObserver loop',
     'Failed to fetch',
