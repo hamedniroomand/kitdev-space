@@ -1,5 +1,6 @@
 import process from 'node:process'
 import { legacyRedirects } from './shared/utils/redirects'
+import { toolIndexPrerenderRoutes } from './shared/utils/tool-index'
 import { categoryLabels, tools } from './shared/utils/tools'
 
 function nitroPreset(): string {
@@ -29,6 +30,7 @@ const prerenderRoutes = [
   '/sitemap.xml',
   '/robots.txt',
   '/llms.txt',
+  ...toolIndexPrerenderRoutes(),
 ]
 
 /**
@@ -329,6 +331,10 @@ export default defineNuxtConfig({
       '/color/**',
       '/image/**',
       '/dev/**',
+    ],
+    urls: [
+      '/tools.json',
+      ...tools.map(tool => `${tool.route}.md`),
     ],
   },
 })
