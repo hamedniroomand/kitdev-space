@@ -66,6 +66,7 @@
     "@resvg/resvg-js": "^2.6.2",
     "@sentry/nuxt": "^11.5.0",
     "@takumi-rs/core": "^2.14.0",
+    "@vite-pwa/nuxt": "^1.1.1",
     "@vueuse/core": "15.0.0",
     "@vueuse/nuxt": "15.0.0",
     "confbox": "^0.3.1",

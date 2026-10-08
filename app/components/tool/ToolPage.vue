@@ -39,8 +39,8 @@ const currentTool = computed(() => {
       color="warning"
       variant="subtle"
       icon="i-lucide-wifi-off"
-      title="Offline mode"
-      description="This tool needs a network connection to run on the server. Connect to the internet to use this tool."
+      title="Unavailable offline"
+      description="This tool needs a network connection. It runs on the server, so it cannot work while you are offline."
       class="mb-6"
     />
 

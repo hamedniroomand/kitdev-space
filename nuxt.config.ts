@@ -104,6 +104,7 @@ export default defineNuxtConfig({
     '@nuxtjs/seo',
     '@vueuse/nuxt',
     'nuxt-llms',
+    '@vite-pwa/nuxt',
     '@sentry/nuxt/module',
   ],
 
@@ -317,6 +318,60 @@ export default defineNuxtConfig({
           },
         }
       : {},
+  },
+
+  pwa: {
+    registerType: 'prompt',
+    manifest: {
+      name: 'KitDev Space',
+      short_name: 'KitDev',
+      description: 'Developer tools that run in the browser. Convert, inspect, and clean data without an upload.',
+      theme_color: '#0a0a0a',
+      background_color: '#0a0a0a',
+      display: 'standalone',
+      lang: 'en',
+      start_url: '/',
+      scope: '/',
+      icons: [
+        { src: '/favicon-192x192.png', sizes: '192x192', type: 'image/png' },
+        { src: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+        { src: '/favicon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
+      ],
+    },
+    workbox: {
+      // Precache the app code only. Prerendered HTML and OG images are about 34 MB, so pages
+      // go in the runtime cache when the user visits them.
+      globPatterns: ['**/*.{js,css,woff2,ico,svg,webmanifest}'],
+      // No app-shell fallback: the home HTML on another route breaks hydration.
+      navigateFallback: null,
+      runtimeCaching: [
+        {
+          // Visited HTML documents: network first, then cache (offline after one visit).
+          urlPattern: ({ request }) => request.mode === 'navigate',
+          handler: 'NetworkFirst',
+          options: {
+            cacheName: 'kitdev-pages',
+            networkTimeoutSeconds: 3,
+            expiration: { maxEntries: 80, maxAgeSeconds: 60 * 60 * 24 * 30 },
+          },
+        },
+        {
+          // Heavy SQLite wasm: cache on first use.
+          urlPattern: /sql-wasm\.wasm$/i,
+          handler: 'CacheFirst',
+          options: {
+            cacheName: 'kitdev-wasm',
+            expiration: { maxEntries: 4, maxAgeSeconds: 60 * 60 * 24 * 365 },
+          },
+        },
+      ],
+    },
+    client: {
+      periodicSyncForUpdates: 3600,
+    },
+    devOptions: {
+      enabled: false,
+    },
   },
 
   sitemap: {
