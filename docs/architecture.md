@@ -61,10 +61,11 @@ private file and sends it to a server cannot claim privacy, even when the server
 
 The badge follows the registry flags in `shared/utils/tools.ts`:
 
-- `clientOnly: true` shows "🔒 Client". Use it when no tool action calls the server.
-- `serverRequired: true` shows "⚡ Bun". Use it when every tool action calls the server.
-- Both `false` shows no badge. Use it for a tool with a browser path and a server path. State the
-  split on the page, so the user knows which action leaves the browser.
+- `clientOnly: true` shows "🔒 Client · Offline". Use it when no tool action calls the server.
+- `serverRequired: true` shows "⚡ Bun · Online". Use it when every tool action calls the server.
+- Both `false` shows no badge in the sidebar. Use it for a tool with a browser path and a server
+  path. State the split on the page, so the user knows which action leaves the browser. The tool
+  page badge can still say "Mixed · Partial offline".
 
 ## The registry is the one source
 

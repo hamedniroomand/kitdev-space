@@ -2,6 +2,7 @@
 import type { NavigationMenuItem } from '@nuxt/ui'
 import type { ToolCategory } from '#shared/types/tools'
 import { createReusableTemplate, useLocalStorage } from '@vueuse/core'
+import { toolRunBadge } from '#shared/utils/tool-badges'
 import { categoryLabels, getToolsByCategory } from '#shared/utils/tools'
 
 definePageMeta({
@@ -57,11 +58,7 @@ const categorizedTools = computed(() => {
         icon: tool.icon,
         to: tool.route,
         exact: true,
-        badge: tool.clientOnly
-          ? { label: '🔒 Client', color: 'neutral', variant: 'subtle', size: 'xs' }
-          : tool.serverRequired
-            ? { label: '⚡ Bun', color: 'warning', variant: 'subtle', size: 'xs' }
-            : undefined,
+        badge: toolRunBadge(tool),
         onSelect: () => {
           closeMobile()
           selectTool(tool.id)

@@ -43,5 +43,6 @@ const summary = computed(() => props.description ?? tool?.value?.description ?? 
     >
       {{ summary }}
     </p>
+    <ToolRunBadge />
   </header>
 </template>
