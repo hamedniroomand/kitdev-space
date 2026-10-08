@@ -57,7 +57,7 @@ const { result: analysis } = useLiveTool(
 // A composable cannot run inside a condition, so the getter falls back to now.
 const relativeTime = useTimeAgo(() => analysis.value?.date ?? Date.now())
 
-const { now, pause, resume, isActive } = useNow({ interval: 1000, controls: true })
+const { now, pause, resume, isActive } = useNow({ scheduler: cb => useIntervalFn(cb, 1000), controls: true })
 
 const currentEpoch = computed(() => (mounted.value ? String(Math.floor(now.value.getTime() / 1000)) : ''))
 

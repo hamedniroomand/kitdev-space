@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { JwtClaimMatch, JwtDecodeResult, JwtVerifyStatus } from '#shared/utils/crypto/jwt'
-import { formatTimeAgo, useNow } from '@vueuse/core'
+import { formatTimeAgo, useIntervalFn, useNow } from '@vueuse/core'
 import { decodeJwt, matchJwtClaim, verifyJwt } from '#shared/utils/crypto/jwt'
 import { jwtSegmentHighlight } from '#shared/utils/crypto/jwt-segments'
 
@@ -78,7 +78,7 @@ function timeCheck(): JwtCheck {
 /** `alg: none` means the token has no signature. It is never valid. */
 const insecureAlgorithm = computed(() => decoded.value?.algorithm?.toLowerCase() === 'none')
 
-const now = useNow({ interval: 1000 })
+const now = useNow({ scheduler: cb => useIntervalFn(cb, 1000) })
 const CLAIM_NAMES = ['iat', 'nbf', 'exp'] as const
 const CLAIM_TITLES: Record<string, string> = {
   iat: 'Issued at',
