@@ -72,19 +72,22 @@ The security rules for code in this repository, and where each control lives. To
 ## Runtime
 
 Every API route needs Bun globals (`Bun.*` and `HTMLRewriter`). Nitro picks the
-Vercel function runtime from `"Bun" in globalThis` at build time. `nuxt build`
-runs under Node, so the default result is `nodejs22.x`, and on that runtime the
-APIs fail with "Bun is not defined".
+Vercel function runtime at build time. When `vercel.json` has `bunVersion`,
+Nitro uses `bun<bunVersion>`. Without `bunVersion`, Nitro checks
+`"Bun" in globalThis`. `nuxt build` can run under Node, so the default result is
+`nodejs22.x`, and on that runtime the APIs fail with "Bun is not defined".
 
-`nitro.vercel.functions.runtime` in `nuxt.config.ts` pins the runtime to
-`bun1.x`. Do not remove it. To confirm after a build:
+`bunVersion` in `vercel.json` pins the runtime to Bun. Do not remove it. Do not
+set `nitro.vercel.functions.runtime` in `nuxt.config.ts`, because it overrides
+`bunVersion`. To confirm after a build:
 
 ```bash
 NITRO_PRESET=vercel bun run build
 cat .vercel/output/functions/__fallback.func/.vc-config.json
 ```
 
-The `runtime` field must read `bun1.x`.
+The `runtime` field must be `bun` followed by the `bunVersion` value, for
+example `bun1.4.x`.
 
 The Bun runtime for Vercel Functions is a public beta. Watch the Vercel
 changelog for a status change.

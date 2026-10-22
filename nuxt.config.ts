@@ -213,11 +213,6 @@ export default defineNuxtConfig({
       crawlLinks: true,
       routes: prerenderRoutes,
     },
-    vercel: {
-      functions: {
-        runtime: 'bun1.x',
-      },
-    },
   },
 
   vite: {
