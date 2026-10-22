@@ -267,6 +267,8 @@ export default defineNuxtConfig({
     ],
   },
 
+  aiReady: false,
+
   llms: {
     domain: 'https://kitdev.space',
     title: 'KitDev Space',
