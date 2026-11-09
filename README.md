@@ -24,7 +24,7 @@ bun install
 bun run dev
 ```
 
-`.env` is optional. Copy `.env.example` to enable analytics, error monitoring, or the OG image
+`.env` is optional. Copy `.env.example` to enable analytics or the OG image
 secret. Each feature stays off while its value is empty.
 
 ```bash

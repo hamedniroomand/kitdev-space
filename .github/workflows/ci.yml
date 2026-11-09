@@ -13,11 +13,6 @@ concurrency:
   group: ci-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
-env:
-  # sentry-cli dies when it prints a lot to a slow pipe. Keep it quiet.
-  SENTRY_NO_PROGRESS_BAR: '1'
-  SENTRY_LOG_LEVEL: error
-
 jobs:
   # One job, in order: install, lint and check, build, test.
   # The first build is a local server that the browser tests run against.

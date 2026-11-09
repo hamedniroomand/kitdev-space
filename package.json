@@ -64,7 +64,6 @@
     "@nuxt/ui": "^4.12.0",
     "@nuxtjs/seo": "5.3.16",
     "@resvg/resvg-js": "^2.6.2",
-    "@sentry/nuxt": "^11.11.0",
     "@takumi-rs/core": "^2.20.0",
     "@vite-pwa/nuxt": "^1.1.1",
     "@vueuse/core": "15.0.0",

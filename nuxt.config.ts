@@ -9,11 +9,6 @@ function nitroPreset(): string {
 
 const umamiWebsiteId = process.env.NUXT_PUBLIC_SCRIPTS_UMAMI_ANALYTICS_WEBSITE_ID || ''
 const umamiHostUrl = process.env.NUXT_PUBLIC_UMAMI_HOST_URL || ''
-const sentryDsn = process.env.NUXT_PUBLIC_SENTRY_DSN || ''
-const sentryEnvironment = process.env.VERCEL_ENV || process.env.NODE_ENV || 'development'
-const sentryOrigin = sentryDsn
-  ? new URL(sentryDsn).origin
-  : ''
 
 const legacyRouteRules: Record<string, { redirect: { to: string, statusCode: number } }> = {}
 for (const [oldPath, newPath] of Object.entries(legacyRedirects)) {
@@ -59,9 +54,7 @@ const contentSecurityPolicy = [
   'font-src \'self\' data: https://fonts.gstatic.com',
   'style-src \'self\' \'unsafe-inline\'',
   'script-src \'self\' \'unsafe-inline\' \'wasm-unsafe-eval\' https://va.vercel-scripts.com',
-  `connect-src 'self' https://va.vercel-scripts.com${sentryOrigin
-    ? ` ${sentryOrigin}`
-    : ''}`,
+  'connect-src \'self\' https://va.vercel-scripts.com',
   'worker-src \'self\' blob:',
   'upgrade-insecure-requests',
 ].join('; ')
@@ -113,7 +106,6 @@ export default defineNuxtConfig({
     '@vueuse/nuxt',
     'nuxt-llms',
     '@vite-pwa/nuxt',
-    '@sentry/nuxt/module',
   ],
 
   /**
@@ -127,24 +119,6 @@ export default defineNuxtConfig({
       sizeLimitKb: 512,
     },
   },
-
-  sentry: {
-    enabled: Boolean(sentryDsn),
-    debug: process.env.SENTRY_DEBUG === 'true',
-    org: process.env.SENTRY_ORG,
-    project: process.env.SENTRY_PROJECT,
-    authToken: process.env.SENTRY_AUTH_TOKEN,
-    sourcemaps: {
-      filesToDeleteAfterUpload: ['.*/**/*.map'],
-    },
-    telemetry: false,
-    // Both Sentry configs send errors only. Remove unused tracing code.
-    bundleSizeOptimizations: {
-      excludeTracing: true,
-    },
-  },
-
-  sourcemap: { client: 'hidden' },
 
   components: [
     { path: '~/components', pathPrefix: false },
@@ -174,20 +148,9 @@ export default defineNuxtConfig({
     fallback: 'dark',
   },
 
-  runtimeConfig: {
-    public: {
-      sentry: {
-        dsn: sentryDsn,
-        environment: sentryEnvironment,
-      },
-    },
-  },
-
   routeRules: {
     '/**': { prerender: true, headers: securityHeaders },
     '/api/**': { prerender: false, robots: false, headers: apiSecurityHeaders },
-    // The Sentry tunnel is a POST-only relay, not a page.
-    '/tunnel': { prerender: false, robots: false, headers: apiSecurityHeaders },
     ...legacyRouteRules,
     '/data/**': {
       redirect: { to: '/hub/data/**', statusCode: 301 },
@@ -420,7 +383,6 @@ export default defineNuxtConfig({
   sitemap: {
     exclude: [
       '/api/**',
-      '/tunnel',
       ...Object.keys(legacyRedirects),
       ...Object.keys(legacyRedirects).map(path => `${path}/`),
       '/data/**',
