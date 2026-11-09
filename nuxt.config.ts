@@ -279,6 +279,9 @@ export default defineNuxtConfig({
     sections: llmsSections,
   },
 
+  aiReady: false,
+  skewProtection: false,
+
   ogImage: {
     zeroRuntime: true,
     defaults: {
