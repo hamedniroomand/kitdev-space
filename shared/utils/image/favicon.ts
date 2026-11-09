@@ -23,7 +23,9 @@ export function sanitizePathPrefix(input?: string): string {
     .replace(/\.{2,}/g, '')
     .replace(/\/{2,}/g, '/')
     .replace(/^\/+|\/+$/g, '')
-  return safe ? `/${safe}/` : '/'
+  return safe
+    ? `/${safe}/`
+    : '/'
 }
 
 export interface FaviconItemPreview {
@@ -84,8 +86,12 @@ export function buildIco(images: { width: number, height: number, bytes: Uint8Ar
     const img = images[i]!
     const entryOffset = headerSize + i * dirEntrySize
 
-    view.setUint8(entryOffset, img.width >= 256 ? 0 : img.width)
-    view.setUint8(entryOffset + 1, img.height >= 256 ? 0 : img.height)
+    view.setUint8(entryOffset, img.width >= 256
+      ? 0
+      : img.width)
+    view.setUint8(entryOffset + 1, img.height >= 256
+      ? 0
+      : img.height)
     view.setUint8(entryOffset + 2, 0) // Color palette count (0 for >= 8bpp)
     view.setUint8(entryOffset + 3, 0) // Reserved
     view.setUint16(entryOffset + 4, 1, true) // Color planes

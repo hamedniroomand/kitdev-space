@@ -17,7 +17,19 @@ const BLOCKED_HOSTS = new Set([
 export const WEB_PORTS = [80, 443, 8080, 8443]
 
 /** Ports that commonly serve TLS. The TLS Inspector uses this list. */
-export const TLS_PORTS = [443, 465, 563, 636, 853, 989, 990, 993, 995, 8443, 9443]
+export const TLS_PORTS = [
+  443,
+  465,
+  563,
+  636,
+  853,
+  989,
+  990,
+  993,
+  995,
+  8443,
+  9443,
+]
 
 const blocked = new BlockList()
 // IPv4 ranges that must stay unreachable.
@@ -87,7 +99,9 @@ export interface SafeUrlOptions {
 function assertAllowedPort(url: URL, allowedPorts: readonly number[]): void {
   // An empty `port` means the protocol default (80 or 443).
   const port = url.port === ''
-    ? (url.protocol === 'https:' ? 443 : 80)
+    ? (url.protocol === 'https:'
+        ? 443
+        : 80)
     : Number(url.port)
 
   if (!Number.isInteger(port) || !allowedPorts.includes(port)) {

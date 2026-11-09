@@ -79,7 +79,12 @@ export const IMAGE_MIN_SIDE = 200
 export const IMAGE_BEST_WIDTH = 1200
 export const IMAGE_BEST_HEIGHT = 630
 
-const TWITTER_CARD_VALUES = new Set(['summary', 'summary_large_image', 'app', 'player'])
+const TWITTER_CARD_VALUES = new Set([
+  'summary',
+  'summary_large_image',
+  'app',
+  'player',
+])
 
 function firstValue(tags: OgMetaTag[], keys: string[]): string {
   for (const key of keys) {
@@ -106,7 +111,10 @@ function absoluteUrl(value: string, pageUrl: string): string {
 /** Build the preview data from the raw page parts. Both paths call this. */
 export function buildOgData(source: OgSource, pageUrl: string): OgPreviewData {
   const tags = source.tags
-    .map(tag => ({ key: tag.key.trim().toLowerCase(), content: tag.content }))
+    .map(tag => ({
+      key: tag.key.trim().toLowerCase(),
+      content: tag.content,
+    }))
     .filter(tag => tag.key !== '' && tag.content.trim() !== '')
 
   const canonical = absoluteUrl(source.canonical.trim(), pageUrl)
@@ -117,7 +125,9 @@ export function buildOgData(source: OgSource, pageUrl: string): OgPreviewData {
     description: firstValue(tags, ['og:description', 'description', 'twitter:description']),
     image: absoluteUrl(firstValue(tags, ['og:image', 'og:image:url', 'twitter:image']), pageUrl),
     imageAlt: firstValue(tags, ['og:image:alt', 'twitter:image:alt']),
-    url: declaredUrl ? absoluteUrl(declaredUrl, pageUrl) : (canonical || pageUrl),
+    url: declaredUrl
+      ? absoluteUrl(declaredUrl, pageUrl)
+      : (canonical || pageUrl),
     canonical,
     siteName: firstValue(tags, ['og:site_name']),
     type: firstValue(tags, ['og:type']),
@@ -142,24 +152,28 @@ function auditImage(data: OgPreviewData, probe: OgImageProbe | null | undefined)
   }
 
   if (!probe) {
-    return [finding(
-      'image-not-checked',
-      'og:image',
-      'info',
-      'The image is not checked',
-      'The browser cannot download an image from another host. Use the URL mode to check the image file.',
-    )]
+    return [
+      finding(
+        'image-not-checked',
+        'og:image',
+        'info',
+        'The image is not checked',
+        'The browser cannot download an image from another host. Use the URL mode to check the image file.',
+      ),
+    ]
   }
 
   if (!probe.ok) {
-    return [finding(
-      'image-unreachable',
-      'og:image',
-      'error',
-      'The image download failed',
-      probe.error || 'The server did not return the image.',
-      'Publish the image at a public URL.',
-    )]
+    return [
+      finding(
+        'image-unreachable',
+        'og:image',
+        'error',
+        'The image download failed',
+        probe.error || 'The server did not return the image.',
+        'Publish the image at a public URL.',
+      ),
+    ]
   }
 
   const findings: OgFinding[] = []
@@ -374,14 +388,18 @@ function hasProblem(findings: OgFinding[], id: string): boolean {
  * placeholder, so the snippet does not overwrite a custom tag that works.
  */
 export function buildMetaTagSnippet(data: OgPreviewData, findings: OgFinding[]): string {
-  const title = hasProblem(findings, 'title') ? 'Add a title of 60 characters or less' : data.title
+  const title = hasProblem(findings, 'title')
+    ? 'Add a title of 60 characters or less'
+    : data.title
   const description = hasProblem(findings, 'description')
     ? 'Add a description of 200 characters or less'
     : data.description
   const image = hasProblem(findings, 'image') || hasProblem(findings, 'image-content-type')
     ? 'https://example.com/og-image.png'
     : data.image
-  const card = hasProblem(findings, 'twitter-card') ? 'summary_large_image' : data.twitterCard
+  const card = hasProblem(findings, 'twitter-card')
+    ? 'summary_large_image'
+    : data.twitterCard
   const canonical = data.canonical || data.url
   const type = data.type || 'website'
 

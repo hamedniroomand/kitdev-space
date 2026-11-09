@@ -75,7 +75,9 @@ function lifetimeLabel(seconds: number | null): string {
 }
 
 async function handleCopy() {
-  const payload = maskValues.value ? redactCookieReport(report.value) : report.value
+  const payload = maskValues.value
+    ? redactCookieReport(report.value)
+    : report.value
   await copy(JSON.stringify(payload, null, 2))
 }
 

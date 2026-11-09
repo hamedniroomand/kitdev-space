@@ -240,7 +240,10 @@ onMounted(() => {
   modernFlags.value = supported
 })
 
-const flagItems = computed(() => [...BASE_FLAGS, ...modernFlags.value])
+const flagItems = computed(() => [
+  ...BASE_FLAGS,
+  ...modernFlags.value,
+])
 const flagKeys = computed(() => new Set<string>(flagItems.value.map(item => item.key)))
 
 /** A dropped suite carries its own pattern and flags. Both come back. */
@@ -276,7 +279,9 @@ const caseStatuses = computed(() => testCases.value.map((item, index) => {
   if (!result.value.valid || matched === undefined) {
     return 'unknown' as const
   }
-  return matched === item.expectMatch ? 'pass' as const : 'fail' as const
+  return matched === item.expectMatch
+    ? 'pass' as const
+    : 'fail' as const
 }))
 
 const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeedback()

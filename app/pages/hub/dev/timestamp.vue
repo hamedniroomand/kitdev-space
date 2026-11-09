@@ -37,7 +37,9 @@ const timeZones = ianaTimeZones()
 
 // A share link can carry any value, so the unit needs a check here too.
 const unit = computed<UnitChoice>(() =>
-  UNIT_ITEMS.some(item => item.value === controls.unit) ? controls.unit : 'auto',
+  UNIT_ITEMS.some(item => item.value === controls.unit)
+    ? controls.unit
+    : 'auto',
 )
 
 const browserZone = ref('')
@@ -51,20 +53,30 @@ const zone = computed({
 
 const { result: analysis } = useLiveTool(
   () => analyzeTimestamp(input.value, unit.value),
-  { runLocation: 'browser', option: () => unit.value },
+  {
+    runLocation: 'browser',
+    option: () => unit.value,
+  },
 )
 
 // A composable cannot run inside a condition, so the getter falls back to now.
 const relativeTime = useTimeAgo(() => analysis.value?.date ?? Date.now())
 
-const { now, pause, resume, isActive } = useNow({ scheduler: cb => useIntervalFn(cb, 1000), controls: true })
+const { now, pause, resume, isActive } = useNow({
+  scheduler: cb => useIntervalFn(cb, 1000),
+  controls: true,
+})
 
-const currentEpoch = computed(() => (mounted.value ? String(Math.floor(now.value.getTime() / 1000)) : ''))
+const currentEpoch = computed(() => (mounted.value
+  ? String(Math.floor(now.value.getTime() / 1000))
+  : ''))
 
 const unitHelp = computed(() => {
   const detected = analysis.value?.unit
   if (unit.value === 'auto') {
-    return detected ? `Detected ${detected} from the digit count.` : 'Read the unit from the digit count.'
+    return detected
+      ? `Detected ${detected} from the digit count.`
+      : 'Read the unit from the digit count.'
   }
   return 'Read the input in this unit.'
 })
@@ -95,9 +107,22 @@ const rows = computed<ResultRow[]>(() => {
 
   const epoch = epochValues(found.nanoseconds)
   return [
-    { id: 'iso', label: 'ISO 8601', value: formatIso(found) },
-    { id: 'utc', label: 'UTC', value: found.date.toUTCString() },
-    { id: 'zone', label: 'Zone time', value: formatInZone(found.date, zone.value), note: zone.value },
+    {
+      id: 'iso',
+      label: 'ISO 8601',
+      value: formatIso(found),
+    },
+    {
+      id: 'utc',
+      label: 'UTC',
+      value: found.date.toUTCString(),
+    },
+    {
+      id: 'zone',
+      label: 'Zone time',
+      value: formatInZone(found.date, zone.value),
+      note: zone.value,
+    },
     { id: 'seconds', label: 'Epoch seconds', value: epoch.seconds },
     { id: 'milliseconds', label: 'Epoch milliseconds', value: epoch.milliseconds },
     { id: 'microseconds', label: 'Epoch microseconds', value: epoch.microseconds },
@@ -142,11 +167,31 @@ const durationRows = computed(() => {
     return []
   }
   return [
-    { id: 'days', label: 'Days', value: String(found.days) },
-    { id: 'hours', label: 'Hours', value: String(found.hours) },
-    { id: 'minutes', label: 'Minutes', value: String(found.minutes) },
-    { id: 'seconds', label: 'Seconds', value: String(found.seconds) },
-    { id: 'milliseconds', label: 'Milliseconds', value: String(found.milliseconds) },
+    {
+      id: 'days',
+      label: 'Days',
+      value: String(found.days),
+    },
+    {
+      id: 'hours',
+      label: 'Hours',
+      value: String(found.hours),
+    },
+    {
+      id: 'minutes',
+      label: 'Minutes',
+      value: String(found.minutes),
+    },
+    {
+      id: 'seconds',
+      label: 'Seconds',
+      value: String(found.seconds),
+    },
+    {
+      id: 'milliseconds',
+      label: 'Milliseconds',
+      value: String(found.milliseconds),
+    },
   ]
 })
 
@@ -166,7 +211,9 @@ const reverseResult = computed(() => {
 })
 
 function setNow() {
-  const target = unit.value === 'auto' ? 'seconds' : unit.value
+  const target = unit.value === 'auto'
+    ? 'seconds'
+    : unit.value
   input.value = epochValues(BigInt(Date.now()) * 1_000_000n)[target]
 }
 

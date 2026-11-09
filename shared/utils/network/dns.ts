@@ -1,7 +1,16 @@
 export type DnsRecordType = 'A' | 'AAAA' | 'CNAME' | 'MX' | 'NS' | 'SOA' | 'TXT' | 'CAA'
 
 /** The record types of one summary lookup. One request reads all of them. */
-export const DNS_RECORD_TYPES: DnsRecordType[] = ['A', 'AAAA', 'CNAME', 'MX', 'NS', 'SOA', 'TXT', 'CAA']
+export const DNS_RECORD_TYPES: DnsRecordType[] = [
+  'A',
+  'AAAA',
+  'CNAME',
+  'MX',
+  'NS',
+  'SOA',
+  'TXT',
+  'CAA',
+]
 
 /** `ok` has records. `nodata` has none. `nxdomain` has no domain. `failed` has no answer. */
 export type DnsAnswerStatus = 'ok' | 'nodata' | 'nxdomain' | 'failed'
@@ -31,7 +40,14 @@ export interface DnsSummary {
 }
 
 /** Error codes that mean the resolver found no answer for the name. */
-const EMPTY_ANSWER_CODES = new Set(['ENOTFOUND', 'ENODATA', 'DNS_ENOTFOUND', 'DNS_ENODATA', 'NOTFOUND', 'NODATA'])
+const EMPTY_ANSWER_CODES = new Set([
+  'ENOTFOUND',
+  'ENODATA',
+  'DNS_ENOTFOUND',
+  'DNS_ENODATA',
+  'NOTFOUND',
+  'NODATA',
+])
 
 export function isDnsRecordType(value: string): value is DnsRecordType {
   return DNS_RECORD_TYPES.includes(value as DnsRecordType)
@@ -48,7 +64,13 @@ export function formatCaaRecord(record: Record<string, unknown>): string {
     return `${flags} ${record.tag} ${quote(String(record.value ?? ''))}`
   }
 
-  for (const tag of ['issue', 'issuewild', 'iodef', 'contactemail', 'contactphone']) {
+  for (const tag of [
+    'issue',
+    'issuewild',
+    'iodef',
+    'contactemail',
+    'contactphone',
+  ]) {
     const value = record[tag]
     if (typeof value === 'string') {
       return `${flags} ${tag} ${quote(value)}`
@@ -59,7 +81,15 @@ export function formatCaaRecord(record: Record<string, unknown>): string {
 }
 
 export function formatSoaRecord(record: Record<string, unknown>): string {
-  const fields = ['nsname', 'hostmaster', 'serial', 'refresh', 'retry', 'expire', 'minttl']
+  const fields = [
+    'nsname',
+    'hostmaster',
+    'serial',
+    'refresh',
+    'retry',
+    'expire',
+    'minttl',
+  ]
   return fields.map(field => String(record[field] ?? '')).join(' ').trim()
 }
 
@@ -125,11 +155,23 @@ export function dnsAnswerMessage(type: DnsRecordType, status: DnsAnswerStatus): 
 
 export function buildDnsAnswer(type: DnsRecordType, raw: unknown[] | null, code?: string | null): DnsAnswer {
   if (raw && raw.length) {
-    return { type, status: 'ok', message: '', records: toDnsRows(type, raw) }
+    return {
+      type,
+      status: 'ok',
+      message: '',
+      records: toDnsRows(type, raw),
+    }
   }
 
-  const status: DnsAnswerStatus = raw || isEmptyAnswerCode(code) ? 'nodata' : 'failed'
-  return { type, status, message: dnsAnswerMessage(type, status), records: [] }
+  const status: DnsAnswerStatus = raw || isEmptyAnswerCode(code)
+    ? 'nodata'
+    : 'failed'
+  return {
+    type,
+    status,
+    message: dnsAnswerMessage(type, status),
+    records: [],
+  }
 }
 
 // ponytail: The resolver gives the same code for NXDOMAIN and for NODATA, so the
@@ -169,7 +211,11 @@ export function buildDnsSummary(input: {
 }): DnsSummary {
   const status = summaryStatus(input.answers)
   const answers = status === 'nxdomain'
-    ? input.answers.map(answer => ({ ...answer, status: 'nxdomain' as const, message: dnsAnswerMessage(answer.type, 'nxdomain') }))
+    ? input.answers.map(answer => ({
+        ...answer,
+        status: 'nxdomain' as const,
+        message: dnsAnswerMessage(answer.type, 'nxdomain'),
+      }))
     : input.answers
 
   return {
@@ -183,7 +229,9 @@ export function buildDnsSummary(input: {
 }
 
 export function dnsRecordRows(summary: DnsSummary | null): DnsRecordRow[] {
-  return summary ? summary.answers.flatMap(answer => answer.records) : []
+  return summary
+    ? summary.answers.flatMap(answer => answer.records)
+    : []
 }
 
 /** The `dig` command that gives the same answers. The tool runs no shell command. */

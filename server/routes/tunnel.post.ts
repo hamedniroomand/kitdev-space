@@ -20,7 +20,11 @@ export default defineEventHandler(async (event) => {
   enforceRateLimit(getClientKey(event), 'sentry:tunnel', 60)
 
   const raw = await readRawBody(event, false)
-  const bytes = raw == null ? new Uint8Array() : (typeof raw === 'string' ? new TextEncoder().encode(raw) : new Uint8Array(raw))
+  const bytes = raw == null
+    ? new Uint8Array()
+    : (typeof raw === 'string'
+        ? new TextEncoder().encode(raw)
+        : new Uint8Array(raw))
   const target = resolveEnvelopeTarget(bytes, dsn)
   if (!target) {
     throw createError({ statusCode: 400, message: 'The envelope is not for this project.' })

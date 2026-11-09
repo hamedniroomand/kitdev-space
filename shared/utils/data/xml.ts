@@ -24,14 +24,20 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
 
 /** An `@` key is an attribute only when the rest is a valid XML name. `@nuxt/ui` is a JSON key, not an attribute. */
 function attributeName(key: string): string | null {
-  const name = key.startsWith('@') ? key.slice(1) : ''
-  return name && XML_NAME.test(name) ? name : null
+  const name = key.startsWith('@')
+    ? key.slice(1)
+    : ''
+  return name && XML_NAME.test(name)
+    ? name
+    : null
 }
 
 function getParser(): DOMParser {
   // Some DOM environments bind the class to their window, so read it from there when it exists.
   const Parser = (globalThis as { window?: { DOMParser?: typeof DOMParser } }).window?.DOMParser
-    ?? (typeof DOMParser === 'undefined' ? undefined : DOMParser)
+    ?? (typeof DOMParser === 'undefined'
+      ? undefined
+      : DOMParser)
   if (!Parser) {
     throw new DataError('XML needs a browser.')
   }
@@ -52,7 +58,9 @@ function elementToValue(
   const currentNamespaces = new Map(parentNamespaces)
   for (const attribute of Array.from(element.attributes)) {
     if (attribute.name === 'xmlns' || attribute.name.startsWith('xmlns:')) {
-      const prefix = attribute.name === 'xmlns' ? '' : attribute.name.slice(6)
+      const prefix = attribute.name === 'xmlns'
+        ? ''
+        : attribute.name.slice(6)
       const uri = attribute.value
       if (options.strict && parentNamespaces.has(prefix)) {
         const existingUri = parentNamespaces.get(prefix)
@@ -132,7 +140,9 @@ export function parseXml(text: string, options: ParseXmlOptions = {}): unknown {
   if (!root) {
     throw new DataError('Invalid XML.\n\nThe document has no root element.')
   }
-  return { [root.nodeName]: elementToValue(root, options) }
+  return {
+    [root.nodeName]: elementToValue(root, options),
+  }
 }
 
 // ---------- JSON -> XML ----------
@@ -149,7 +159,9 @@ function scalarText(value: unknown): string {
   if (value === null || value === undefined) {
     return ''
   }
-  return typeof value === 'string' ? value : String(value)
+  return typeof value === 'string'
+    ? value
+    : String(value)
 }
 
 /** Writes one element. `attributes` come from `@` keys and from an invalid key wrapped as `<item key>`. */
@@ -168,7 +180,9 @@ function writeElement(name: string, value: unknown, indent: string, attributes: 
 
   if (!isPlainObject(value)) {
     const text = scalarText(value)
-    lines.push(text === '' ? `${indent}<${name}${attributeText}/>` : `${indent}<${name}${attributeText}>${escapeText(text)}</${name}>`)
+    lines.push(text === ''
+      ? `${indent}<${name}${attributeText}/>`
+      : `${indent}<${name}${attributeText}>${escapeText(text)}</${name}>`)
     return lines
   }
 
@@ -192,7 +206,9 @@ function writeElement(name: string, value: unknown, indent: string, attributes: 
     .join('')
 
   if (!children.length) {
-    lines.push(text ? `${indent}<${name}${ownAttributeText}>${escapeText(text)}</${name}>` : `${indent}<${name}${ownAttributeText}/>`)
+    lines.push(text
+      ? `${indent}<${name}${ownAttributeText}>${escapeText(text)}</${name}>`
+      : `${indent}<${name}${ownAttributeText}/>`)
     return lines
   }
 
@@ -227,6 +243,9 @@ export function stringifyXml(value: unknown): string {
     }
   }
 
-  const lines = ['<?xml version="1.0" encoding="UTF-8"?>', ...writeElement(rootName, rootValue, '')]
+  const lines = [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    ...writeElement(rootName, rootValue, ''),
+  ]
   return `${lines.join('\n')}\n`
 }

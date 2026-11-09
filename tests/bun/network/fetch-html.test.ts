@@ -1,7 +1,19 @@
 import { afterEach, beforeEach, describe, expect, it, spyOn } from 'bun:test'
 import { decodeHtml, detectCharset, fetchHtmlDocument, isHtmlContentType } from '#server/utils/network/fetch-html'
 
-const latin1 = new Uint8Array([0x3C, 0x70, 0x3E, 0x63, 0x61, 0x66, 0xE9, 0x3C, 0x2F, 0x70, 0x3E]) // <p>café</p>
+const latin1 = new Uint8Array([
+  0x3C,
+  0x70,
+  0x3E,
+  0x63,
+  0x61,
+  0x66,
+  0xE9,
+  0x3C,
+  0x2F,
+  0x70,
+  0x3E,
+]) // <p>café</p>
 
 describe('isHtmlContentType', () => {
   it('accepts html types and an absent header', () => {

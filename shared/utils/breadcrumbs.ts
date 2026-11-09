@@ -16,7 +16,9 @@ export function buildHubBreadcrumbs(crumbs: BreadcrumbCrumb[]): BreadcrumbCrumb[
     { label: 'Hub', to: '/hub' },
     ...crumbs.map(crumb => ({
       label: crumb.label,
-      ...(crumb.to ? { to: crumb.to } : {}),
+      ...(crumb.to
+        ? { to: crumb.to }
+        : {}),
     })),
   ]
 }

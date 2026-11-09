@@ -83,13 +83,17 @@ export function parseCidr(cidrInput: string): CidrCalculation {
   }
 
   const ipInt = ipToInt(ipStr)
-  const maskInt = prefix === 0 ? 0 : (~0 << (32 - prefix)) >>> 0
+  const maskInt = prefix === 0
+    ? 0
+    : (~0 << (32 - prefix)) >>> 0
   const wildcardInt = (~maskInt) >>> 0
 
   const networkInt = (ipInt & maskInt) >>> 0
   const broadcastInt = (networkInt | wildcardInt) >>> 0
 
-  const totalHosts = prefix === 32 ? 1 : 2 ** (32 - prefix)
+  const totalHosts = prefix === 32
+    ? 1
+    : 2 ** (32 - prefix)
   let usableHosts: number
   let firstUsableInt: number
   let lastUsableInt: number
@@ -164,11 +168,15 @@ function cidrRange(cidr: string): CidrRange {
 export function cidrContainsIp(cidr: string, ip: string): boolean {
   const range = cidrRange(cidr)
   const trimmed = ip.trim()
-  const version = trimmed.includes(':') ? 6 : 4
+  const version = trimmed.includes(':')
+    ? 6
+    : 4
   if (version !== range.version) {
     throw new Error('The IP version must match the subnet version.')
   }
-  const address = version === 6 ? ipv6ToBigInt(trimmed) : BigInt(ipToInt(trimmed))
+  const address = version === 6
+    ? ipv6ToBigInt(trimmed)
+    : BigInt(ipToInt(trimmed))
   return address >= range.start && address <= range.end
 }
 
@@ -181,9 +189,15 @@ export function compareCidr(first: string, second: string): CidrComparison {
     throw new Error('Compare two blocks that use the same IP version.')
   }
 
-  const start = a.start > b.start ? a.start : b.start
-  const end = a.end < b.end ? a.end : b.end
-  const shared = end >= start ? end - start + 1n : 0n
+  const start = a.start > b.start
+    ? a.start
+    : b.start
+  const end = a.end < b.end
+    ? a.end
+    : b.end
+  const shared = end >= start
+    ? end - start + 1n
+    : 0n
 
   let relation: CidrRelation = 'disjoint'
   if (shared > 0n) {
@@ -198,10 +212,16 @@ export function compareCidr(first: string, second: string): CidrComparison {
     }
   }
 
-  return { relation, overlaps: shared > 0n, sharedAddresses: shared.toString() }
+  return {
+    relation,
+    overlaps: shared > 0n,
+    sharedAddresses: shared.toString(),
+  }
 }
 
 /** Read an IPv4 or an IPv6 block. The address family comes from the input. */
 export function analyzeCidr(cidrInput: string): CidrCalculation | CidrV6Calculation {
-  return cidrInput.includes(':') ? parseCidrV6(cidrInput) : parseCidr(cidrInput)
+  return cidrInput.includes(':')
+    ? parseCidrV6(cidrInput)
+    : parseCidr(cidrInput)
 }

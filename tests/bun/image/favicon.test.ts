@@ -26,7 +26,9 @@ function referencedFiles(options: FaviconOptions) {
   const html = buildHtmlSnippet(options)
   const manifest = JSON.parse(buildWebmanifest(options)) as { icons: { src: string }[] }
   const refs = [
-    ...[...html.matchAll(/href="([^"]+)"/g)].map(match => match[1]!),
+    ...[
+      ...html.matchAll(/href="([^"]+)"/g),
+    ].map(match => match[1]!),
     ...manifest.icons.map(icon => icon.src),
   ]
   return refs.map((ref) => {

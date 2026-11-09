@@ -16,7 +16,9 @@ useToolQuery({ input })
 const presets = [
   {
     label: 'My Browser',
-    value: () => (typeof navigator !== 'undefined' ? navigator.userAgent : ''),
+    value: () => (typeof navigator !== 'undefined'
+      ? navigator.userAgent
+      : ''),
   },
   {
     label: 'Chrome on macOS',
@@ -59,7 +61,9 @@ const isLocalUserAgent = computed(
 const exportResult = computed(() => ({
   userAgent: input.value.trim(),
   ...parsed.value,
-  ...(isLocalUserAgent.value && clientHints.value ? { clientHints: clientHints.value } : {}),
+  ...(isLocalUserAgent.value && clientHints.value
+    ? { clientHints: clientHints.value }
+    : {}),
 }))
 
 function handlePreset(getter: () => string) {

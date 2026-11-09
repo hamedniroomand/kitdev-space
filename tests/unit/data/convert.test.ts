@@ -5,7 +5,14 @@ import { DataError } from '#shared/utils/data/errors'
 describe('canConvertInBrowser', () => {
   it('accepts json, yaml, toml, json5, and xml in both directions', () => {
     for (const from of ['json', 'yaml', 'toml', 'json5', 'xml'] as const) {
-      for (const to of ['json', 'yaml', 'toml', 'json5', 'xml', 'typescript'] as const) {
+      for (const to of [
+        'json',
+        'yaml',
+        'toml',
+        'json5',
+        'xml',
+        'typescript',
+      ] as const) {
         expect(canConvertInBrowser(from, to), `${from} to ${to}`).toBe(true)
       }
     }
@@ -42,7 +49,10 @@ describe('convertInBrowser', () => {
     expect(toml).toContain('name = "KitDev"')
     expect(toml).toContain('[meta]')
     expect(JSON.parse(convertInBrowser(toml, 'toml', 'json')))
-      .toEqual({ name: 'KitDev', meta: { version: 1 } })
+      .toEqual({
+        name: 'KitDev',
+        meta: { version: 1 },
+      })
   })
 
   it('converts json to json5 and back', () => {

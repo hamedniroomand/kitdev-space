@@ -102,7 +102,9 @@ export function semverSort(versions: string[]): string[] {
 export function semverBump(version: string, release: SemverRelease, identifier?: string): string {
   const cleaned = version.trim().replace(/^v/i, '')
   const tag = identifier?.trim()
-  const bumped = tag ? semver.inc(cleaned, release, tag) : semver.inc(cleaned, release)
+  const bumped = tag
+    ? semver.inc(cleaned, release, tag)
+    : semver.inc(cleaned, release)
   if (!bumped) {
     throw new Error('Enter a valid semver version like 1.2.3.')
   }

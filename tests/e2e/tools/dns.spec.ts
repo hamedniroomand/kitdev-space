@@ -13,13 +13,17 @@ const summary = {
         type: 'A',
         status: 'ok',
         message: '',
-        records: [{ type: 'A', value: '93.184.216.34', ttl: 300 }],
+        records: [
+          { type: 'A', value: '93.184.216.34', ttl: 300 },
+        ],
       },
       {
         type: 'CAA',
         status: 'ok',
         message: '',
-        records: [{ type: 'CAA', value: '0 issue "letsencrypt.org"', ttl: null }],
+        records: [
+          { type: 'CAA', value: '0 issue "letsencrypt.org"', ttl: null },
+        ],
       },
       {
         type: 'CNAME',

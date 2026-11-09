@@ -45,7 +45,9 @@ function handleDownload() {
   if (!output.value) {
     return
   }
-  const filename = exportMode.value === 'zod' ? 'schema.ts' : 'types.ts'
+  const filename = exportMode.value === 'zod'
+    ? 'schema.ts'
+    : 'types.ts'
   downloadText(filename, output.value, 'text/typescript')
 }
 

@@ -6,7 +6,9 @@ describe('errorKind', () => {
   it('reads http status codes', () => {
     expect(errorKind({ statusCode: 400 })).toBe('validation')
     expect(errorKind({ status: 422 })).toBe('validation')
-    expect(errorKind({ response: { status: 503 } })).toBe('server')
+    expect(errorKind({
+      response: { status: 503 },
+    })).toBe('server')
     expect(errorKind({ statusCode: 404 })).toBe('unknown')
   })
 

@@ -61,7 +61,14 @@ export function computeCollapsibleSections(
     if (n <= context * 2) {
       return []
     }
-    return [{ id: 0, start: context, end: n - context, count: n - context * 2 }]
+    return [
+      {
+        id: 0,
+        start: context,
+        end: n - context,
+        count: n - context * 2,
+      },
+    ]
   }
 
   const dist = new Int32Array(n).fill(999_999)
@@ -97,13 +104,23 @@ export function computeCollapsibleSections(
     else {
       if (inCollapsed) {
         inCollapsed = false
-        sections.push({ id: id++, start, end: i, count: i - start })
+        sections.push({
+          id: id++,
+          start,
+          end: i,
+          count: i - start,
+        })
       }
     }
   }
 
   if (inCollapsed) {
-    sections.push({ id: id++, start, end: n, count: n - start })
+    sections.push({
+      id: id++,
+      start,
+      end: n,
+      count: n - start,
+    })
   }
 
   return sections

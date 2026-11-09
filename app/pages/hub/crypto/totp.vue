@@ -28,7 +28,9 @@ const frozenMs = computed(() => {
     return null
   }
   const parsed = Date.parse(fixedTime.value)
-  return Number.isNaN(parsed) ? null : parsed
+  return Number.isNaN(parsed)
+    ? null
+    : parsed
 })
 
 const base32Secret = computed(() => {
@@ -63,7 +65,9 @@ async function updateTotp() {
       digits: digits.value,
       period: period.value,
       algorithm: algorithm.value,
-      ...(frozenMs.value === null ? {} : { time: frozenMs.value }),
+      ...(frozenMs.value === null
+        ? {}
+        : { time: frozenMs.value }),
     }
 
     const res = await generateTotp(trimmed, options)
@@ -73,7 +77,9 @@ async function updateTotp() {
     errorMessage.value = null
   }
   catch (err) {
-    errorMessage.value = err instanceof Error ? err.message : 'Invalid Base32 secret.'
+    errorMessage.value = err instanceof Error
+      ? err.message
+      : 'Invalid Base32 secret.'
     code.value = ''
   }
 }
@@ -110,7 +116,13 @@ watch(frozenMs, (value) => {
   }
 })
 
-watch([secretInput, digits, period, algorithm, fixedTime], () => {
+watch([
+  secretInput,
+  digits,
+  period,
+  algorithm,
+  fixedTime,
+], () => {
   updateTotp()
 })
 
@@ -131,7 +143,9 @@ async function checkClockOffset() {
     const sentAt = Date.now()
     const response = await fetch('/', { method: 'HEAD', cache: 'no-store' })
     const serverDate = response.headers.get('date')
-    const serverMs = serverDate ? Date.parse(serverDate) : Number.NaN
+    const serverMs = serverDate
+      ? Date.parse(serverDate)
+      : Number.NaN
     clockOffsetSeconds.value = Number.isNaN(serverMs)
       ? null
       : Math.round(((sentAt + Date.now()) / 2 - serverMs) / 1000)

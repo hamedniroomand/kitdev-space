@@ -112,14 +112,18 @@ export function chainRole(cert: TlsCertItem, index: number): TlsCertRole {
   if (index === 0) {
     return 'leaf'
   }
-  return isSelfIssued(cert) ? 'root' : 'intermediate'
+  return isSelfIssued(cert)
+    ? 'root'
+    : 'intermediate'
 }
 
 export function chainRoleLabel(role: TlsCertRole): string {
   if (role === 'leaf') {
     return 'Leaf (server)'
   }
-  return role === 'root' ? 'Root CA' : 'Intermediate CA'
+  return role === 'root'
+    ? 'Root CA'
+    : 'Intermediate CA'
 }
 
 function trustCheck(result: TlsReport): TlsCheck {
@@ -156,14 +160,20 @@ function validityCheck(result: TlsReport): TlsCheck {
   return {
     id: 'validity',
     title: 'Validity Dates',
-    state: result.status === 'expiring_soon' ? 'warn' : 'pass',
+    state: result.status === 'expiring_soon'
+      ? 'warn'
+      : 'pass',
     summary: `${result.daysRemaining} days remain.`,
   }
 }
 
 /** The three independent checks of NET-40. Each one keeps its own state. */
 export function certificateChecks(result: TlsReport): TlsCheck[] {
-  return [trustCheck(result), hostnameCheck(result), validityCheck(result)]
+  return [
+    trustCheck(result),
+    hostnameCheck(result),
+    validityCheck(result),
+  ]
 }
 
 /**
@@ -185,14 +195,18 @@ export function checkColor(state: TlsCheckState): 'success' | 'warning' | 'error
   if (state === 'pass') {
     return 'success'
   }
-  return state === 'warn' ? 'warning' : 'error'
+  return state === 'warn'
+    ? 'warning'
+    : 'error'
 }
 
 export function checkIcon(state: TlsCheckState): string {
   if (state === 'pass') {
     return 'i-lucide-circle-check'
   }
-  return state === 'warn' ? 'i-lucide-triangle-alert' : 'i-lucide-circle-x'
+  return state === 'warn'
+    ? 'i-lucide-triangle-alert'
+    : 'i-lucide-circle-x'
 }
 
 /** The chain problems of NET-41. The tool shows each one. */
@@ -251,7 +265,9 @@ function readHeader(der: Uint8Array, at: number): { tag: number, start: number, 
     cursor += count
   }
   const end = cursor + length
-  return end > der.length ? null : { tag, start: cursor, end }
+  return end > der.length
+    ? null
+    : { tag, start: cursor, end }
 }
 
 function decodeOid(bytes: Uint8Array): string {
@@ -259,7 +275,10 @@ function decodeOid(bytes: Uint8Array): string {
   if (first === undefined) {
     return ''
   }
-  const parts = [String(Math.floor(first / 40)), String(first % 40)]
+  const parts = [
+    String(Math.floor(first / 40)),
+    String(first % 40),
+  ]
   let value = 0
   for (let i = 1; i < bytes.length; i += 1) {
     const byte = bytes[i]!

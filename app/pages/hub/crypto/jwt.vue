@@ -37,25 +37,62 @@ interface JwtCheck {
 
 function claimCheck(label: string, match: JwtClaimMatch, claim: unknown): JwtCheck {
   if (match === 'not-checked') {
-    return { label, value: 'Not checked', description: 'No expected value', color: 'highlighted' }
+    return {
+      label,
+      value: 'Not checked',
+      description: 'No expected value',
+      color: 'highlighted',
+    }
   }
-  const found = Array.isArray(claim) ? claim.join(', ') : String(claim ?? 'no claim')
+  const found = Array.isArray(claim)
+    ? claim.join(', ')
+    : String(claim ?? 'no claim')
   return match === 'match'
-    ? { label, value: 'Match', description: found, color: 'success' }
-    : { label, value: 'Mismatch', description: `Token holds ${found}`, color: 'error' }
+    ? {
+        label,
+        value: 'Match',
+        description: found,
+        color: 'success',
+      }
+    : {
+        label,
+        value: 'Mismatch',
+        description: `Token holds ${found}`,
+        color: 'error',
+      }
 }
 
 function signatureCheck(): JwtCheck {
   const label = 'Signature'
   switch (verifyStatus.value) {
     case 'valid':
-      return { label, value: 'Valid', description: decoded.value?.algorithm ?? '', color: 'success' }
+      return {
+        label,
+        value: 'Valid',
+        description: decoded.value?.algorithm ?? '',
+        color: 'success',
+      }
     case 'invalid':
-      return { label, value: 'Invalid', description: 'The signature does not match', color: 'error' }
+      return {
+        label,
+        value: 'Invalid',
+        description: 'The signature does not match',
+        color: 'error',
+      }
     case 'unsupported':
-      return { label, value: 'Not checked', description: 'Algorithm not supported', color: 'highlighted' }
+      return {
+        label,
+        value: 'Not checked',
+        description: 'Algorithm not supported',
+        color: 'highlighted',
+      }
     default:
-      return { label, value: 'Not checked', description: 'No secret or public key', color: 'highlighted' }
+      return {
+        label,
+        value: 'Not checked',
+        description: 'No secret or public key',
+        color: 'highlighted',
+      }
   }
 }
 
@@ -64,21 +101,43 @@ function timeCheck(): JwtCheck {
   const expired = decoded.value?.expired ?? null
   const notBeforeValid = decoded.value?.notBeforeValid ?? null
   if (expired == null && notBeforeValid == null) {
-    return { label, value: 'Not checked', description: 'No exp or nbf claim', color: 'highlighted' }
+    return {
+      label,
+      value: 'Not checked',
+      description: 'No exp or nbf claim',
+      color: 'highlighted',
+    }
   }
   if (expired === true) {
-    return { label, value: 'Expired', description: 'The exp claim is in the past', color: 'error' }
+    return {
+      label,
+      value: 'Expired',
+      description: 'The exp claim is in the past',
+      color: 'error',
+    }
   }
   if (notBeforeValid === false) {
-    return { label, value: 'Too early', description: 'The nbf claim is in the future', color: 'error' }
+    return {
+      label,
+      value: 'Too early',
+      description: 'The nbf claim is in the future',
+      color: 'error',
+    }
   }
-  return { label, value: 'Valid', description: 'Inside the exp and nbf window', color: 'success' }
+  return {
+    label,
+    value: 'Valid',
+    description: 'Inside the exp and nbf window',
+    color: 'success',
+  }
 }
 
 /** `alg: none` means the token has no signature. It is never valid. */
 const insecureAlgorithm = computed(() => decoded.value?.algorithm?.toLowerCase() === 'none')
 
-const now = useNow({ scheduler: cb => useIntervalFn(cb, 1000) })
+const now = useNow({
+  scheduler: cb => useIntervalFn(cb, 1000),
+})
 const CLAIM_NAMES = ['iat', 'nbf', 'exp'] as const
 const CLAIM_TITLES: Record<string, string> = {
   iat: 'Issued at',
@@ -92,12 +151,14 @@ const claimDates = computed(() => CLAIM_NAMES.flatMap((name) => {
     return []
   }
   const date = new Date(seconds * 1000)
-  return [{
-    name,
-    title: CLAIM_TITLES[name]!,
-    iso: date.toISOString(),
-    relative: formatTimeAgo(date, undefined, now.value.getTime()),
-  }]
+  return [
+    {
+      name,
+      title: CLAIM_TITLES[name]!,
+      iso: date.toISOString(),
+      relative: formatTimeAgo(date, undefined, now.value.getTime()),
+    },
+  ]
 }))
 
 const checks = computed<JwtCheck[]>(() => [

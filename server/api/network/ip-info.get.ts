@@ -10,9 +10,13 @@ export default defineEventHandler(async (event) => {
   enforceRateLimit(clientKey, 'network:ip-info')
 
   const query = getQuery(event)
-  const queryIp = typeof query.ip === 'string' ? query.ip.trim() : ''
+  const queryIp = typeof query.ip === 'string'
+    ? query.ip.trim()
+    : ''
 
-  const clientIp = clientKey === 'anonymous' ? '127.0.0.1' : clientKey
+  const clientIp = clientKey === 'anonymous'
+    ? '127.0.0.1'
+    : clientKey
   const targetIp = queryIp || clientIp
 
   try {
@@ -42,7 +46,9 @@ export default defineEventHandler(async (event) => {
   catch (err) {
     throw createError({
       statusCode: 400,
-      message: err instanceof Error ? err.message : 'Failed to analyze IP address.',
+      message: err instanceof Error
+        ? err.message
+        : 'Failed to analyze IP address.',
     })
   }
 })

@@ -221,7 +221,9 @@ describe('stripImageMetadata with the GPS option', () => {
       const length = view.getUint32(offset, false)
       const name = String.fromCharCode(...result.bytes.subarray(offset + 4, offset + 8))
       if (name === 'eXIf') {
-        const body = [...result.bytes.subarray(offset + 4, offset + 8 + length)]
+        const body = [
+          ...result.bytes.subarray(offset + 4, offset + 8 + length),
+        ]
         expect(view.getUint32(offset + 8 + length, false)).toBe(crc32(body))
         checked = true
       }

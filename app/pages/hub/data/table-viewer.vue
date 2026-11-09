@@ -13,10 +13,34 @@ const sampleCsv = `id,name,role,department,salary
 5,Evan Taylor,Security Analyst,Infra,140000`
 
 const sampleJson = JSON.stringify([
-  { id: 101, product: 'Wireless Mouse', category: 'Electronics', price: 29.99, inStock: true },
-  { id: 102, product: 'Mechanical Keyboard', category: 'Electronics', price: 89.99, inStock: true },
-  { id: 103, product: 'Ergonomic Desk Chair', category: 'Furniture', price: 249.50, inStock: false },
-  { id: 104, product: 'USB-C Cable Pack', category: 'Accessories', price: 15.00, inStock: true },
+  {
+    id: 101,
+    product: 'Wireless Mouse',
+    category: 'Electronics',
+    price: 29.99,
+    inStock: true,
+  },
+  {
+    id: 102,
+    product: 'Mechanical Keyboard',
+    category: 'Electronics',
+    price: 89.99,
+    inStock: true,
+  },
+  {
+    id: 103,
+    product: 'Ergonomic Desk Chair',
+    category: 'Furniture',
+    price: 249.50,
+    inStock: false,
+  },
+  {
+    id: 104,
+    product: 'USB-C Cable Pack',
+    category: 'Accessories',
+    price: 15.00,
+    inStock: true,
+  },
 ], null, 2)
 
 const { consumeHandoffData } = useTableViewerHandoff()
@@ -65,7 +89,9 @@ function handleSort(col: string) {
 }
 
 function handleLoadSample(type: 'csv' | 'json') {
-  input.value = type === 'csv' ? sampleCsv : sampleJson
+  input.value = type === 'csv'
+    ? sampleCsv
+    : sampleJson
   sortColumn.value = null
   searchQuery.value = ''
 }

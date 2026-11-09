@@ -70,9 +70,13 @@ const overrides = ref<Record<string, string>>({})
 const { error, result } = useLiveTool<TailwindShade[]>(
   () => generateTailwindPalette(inputColor.value, anchorShade.value).map((shade) => {
     const override = overrides.value[shade.shade]
-    return override ? { ...shade, hex: override } : shade
+    return override
+      ? { ...shade, hex: override }
+      : shade
   }),
-  { option: () => format.value },
+  {
+    option: () => format.value,
+  },
 )
 
 const palette = computed<TailwindShade[]>(() => result.value ?? [])
@@ -87,7 +91,9 @@ const chips = computed(() => palette.value.map((shade) => {
   return {
     ...shade,
     isAnchor: shade.shade === anchorShade.value,
-    foreground: onWhite >= onBlack ? WHITE : BLACK,
+    foreground: onWhite >= onBlack
+      ? WHITE
+      : BLACK,
     white: WHITE,
     black: BLACK,
     whiteAa: wcagLevel(onWhite).aa,

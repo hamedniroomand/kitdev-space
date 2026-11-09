@@ -57,7 +57,9 @@ if (props.sample === 'svg') {
 
 function loadSample(type: 'card' | 'svg') {
   reportInput('sample')
-  htmlInput.value = type === 'card' ? sampleHtml : sampleSvg
+  htmlInput.value = type === 'card'
+    ? sampleHtml
+    : sampleSvg
   // An icon component takes props, so turn the spread on with the SVG sample.
   if (type === 'svg') {
     targetFormat.value = 'jsx'
@@ -90,7 +92,10 @@ const conversion = computed<ConvertResult>(() => {
   return convertHtmlToVue(htmlInput.value, { wrapSfc: targetFormat.value === 'vue-sfc' })
 })
 
-useLiveTool(conversion, { runLocation: 'browser', option: () => targetFormat.value })
+useLiveTool(conversion, {
+  runLocation: 'browser',
+  option: () => targetFormat.value,
+})
 
 const convertedOutput = computed(() => conversion.value.code)
 const notes = computed(() => conversion.value.notes)
@@ -115,9 +120,13 @@ function handleDownload() {
   const isJsx = targetFormat.value === 'jsx'
   const isSfc = targetFormat.value === 'vue-sfc'
 
-  const ext = isJsx ? 'jsx' : (isSfc ? 'vue' : 'html')
+  const ext = isJsx
+    ? 'jsx'
+    : (isSfc ? 'vue' : 'html')
   const mime = isJsx ? 'text/javascript' : 'text/html'
-  const name = isJsx ? (componentName.value || 'Component') : 'Template'
+  const name = isJsx
+    ? (componentName.value || 'Component')
+    : 'Template'
 
   downloadText(`${name}.${ext}`, convertedOutput.value, mime)
 }

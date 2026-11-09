@@ -27,7 +27,9 @@ const isMatch = computed(() => props.matchIds?.has(props.node.id) ?? false)
 const isTabStop = computed(() => isSelected.value || (!props.selectedId && level.value === 1))
 
 const title = computed(() => {
-  return props.node.label ? `${props.node.type} · ${props.node.label}` : props.node.type
+  return props.node.label
+    ? `${props.node.type} · ${props.node.label}`
+    : props.node.type
 })
 
 const spanText = computed(() => {
@@ -69,12 +71,18 @@ function selectNode() {
 /** Only the open branches are in the DOM, so document order is visible order. */
 function visibleItems(): HTMLElement[] {
   const root = item.value?.closest('[role="tree"]')
-  return root ? [...root.querySelectorAll<HTMLElement>('[role="treeitem"]')] : []
+  return root
+    ? [
+        ...root.querySelectorAll<HTMLElement>('[role="treeitem"]'),
+      ]
+    : []
 }
 
 function moveFocus(step: number) {
   const items = visibleItems()
-  const index = item.value ? items.indexOf(item.value) : -1
+  const index = item.value
+    ? items.indexOf(item.value)
+    : -1
   items[index + step]?.focus()
 }
 

@@ -21,7 +21,12 @@ const expected = ref('')
 
 const { copy, label, color, icon } = useCopyFeedback()
 
-const algorithms: HmacAlgorithm[] = ['SHA-256', 'SHA-384', 'SHA-512', 'SHA-1']
+const algorithms: HmacAlgorithm[] = [
+  'SHA-256',
+  'SHA-384',
+  'SHA-512',
+  'SHA-1',
+]
 const keyFormats: { label: string, value: HmacKeyFormat }[] = [
   { label: 'Text (UTF-8)', value: 'text' },
   { label: 'Hex', value: 'hex' },
@@ -58,14 +63,22 @@ const result = computedAsync<HmacResult>(async () => {
   try {
     const bytes = await hmacBytes(text, decodeHmacKey(key, format), algo)
     const encoded = encodeHmac(bytes, enc)
-    return { signature: enc === 'hex' && upper ? encoded.toUpperCase() : encoded, bytes, error: null }
+    return {
+      signature: enc === 'hex' && upper
+        ? encoded.toUpperCase()
+        : encoded,
+      bytes,
+      error: null,
+    }
   }
   catch (cause) {
     return { signature: '', bytes: null, error: cause }
   }
 }, EMPTY_RESULT)
 
-useLiveTool(result, { option: () => algorithm.value })
+useLiveTool(result, {
+  option: () => algorithm.value,
+})
 
 const signature = computed(() => result.value.signature)
 const signatureBytes = computed(() => result.value.bytes)
@@ -74,7 +87,9 @@ const errorMessage = computed(() => {
   if (!error) {
     return null
   }
-  return error instanceof Error ? error.message : 'Failed to compute HMAC signature.'
+  return error instanceof Error
+    ? error.message
+    : 'Failed to compute HMAC signature.'
 })
 
 // Only the message reports its size. The secret key never reaches analytics.

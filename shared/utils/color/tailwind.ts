@@ -9,7 +9,19 @@ export interface TailwindShade {
 
 export type TailwindPalette = Record<string, string>
 
-export const SHADE_KEYS = ['50', '100', '200', '300', '400', '500', '600', '700', '800', '900', '950'] as const
+export const SHADE_KEYS = [
+  '50',
+  '100',
+  '200',
+  '300',
+  '400',
+  '500',
+  '600',
+  '700',
+  '800',
+  '900',
+  '950',
+] as const
 
 export type ShadeKey = typeof SHADE_KEYS[number]
 
@@ -70,12 +82,17 @@ export function generateTailwindPalette(
   const parsed = parseColor(colorInput)
   const base = rgbToOklch(parsed.rgb)
   const requested = SHADE_KEYS.indexOf(anchorShade)
-  const anchorIndex = requested < 0 ? DEFAULT_ANCHOR_INDEX : requested
+  const anchorIndex = requested < 0
+    ? DEFAULT_ANCHOR_INDEX
+    : requested
   const anchor = REFERENCE_RAMP[anchorIndex]!
 
   return SHADE_KEYS.map((shade, index) => {
     if (index === anchorIndex) {
-      return { shade, hex: parsed.hex.toLowerCase() }
+      return {
+        shade,
+        hex: parsed.hex.toLowerCase(),
+      }
     }
 
     const step = REFERENCE_RAMP[index]!
@@ -84,11 +101,16 @@ export function generateTailwindPalette(
       : base.l * (step.l / anchor.l)
     const color = fitToSrgb({
       l: lightness,
-      c: anchor.c === 0 ? 0 : base.c * (step.c / anchor.c),
+      c: anchor.c === 0
+        ? 0
+        : base.c * (step.c / anchor.c),
       h: (base.h + step.h - anchor.h + 360) % 360,
     })
 
-    return { shade, hex: rgbToHex(oklchToRgb(color)) }
+    return {
+      shade,
+      hex: rgbToHex(oklchToRgb(color)),
+    }
   })
 }
 

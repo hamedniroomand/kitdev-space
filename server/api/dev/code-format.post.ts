@@ -41,7 +41,9 @@ export default defineEventHandler(async (event) => {
     return { result: result.code, engine: result.engine }
   }
   catch (cause) {
-    const message = cause instanceof Error ? cause.message : 'The format operation failed.'
+    const message = cause instanceof Error
+      ? cause.message
+      : 'The format operation failed.'
     throw createError({
       statusCode: 400,
       message,

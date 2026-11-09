@@ -153,7 +153,9 @@ const cropAspect = computed<number | null>(() => {
     return null
   }
   if (mode === 'output') {
-    return resizes.value && width.value > 0 && height.value > 0 ? width.value / height.value : null
+    return resizes.value && width.value > 0 && height.value > 0
+      ? width.value / height.value
+      : null
   }
   return CROP_ASPECTS.find(item => item.value === mode)?.ratio ?? null
 })
@@ -284,7 +286,10 @@ async function process() {
         throw new Error('A batch runs in your browser. Choose WebP, JPEG, or PNG.')
       }
 
-      const batch = await processImageBatch(files.value, { ...browserOptions(), cropRect: null })
+      const batch = await processImageBatch(files.value, {
+        ...browserOptions(),
+        cropRect: null,
+      })
       batchRows.value = batch.rows
       batchZip.value = batch.zip
 

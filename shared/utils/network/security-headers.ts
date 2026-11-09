@@ -133,7 +133,11 @@ function scoreFromFindings(findings: SecurityFinding[]): number {
   let max = 0
 
   for (const item of scored) {
-    const weight = item.level === 'error' ? 3 : item.level === 'warning' ? 2 : 1
+    const weight = item.level === 'error'
+      ? 3
+      : item.level === 'warning'
+        ? 2
+        : 1
     max += weight * 10
     if (item.level === 'ok') {
       points += weight * 10
@@ -241,7 +245,9 @@ function hstsPreloadFinding(hsts: string): SecurityFinding {
 
   return finding({
     id: 'hsts-preload',
-    level: missing.length === 0 ? 'ok' : 'info',
+    level: missing.length === 0
+      ? 'ok'
+      : 'info',
     header: 'Strict-Transport-Security',
     title: missing.length === 0
       ? 'HSTS meets the preload requirements'
@@ -408,15 +414,21 @@ export function analyzeSecurityHeaders(
 
     findings.push(finding({
       id: 'csp',
-      level: problems.length > 0 ? 'warning' : 'ok',
+      level: problems.length > 0
+        ? 'warning'
+        : 'ok',
       header: 'Content-Security-Policy',
       title: problems.length > 0
-        ? `CSP is present with ${problems.length} problem${problems.length === 1 ? '' : 's'}`
+        ? `CSP is present with ${problems.length} problem${problems.length === 1
+          ? ''
+          : 's'}`
         : 'CSP is present',
       detail: problems.length > 0
         ? `${problems.join(' ')} Directives: ${Object.keys(directives).join(', ')}.`
         : csp,
-      fix: fixes.length > 0 ? fixes.join(' ') : null,
+      fix: fixes.length > 0
+        ? fixes.join(' ')
+        : null,
       present: true,
       value: csp,
     }))
@@ -434,10 +446,14 @@ export function analyzeSecurityHeaders(
 
   if (hsts) {
     const maxAge = /max-age=(\d+)/i.exec(hsts)
-    const seconds = maxAge ? Number(maxAge[1]) : 0
+    const seconds = maxAge
+      ? Number(maxAge[1])
+      : 0
     findings.push(finding({
       id: 'hsts',
-      level: seconds >= 15_552_000 ? 'ok' : 'warning',
+      level: seconds >= 15_552_000
+        ? 'ok'
+        : 'warning',
       header: 'Strict-Transport-Security',
       title: seconds >= 15_552_000
         ? 'HSTS is present'
@@ -568,7 +584,9 @@ export function analyzeSecurityHeaders(
   else if (allowOrigin === '*') {
     corsFindings.push(finding({
       id: 'cors-origin',
-      level: allowCredentials?.toLowerCase() === 'true' ? 'error' : 'warning',
+      level: allowCredentials?.toLowerCase() === 'true'
+        ? 'error'
+        : 'warning',
       header: 'Access-Control-Allow-Origin',
       title: allowCredentials?.toLowerCase() === 'true'
         ? 'CORS allows all origins with credentials'
@@ -647,7 +665,9 @@ export function analyzeSecurityHeaders(
         ? `CORS allows the ${requestMethod} method`
         : `CORS does not allow the ${requestMethod} method`,
       detail: allowMethods,
-      fix: allowed ? null : `Add ${requestMethod} to Access-Control-Allow-Methods for this origin.`,
+      fix: allowed
+        ? null
+        : `Add ${requestMethod} to Access-Control-Allow-Methods for this origin.`,
       present: true,
       value: allowMethods,
     }))
@@ -683,7 +703,9 @@ export function analyzeSecurityHeaders(
     const accepted = options.preflightStatus >= 200 && options.preflightStatus < 300
     corsFindings.push(finding({
       id: 'cors-preflight',
-      level: redirected ? 'error' : accepted ? 'ok' : 'warning',
+      level: redirected
+        ? 'error'
+        : accepted ? 'ok' : 'warning',
       header: 'Preflight',
       title: redirected
         ? 'The preflight response is a redirect'
@@ -727,7 +749,10 @@ export function analyzeSecurityHeaders(
     }))
   }
 
-  const allFindings = [...findings, ...corsFindings]
+  const allFindings = [
+    ...findings,
+    ...corsFindings,
+  ]
   const score = scoreFromFindings(allFindings)
 
   return {

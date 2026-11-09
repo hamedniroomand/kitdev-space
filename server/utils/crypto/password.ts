@@ -6,7 +6,15 @@ const MAX_PASSWORD_LENGTH = 1024
 const MAX_HASH_LENGTH = 512
 
 /** The prefixes that Bun.password.verify reads. Bcrypt is not strict PHC, so it needs its own entries. */
-const HASH_PREFIXES = ['$argon2i$', '$argon2d$', '$argon2id$', '$2a$', '$2b$', '$2y$', '$scrypt$']
+const HASH_PREFIXES = [
+  '$argon2i$',
+  '$argon2d$',
+  '$argon2id$',
+  '$2a$',
+  '$2b$',
+  '$2y$',
+  '$scrypt$',
+]
 
 export type PasswordAlgorithm = 'argon2id' | 'bcrypt'
 

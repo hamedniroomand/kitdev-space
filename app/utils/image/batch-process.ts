@@ -21,7 +21,9 @@ export interface ImageBatchResult {
 
 function stem(name: string): string {
   const dot = name.lastIndexOf('.')
-  return dot > 0 ? name.slice(0, dot) : name
+  return dot > 0
+    ? name.slice(0, dot)
+    : name
 }
 
 /**
@@ -47,7 +49,9 @@ export async function processImageBatch(
         name,
         inputBytes: file.size,
         outputBytes: result.outputBytes,
-        delta: file.size > 0 ? Math.round((1 - result.outputBytes / file.size) * 100) : null,
+        delta: file.size > 0
+          ? Math.round((1 - result.outputBytes / file.size) * 100)
+          : null,
         error: null,
       })
     }
@@ -57,13 +61,17 @@ export async function processImageBatch(
         inputBytes: file.size,
         outputBytes: null,
         delta: null,
-        error: cause instanceof Error ? cause.message : 'The image operation failed.',
+        error: cause instanceof Error
+          ? cause.message
+          : 'The image operation failed.',
       })
     }
   }
 
   return {
     rows,
-    zip: Object.keys(entries).length > 0 ? zipInBrowser(entries) : null,
+    zip: Object.keys(entries).length > 0
+      ? zipInBrowser(entries)
+      : null,
   }
 }

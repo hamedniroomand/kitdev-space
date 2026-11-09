@@ -41,7 +41,9 @@ function screenLuminance({ r, g, b }: Rgb): number {
 
 /** A color that is near black gets a soft clamp. */
 function clampBlack(y: number): number {
-  return y > BLACK_THRESHOLD ? y : y + (BLACK_THRESHOLD - y) ** BLACK_CLAMP
+  return y > BLACK_THRESHOLD
+    ? y
+    : y + (BLACK_THRESHOLD - y) ** BLACK_CLAMP
 }
 
 /**
@@ -60,11 +62,15 @@ export function apcaContrast(text: string, background: string): number {
 
   if (backgroundY > textY) {
     const sapc = (backgroundY ** NORM_BG - textY ** NORM_TXT) * SCALE
-    return sapc < LOW_CLIP ? 0 : (sapc - LOW_OFFSET) * 100
+    return sapc < LOW_CLIP
+      ? 0
+      : (sapc - LOW_OFFSET) * 100
   }
 
   const sapc = (backgroundY ** REV_BG - textY ** REV_TXT) * SCALE
-  return sapc > -LOW_CLIP ? 0 : (sapc + LOW_OFFSET) * 100
+  return sapc > -LOW_CLIP
+    ? 0
+    : (sapc + LOW_OFFSET) * 100
 }
 
 export interface ApcaLevel {

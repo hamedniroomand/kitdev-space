@@ -88,8 +88,12 @@ export function parseTotpUri(uri: string): {
       secret,
       issuer,
       label,
-      period: Number.isNaN(period) ? 30 : period,
-      digits: Number.isNaN(digits) ? 6 : digits,
+      period: Number.isNaN(period)
+        ? 30
+        : period,
+      digits: Number.isNaN(digits)
+        ? 6
+        : digits,
       algorithm,
     }
   }
@@ -117,7 +121,9 @@ export function buildTotpUri(params: TotpUriParams): string {
 
   const query = [
     `secret=${encodeURIComponent(secret.toUpperCase().replace(/\s+/g, ''))}`,
-    ...(issuer ? [`issuer=${encodeURIComponent(issuer)}`] : []),
+    ...(issuer
+      ? [`issuer=${encodeURIComponent(issuer)}`]
+      : []),
     `algorithm=${algorithm.replace('-', '')}`,
     `digits=${digits}`,
     `period=${period}`,
@@ -162,7 +168,10 @@ export async function generateTotp(
   const cryptoKey = await cryptoObj.subtle.importKey(
     'raw',
     keyBytes as unknown as BufferSource,
-    { name: 'HMAC', hash: { name: algorithm } },
+    {
+      name: 'HMAC',
+      hash: { name: algorithm },
+    },
     false,
     ['sign'],
   )

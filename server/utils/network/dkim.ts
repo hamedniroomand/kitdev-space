@@ -34,19 +34,39 @@ export async function lookupDkimSelector(
   const cname = cnames[0]?.replace(/\.$/, '').toLowerCase() ?? null
 
   if (records === null) {
-    return { selector, records: [], lookup: 'failed', cname }
+    return {
+      selector,
+      records: [],
+      lookup: 'failed',
+      cname,
+    }
   }
 
   if (records.length > 0 || !cname) {
-    return { selector, records, lookup: 'ok', cname }
+    return {
+      selector,
+      records,
+      lookup: 'ok',
+      cname,
+    }
   }
 
   const viaCname = await resolvers.txt(cname).catch(() => null)
   if (viaCname === null) {
-    return { selector, records: [], lookup: 'failed', cname }
+    return {
+      selector,
+      records: [],
+      lookup: 'failed',
+      cname,
+    }
   }
 
-  return { selector, records: viaCname, lookup: 'ok', cname }
+  return {
+    selector,
+    records: viaCname,
+    lookup: 'ok',
+    cname,
+  }
 }
 
 export function lookupDkimSelectors(

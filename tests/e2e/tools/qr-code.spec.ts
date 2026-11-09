@@ -73,7 +73,9 @@ test.describe('QR Code Studio tool', () => {
         }
       }).BarcodeDetector
       if (Detector) {
-        const decoded = await new Detector({ formats: ['qr_code'] })
+        const decoded = await new Detector({
+          formats: ['qr_code'],
+        })
           .detect(bitmap)
           .then(codes => codes[0]?.rawValue)
           .catch(() => undefined)
@@ -93,7 +95,9 @@ test.describe('QR Code Studio tool', () => {
       const { data } = context.getImageData(0, 0, canvas.width, canvas.height)
       let dark = ''
       for (let i = 0; i < data.length; i += 4) {
-        dark += (data[i] ?? 255) < 128 ? '1' : '0'
+        dark += (data[i] ?? 255) < 128
+          ? '1'
+          : '0'
       }
       return { width: canvas.width, dark }
     })

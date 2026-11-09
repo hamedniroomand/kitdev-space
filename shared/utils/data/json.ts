@@ -39,7 +39,11 @@ export function formatJson(
   if (space === 'compact' || space === 0 || space === '0') {
     return JSON.stringify(parsed)
   }
-  const resolvedSpace = space === 'tab' ? '\t' : (typeof space === 'string' && /^\d+$/.test(space) ? Number(space) : space)
+  const resolvedSpace = space === 'tab'
+    ? '\t'
+    : (typeof space === 'string' && /^\d+$/.test(space)
+        ? Number(space)
+        : space)
   return JSON.stringify(parsed, null, resolvedSpace as number | string)
 }
 
@@ -59,7 +63,9 @@ export function validateJson(input: string): { ok: true } | { ok: false, error: 
   catch (cause) {
     return {
       ok: false,
-      error: cause instanceof DataError ? cause : formatJsonError(cause, input),
+      error: cause instanceof DataError
+        ? cause
+        : formatJsonError(cause, input),
     }
   }
 }
@@ -137,7 +143,10 @@ export function detectJsonWarnings(input: string): JsonWarning[] {
     const char = input[index]!
 
     if (char === '{') {
-      scopeStack.push({ type: 'object', keys: new Set() })
+      scopeStack.push({
+        type: 'object',
+        keys: new Set(),
+      })
       index++
       continue
     }
@@ -151,7 +160,10 @@ export function detectJsonWarnings(input: string): JsonWarning[] {
     }
 
     if (char === '[') {
-      scopeStack.push({ type: 'array', keys: new Set() })
+      scopeStack.push({
+        type: 'array',
+        keys: new Set(),
+      })
       index++
       continue
     }

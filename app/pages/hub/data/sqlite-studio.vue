@@ -54,7 +54,9 @@ const { copy, label: copyLabel, icon: copyIcon, color: copyColor } = useCopyFeed
 
 const activeStatement = ref(0)
 
-const sqlExtensions = [sqliteCompletion(() => tables.value)]
+const sqlExtensions = [
+  sqliteCompletion(() => tables.value),
+]
 
 function handleDroppedFile(file: File) {
   if (/\.(?:csv|tsv)$/i.test(file.name)) {

@@ -48,14 +48,18 @@ describe('diffTexts', () => {
         text: 'old',
         oldLine: 1,
         newLine: null,
-        spans: [{ type: 'delete', text: 'old' }],
+        spans: [
+          { type: 'delete', text: 'old' },
+        ],
       },
       {
         type: 'insert',
         text: 'new',
         oldLine: null,
         newLine: 1,
-        spans: [{ type: 'insert', text: 'new' }],
+        spans: [
+          { type: 'insert', text: 'new' },
+        ],
       },
     ])
   })
@@ -190,8 +194,12 @@ describe('diff memory guard and limits', () => {
   })
 
   it('safely handles large near-divergent inputs with memory guard', () => {
-    const left = Array.from({ length: 10_000 }, (_, i) => (i === 5_000 ? 'shared-line' : `left-${i}`)).join('\n')
-    const right = Array.from({ length: 10_000 }, (_, i) => (i === 5_000 ? 'shared-line' : `right-${i}`)).join('\n')
+    const left = Array.from({ length: 10_000 }, (_, i) => (i === 5_000
+      ? 'shared-line'
+      : `left-${i}`)).join('\n')
+    const right = Array.from({ length: 10_000 }, (_, i) => (i === 5_000
+      ? 'shared-line'
+      : `right-${i}`)).join('\n')
 
     const start = performance.now()
     const result = diffTexts(left, right)

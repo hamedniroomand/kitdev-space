@@ -24,7 +24,9 @@ Sentry.init({
     'NetworkError',
   ],
   beforeBreadcrumb(breadcrumb) {
-    return breadcrumb.category === 'console' ? null : breadcrumb
+    return breadcrumb.category === 'console'
+      ? null
+      : breadcrumb
   },
   beforeSend(event) {
     if (event.request) {

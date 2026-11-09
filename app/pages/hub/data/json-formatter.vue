@@ -62,7 +62,9 @@ const { execute: workerFormat, isRunning: workerRunning, stop: stopWorker } = us
     if (data.space === 'compact') {
       return JSON.stringify(val)
     }
-    const resolvedSpace = data.space === 'tab' ? '\t' : Number(data.space)
+    const resolvedSpace = data.space === 'tab'
+      ? '\t'
+      : Number(data.space)
     return JSON.stringify(val, null, resolvedSpace)
   },
   { timeout: 30_000 },

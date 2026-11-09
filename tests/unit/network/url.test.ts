@@ -23,8 +23,20 @@ describe('inspectUrl', () => {
       pathnameDecoded: '/path',
       search: '?q=1&x=2',
       params: [
-        { key: 'q', value: '1', rawKey: 'q', rawValue: '1', bare: false },
-        { key: 'x', value: '2', rawKey: 'x', rawValue: '2', bare: false },
+        {
+          key: 'q',
+          value: '1',
+          rawKey: 'q',
+          rawValue: '1',
+          bare: false,
+        },
+        {
+          key: 'x',
+          value: '2',
+          rawKey: 'x',
+          rawValue: '2',
+          bare: false,
+        },
       ],
       hash: '#top',
     })
@@ -38,7 +50,13 @@ describe('inspectUrl', () => {
 
   it('accepts an incomplete escape', () => {
     const parts = inspectUrl('https://example.com/?a=100%')
-    expect(parts.params[0]).toEqual({ key: 'a', value: '100%', rawKey: 'a', rawValue: '100%', bare: false })
+    expect(parts.params[0]).toEqual({
+      key: 'a',
+      value: '100%',
+      rawKey: 'a',
+      rawValue: '100%',
+      bare: false,
+    })
   })
 
   it('rejects empty input', () => {
@@ -58,7 +76,13 @@ describe('parseQueryParams', () => {
 
   it('reads a key with no value', () => {
     expect(parseQueryParams('?flag')).toEqual([
-      { key: 'flag', value: '', rawKey: 'flag', rawValue: '', bare: true },
+      {
+        key: 'flag',
+        value: '',
+        rawKey: 'flag',
+        rawValue: '',
+        bare: true,
+      },
     ])
   })
 
@@ -73,7 +97,15 @@ describe('parseQueryParams', () => {
 })
 
 describe('buildQueryString', () => {
-  const samples = ['?a=1&a=2', '?q=a+b', '?q=a%20b', '?e=%E2%9C%93', '?flag', '?x=', '?a=100%']
+  const samples = [
+    '?a=1&a=2',
+    '?q=a+b',
+    '?q=a%20b',
+    '?e=%E2%9C%93',
+    '?flag',
+    '?x=',
+    '?a=100%',
+  ]
 
   it.each(samples)('rebuilds %s without a change', (search) => {
     expect(buildQueryString(parseQueryParams(search))).toBe(search.slice(1))

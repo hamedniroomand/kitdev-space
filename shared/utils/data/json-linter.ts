@@ -16,15 +16,21 @@ export function jsonParseLinter() {
     }
     catch {
       const pos = getJsonErrorPosition(text)
-      const from = pos ? Math.min(pos.position, view.state.doc.length) : 0
+      const from = pos
+        ? Math.min(pos.position, view.state.doc.length)
+        : 0
       const to = Math.min(from + 1, view.state.doc.length)
-      const lineInfo = pos ? ` (Line ${pos.line}, column ${pos.column})` : ''
-      return [{
-        from,
-        to: Math.max(to, from),
-        severity: 'error',
-        message: `Invalid JSON syntax${lineInfo}`,
-      }]
+      const lineInfo = pos
+        ? ` (Line ${pos.line}, column ${pos.column})`
+        : ''
+      return [
+        {
+          from,
+          to: Math.max(to, from),
+          severity: 'error',
+          message: `Invalid JSON syntax${lineInfo}`,
+        },
+      ]
     }
   }
 }

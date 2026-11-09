@@ -139,7 +139,9 @@ function octal(bytes: Uint8Array, offset: number, length: number): number {
 
   const raw = text(bytes, offset, length).trim()
   const parsed = Number.parseInt(raw, 8)
-  return Number.isFinite(parsed) ? parsed : 0
+  return Number.isFinite(parsed)
+    ? parsed
+    : 0
 }
 
 function isEmptyBlock(bytes: Uint8Array, offset: number): boolean {
@@ -221,7 +223,9 @@ function walkTar(bytes: Uint8Array): TarBlock[] {
       const records = parsePaxRecords(bytes, content, rawSize)
       longName = records.get('path') ?? longName
       const size = Number(records.get('size'))
-      longSize = Number.isFinite(size) ? size : null
+      longSize = Number.isFinite(size)
+        ? size
+        : null
       offset = content + padded
       continue
     }
@@ -233,7 +237,9 @@ function walkTar(bytes: Uint8Array): TarBlock[] {
 
     const prefix = text(bytes, offset + 345, 155)
     const name = text(bytes, offset, 100)
-    const path = longName ?? (prefix ? `${prefix}/${name}` : name)
+    const path = longName ?? (prefix
+      ? `${prefix}/${name}`
+      : name)
     const size = longSize ?? rawSize
     longName = null
     longSize = null
@@ -243,7 +249,12 @@ function walkTar(bytes: Uint8Array): TarBlock[] {
       const clean = path.replace(/^\.\//, '').replace(/\/$/, '')
 
       if (clean) {
-        entries.push({ path: clean, size, type, offset: content })
+        entries.push({
+          path: clean,
+          size,
+          type,
+          offset: content,
+        })
       }
     }
 
@@ -271,7 +282,9 @@ function listZipEntries(input: Uint8Array): TarEntry[] {
           entries.push({
             path: clean,
             size: file.originalSize ?? 0,
-            type: file.name.endsWith('/') ? 'directory' : 'file',
+            type: file.name.endsWith('/')
+              ? 'directory'
+              : 'file',
           })
         }
         return false
@@ -291,7 +304,9 @@ function readZipEntry(input: Uint8Array, path: string): Uint8Array {
 
   let found: Record<string, Uint8Array>
   try {
-    found = unzipSync(input, { filter: file => file.name.replace(/^\.\//, '') === path })
+    found = unzipSync(input, {
+      filter: file => file.name.replace(/^\.\//, '') === path,
+    })
   }
   catch (cause) {
     throw new Error(INVALID_ARCHIVE, { cause })
@@ -322,7 +337,11 @@ export function openArchive(input: Uint8Array): Archive {
     if (entries.length === 0) {
       throw new Error(INVALID_ARCHIVE)
     }
-    return { format, entries, read: path => readZipEntry(input, path) }
+    return {
+      format,
+      entries,
+      read: path => readZipEntry(input, path),
+    }
   }
 
   const bytes = inflateArchive(input)
@@ -379,7 +398,9 @@ export function buildPathTree(entries: TarEntry[]): TarTreeNode[] {
     let parentPath = ''
 
     segments.forEach((name, depth) => {
-      const path = parentPath ? `${parentPath}/${name}` : name
+      const path = parentPath
+        ? `${parentPath}/${name}`
+        : name
       const last = depth === segments.length - 1
       let node = index.get(path)
 
@@ -461,7 +482,13 @@ const TEXT_LANG: Record<string, ToolEditorLang> = {
   txt: 'text',
 }
 
-const TEXT_NAMES = new Set(['changelog', 'dockerfile', 'license', 'makefile', 'readme'])
+const TEXT_NAMES = new Set([
+  'changelog',
+  'dockerfile',
+  'license',
+  'makefile',
+  'readme',
+])
 
 /**
  * Reports how the page can show one entry.
@@ -471,7 +498,9 @@ const TEXT_NAMES = new Set(['changelog', 'dockerfile', 'license', 'makefile', 'r
  */
 export function previewFor(path: string, size: number): EntryPreview {
   const name = (path.split('/').pop() ?? '').toLowerCase()
-  const extension = name.includes('.') ? name.slice(name.lastIndexOf('.') + 1) : ''
+  const extension = name.includes('.')
+    ? name.slice(name.lastIndexOf('.') + 1)
+    : ''
   const mime = IMAGE_MIME[extension]
 
   if (size >= MAX_PREVIEW_BYTES) {
@@ -481,8 +510,14 @@ export function previewFor(path: string, size: number): EntryPreview {
     return { kind: 'image', mime }
   }
 
-  const lang = extension ? TEXT_LANG[extension] : (TEXT_NAMES.has(name) ? 'text' : undefined)
-  return lang ? { kind: 'text', lang } : { kind: 'none' }
+  const lang = extension
+    ? TEXT_LANG[extension]
+    : (TEXT_NAMES.has(name)
+        ? 'text'
+        : undefined)
+  return lang
+    ? { kind: 'text', lang }
+    : { kind: 'none' }
 }
 
 /**

@@ -80,7 +80,9 @@ describe('lookupDns', () => {
 
     try {
       const result = await lookupDns('example.com', 'MX')
-      expect(result).toEqual([{ priority: 10, exchange: 'mail.example.com' }])
+      expect(result).toEqual([
+        { priority: 10, exchange: 'mail.example.com' },
+      ])
     }
     finally {
       resolveMx.mockRestore()
@@ -120,7 +122,9 @@ describe('lookupDns', () => {
 
     try {
       const result = await lookupDns('example.com', 'CAA')
-      expect(result).toEqual([{ critical: 0, issue: 'letsencrypt.org' }])
+      expect(result).toEqual([
+        { critical: 0, issue: 'letsencrypt.org' },
+      ])
     }
     finally {
       resolveCaa.mockRestore()
@@ -146,12 +150,16 @@ describe('lookupAllDns', () => {
   function mockAll(overrides: Partial<Record<string, unknown>> = {}) {
     const spies = [
       spyOn(bunDns, 'resolve').mockResolvedValue(
-        (overrides.resolve ?? [{ address: '93.184.216.34', ttl: 60 }]) as never,
+        (overrides.resolve ?? [
+          { address: '93.184.216.34', ttl: 60 },
+        ]) as never,
       ),
       spyOn(bunDns, 'resolveCname').mockRejectedValue(
         Object.assign(new Error('queryCname ENOTFOUND'), { code: 'DNS_ENOTFOUND' }),
       ),
-      spyOn(bunDns, 'resolveMx').mockResolvedValue([{ priority: 10, exchange: 'mail.example.com' }]),
+      spyOn(bunDns, 'resolveMx').mockResolvedValue([
+        { priority: 10, exchange: 'mail.example.com' },
+      ]),
       spyOn(bunDns, 'resolveNs').mockResolvedValue(['a.iana-servers.net']),
       spyOn(bunDns, 'resolveSoa').mockResolvedValue({
         nsname: 'ns1.example.com',
@@ -162,8 +170,12 @@ describe('lookupAllDns', () => {
         expire: 604800,
         minttl: 300,
       }),
-      spyOn(bunDns, 'resolveTxt').mockResolvedValue([['v=spf1 ', '-all']]),
-      spyOn(bunDns, 'resolveCaa').mockResolvedValue([{ critical: 0, issue: 'letsencrypt.org' }]),
+      spyOn(bunDns, 'resolveTxt').mockResolvedValue([
+        ['v=spf1 ', '-all'],
+      ]),
+      spyOn(bunDns, 'resolveCaa').mockResolvedValue([
+        { critical: 0, issue: 'letsencrypt.org' },
+      ]),
     ]
     return () => spies.forEach(spy => spy.mockRestore())
   }

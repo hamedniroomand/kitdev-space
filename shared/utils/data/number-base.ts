@@ -14,7 +14,9 @@ export function parseNumberToBigInt(value: string, base: NumberBase): bigint {
   }
 
   const isNegative = clean.startsWith('-')
-  const unsigned = isNegative ? clean.slice(1) : clean
+  const unsigned = isNegative
+    ? clean.slice(1)
+    : clean
 
   // Strip prefixes if present
   let normalized = unsigned
@@ -59,7 +61,9 @@ export function parseNumberToBigInt(value: string, base: NumberBase): bigint {
     throw new Error('Unsupported base.')
   }
 
-  return isNegative ? -n : n
+  return isNegative
+    ? -n
+    : n
 }
 
 export function convertFromBase(value: string, base: NumberBase): NumberBases {
@@ -79,7 +83,9 @@ export function convertFromBase(value: string, base: NumberBase): NumberBases {
 export function validateDigits(value: string, base: NumberBase): boolean[] {
   const clean = value.trim().toLowerCase()
   const isNeg = clean.startsWith('-')
-  const body = isNeg ? clean.slice(1) : clean
+  const body = isNeg
+    ? clean.slice(1)
+    : clean
 
   // Strip common prefixes before validating digits
   let start = 0
@@ -102,7 +108,9 @@ export function validateDigits(value: string, base: NumberBase): boolean[] {
       return true
     }
     // Characters that form a prefix (0b, 0x, 0o) are always valid at their offset
-    const bodyIndex = isNeg ? i - 1 : i
+    const bodyIndex = isNeg
+      ? i - 1
+      : i
     if (bodyIndex < start) {
       return true
     }
@@ -121,10 +129,16 @@ export function groupDigits(value: string, base: NumberBase, separator = '_'): s
   }
 
   const isNeg = clean.startsWith('-')
-  const body = isNeg ? clean.slice(1) : clean
+  const body = isNeg
+    ? clean.slice(1)
+    : clean
 
   // Determine group size
-  const groupSize = base === 2 ? 4 : base === 16 ? 2 : 3
+  const groupSize = base === 2
+    ? 4
+    : base === 16
+      ? 2
+      : 3
 
   // Group from right to left
   let grouped = ''
@@ -168,6 +182,8 @@ export function twosComplement(decimalValue: string, width: TwosComplementWidth)
     return null
   }
 
-  const twos = n < zero ? (n + (one << bits)) & mask : n & mask
+  const twos = n < zero
+    ? (n + (one << bits)) & mask
+    : n & mask
   return twos.toString(16).toUpperCase().padStart(Number(bits / BigInt(4)), '0')
 }

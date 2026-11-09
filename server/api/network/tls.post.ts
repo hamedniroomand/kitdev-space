@@ -13,7 +13,9 @@ export default defineEventHandler(async (event) => {
 
   const body = await readBody<TlsBody>(event)
   const host = body.host?.trim() ?? ''
-  const port = typeof body.port === 'number' && body.port > 0 && body.port <= 65535 ? body.port : 443
+  const port = typeof body.port === 'number' && body.port > 0 && body.port <= 65535
+    ? body.port
+    : 443
 
   if (!host) {
     throw createError({
@@ -27,7 +29,9 @@ export default defineEventHandler(async (event) => {
     return { result }
   }
   catch (cause) {
-    const message = cause instanceof Error ? cause.message : 'The TLS inspection failed.'
+    const message = cause instanceof Error
+      ? cause.message
+      : 'The TLS inspection failed.'
     throw createError({
       statusCode: 400,
       message,

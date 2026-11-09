@@ -3,7 +3,9 @@ import { parseColor } from './parse'
 
 function channel(value: number): number {
   const next = value / 255
-  return next <= 0.03928 ? next / 12.92 : ((next + 0.055) / 1.055) ** 2.4
+  return next <= 0.03928
+    ? next / 12.92
+    : ((next + 0.055) / 1.055) ** 2.4
 }
 
 export function relativeLuminance({ r, g, b }: Rgb): number {

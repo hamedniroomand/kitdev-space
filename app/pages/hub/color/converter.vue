@@ -5,7 +5,10 @@ import { parseColor, rgbToHex, toHslString, toRgbString } from '#shared/utils/co
 const input = ref('#7c3aed')
 const precision = ref(2)
 
-const precisionItems = [0, 1, 2, 3, 4].map(value => ({ label: String(value), value }))
+const precisionItems = [0, 1, 2, 3, 4].map(value => ({
+  label: String(value),
+  value,
+}))
 
 useToolSeo('color-converter')
 
@@ -14,14 +17,24 @@ const conversion = computed(() => {
     return { data: null, error: null }
   }
   try {
-    return { data: parseColor(input.value), error: null }
+    return {
+      data: parseColor(input.value),
+      error: null,
+    }
   }
   catch (cause) {
-    return { data: null, error: cause instanceof Error ? cause.message : 'Invalid color.' }
+    return {
+      data: null,
+      error: cause instanceof Error
+        ? cause.message
+        : 'Invalid color.',
+    }
   }
 })
 
-useLiveTool(conversion, { option: () => `precision-${precision.value}` })
+useLiveTool(conversion, {
+  option: () => `precision-${precision.value}`,
+})
 
 const color = computed(() => conversion.value.data)
 const error = computed(() => conversion.value.error)
@@ -32,9 +45,18 @@ const formats = computed(() => {
   }
   return [
     { label: 'HEX', value: color.value.hex },
-    { label: 'RGB', value: toRgbString(color.value.rgb) },
-    { label: 'HSL', value: toHslString(color.value.hsl, precision.value) },
-    { label: 'OKLCH', value: toOklchString(color.value.oklch, precision.value) },
+    {
+      label: 'RGB',
+      value: toRgbString(color.value.rgb),
+    },
+    {
+      label: 'HSL',
+      value: toHslString(color.value.hsl, precision.value),
+    },
+    {
+      label: 'OKLCH',
+      value: toOklchString(color.value.oklch, precision.value),
+    },
   ]
 })
 
@@ -48,7 +70,11 @@ const channels = computed<ChannelGroup[]>(() => {
     return []
   }
   const { rgb, hsl, oklch, alpha } = color.value
-  const srgb: [string, string | number][] = [['R', rgb.r], ['G', rgb.g], ['B', rgb.b]]
+  const srgb: [string, string | number][] = [
+    ['R', rgb.r],
+    ['G', rgb.g],
+    ['B', rgb.b],
+  ]
   if (alpha !== undefined) {
     srgb.push(['A', alpha])
   }
@@ -66,15 +92,22 @@ const channels = computed<ChannelGroup[]>(() => {
       group: 'OKLCH',
       items: [
         ['L', `${roundTo(oklch.l, precision.value)}%`],
-        ['C', roundTo(oklch.c, precision.value)],
+        [
+          'C',
+          roundTo(oklch.c, precision.value),
+        ],
         ['H', `${roundTo(oklch.h, precision.value)}°`],
       ],
     },
   ]
 })
 
-const outOfSrgb = computed(() => (color.value ? isOutOfSrgbGamut(color.value.oklch) : false))
-const outOfP3 = computed(() => (color.value ? isOutOfP3Gamut(color.value.oklch) : false))
+const outOfSrgb = computed(() => (color.value
+  ? isOutOfSrgbGamut(color.value.oklch)
+  : false))
+const outOfP3 = computed(() => (color.value
+  ? isOutOfP3Gamut(color.value.oklch)
+  : false))
 
 /** The native picker holds an opaque 6-digit hex, so the alpha value stays in the text input. */
 const pickerHex = computed(() => {
@@ -88,7 +121,12 @@ const pickerHex = computed(() => {
 function handlePick(event: Event) {
   const picked = (event.target as HTMLInputElement).value
   const alpha = color.value?.alpha
-  input.value = alpha === undefined ? picked : rgbToHex({ ...parseColor(picked).rgb, a: alpha })
+  input.value = alpha === undefined
+    ? picked
+    : rgbToHex({
+        ...parseColor(picked).rgb,
+        a: alpha,
+      })
 }
 
 function handleClear() {

@@ -18,7 +18,9 @@ export function resolveEnvelopeTarget(bytes: Uint8Array, dsn: string): EnvelopeT
   }
 
   const newline = bytes.indexOf(10)
-  const headerText = new TextDecoder().decode(bytes.subarray(0, newline < 0 ? bytes.byteLength : newline))
+  const headerText = new TextDecoder().decode(bytes.subarray(0, newline < 0
+    ? bytes.byteLength
+    : newline))
 
   let header: { dsn?: unknown }
   try {

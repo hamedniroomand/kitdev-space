@@ -30,7 +30,12 @@ function round(rect: CropRect): CropRect {
  */
 export function initialCrop(imageWidth: number, imageHeight: number, aspect?: number | null): CropRect {
   if (!aspect || aspect <= 0) {
-    return { x: 0, y: 0, width: imageWidth, height: imageHeight }
+    return {
+      x: 0,
+      y: 0,
+      width: imageWidth,
+      height: imageHeight,
+    }
   }
 
   let width = imageWidth
@@ -91,16 +96,32 @@ export function resizeCrop(
   const west = handle.includes('w')
   const north = handle.includes('n')
 
-  const anchorX = west ? rect.x + rect.width : rect.x
-  const anchorY = north ? rect.y + rect.height : rect.y
-  const roomX = west ? anchorX : imageWidth - anchorX
-  const roomY = north ? anchorY : imageHeight - anchorY
+  const anchorX = west
+    ? rect.x + rect.width
+    : rect.x
+  const anchorY = north
+    ? rect.y + rect.height
+    : rect.y
+  const roomX = west
+    ? anchorX
+    : imageWidth - anchorX
+  const roomY = north
+    ? anchorY
+    : imageHeight - anchorY
 
-  const cornerX = (west ? rect.x : rect.x + rect.width) + dx
-  const cornerY = (north ? rect.y : rect.y + rect.height) + dy
+  const cornerX = (west
+    ? rect.x
+    : rect.x + rect.width) + dx
+  const cornerY = (north
+    ? rect.y
+    : rect.y + rect.height) + dy
 
-  let width = clamp(west ? anchorX - cornerX : cornerX - anchorX, MIN_CROP_SIZE, roomX)
-  let height = clamp(north ? anchorY - cornerY : cornerY - anchorY, MIN_CROP_SIZE, roomY)
+  let width = clamp(west
+    ? anchorX - cornerX
+    : cornerX - anchorX, MIN_CROP_SIZE, roomX)
+  let height = clamp(north
+    ? anchorY - cornerY
+    : cornerY - anchorY, MIN_CROP_SIZE, roomY)
 
   if (aspect && aspect > 0) {
     // The larger drag wins, then the other side follows the aspect.
@@ -121,8 +142,12 @@ export function resizeCrop(
   }
 
   return round({
-    x: west ? anchorX - width : anchorX,
-    y: north ? anchorY - height : anchorY,
+    x: west
+      ? anchorX - width
+      : anchorX,
+    y: north
+      ? anchorY - height
+      : anchorY,
     width,
     height,
   })

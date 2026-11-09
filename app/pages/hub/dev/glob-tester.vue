@@ -25,10 +25,22 @@ const testPaths = ref<string>(
 )
 
 const presets = [
-  { label: 'Sources without tests', patterns: ['src/**/*.ts', 'src/**/*.vue', '!src/**/*.test.ts'] },
-  { label: 'All TypeScript without tests', patterns: ['**/*.ts', '!**/*.test.ts'] },
-  { label: 'Configs and docs', patterns: ['**/*.{json,md}'] },
-  { label: 'gitignore block', patterns: ['# build output', 'dist/', '*.log'] },
+  {
+    label: 'Sources without tests',
+    patterns: ['src/**/*.ts', 'src/**/*.vue', '!src/**/*.test.ts'],
+  },
+  {
+    label: 'All TypeScript without tests',
+    patterns: ['**/*.ts', '!**/*.test.ts'],
+  },
+  {
+    label: 'Configs and docs',
+    patterns: ['**/*.{json,md}'],
+  },
+  {
+    label: 'gitignore block',
+    patterns: ['# build output', 'dist/', '*.log'],
+  },
 ]
 
 function toLines(text: string) {
@@ -40,7 +52,10 @@ const pathList = computed(() => toLines(testPaths.value))
 
 const decisions = computed(() => evaluateGlobRules(patternList.value, pathList.value, flavor.value))
 
-useLiveTool(decisions, { runLocation: 'browser', option: () => flavor.value })
+useLiveTool(decisions, {
+  runLocation: 'browser',
+  option: () => flavor.value,
+})
 
 const includedCount = computed(() => decisions.value.filter(item => item.included).length)
 

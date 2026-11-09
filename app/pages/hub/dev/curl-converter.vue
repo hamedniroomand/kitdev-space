@@ -32,11 +32,15 @@ const currentEditorLang = computed(() => {
 
 const maskCredentials = useToolOption('mask-credentials', false)
 
-const parsed = computed(() => (input.value.trim() ? parseCurl(input.value) : null))
+const parsed = computed(() => (input.value.trim()
+  ? parseCurl(input.value)
+  : null))
 
 // A security notice comes first, because it changes what the request does.
 const notices = computed(() => {
-  return [...(parsed.value?.notices ?? [])].sort((a, b) => Number(b.security) - Number(a.security))
+  return [
+    ...(parsed.value?.notices ?? []),
+  ].sort((a, b) => Number(b.security) - Number(a.security))
 })
 
 const summary = computed(() => {
@@ -64,13 +68,17 @@ const conversion = computed(() => {
   catch (err) {
     return {
       code: '',
-      error: err instanceof Error ? err.message : 'Failed to parse cURL command.',
+      error: err instanceof Error
+        ? err.message
+        : 'Failed to parse cURL command.',
     }
   }
 })
 
 function handleLoadSample(type: 'post' | 'get') {
-  input.value = type === 'post' ? samplePostCurl : sampleGetCurl
+  input.value = type === 'post'
+    ? samplePostCurl
+    : sampleGetCurl
 }
 
 function handleClear() {

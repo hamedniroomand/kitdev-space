@@ -21,7 +21,9 @@ function resolvers(fixture: {
 describe('lookupDkimSelector', () => {
   it('reads the TXT record of the selector', async () => {
     const input = await lookupDkimSelector('example.com', 'google', resolvers({
-      txt: { 'google._domainkey.example.com': ['v=DKIM1; k=rsa; p=abc'] },
+      txt: {
+        'google._domainkey.example.com': ['v=DKIM1; k=rsa; p=abc'],
+      },
     }))
 
     expect(input).toEqual({
@@ -34,8 +36,12 @@ describe('lookupDkimSelector', () => {
 
   it('follows a CNAME that points at a third-party key', async () => {
     const input = await lookupDkimSelector('example.com', 's1', resolvers({
-      cname: { 's1._domainkey.example.com': ['s1.domainkey.u1.wl.sendgrid.net.'] },
-      txt: { 's1.domainkey.u1.wl.sendgrid.net': ['v=DKIM1; k=rsa; p=zzz'] },
+      cname: {
+        's1._domainkey.example.com': ['s1.domainkey.u1.wl.sendgrid.net.'],
+      },
+      txt: {
+        's1.domainkey.u1.wl.sendgrid.net': ['v=DKIM1; k=rsa; p=zzz'],
+      },
     }))
 
     expect(input.cname).toBe('s1.domainkey.u1.wl.sendgrid.net')

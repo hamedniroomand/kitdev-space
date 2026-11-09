@@ -15,7 +15,12 @@ export const GLOB_FLAVORS: { label: string, value: GlobFlavor }[] = [
 const BASE_OPTIONS = { windows: false, posix: true }
 
 /** Git reads a pattern with fnmatch(3). It expands no braces and no extglobs, and it hides no dot files. */
-const GITIGNORE_OPTIONS = { ...BASE_OPTIONS, dot: true, nobrace: true, noextglob: true }
+const GITIGNORE_OPTIONS = {
+  ...BASE_OPTIONS,
+  dot: true,
+  nobrace: true,
+  noextglob: true,
+}
 
 interface GlobRule {
   raw: string
@@ -42,9 +47,13 @@ export interface GlobRuleDecision {
  */
 function gitignoreMatcher(pattern: string): (path: string) => boolean {
   const directoryOnly = pattern.endsWith('/')
-  const body = directoryOnly ? pattern.slice(0, -1) : pattern
+  const body = directoryOnly
+    ? pattern.slice(0, -1)
+    : pattern
   const anchored = body.includes('/')
-  const isMatch = picomatch(anchored ? body.replace(/^\/+/, '') : `**/${body}`, GITIGNORE_OPTIONS)
+  const isMatch = picomatch(anchored
+    ? body.replace(/^\/+/, '')
+    : `**/${body}`, GITIGNORE_OPTIONS)
 
   return (path) => {
     const clean = path.replace(/\/+$/, '')
@@ -74,7 +83,9 @@ function compileRule(raw: string, index: number, flavor: GlobFlavor): GlobRule |
   }
 
   const negated = trimmed.startsWith('!')
-  const body = negated ? trimmed.slice(1) : trimmed
+  const body = negated
+    ? trimmed.slice(1)
+    : trimmed
   if (!body) {
     return null
   }
@@ -84,7 +95,9 @@ function compileRule(raw: string, index: number, flavor: GlobFlavor): GlobRule |
       raw: trimmed,
       index,
       negated,
-      isMatch: flavor === 'gitignore' ? gitignoreMatcher(body) : picomatch(body, BASE_OPTIONS),
+      isMatch: flavor === 'gitignore'
+        ? gitignoreMatcher(body)
+        : picomatch(body, BASE_OPTIONS),
     }
   }
   catch {
@@ -99,7 +112,9 @@ export function testGlobMatch(pattern: string, path: string, flavor: GlobFlavor 
   if (!rule || !clean) {
     return false
   }
-  return rule.negated ? !rule.isMatch(clean) : rule.isMatch(clean)
+  return rule.negated
+    ? !rule.isMatch(clean)
+    : rule.isMatch(clean)
 }
 
 /**
@@ -128,9 +143,13 @@ export function evaluateGlobRules(
 
     return {
       path,
-      included: decided ? !decided.negated : false,
+      included: decided
+        ? !decided.negated
+        : false,
       decidedBy: decided ? decided.raw : null,
-      ruleIndex: decided ? decided.index : -1,
+      ruleIndex: decided
+        ? decided.index
+        : -1,
     }
   })
 }

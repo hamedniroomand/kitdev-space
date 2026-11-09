@@ -60,11 +60,15 @@ const capitalize = ref<DicewareCapitalize>('none')
 const inspectInput = ref('')
 const { result: inspection, error: inspectError } = useLiveTool(() => {
   const value = inspectInput.value.trim()
-  return value ? inspectId(value) : null
+  return value
+    ? inspectId(value)
+    : null
 })
 
 const inspectedLocalTime = computed(() => (
-  inspection.value ? new Date(inspection.value.timestampMs).toLocaleString() : ''
+  inspection.value
+    ? new Date(inspection.value.timestampMs).toLocaleString()
+    : ''
 ))
 
 const values = ref<string[]>([])
@@ -158,7 +162,13 @@ function handleClear() {
   reset()
 }
 
-watch([kind, idType, charset, includeSymbols, excludeAmbiguous], () => {
+watch([
+  kind,
+  idType,
+  charset,
+  includeSymbols,
+  excludeAmbiguous,
+], () => {
   values.value = []
   reset()
 })

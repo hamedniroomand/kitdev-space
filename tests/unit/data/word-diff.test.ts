@@ -81,10 +81,30 @@ describe('diffLineWords', () => {
 describe('applyWordDiff', () => {
   it('pairs deleted and inserted lines to attach word-level spans', () => {
     const lines: DiffLine[] = [
-      { type: 'equal', text: 'export function hello() {', oldLine: 1, newLine: 1 },
-      { type: 'delete', text: '  return "hello Alice";', oldLine: 2, newLine: null },
-      { type: 'insert', text: '  return "hello Bob";', oldLine: null, newLine: 2 },
-      { type: 'equal', text: '}', oldLine: 3, newLine: 3 },
+      {
+        type: 'equal',
+        text: 'export function hello() {',
+        oldLine: 1,
+        newLine: 1,
+      },
+      {
+        type: 'delete',
+        text: '  return "hello Alice";',
+        oldLine: 2,
+        newLine: null,
+      },
+      {
+        type: 'insert',
+        text: '  return "hello Bob";',
+        oldLine: null,
+        newLine: 2,
+      },
+      {
+        type: 'equal',
+        text: '}',
+        oldLine: 3,
+        newLine: 3,
+      },
     ]
 
     const result = applyWordDiff(lines)
@@ -106,9 +126,24 @@ describe('applyWordDiff', () => {
 
   it('handles unequal numbers of deletes and inserts gracefully', () => {
     const lines: DiffLine[] = [
-      { type: 'delete', text: 'line 1 old', oldLine: 1, newLine: null },
-      { type: 'delete', text: 'line 2 old', oldLine: 2, newLine: null },
-      { type: 'insert', text: 'line 1 new', oldLine: null, newLine: 1 },
+      {
+        type: 'delete',
+        text: 'line 1 old',
+        oldLine: 1,
+        newLine: null,
+      },
+      {
+        type: 'delete',
+        text: 'line 2 old',
+        oldLine: 2,
+        newLine: null,
+      },
+      {
+        type: 'insert',
+        text: 'line 1 new',
+        oldLine: null,
+        newLine: 1,
+      },
     ]
 
     const result = applyWordDiff(lines)

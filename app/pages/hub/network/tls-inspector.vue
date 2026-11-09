@@ -11,9 +11,15 @@ useToolSeo('tls-inspector')
 const { reportInput } = useToolInput()
 useToolQuery({ input: host, options })
 
-const checks = computed(() => (result.value ? certificateChecks(result.value) : []))
-const issues = computed(() => (result.value ? chainIssues(result.value) : []))
-const verdict = computed(() => (result.value ? overallVerdict(result.value) : null))
+const checks = computed(() => (result.value
+  ? certificateChecks(result.value)
+  : []))
+const issues = computed(() => (result.value
+  ? chainIssues(result.value)
+  : []))
+const verdict = computed(() => (result.value
+  ? overallVerdict(result.value)
+  : null))
 
 async function inspect() {
   reportInput('url')

@@ -277,7 +277,9 @@ function uniqueHeaders(headers: string[]): string[] {
     const base = header.trim() || `column_${index + 1}`
     const count = seen.get(base) ?? 0
     seen.set(base, count + 1)
-    return count === 0 ? base : `${base}_${count + 1}`
+    return count === 0
+      ? base
+      : `${base}_${count + 1}`
   })
 }
 
@@ -349,7 +351,9 @@ export function csvToJson(
   if (!header) {
     return rows.map((row, rIdx) => {
       const rowQuoted = cellQuoted[rIdx] ?? []
-      return row.map((cell, cIdx) => (coerce ? coerceCell(cell, options, rowQuoted[cIdx] ?? false) : cell))
+      return row.map((cell, cIdx) => (coerce
+        ? coerceCell(cell, options, rowQuoted[cIdx] ?? false)
+        : cell))
     })
   }
 
@@ -361,7 +365,9 @@ export function csvToJson(
       const key = headers[i]!
       const raw = row[i] ?? ''
       const wasQuoted = rowQuoted[i] ?? false
-      record[key] = coerce ? coerceCell(raw, options, wasQuoted) : raw
+      record[key] = coerce
+        ? coerceCell(raw, options, wasQuoted)
+        : raw
     }
     return record
   })
@@ -391,7 +397,9 @@ export function escapeCsvField(
 
   if (value === undefined) {
     if (missingFieldValue === 'empty') {
-      return emptyStringValue === 'quoted' ? '""' : ''
+      return emptyStringValue === 'quoted'
+        ? '""'
+        : ''
     }
     if (nullValue === 'empty') {
       return ''
@@ -406,7 +414,9 @@ export function escapeCsvField(
   }
 
   if (value === '') {
-    return emptyStringValue === 'quoted' ? '""' : ''
+    return emptyStringValue === 'quoted'
+      ? '""'
+      : ''
   }
 
   let text: string
@@ -431,7 +441,9 @@ export function escapeCsvField(
     || text.includes(delimiter)
 
   const escaped = text.replaceAll('"', '""')
-  return needsQuotes ? `"${escaped}"` : escaped
+  return needsQuotes
+    ? `"${escaped}"`
+    : escaped
 }
 
 export function formatCsvRow(
@@ -512,7 +524,9 @@ export function jsonToCsv(
     ...data.map((item) => {
       const record = item as Record<string, unknown>
       return keys.map((key) => {
-        const val = Object.hasOwn(record, key) ? record[key] : undefined
+        const val = Object.hasOwn(record, key)
+          ? record[key]
+          : undefined
         return escapeCsvField(val, delimiter, options)
       }).join(delimiter)
     }),
@@ -622,7 +636,9 @@ export function convertCsvJsonSql(input: {
   const delimiter = input.delimiter ?? 'auto'
 
   if (input.mode === 'csv-json') {
-    const detected = delimiter === 'auto' ? detectDelimiter(input.text) : delimiter
+    const detected = delimiter === 'auto'
+      ? detectDelimiter(input.text)
+      : delimiter
     const detailed = parseCsvDetailed(input.text, {
       delimiter,
       validateColumns: input.validateColumns,
@@ -661,7 +677,9 @@ export function convertCsvJsonSql(input: {
   }
 
   if (input.mode === 'json-csv') {
-    const sep = delimiter === 'auto' ? ',' : delimiter
+    const sep = delimiter === 'auto'
+      ? ','
+      : delimiter
     return {
       output: jsonToCsv(input.text, {
         delimiter: sep,
@@ -673,7 +691,9 @@ export function convertCsvJsonSql(input: {
     }
   }
 
-  const detected = delimiter === 'auto' ? detectDelimiter(input.text) : delimiter
+  const detected = delimiter === 'auto'
+    ? detectDelimiter(input.text)
+    : delimiter
   const detailed = parseCsvDetailed(input.text, {
     delimiter,
     validateColumns: input.validateColumns,

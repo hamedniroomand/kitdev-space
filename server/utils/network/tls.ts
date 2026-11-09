@@ -30,12 +30,24 @@ export function parseSubject(peerSubject: tls.Certificate | tls.DetailedPeerCert
   }
   const s = peerSubject as Record<string, unknown>
   return {
-    commonName: typeof s.CN === 'string' ? s.CN : undefined,
-    organization: typeof s.O === 'string' ? s.O : undefined,
-    organizationalUnit: typeof s.OU === 'string' ? s.OU : undefined,
-    country: typeof s.C === 'string' ? s.C : undefined,
-    state: typeof s.ST === 'string' ? s.ST : undefined,
-    locality: typeof s.L === 'string' ? s.L : undefined,
+    commonName: typeof s.CN === 'string'
+      ? s.CN
+      : undefined,
+    organization: typeof s.O === 'string'
+      ? s.O
+      : undefined,
+    organizationalUnit: typeof s.OU === 'string'
+      ? s.OU
+      : undefined,
+    country: typeof s.C === 'string'
+      ? s.C
+      : undefined,
+    state: typeof s.ST === 'string'
+      ? s.ST
+      : undefined,
+    locality: typeof s.L === 'string'
+      ? s.L
+      : undefined,
   }
 }
 
@@ -98,7 +110,12 @@ export function parseHostInput(raw: string): TlsTarget {
 
   const bracketed = authority.match(/^\[([^\]]+)\](?::(\d+))?$/)
   if (bracketed) {
-    return { host: bracketed[1]!, port: bracketed[2] ? Number(bracketed[2]) : undefined }
+    return {
+      host: bracketed[1]!,
+      port: bracketed[2]
+        ? Number(bracketed[2])
+        : undefined,
+    }
   }
 
   if (isIPv6(authority)) {
@@ -107,7 +124,10 @@ export function parseHostInput(raw: string): TlsTarget {
 
   const withPort = authority.match(/^([^:]+):(\d+)$/)
   if (withPort) {
-    return { host: withPort[1]!, port: Number(withPort[2]) }
+    return {
+      host: withPort[1]!,
+      port: Number(withPort[2]),
+    }
   }
 
   return { host: authority.split(':')[0]! }
@@ -115,7 +135,9 @@ export function parseHostInput(raw: string): TlsTarget {
 
 /** Put an IPv6 address in brackets, so `URL` accepts it. */
 export function formatHostForUrl(host: string): string {
-  return isIPv6(host) ? `[${host}]` : host
+  return isIPv6(host)
+    ? `[${host}]`
+    : host
 }
 
 /** Read the X.509 details that the TLS peer certificate does not give. */
@@ -129,8 +151,12 @@ function certificateDetails(raw?: Uint8Array): Partial<TlsChainCertificate> {
     const details = key.asymmetricKeyDetails
     return {
       keyType: key.asymmetricKeyType,
-      keySize: typeof details?.modulusLength === 'number' ? details.modulusLength : undefined,
-      curve: typeof details?.namedCurve === 'string' ? details.namedCurve : undefined,
+      keySize: typeof details?.modulusLength === 'number'
+        ? details.modulusLength
+        : undefined,
+      curve: typeof details?.namedCurve === 'string'
+        ? details.namedCurve
+        : undefined,
       signatureAlgorithm: signatureAlgorithmName(readSignatureAlgorithmOid(certificate.raw)),
       extendedKeyUsage: certificate.keyUsage?.map(extendedKeyUsageName),
       ocspUrls: readOcspUrls(certificate.infoAccess),
@@ -161,7 +187,9 @@ export function readTlsCertificate(host: string, port = 443, timeoutMs = 6000): 
         host,
         port,
         // RFC 6066 does not permit an IP address in the server name extension.
-        ...(isIP(host) === 0 ? { servername: host } : {}),
+        ...(isIP(host) === 0
+          ? { servername: host }
+          : {}),
         rejectUnauthorized: false,
       },
       () => {
@@ -177,7 +205,9 @@ export function readTlsCertificate(host: string, port = 443, timeoutMs = 6000): 
           const cipher = socket.getCipher()
           const protocol = socket.getProtocol() || 'Unknown'
           const authorized = socket.authorized
-          const authorizationError = socket.authorizationError ? String(socket.authorizationError) : null
+          const authorizationError = socket.authorizationError
+            ? String(socket.authorizationError)
+            : null
 
           const subject = parseSubject(peer.subject)
           const issuer = parseSubject(peer.issuer)

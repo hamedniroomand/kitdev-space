@@ -52,7 +52,12 @@ describe('jsonToTypeScript', () => {
     const input = [
       { id: 1, name: 'Alice', role: 'admin' },
       { id: 2, name: 'Bob' },
-      { id: 3, name: 'Charlie', role: 'editor', bio: 'text' },
+      {
+        id: 3,
+        name: 'Charlie',
+        role: 'editor',
+        bio: 'text',
+      },
     ]
     const output = jsonToTypeScript(input, 'User')
     expect(output).toContain('id: number')
@@ -111,7 +116,9 @@ describe('jsonToTypeScript', () => {
     const outputType = jsonToTypeScript(obj, { exportModifier: true, declarationType: 'type', rootName: 'User' })
     expect(outputType).toContain('export type User = {')
 
-    const arr = [{ id: 1 }]
+    const arr = [
+      { id: 1 },
+    ]
     const outputArr = jsonToTypeScript(arr, { exportModifier: true, rootName: 'Users' })
     expect(outputArr).toContain('export interface UsersItem {')
     expect(outputArr).toContain('export type Users = UsersItem[]')
@@ -166,14 +173,21 @@ describe('jsonToTypeScript naming', () => {
   })
 
   it('pascalCases every underscore-separated word in a key', () => {
-    const output = jsonToTypeScript({ my_long_key_name: [{ a: 1 }], list: [] }, 'Root')
+    const output = jsonToTypeScript({
+      my_long_key_name: [
+        { a: 1 },
+      ],
+      list: [],
+    }, 'Root')
     expect(output).toContain('interface MyLongKeyName {')
     expect(output).toContain('my_long_key_name: MyLongKeyName[]')
     expect(output).toContain('list: unknown[]')
   })
 
   it('keeps children before parents and the root last', () => {
-    const names = [...output.matchAll(/^interface (\w+) \{/gm)].map(m => m[1])
+    const names = [
+      ...output.matchAll(/^interface (\w+) \{/gm),
+    ].map(m => m[1])
     expect(names.indexOf('Category')).toBeLessThan(names.indexOf('ActiveProject'))
     expect(names.at(-1)).toBe('Root')
   })

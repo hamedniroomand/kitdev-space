@@ -3,8 +3,26 @@ import { stableStringify } from '#shared/utils/data/stable-json'
 
 describe('stableStringify', () => {
   it('gives the same text for the same content in a different key order', () => {
-    const a = stableStringify({ b: 1, a: { d: [1, { z: 1, y: 2 }], c: 2 } })
-    const b = stableStringify({ a: { c: 2, d: [1, { y: 2, z: 1 }] }, b: 1 })
+    const a = stableStringify({
+      b: 1,
+      a: {
+        d: [
+          1,
+          { z: 1, y: 2 },
+        ],
+        c: 2,
+      },
+    })
+    const b = stableStringify({
+      a: {
+        c: 2,
+        d: [
+          1,
+          { y: 2, z: 1 },
+        ],
+      },
+      b: 1,
+    })
     expect(a).toBe(b)
     expect(a).toBe('{"a":{"c":2,"d":[1,{"y":2,"z":1}]},"b":1}')
   })

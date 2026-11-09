@@ -14,7 +14,9 @@ export function buildJsonPath(parentPath: string, key: string | number): string 
     return `${parentPath}[${key}]`
   }
   if (/^[a-z_$][\w$]*$/i.test(key)) {
-    return parentPath === '$' ? `$.${key}` : `${parentPath}.${key}`
+    return parentPath === '$'
+      ? `$.${key}`
+      : `${parentPath}.${key}`
   }
   return `${parentPath}['${key.replace(/'/g, '\\\'')}']`
 }
@@ -53,8 +55,16 @@ export function flattenJsonTree(
       type = 'boolean'
     }
 
-    const hasChildren = isArr ? val.length > 0 : (isObj ? Object.keys(val as object).length > 0 : false)
-    const childCount = isArr ? val.length : (isObj ? Object.keys(val as object).length : 0)
+    const hasChildren = isArr
+      ? val.length > 0
+      : (isObj
+          ? Object.keys(val as object).length > 0
+          : false)
+    const childCount = isArr
+      ? val.length
+      : (isObj
+          ? Object.keys(val as object).length
+          : 0)
     const isCollapsed = collapsedState[path] ?? (depth >= 2)
 
     nodes.push({

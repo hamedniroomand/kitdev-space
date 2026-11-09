@@ -31,7 +31,9 @@ const emptyAnswers = computed(() => answers.value.filter(answer => answer.status
 
 const digCommand = computed(() => buildDigCommand(
   domain.value.trim(),
-  options.type === 'ALL' ? DNS_RECORD_TYPES : [options.type],
+  options.type === 'ALL'
+    ? DNS_RECORD_TYPES
+    : [options.type],
 ))
 
 async function lookup() {

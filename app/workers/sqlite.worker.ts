@@ -84,7 +84,9 @@ function introspectObjects(database: Database): DatabaseObject[] {
   return (result[0]?.values ?? []).map(row => ({
     name: String(row[0]),
     type: String(row[1]) as DatabaseObjectType,
-    tableName: row[2] === null ? null : String(row[2]),
+    tableName: row[2] === null
+      ? null
+      : String(row[2]),
   }))
 }
 
@@ -117,7 +119,9 @@ function insertBlankRow(database: Database, table: string): void {
     return
   }
   const columns = required.map(row => quoteIdentifier(String(row[1]))).join(', ')
-  const values = required.map(row => (/CHAR|CLOB|TEXT/i.test(String(row[2])) || String(row[2]) === '' ? '\'\'' : '0')).join(', ')
+  const values = required.map(row => (/CHAR|CLOB|TEXT/i.test(String(row[2])) || String(row[2]) === ''
+    ? '\'\''
+    : '0')).join(', ')
   database.run(`INSERT INTO ${quoteIdentifier(table)} (${columns}) VALUES (${values});`)
 }
 
@@ -132,11 +136,18 @@ globalThis.onmessage = async (event: MessageEvent<WorkerMessage>) => {
         if (db) {
           db.close()
         }
-        db = message.bytes ? new engine.Database(message.bytes) : new engine.Database()
+        db = message.bytes
+          ? new engine.Database(message.bytes)
+          : new engine.Database()
         const tables = introspectSchema(db)
         const objects = introspectObjects(db)
         const sizeBytes = message.bytes ? message.bytes.byteLength : 0
-        const response: WorkerResponse = { type: 'DB_READY', tables, objects, sizeBytes }
+        const response: WorkerResponse = {
+          type: 'DB_READY',
+          tables,
+          objects,
+          sizeBytes,
+        }
         globalThis.postMessage(response)
         break
       }
@@ -150,7 +161,12 @@ globalThis.onmessage = async (event: MessageEvent<WorkerMessage>) => {
         const tables = introspectSchema(db)
         const objects = introspectObjects(db)
         const exported = db.export()
-        const response: WorkerResponse = { type: 'DB_READY', tables, objects, sizeBytes: exported.byteLength }
+        const response: WorkerResponse = {
+          type: 'DB_READY',
+          tables,
+          objects,
+          sizeBytes: exported.byteLength,
+        }
         globalThis.postMessage(response)
         break
       }
@@ -179,19 +195,30 @@ globalThis.onmessage = async (event: MessageEvent<WorkerMessage>) => {
             rows: allRows.slice(0, 1000),
             rowCount: allRows.length,
             durationMs,
-            rowsAffected: isDml ? db.getRowsModified() : undefined,
+            rowsAffected: isDml
+              ? db.getRowsModified()
+              : undefined,
             sql: statement,
           })
         }
 
         const isDdl = /\b(?:create|drop|alter)\b/i.test(message.sql)
-        const tables = isDdl ? introspectSchema(db) : undefined
-        const objects = isDdl ? introspectObjects(db) : undefined
+        const tables = isDdl
+          ? introspectSchema(db)
+          : undefined
+        const objects = isDdl
+          ? introspectObjects(db)
+          : undefined
 
         // A statement that returns rows is the one a reader wants to see first.
         const primary = perStatement.find(item => item.columns.length > 0)
           ?? perStatement[perStatement.length - 1]
-          ?? { columns: [], rows: [], rowCount: 0, durationMs: 0 }
+          ?? {
+            columns: [],
+            rows: [],
+            rowCount: 0,
+            durationMs: 0,
+          }
 
         const total = message.countSql
           ? Number(db.exec(message.countSql)[0]?.values?.[0]?.[0] ?? primary.rowCount)
@@ -200,7 +227,9 @@ globalThis.onmessage = async (event: MessageEvent<WorkerMessage>) => {
         const response: WorkerResponse = {
           type: 'QUERY_RESULT',
           result: primary,
-          results: perStatement.length > 1 ? perStatement : undefined,
+          results: perStatement.length > 1
+            ? perStatement
+            : undefined,
           total,
           tables,
           objects,
@@ -246,7 +275,12 @@ globalThis.onmessage = async (event: MessageEvent<WorkerMessage>) => {
         }
         const tables = introspectSchema(db)
         const objects = introspectObjects(db)
-        const response: WorkerResponse = { type: 'DB_READY', tables, objects, sizeBytes: db.export().byteLength }
+        const response: WorkerResponse = {
+          type: 'DB_READY',
+          tables,
+          objects,
+          sizeBytes: db.export().byteLength,
+        }
         globalThis.postMessage(response)
         break
       }
@@ -256,7 +290,11 @@ globalThis.onmessage = async (event: MessageEvent<WorkerMessage>) => {
           throw new Error('Database is not loaded.')
         }
         insertBlankRow(db, message.table)
-        const response: WorkerResponse = { type: 'MUTATION_SUCCESS', table: message.table, rowCount: countRows(db, message.table) }
+        const response: WorkerResponse = {
+          type: 'MUTATION_SUCCESS',
+          table: message.table,
+          rowCount: countRows(db, message.table),
+        }
         globalThis.postMessage(response)
         break
       }
@@ -271,7 +309,11 @@ globalThis.onmessage = async (event: MessageEvent<WorkerMessage>) => {
           throw new Error('This table has no column to copy.')
         }
         db.run(`INSERT INTO ${table} (${columns}) SELECT ${columns} FROM ${table} WHERE rowid = :rowid;`, { ':rowid': message.rowid })
-        const response: WorkerResponse = { type: 'MUTATION_SUCCESS', table: message.table, rowCount: countRows(db, message.table) }
+        const response: WorkerResponse = {
+          type: 'MUTATION_SUCCESS',
+          table: message.table,
+          rowCount: countRows(db, message.table),
+        }
         globalThis.postMessage(response)
         break
       }
@@ -281,7 +323,11 @@ globalThis.onmessage = async (event: MessageEvent<WorkerMessage>) => {
           throw new Error('Database is not loaded.')
         }
         db.run(`DELETE FROM ${quoteIdentifier(message.table)} WHERE rowid = :rowid;`, { ':rowid': message.rowid })
-        const response: WorkerResponse = { type: 'MUTATION_SUCCESS', table: message.table, rowCount: countRows(db, message.table) }
+        const response: WorkerResponse = {
+          type: 'MUTATION_SUCCESS',
+          table: message.table,
+          rowCount: countRows(db, message.table),
+        }
         globalThis.postMessage(response)
         break
       }
@@ -328,7 +374,9 @@ globalThis.onmessage = async (event: MessageEvent<WorkerMessage>) => {
     }
   }
   catch (error) {
-    const messageText = error instanceof Error ? error.message : 'Database error occurred.'
+    const messageText = error instanceof Error
+      ? error.message
+      : 'Database error occurred.'
     const response: WorkerResponse = { type: 'ERROR', message: messageText }
     globalThis.postMessage(response)
   }

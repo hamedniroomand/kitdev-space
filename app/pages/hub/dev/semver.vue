@@ -66,7 +66,10 @@ function resultText(value: SemverResult): string {
   }
   const header = ['version', ...value.data.ranges].join('\t')
   const rows = value.data.rows.map(row =>
-    [row.version, ...row.cells.map(cell => (cell ? 'match' : 'no match'))].join('\t'),
+    [
+      row.version,
+      ...row.cells.map(cell => (cell ? 'match' : 'no match')),
+    ].join('\t'),
   )
   return [header, ...rows].join('\n')
 }
@@ -74,10 +77,16 @@ function resultText(value: SemverResult): string {
 function calculate(): SemverResult {
   const options = { includePrerelease: includePrerelease.value }
   if (action.value === 'bump') {
-    return { kind: 'text', text: semverBump(version.value, release.value, identifier.value) }
+    return {
+      kind: 'text',
+      text: semverBump(version.value, release.value, identifier.value),
+    }
   }
   if (action.value === 'sort') {
-    return { kind: 'text', text: semverSort(versionList.value).join('\n') }
+    return {
+      kind: 'text',
+      text: semverSort(versionList.value).join('\n'),
+    }
   }
   if (action.value === 'satisfies') {
     return {
@@ -87,7 +96,11 @@ function calculate(): SemverResult {
     }
   }
   const data = semverMatrix(versionList.value, rangeList.value, options)
-  return { kind: 'matrix', expanded: data.ranges.map(explainSemverRange), data }
+  return {
+    kind: 'matrix',
+    expanded: data.ranges.map(explainSemverRange),
+    data,
+  }
 }
 
 async function execute() {

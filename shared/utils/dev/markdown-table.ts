@@ -224,5 +224,7 @@ export function parseDelimitedTable(input: string): ParsedTable {
 
 /** Parse a Markdown table, or spreadsheet text when the input is not a table. */
 export function parseTableInput(input: string): ParsedTable {
-  return isMarkdownTable(input) ? parseMarkdownTable(input) : parseDelimitedTable(input)
+  return isMarkdownTable(input)
+    ? parseMarkdownTable(input)
+    : parseDelimitedTable(input)
 }

@@ -51,7 +51,9 @@ export function jwtSegmentHighlight(): Extension[] {
         }
       }
     },
-    { decorations: value => value.decorations },
+    {
+      decorations: value => value.decorations,
+    },
   )
 
   return [plugin, segmentTheme]

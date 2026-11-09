@@ -20,8 +20,12 @@ const unified = ref('')
 const leftFileName = ref('')
 const rightFileName = ref('')
 
-const leftLines = computed(() => (left.value ? (left.value.match(/\n/g)?.length ?? 0) + 1 : 0))
-const rightLines = computed(() => (right.value ? (right.value.match(/\n/g)?.length ?? 0) + 1 : 0))
+const leftLines = computed(() => (left.value
+  ? (left.value.match(/\n/g)?.length ?? 0) + 1
+  : 0))
+const rightLines = computed(() => (right.value
+  ? (right.value.match(/\n/g)?.length ?? 0) + 1
+  : 0))
 const lineCount = computed(() => Math.max(leftLines.value, rightLines.value))
 const exceedsLineLimit = computed(() => lineCount.value > MAX_LINES_WARNING || (leftLines.value + rightLines.value) > MAX_LINES_WARNING)
 
@@ -40,7 +44,13 @@ const diffOptions = computed<DiffOptions>(() => ({
 }))
 
 watch(
-  [ignoreWhitespace, ignoreTrailingWhitespace, ignoreCase, ignoreBlankLines, ignoreLineEndings],
+  [
+    ignoreWhitespace,
+    ignoreTrailingWhitespace,
+    ignoreCase,
+    ignoreBlankLines,
+    ignoreLineEndings,
+  ],
   () => {
     compare()
   },
@@ -103,10 +113,14 @@ async function compare() {
     }
 
     diff.value = next
-    const oldPath = leftFileName.value ? `a/${leftFileName.value}` : 'original'
+    const oldPath = leftFileName.value
+      ? `a/${leftFileName.value}`
+      : 'original'
     const newPath = rightFileName.value
       ? `b/${rightFileName.value}`
-      : (leftFileName.value ? `b/${leftFileName.value}` : 'modified')
+      : (leftFileName.value
+          ? `b/${leftFileName.value}`
+          : 'modified')
     unified.value = formatUnifiedDiff(next, oldPath, newPath)
     return next
   })
@@ -123,10 +137,14 @@ function handleDownloadPatch() {
   if (!diff.value || (diff.value.added === 0 && diff.value.removed === 0)) {
     return
   }
-  const oldPath = leftFileName.value ? `a/${leftFileName.value}` : 'a/file.txt'
+  const oldPath = leftFileName.value
+    ? `a/${leftFileName.value}`
+    : 'a/file.txt'
   const newPath = rightFileName.value
     ? `b/${rightFileName.value}`
-    : (leftFileName.value ? `b/${leftFileName.value}` : 'b/file.txt')
+    : (leftFileName.value
+        ? `b/${leftFileName.value}`
+        : 'b/file.txt')
   const patch = formatUnifiedDiff(diff.value, oldPath, newPath)
   const baseName = (leftFileName.value || rightFileName.value || 'changes').replace(/\.[^/.]+$/, '')
   downloadText(`${baseName}.patch`, patch, 'text/x-diff')

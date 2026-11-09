@@ -21,7 +21,10 @@ export function filterRows(
   columnFilters: Record<number, string>,
 ): string[][] {
   const activeFilters = Object.entries(columnFilters)
-    .map(([idx, text]) => ({ index: Number(idx), text: text.trim().toLowerCase() }))
+    .map(([idx, text]) => ({
+      index: Number(idx),
+      text: text.trim().toLowerCase(),
+    }))
     .filter(f => f.text.length > 0)
 
   if (activeFilters.length === 0) {
@@ -46,7 +49,9 @@ export function sortRows(
   }
 
   const { columnIndex, direction } = sort
-  const factor = direction === 'desc' ? -1 : 1
+  const factor = direction === 'desc'
+    ? -1
+    : 1
 
   return [...rows].sort((a, b) => {
     const valA = a[columnIndex] ?? ''
@@ -82,7 +87,9 @@ export function sortRows(
       const boolA = valA.trim().toLowerCase() === 'true'
       const boolB = valB.trim().toLowerCase() === 'true'
       if (boolA !== boolB) {
-        return (boolA ? 1 : -1) * factor
+        return (boolA
+          ? 1
+          : -1) * factor
       }
     }
 
@@ -189,9 +196,13 @@ export function extractPreviewData(
 
     const first = parsed[0]
     if (Array.isArray(first)) {
-      const colCount = Math.max(...parsed.map(row => (Array.isArray(row) ? row.length : 0)), 0)
+      const colCount = Math.max(...parsed.map(row => (Array.isArray(row)
+        ? row.length
+        : 0)), 0)
       const columnNames = Array.from({ length: colCount }, (_, idx) => `column_${idx + 1}`)
-      const allRows: string[][] = parsed.map(row => (Array.isArray(row) ? row.map(c => String(c ?? '')) : []))
+      const allRows: string[][] = parsed.map(row => (Array.isArray(row)
+        ? row.map(c => String(c ?? ''))
+        : []))
       const previewRows = allRows.slice(0, maxRows)
       const columns: ColumnSchema[] = columnNames.map((name, colIdx) => ({
         name,
@@ -222,7 +233,9 @@ export function extractPreviewData(
         const rec = item as Record<string, unknown>
         return columnNames.map((key) => {
           const val = rec[key]
-          return val === null || val === undefined ? '' : String(val)
+          return val === null || val === undefined
+            ? ''
+            : String(val)
         })
       })
 
@@ -281,16 +294,32 @@ export function generateCreateTableSql(
     const colName = quoteIdentifier(col.name, dialect)
     let colType = 'VARCHAR(255)'
     if (col.type === 'number') {
-      colType = dialect === 'sqlite' ? 'NUMERIC' : (dialect === 'postgresql' ? 'NUMERIC' : 'DOUBLE')
+      colType = dialect === 'sqlite'
+        ? 'NUMERIC'
+        : (dialect === 'postgresql'
+            ? 'NUMERIC'
+            : 'DOUBLE')
     }
     else if (col.type === 'date') {
-      colType = dialect === 'sqlite' ? 'TEXT' : (dialect === 'postgresql' ? 'TIMESTAMP' : 'DATETIME')
+      colType = dialect === 'sqlite'
+        ? 'TEXT'
+        : (dialect === 'postgresql'
+            ? 'TIMESTAMP'
+            : 'DATETIME')
     }
     else if (col.type === 'boolean') {
-      colType = dialect === 'sqlite' ? 'INTEGER' : (dialect === 'postgresql' ? 'BOOLEAN' : 'TINYINT(1)')
+      colType = dialect === 'sqlite'
+        ? 'INTEGER'
+        : (dialect === 'postgresql'
+            ? 'BOOLEAN'
+            : 'TINYINT(1)')
     }
     else {
-      colType = dialect === 'sqlite' ? 'TEXT' : (dialect === 'postgresql' ? 'TEXT' : 'VARCHAR(255)')
+      colType = dialect === 'sqlite'
+        ? 'TEXT'
+        : (dialect === 'postgresql'
+            ? 'TEXT'
+            : 'VARCHAR(255)')
     }
     return `  ${colName} ${colType}`
   })
@@ -342,7 +371,11 @@ export function exportFilteredDataset(options: ExportFilteredDatasetOptions): st
   const selectedRows = filtered.map(row => visibleIndices.map(i => row[i] ?? ''))
 
   const effectiveFormat: CsvExportFormat = options.format
-    ?? (options.mode === 'csv-json' ? 'json' : options.mode === 'csv-sql' ? 'sql' : 'csv')
+    ?? (options.mode === 'csv-json'
+      ? 'json'
+      : options.mode === 'csv-sql'
+        ? 'sql'
+        : 'csv')
 
   if (effectiveFormat === 'json') {
     const records = selectedRows.map((row) => {
@@ -415,7 +448,9 @@ export function processHeavyCsvWorker(payload: {
       continue
     }
     const cols = lines[i]!.split(sep)
-    const val = (payload.filterColIndex !== undefined ? cols[payload.filterColIndex] : lines[i]) ?? ''
+    const val = (payload.filterColIndex !== undefined
+      ? cols[payload.filterColIndex]
+      : lines[i]) ?? ''
     if (val.toLowerCase().includes(filter)) {
       matchCount++
     }

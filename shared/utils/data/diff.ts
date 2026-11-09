@@ -72,7 +72,9 @@ export function diffTexts(
       ? text.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
       : text
     const hasNewline = normalized.endsWith('\n')
-    const content = hasNewline ? normalized.slice(0, -1) : normalized
+    const content = hasNewline
+      ? normalized.slice(0, -1)
+      : normalized
     let lines = content.split('\n')
     if (options.ignoreBlankLines) {
       lines = lines.filter(line => line.trim().length > 0)
@@ -100,7 +102,9 @@ export function diffTexts(
       const k = x - y
       const readSnap = (idx: number) => {
         const vIdx = offset + idx
-        return (vIdx < sStart || vIdx >= sStart + snap.length) ? -1 : snap[vIdx - sStart]!
+        return (vIdx < sStart || vIdx >= sStart + snap.length)
+          ? -1
+          : snap[vIdx - sStart]!
       }
 
       let prevK: number
@@ -184,7 +188,10 @@ export function diffTexts(
       // Store compact snapshot bounded to active k range to prevent memory blowup
       const start = Math.max(0, offset - d - 1)
       const end = Math.min(v.length, offset + d + 2)
-      trace.push({ snap: v.slice(start, end), start })
+      trace.push({
+        snap: v.slice(start, end),
+        start,
+      })
 
       for (let k = -d; k <= d; k += 2) {
         let x: number
@@ -296,7 +303,12 @@ export function diffTexts(
 
   if (left === right) {
     if (left.length === 0) {
-      return { lines: [], added: 0, removed: 0, unchanged: 0 }
+      return {
+        lines: [],
+        added: 0,
+        removed: 0,
+        unchanged: 0,
+      }
     }
 
     const { lines: parts, hasNewline } = splitLines(left)
@@ -312,7 +324,9 @@ export function diffTexts(
       unchanged: parts.length,
       hasOldNewline: hasNewline,
       hasNewNewline: hasNewline,
-      warning: parts.length > 100_000 ? 'Input exceeds 100,000 lines. Comparison can take more time.' : undefined,
+      warning: parts.length > 100_000
+        ? 'Input exceeds 100,000 lines. Comparison can take more time.'
+        : undefined,
     }
   }
 

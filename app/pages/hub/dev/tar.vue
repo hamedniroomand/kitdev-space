@@ -45,13 +45,17 @@ const preview = computed<EntryPreview>(() => previewEntry.value
   ? previewFor(previewEntry.value.path, previewEntry.value.size)
   : { kind: 'none' })
 
-const previewLang = computed(() => preview.value.kind === 'text' ? preview.value.lang : 'text')
+const previewLang = computed(() => preview.value.kind === 'text'
+  ? preview.value.lang
+  : 'text')
 
 const previewBlob = computed(() => {
   if (preview.value.kind !== 'image' || !previewImage.value) {
     return undefined
   }
-  return new Blob([previewImage.value.slice()], { type: preview.value.mime })
+  return new Blob([
+    previewImage.value.slice(),
+  ], { type: preview.value.mime })
 })
 
 // `useObjectUrl` revokes the old URL on every change and on unmount.
@@ -73,7 +77,12 @@ watch(file, () => {
 })
 
 function notify(cause: unknown, fallback: string) {
-  toast.add({ title: cause instanceof Error ? cause.message : fallback, color: 'error' })
+  toast.add({
+    title: cause instanceof Error
+      ? cause.message
+      : fallback,
+    color: 'error',
+  })
 }
 
 function readEntry(path: string): Uint8Array {
@@ -137,7 +146,9 @@ function handlePreview(node: TarTreeNode) {
 
 function downloadEntry(path: string) {
   try {
-    downloadBlob(path.split('/').pop() || 'entry.bin', new Blob([readEntry(path).slice()]))
+    downloadBlob(path.split('/').pop() || 'entry.bin', new Blob([
+      readEntry(path).slice(),
+    ]))
     toast.add({ title: 'Downloaded', color: 'success' })
   }
   catch (cause) {
@@ -153,7 +164,9 @@ function downloadSelection() {
     }
 
     const zip = packEntries(picked)
-    downloadBlob('extracted.zip', new Blob([zip.slice()], { type: 'application/zip' }))
+    downloadBlob('extracted.zip', new Blob([
+      zip.slice(),
+    ], { type: 'application/zip' }))
     toast.add({ title: 'Downloaded', color: 'success' })
   }
   catch (cause) {

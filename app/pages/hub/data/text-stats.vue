@@ -27,7 +27,9 @@ const PRESETS: LimitPreset[] = [
 const selectedPreset = ref<LimitPreset | null>(null)
 
 function selectPreset(preset: LimitPreset) {
-  selectedPreset.value = selectedPreset.value?.label === preset.label ? null : preset
+  selectedPreset.value = selectedPreset.value?.label === preset.label
+    ? null
+    : preset
 }
 
 const presetProgress = computed(() => {

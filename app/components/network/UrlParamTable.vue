@@ -5,15 +5,27 @@ import { encodeQueryPart } from '#shared/utils/network/url'
 const params = defineModel<UrlQueryParam[]>({ required: true })
 
 function update(index: number, patch: Partial<UrlQueryParam>) {
-  params.value = params.value.map((param, position) => (position === index ? { ...param, ...patch } : param))
+  params.value = params.value.map((param, position) => (position === index
+    ? {
+        ...param,
+        ...patch,
+      }
+    : param))
 }
 
 function updateKey(index: number, key: string) {
-  update(index, { key, rawKey: encodeQueryPart(key) })
+  update(index, {
+    key,
+    rawKey: encodeQueryPart(key),
+  })
 }
 
 function updateValue(index: number, value: string) {
-  update(index, { value, rawValue: encodeQueryPart(value), bare: false })
+  update(index, {
+    value,
+    rawValue: encodeQueryPart(value),
+    bare: false,
+  })
 }
 
 function move(index: number, offset: number) {
@@ -32,7 +44,16 @@ function remove(index: number) {
 }
 
 function add() {
-  params.value = [...params.value, { key: '', value: '', rawKey: '', rawValue: '', bare: false }]
+  params.value = [
+    ...params.value,
+    {
+      key: '',
+      value: '',
+      rawKey: '',
+      rawValue: '',
+      bare: false,
+    },
+  ]
 }
 </script>
 

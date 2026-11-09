@@ -50,7 +50,9 @@ export function detectSchemaDraft(schema: unknown): DetectedDraft {
     return { draft: '2020-12', displayDraft: '2020-12' }
   }
 
-  const id = schema && typeof schema === 'object' ? String((schema as Schema).$schema ?? '') : ''
+  const id = schema && typeof schema === 'object'
+    ? String((schema as Schema).$schema ?? '')
+    : ''
   if (!id) {
     return { draft: '2020-12', displayDraft: '2020-12' }
   }
@@ -160,7 +162,10 @@ export function groupBranchErrors(units: OutputUnit[]): SchemaErrorBranchGroup[]
       branch.errors.push(error)
     }
     else {
-      group.branches.push({ index, errors: [error] })
+      group.branches.push({
+        index,
+        errors: [error],
+      })
     }
   }
 
@@ -214,11 +219,15 @@ export function parseRefSchemas(refInput: string): {
   catch (err) {
     return {
       schemas: {},
-      error: `Referenced schema parse error: ${err instanceof Error ? err.message : 'Invalid JSON'}`,
+      error: `Referenced schema parse error: ${err instanceof Error
+        ? err.message
+        : 'Invalid JSON'}`,
     }
   }
 
-  const list = Array.isArray(parsed) ? parsed : [parsed]
+  const list = Array.isArray(parsed)
+    ? parsed
+    : [parsed]
   const schemas: Record<string, unknown> = {}
   for (const entry of list) {
     if (!entry || typeof entry !== 'object' || Array.isArray(entry)) {
@@ -257,7 +266,9 @@ export function validateJsonSchema(
   catch (err) {
     return {
       isValid: false,
-      schemaError: `Schema JSON parse error: ${err instanceof Error ? err.message : 'Invalid JSON'}`,
+      schemaError: `Schema JSON parse error: ${err instanceof Error
+        ? err.message
+        : 'Invalid JSON'}`,
       errors: [],
       branchGroups: [],
       resolvedRefIds: [],
@@ -272,7 +283,9 @@ export function validateJsonSchema(
     return {
       isValid: false,
       schemaError: undefined,
-      dataError: `Data JSON parse error: ${err instanceof Error ? err.message : 'Invalid JSON'}`,
+      dataError: `Data JSON parse error: ${err instanceof Error
+        ? err.message
+        : 'Invalid JSON'}`,
       errors: [],
       branchGroups: [],
       resolvedRefIds: [],
@@ -347,7 +360,9 @@ export function validateJsonSchema(
     return {
       isValid: false,
       draft: displayDraft,
-      schemaError: `Invalid JSON Schema definition: ${err instanceof Error ? err.message : 'Schema error'}`,
+      schemaError: `Invalid JSON Schema definition: ${err instanceof Error
+        ? err.message
+        : 'Schema error'}`,
       errors: [],
       branchGroups: [],
       resolvedRefIds: [],
@@ -400,7 +415,11 @@ function mergeObjectSchemas(objects: Record<string, unknown>[]): Record<string, 
       required.push(key)
     }
 
-    const types = new Set(valuesWithKey.map(v => (v === null ? 'null' : Array.isArray(v) ? 'array' : typeof v)))
+    const types = new Set(valuesWithKey.map(v => (v === null
+      ? 'null'
+      : Array.isArray(v)
+        ? 'array'
+        : typeof v)))
     if (types.size === 1) {
       if (types.has('object')) {
         properties[key] = mergeObjectSchemas(valuesWithKey as Record<string, unknown>[])
@@ -411,7 +430,11 @@ function mergeObjectSchemas(objects: Record<string, unknown>[]): Record<string, 
     }
     else {
       const anyOf = Array.from(types).map((t) => {
-        const sampleVal = valuesWithKey.find(v => (v === null ? 'null' : Array.isArray(v) ? 'array' : typeof v) === t)
+        const sampleVal = valuesWithKey.find(v => (v === null
+          ? 'null'
+          : Array.isArray(v)
+            ? 'array'
+            : typeof v) === t)
         return generateSchemaFromJson(sampleVal)
       })
       properties[key] = { anyOf }
@@ -421,7 +444,9 @@ function mergeObjectSchemas(objects: Record<string, unknown>[]): Record<string, 
   return {
     type: 'object',
     properties,
-    ...(required.length > 0 ? { required } : {}),
+    ...(required.length > 0
+      ? { required }
+      : {}),
   }
 }
 
@@ -440,7 +465,11 @@ export function generateSchemaFromJson(data: unknown): Record<string, unknown> {
       }
     }
 
-    const types = new Set(data.map(v => (v === null ? 'null' : Array.isArray(v) ? 'array' : typeof v)))
+    const types = new Set(data.map(v => (v === null
+      ? 'null'
+      : Array.isArray(v)
+        ? 'array'
+        : typeof v)))
     if (types.size === 1) {
       return {
         type: 'array',
@@ -449,7 +478,11 @@ export function generateSchemaFromJson(data: unknown): Record<string, unknown> {
     }
 
     const anyOf = Array.from(types).map((t) => {
-      const sampleVal = data.find(v => (v === null ? 'null' : Array.isArray(v) ? 'array' : typeof v) === t)
+      const sampleVal = data.find(v => (v === null
+        ? 'null'
+        : Array.isArray(v)
+          ? 'array'
+          : typeof v) === t)
       return generateSchemaFromJson(sampleVal)
     })
     return {
@@ -460,8 +493,13 @@ export function generateSchemaFromJson(data: unknown): Record<string, unknown> {
   const type = typeof data
   if (type === 'string')
     return { type: 'string' }
-  if (type === 'number')
-    return { type: Number.isInteger(data) ? 'integer' : 'number' }
+  if (type === 'number') {
+    return {
+      type: Number.isInteger(data)
+        ? 'integer'
+        : 'number',
+    }
+  }
   if (type === 'boolean')
     return { type: 'boolean' }
   if (type === 'object') {
@@ -503,7 +541,9 @@ export function parseTestCases(input: string): {
   catch (err) {
     return {
       cases: [],
-      error: `Test case parse error: ${err instanceof Error ? err.message : 'Invalid JSON'}`,
+      error: `Test case parse error: ${err instanceof Error
+        ? err.message
+        : 'Invalid JSON'}`,
     }
   }
 
@@ -521,9 +561,13 @@ export function parseTestCases(input: string): {
       return { cases: [], error: `Test case ${index + 1} needs a "data" field.` }
     }
     cases.push({
-      name: typeof row.name === 'string' && row.name ? row.name : `Case ${index + 1}`,
+      name: typeof row.name === 'string' && row.name
+        ? row.name
+        : `Case ${index + 1}`,
       data: row.data,
-      expectValid: typeof row.expectValid === 'boolean' ? row.expectValid : true,
+      expectValid: typeof row.expectValid === 'boolean'
+        ? row.expectValid
+        : true,
     })
   }
   return { cases }

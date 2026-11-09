@@ -82,7 +82,9 @@ export function formatSql(sqlText: string, options: FormatSqlOptions = {}): stri
   } = options
 
   const useTabs = indent === 'tab'
-  const tabWidth = indent === '4' ? 4 : 2
+  const tabWidth = indent === '4'
+    ? 4
+    : 2
 
   try {
     return format(sqlText, {
@@ -205,7 +207,9 @@ export function sqlLiteral(value: unknown, options: { quoteNumericStrings?: bool
     return 'NULL'
   }
   if (typeof value === 'number') {
-    return Number.isFinite(value) ? String(value) : 'NULL'
+    return Number.isFinite(value)
+      ? String(value)
+      : 'NULL'
   }
   if (typeof value === 'boolean') {
     return value ? 'TRUE' : 'FALSE'

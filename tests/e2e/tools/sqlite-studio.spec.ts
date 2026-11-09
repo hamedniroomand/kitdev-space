@@ -44,7 +44,9 @@ test.describe('SQLite Studio', () => {
 
       // A filter builds a WHERE clause and shows as a chip
       await page.getByRole('button', { name: 'Add filter' }).first().click()
-      const form = page.locator('form').filter({ has: page.getByRole('button', { name: 'Add filter' }) })
+      const form = page.locator('form').filter({
+        has: page.getByRole('button', { name: 'Add filter' }),
+      })
       await form.getByRole('combobox').first().click()
       await page.getByRole('option', { name: 'price' }).click()
       await form.getByRole('combobox').nth(1).click()

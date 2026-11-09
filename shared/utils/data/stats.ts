@@ -33,9 +33,13 @@ export function getTextStats(text: string): TextStatistics {
   const charactersWithoutSpaces = text.replace(/\s/g, '').length
 
   const wordsArray = text.trim().split(/\s+/).filter(Boolean)
-  const words = text.trim() === '' ? 0 : wordsArray.length
+  const words = text.trim() === ''
+    ? 0
+    : wordsArray.length
 
-  const normalizedLines = text.endsWith('\n') ? text.slice(0, -1) : text
+  const normalizedLines = text.endsWith('\n')
+    ? text.slice(0, -1)
+    : text
   const lines = normalizedLines.split('\n').length
   const paragraphs = text.split(/\n\s*\n/).filter(p => p.trim().length > 0).length
 
@@ -61,7 +65,9 @@ export function getTextStats(text: string): TextStatistics {
   let graphemes = codePoints
   if (typeof Intl !== 'undefined' && 'Segmenter' in Intl) {
     const segmenter = new Intl.Segmenter(undefined, { granularity: 'grapheme' })
-    graphemes = [...segmenter.segment(text)].length
+    graphemes = [
+      ...segmenter.segment(text),
+    ].length
   }
 
   const readingTimeMinutes = Math.ceil(words / 200)
@@ -84,5 +90,7 @@ export function getTextStats(text: string): TextStatistics {
 
 /** Writes a reading or speaking time as a short label. */
 export function formatReadingTime(minutes: number, suffix = 'read'): string {
-  return minutes <= 1 ? `< 1 min ${suffix}` : `${minutes} min ${suffix}`
+  return minutes <= 1
+    ? `< 1 min ${suffix}`
+    : `${minutes} min ${suffix}`
 }

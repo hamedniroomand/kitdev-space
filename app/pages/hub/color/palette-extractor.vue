@@ -80,7 +80,9 @@ watch(file, (next) => {
 })
 
 const palette = computed(() => (
-  pixels.value ? extractPaletteFromPixels(pixels.value, colorCount.value, minDistance.value) : []
+  pixels.value
+    ? extractPaletteFromPixels(pixels.value, colorCount.value, minDistance.value)
+    : []
 ))
 
 const anchor = computed(() => palette.value.find(c => c.hex === anchorHex.value) ?? palette.value[0] ?? null)

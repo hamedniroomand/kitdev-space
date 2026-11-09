@@ -36,7 +36,9 @@ export function normalizeCron(expression: string): string {
   if (!text) {
     throw new Error('Enter a cron expression.')
   }
-  return MIDNIGHT.test(text) ? '0 0 * * *' : text
+  return MIDNIGHT.test(text)
+    ? '0 0 * * *'
+    : text
 }
 
 export function describeCron(expression: string): string {
@@ -52,7 +54,9 @@ export function describeCron(expression: string): string {
   }
   catch (cause) {
     // `cronstrue` throws an error with no message for an expression it cannot read.
-    const message = cause instanceof Error ? cause.message : ''
+    const message = cause instanceof Error
+      ? cause.message
+      : ''
     throw new Error(message || 'The cron expression is not valid.')
   }
 }

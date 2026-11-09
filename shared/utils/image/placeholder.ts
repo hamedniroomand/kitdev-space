@@ -37,7 +37,9 @@ interface ResolvedPlaceholder {
 function resolvePlaceholder(options: PlaceholderOptions): ResolvedPlaceholder {
   const width = Math.max(1, Math.min(options.width || 600, 4000))
   const height = Math.max(1, Math.min(options.height || 400, 4000))
-  const text = options.text !== undefined ? options.text : `${width} × ${height}`
+  const text = options.text !== undefined
+    ? options.text
+    : `${width} × ${height}`
   const requested = options.fontSize || Math.max(12, Math.min(Math.round(Math.min(width, height) / 8), 72))
   const fitted = Math.floor((width * TEXT_BOX_RATIO) / (Math.max(1, text.length) * GLYPH_WIDTH_RATIO))
 

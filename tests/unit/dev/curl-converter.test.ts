@@ -114,7 +114,13 @@ describe('converters', () => {
   })
 
   it('drops no security option in silence', () => {
-    for (const flag of ['-k', '--insecure', '--cert client.pem', '--key client.key', '--proxy http://127.0.0.1:8080']) {
+    for (const flag of [
+      '-k',
+      '--insecure',
+      '--cert client.pem',
+      '--key client.key',
+      '--proxy http://127.0.0.1:8080',
+    ]) {
       const name = flag.split(' ')[0]!
       const notices = parseCurl(`curl ${flag} https://api.example.com/x`).notices
       expect(notices.map(notice => notice.flag)).toContain(name)

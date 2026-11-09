@@ -16,7 +16,14 @@ const VIEW_ITEMS: { label: string, value: View, icon: string }[] = [
 const url = ref('')
 const view = ref<View>('security')
 
-const PREFLIGHT_METHODS = ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE']
+const PREFLIGHT_METHODS = [
+  'GET',
+  'HEAD',
+  'POST',
+  'PUT',
+  'PATCH',
+  'DELETE',
+]
 
 // One stable object. The share action reads it and writes it to the query string.
 const options = reactive({
@@ -58,7 +65,11 @@ const hopCount = computed(() => Math.max(0, (result.value?.hops.length ?? 1) - 1
 
 const scoreColor = computed(() => {
   const score = result.value?.security.score ?? 0
-  return score >= 75 ? 'success' : score >= 50 ? 'warning' : 'error'
+  return score >= 75
+    ? 'success'
+    : score >= 50
+      ? 'warning'
+      : 'error'
 })
 
 const findingGroups = computed(() =>
@@ -66,16 +77,24 @@ const findingGroups = computed(() =>
 )
 
 /** The JSON file of the Download JSON action, and the input of the diff view. */
-const report = computed(() => (result.value ? buildHttpReport(result.value) : null))
+const report = computed(() => (result.value
+  ? buildHttpReport(result.value)
+  : null))
 
 // The comparison runs in the browser. The prior report never goes to the server.
 const priorText = ref('')
-const priorReport = computed(() => (priorText.value.trim() ? parseHttpReport(priorText.value) : null))
+const priorReport = computed(() => (priorText.value.trim()
+  ? parseHttpReport(priorText.value)
+  : null))
 const priorError = computed(() =>
-  priorText.value.trim() && !priorReport.value ? 'This file is not an HTTP Inspector report.' : null,
+  priorText.value.trim() && !priorReport.value
+    ? 'This file is not an HTTP Inspector report.'
+    : null,
 )
 const diff = computed(() =>
-  priorReport.value && report.value ? diffHttpReports(priorReport.value, report.value) : null,
+  priorReport.value && report.value
+    ? diffHttpReports(priorReport.value, report.value)
+    : null,
 )
 
 async function inspect() {
@@ -86,7 +105,9 @@ async function inspect() {
       body: {
         url: url.value,
         origin: options.origin || undefined,
-        method: options.preflight && canPreflight.value ? 'OPTIONS' : undefined,
+        method: options.preflight && canPreflight.value
+          ? 'OPTIONS'
+          : undefined,
         requestMethod: options.requestMethod,
       },
     })

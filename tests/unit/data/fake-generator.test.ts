@@ -69,7 +69,12 @@ describe('deterministic generation', () => {
   ]
 
   it('gives identical rows for the same seed and reference date', () => {
-    const opts = { count: 5, fields, seed: 7, refDate: '2024-03-01T00:00:00.000Z' }
+    const opts = {
+      count: 5,
+      fields,
+      seed: 7,
+      refDate: '2024-03-01T00:00:00.000Z',
+    }
     expect(generateFakeRows(opts)).toEqual(generateFakeRows(opts))
   })
 
@@ -93,7 +98,14 @@ describe('field configuration rules', () => {
     const rows = generateFakeRows({
       count: 50,
       seed: 3,
-      fields: [{ name: 'n', type: 'integer', min: 5, max: 9 }],
+      fields: [
+        {
+          name: 'n',
+          type: 'integer',
+          min: 5,
+          max: 9,
+        },
+      ],
     })
     for (const row of rows) {
       expect(row.n as number).toBeGreaterThanOrEqual(5)
@@ -106,7 +118,14 @@ describe('field configuration rules', () => {
     const rows = generateFakeRows({
       count: 30,
       seed: 3,
-      fields: [{ name: 'f', type: 'float', min: 1, max: 2 }],
+      fields: [
+        {
+          name: 'f',
+          type: 'float',
+          min: 1,
+          max: 2,
+        },
+      ],
     })
     for (const row of rows) {
       expect(row.f as number).toBeGreaterThanOrEqual(1)
@@ -118,7 +137,13 @@ describe('field configuration rules', () => {
     const rows = generateFakeRows({
       count: 30,
       seed: 3,
-      fields: [{ name: 'role', type: 'enum', enumValues: ['admin', 'editor'] }],
+      fields: [
+        {
+          name: 'role',
+          type: 'enum',
+          enumValues: ['admin', 'editor'],
+        },
+      ],
     })
     for (const row of rows) {
       expect(['admin', 'editor']).toContain(row.role)
@@ -129,7 +154,14 @@ describe('field configuration rules', () => {
     const rows = generateFakeRows({
       count: 20,
       seed: 3,
-      fields: [{ name: 'd', type: 'date', dateFrom: '2020-01-01', dateTo: '2020-12-31' }],
+      fields: [
+        {
+          name: 'd',
+          type: 'date',
+          dateFrom: '2020-01-01',
+          dateTo: '2020-12-31',
+        },
+      ],
     })
     for (const row of rows) {
       const time = new Date(row.d as string).getTime()
@@ -142,7 +174,9 @@ describe('field configuration rules', () => {
     const rows = generateFakeRows({
       count: 20,
       seed: 3,
-      fields: [{ name: 'maybe', type: 'fullName', nullRate: 100 }],
+      fields: [
+        { name: 'maybe', type: 'fullName', nullRate: 100 },
+      ],
     })
     expect(rows.every(r => r.maybe === null)).toBe(true)
   })
@@ -151,7 +185,9 @@ describe('field configuration rules', () => {
     const rows = generateFakeRows({
       count: 20,
       seed: 3,
-      fields: [{ name: 'always', type: 'fullName', nullRate: 0 }],
+      fields: [
+        { name: 'always', type: 'fullName', nullRate: 0 },
+      ],
     })
     expect(rows.some(r => r.always === null)).toBe(false)
   })
@@ -160,7 +196,15 @@ describe('field configuration rules', () => {
     const rows = generateFakeRows({
       count: 40,
       seed: 5,
-      fields: [{ name: 'code', type: 'integer', min: 1, max: 5000, unique: true }],
+      fields: [
+        {
+          name: 'code',
+          type: 'integer',
+          min: 1,
+          max: 5000,
+          unique: true,
+        },
+      ],
     })
     const values = rows.map(r => r.code)
     expect(new Set(values).size).toBe(values.length)
@@ -170,14 +214,24 @@ describe('field configuration rules', () => {
     expect(() => generateFakeRows({
       count: 50,
       seed: 5,
-      fields: [{ name: 'tiny', type: 'integer', min: 1, max: 3, unique: true }],
+      fields: [
+        {
+          name: 'tiny',
+          type: 'integer',
+          min: 1,
+          max: 3,
+          unique: true,
+        },
+      ],
     })).toThrow(/unique values/)
   })
 })
 
 describe('validateFields', () => {
   it('rejects a blank field name', () => {
-    expect(validateFields([{ name: '  ', type: 'uuid' }])).toContain('blank')
+    expect(validateFields([
+      { name: '  ', type: 'uuid' },
+    ])).toContain('blank')
   })
 
   it('rejects a duplicate field name', () => {
@@ -192,13 +246,20 @@ describe('validateFields', () => {
   })
 
   it('accepts a valid field list', () => {
-    expect(validateFields([{ name: 'id', type: 'uuid' }])).toBeNull()
+    expect(validateFields([
+      { name: 'id', type: 'uuid' },
+    ])).toBeNull()
   })
 })
 
 describe('sql output with dialects', () => {
   const rows = [
-    { id: 1, name: 'Alice', score: 1.5, active: true },
+    {
+      id: 1,
+      name: 'Alice',
+      score: 1.5,
+      active: true,
+    },
   ]
 
   it('quotes identifiers for mysql with backticks', () => {
@@ -235,7 +296,12 @@ describe('recipes', () => {
     tableName: 'people',
     fields: [
       { name: 'id', type: 'uuid' as const },
-      { name: 'age', type: 'integer' as const, min: 18, max: 65 },
+      {
+        name: 'age',
+        type: 'integer' as const,
+        min: 18,
+        max: 65,
+      },
     ],
   }
 

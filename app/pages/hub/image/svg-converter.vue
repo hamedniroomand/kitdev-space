@@ -45,15 +45,32 @@ const scaleItems = [
 ]
 
 const scaleCards = computed(() => [
-  { scale: 1 as SvgScale, blob: result1x.value, preview: preview1x.value, meta: meta1x.value },
-  { scale: 2 as SvgScale, blob: result2x.value, preview: preview2x.value, meta: meta2x.value },
-  { scale: 3 as SvgScale, blob: result3x.value, preview: preview3x.value, meta: meta3x.value },
+  {
+    scale: 1 as SvgScale,
+    blob: result1x.value,
+    preview: preview1x.value,
+    meta: meta1x.value,
+  },
+  {
+    scale: 2 as SvgScale,
+    blob: result2x.value,
+    preview: preview2x.value,
+    meta: meta2x.value,
+  },
+  {
+    scale: 3 as SvgScale,
+    blob: result3x.value,
+    preview: preview3x.value,
+    meta: meta3x.value,
+  },
 ].filter(card => card.blob))
 
 useToolSeo('svg-converter')
 
 async function convertScale(scale: SvgScale) {
-  const source = svgText.value.trim() ? svgText.value.trim() : file.value
+  const source = svgText.value.trim()
+    ? svgText.value.trim()
+    : file.value
   if (!source) {
     throw new Error('Paste SVG code or upload an SVG file.')
   }
@@ -64,7 +81,9 @@ async function convertScale(scale: SvgScale) {
     quality: quality.value,
     width: width.value,
     height: height.value,
-    background: format.value === 'jpeg' ? background.value : null,
+    background: format.value === 'jpeg'
+      ? background.value
+      : null,
     stretch: !lockAspect.value,
   })
 

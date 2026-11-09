@@ -19,10 +19,14 @@ export default defineEventHandler(async (event) => {
       hash: body.hash ?? '',
     })
 
-    return { result: { matched } }
+    return {
+      result: { matched },
+    }
   }
   catch (cause) {
-    const message = cause instanceof Error ? cause.message : 'The verify operation failed.'
+    const message = cause instanceof Error
+      ? cause.message
+      : 'The verify operation failed.'
     throw createError({
       statusCode: 400,
       message,

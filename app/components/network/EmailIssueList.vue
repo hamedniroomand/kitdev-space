@@ -11,7 +11,9 @@ const LEVEL_COLOR: Record<HealthLevel, 'success' | 'info' | 'warning' | 'error'>
 }
 
 function levelLabel(issue: HealthIssue) {
-  return issue.level === 'ok' ? 'OK' : issue.level
+  return issue.level === 'ok'
+    ? 'OK'
+    : issue.level
 }
 </script>
 

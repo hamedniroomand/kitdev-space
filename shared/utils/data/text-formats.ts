@@ -22,7 +22,9 @@ import { DataError, formatYamlError } from './errors'
 
 /** Ends the text with exactly one newline, the shape a config file has. */
 function withFinalNewline(text: string): string {
-  return text.endsWith('\n') ? text : `${text}\n`
+  return text.endsWith('\n')
+    ? text
+    : `${text}\n`
 }
 
 export function parseYamlText(text: string): unknown {

@@ -7,10 +7,14 @@ export default {
     {
       rules: {
         'footer-disallowed-trailer': (parsed, when = 'always', value = DISALLOWED_TRAILERS) => {
-          const names = Array.isArray(value) ? value : [value]
+          const names = Array.isArray(value)
+            ? value
+            : [value]
           const text = `${parsed.body ?? ''}\n${parsed.footer ?? ''}`
           const hit = names.find(name => new RegExp(`^\\s*${name}\\s*:`, 'im').test(text))
-          const passes = when === 'never' ? Boolean(hit) : !hit
+          const passes = when === 'never'
+            ? Boolean(hit)
+            : !hit
           return [
             passes,
             hit

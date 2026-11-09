@@ -3,14 +3,31 @@ import { isTrackingParam, stripTrackingParams } from '#shared/utils/network/trac
 import { buildUrlWithParams, parseQueryParams } from '#shared/utils/network/url'
 
 describe('isTrackingParam', () => {
-  it.each(['utm_source', 'UTM_Campaign', 'fbclid', 'gclid', 'mc_eid', 'msclkid', 'mtm_medium', 'hsa_acc'])(
+  it.each([
+    'utm_source',
+    'UTM_Campaign',
+    'fbclid',
+    'gclid',
+    'mc_eid',
+    'msclkid',
+    'mtm_medium',
+    'hsa_acc',
+  ])(
     'marks %s as a tracking parameter',
     (key) => {
       expect(isTrackingParam(key)).toBe(true)
     },
   )
 
-  it.each(['ref', 'source', 'id', 'from', 'q', 'page', 'utmost'])(
+  it.each([
+    'ref',
+    'source',
+    'id',
+    'from',
+    'q',
+    'page',
+    'utmost',
+  ])(
     'keeps the functional parameter %s',
     (key) => {
       expect(isTrackingParam(key)).toBe(false)

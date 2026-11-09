@@ -47,12 +47,16 @@ export async function transpileSource(
       filePath: `input.${loader}`,
       disableESTransforms: options.newSyntax === 'keep',
       jsxRuntime: options.jsxRuntime ?? 'classic',
-      ...(importSource ? { jsxImportSource: importSource } : {}),
+      ...(importSource
+        ? { jsxImportSource: importSource }
+        : {}),
     })
     return { code: result.code }
   }
   catch (cause) {
-    const message = cause instanceof Error ? cause.message : 'Transpile failed.'
+    const message = cause instanceof Error
+      ? cause.message
+      : 'Transpile failed.'
     throw new Error(`Syntax error.\n\n${message}`, { cause })
   }
 }

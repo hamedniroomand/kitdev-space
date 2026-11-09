@@ -34,7 +34,10 @@ export async function hmacBytes(
   const cryptoKey = await cryptoObj.subtle.importKey(
     'raw',
     key as unknown as BufferSource,
-    { name: 'HMAC', hash: { name: algorithm } },
+    {
+      name: 'HMAC',
+      hash: { name: algorithm },
+    },
     false,
     ['sign'],
   )
@@ -48,7 +51,9 @@ export async function hmacBytes(
 }
 
 export function encodeHmac(bytes: Uint8Array, encoding: HmacEncoding = 'hex'): string {
-  return encoding === 'base64' ? bytesToBase64(bytes) : bytesToHex(bytes)
+  return encoding === 'base64'
+    ? bytesToBase64(bytes)
+    : bytesToHex(bytes)
 }
 
 export async function generateHmac(
@@ -87,7 +92,9 @@ export function verifyHmacSignature(expected: string, actual: Uint8Array): HmacS
   if (!normalizeSignature(expected)) {
     return 'not-checked'
   }
-  return timingSafeEqual(parseHmacSignature(expected), actual) ? 'match' : 'mismatch'
+  return timingSafeEqual(parseHmacSignature(expected), actual)
+    ? 'match'
+    : 'mismatch'
 }
 
 export function generateRandomSecret(length = 32): string {

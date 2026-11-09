@@ -39,13 +39,17 @@ export function htmlEntityDecode(input: string): string {
   // Handle decimal entities &#123;
   result = result.replace(/&#(\d+);/g, (_, dec) => {
     const code = Number.parseInt(dec, 10)
-    return Number.isFinite(code) ? String.fromCodePoint(code) : _
+    return Number.isFinite(code)
+      ? String.fromCodePoint(code)
+      : _
   })
 
   // Handle hex entities &#x1f;
   result = result.replace(/&#x([0-9a-fA-F]+);/g, (_, hex) => {
     const code = Number.parseInt(hex, 16)
-    return Number.isFinite(code) ? String.fromCodePoint(code) : _
+    return Number.isFinite(code)
+      ? String.fromCodePoint(code)
+      : _
   })
 
   return result

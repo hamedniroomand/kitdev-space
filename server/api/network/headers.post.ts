@@ -10,11 +10,20 @@ interface HeadersBody {
   requestMethod?: string
 }
 
-const PREFLIGHT_METHODS = new Set(['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE'])
+const PREFLIGHT_METHODS = new Set([
+  'GET',
+  'HEAD',
+  'POST',
+  'PUT',
+  'PATCH',
+  'DELETE',
+])
 
 function preflightMethod(input?: string): string {
   const value = input?.trim().toUpperCase() ?? ''
-  return PREFLIGHT_METHODS.has(value) ? value : 'GET'
+  return PREFLIGHT_METHODS.has(value)
+    ? value
+    : 'GET'
 }
 
 /**
@@ -58,7 +67,9 @@ export default defineEventHandler(async (event) => {
     }
   }
   catch (cause) {
-    const message = cause instanceof Error ? cause.message : 'The request failed.'
+    const message = cause instanceof Error
+      ? cause.message
+      : 'The request failed.'
     throw createError({
       statusCode: 400,
       message,

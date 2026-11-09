@@ -77,7 +77,9 @@ export default defineEventHandler(async (event) => {
     if (cause && typeof cause === 'object' && 'statusCode' in cause) {
       throw cause
     }
-    const message = cause instanceof Error ? cause.message : 'The AST operation failed.'
+    const message = cause instanceof Error
+      ? cause.message
+      : 'The AST operation failed.'
     throw createError({
       statusCode: 400,
       message,

@@ -46,7 +46,11 @@ export function parseDataUri(input: string): DataUriInfo {
 /** Base64 writes 4 characters for each 3 bytes. */
 export function base64ByteLength(base64: string): number {
   const clean = base64.replace(/\s/g, '')
-  const padding = clean.endsWith('==') ? 2 : clean.endsWith('=') ? 1 : 0
+  const padding = clean.endsWith('==')
+    ? 2
+    : clean.endsWith('=')
+      ? 1
+      : 0
   return Math.floor(clean.length / 4) * 3 - padding
 }
 

@@ -38,7 +38,11 @@ const fixes = computed(() => {
   return WCAG_TARGETS.flatMap(({ label, target }) => {
     try {
       const fix = suggestLightnessFix(colors.fg, colors.bg, target)
-      return fix ? [{ label, ...fix }] : []
+      return fix
+        ? [
+            { label, ...fix },
+          ]
+        : []
     }
     catch {
       return []
@@ -53,8 +57,16 @@ const results = computed(() => {
   }
 
   return [
-    { label: 'Normal text', hint: 'Below 24px', ...wcagLevel(ratio.value, false) },
-    { label: 'Large text', hint: '24px, or 18.66px bold', ...wcagLevel(ratio.value, true) },
+    {
+      label: 'Normal text',
+      hint: 'Below 24px',
+      ...wcagLevel(ratio.value, false),
+    },
+    {
+      label: 'Large text',
+      hint: '24px, or 18.66px bold',
+      ...wcagLevel(ratio.value, true),
+    },
   ]
 })
 
@@ -87,7 +99,9 @@ function pickerHex(color: string): string {
 function alphaSuffix(color: string): string {
   try {
     const { alpha } = parseColor(color)
-    return alpha === undefined ? '' : Math.round(alpha * 255).toString(16).padStart(2, '0')
+    return alpha === undefined
+      ? ''
+      : Math.round(alpha * 255).toString(16).padStart(2, '0')
   }
   catch {
     return ''
@@ -110,7 +124,9 @@ function handleReset() {
 }
 
 function applyFix(fix: LightnessFix) {
-  colors[fix.target === 'foreground' ? 'fg' : 'bg'] = fix.hex
+  colors[fix.target === 'foreground'
+    ? 'fg'
+    : 'bg'] = fix.hex
 }
 
 async function handleShare() {

@@ -34,7 +34,9 @@ describe('resolveSpecifiers directory confinement', () => {
   })
 
   it('reports a path relative to the root, not an absolute path', () => {
-    const result = resolveSpecifiers({ specifiers: ['vue'] })
+    const result = resolveSpecifiers({
+      specifiers: ['vue'],
+    })
     const item = result[0]
 
     expect(item?.ok).toBe(true)

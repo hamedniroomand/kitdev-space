@@ -6,7 +6,9 @@ import { useSqliteStudio } from '../../../app/composables/useSqliteStudio'
 const stateMap = new Map<string, any>()
 ;(globalThis as any).useState = (key: string, init?: () => any) => {
   if (!stateMap.has(key)) {
-    stateMap.set(key, ref(init ? init() : undefined))
+    stateMap.set(key, ref(init
+      ? init()
+      : undefined))
   }
   return stateMap.get(key)
 }

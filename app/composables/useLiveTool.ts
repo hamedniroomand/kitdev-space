@@ -56,7 +56,9 @@ export function useLiveTool<T>(
         }
         catch (cause) {
           lastDuration.value = Math.max(0, Math.round(performance.now() - started))
-          error.value = cause instanceof Error ? cause.message : 'The tool failed.'
+          error.value = cause instanceof Error
+            ? cause.message
+            : 'The tool failed.'
           lastError.value = cause
           status.value = 'error'
           if (!isPlainFunction) {
@@ -68,25 +70,38 @@ export function useLiveTool<T>(
 
   // Watch with debounce
   watchDebounced(
-    [result, () => toValue(options.option)],
+    [
+      result,
+      () => toValue(options.option),
+    ],
     () => {
       if (lastError.value) {
-        track('tool_error', { error_kind: errorKind(lastError.value) })
+        track('tool_error', {
+          error_kind: errorKind(lastError.value),
+        })
         return
       }
 
       // Check if the result itself has an error property (like { error: ... })
       const val = toValue(result) as any
       if (val && typeof val === 'object' && val.error) {
-        track('tool_error', { error_kind: errorKind(val.error) })
+        track('tool_error', {
+          error_kind: errorKind(val.error),
+        })
         return
       }
 
       track('tool_execute', {
         duration_ms: lastDuration.value,
         input_bytes_bucket: inputBytesBucket(totalInputBytes()),
-        ...(options.runLocation ? { run_location: options.runLocation } : {}),
-        ...(options.option ? { option: toValue(options.option) } : {}),
+        ...(options.runLocation
+          ? { run_location: options.runLocation }
+          : {}),
+        ...(options.option
+          ? {
+              option: toValue(options.option),
+            }
+          : {}),
       })
     },
     { debounce: debounceMs },

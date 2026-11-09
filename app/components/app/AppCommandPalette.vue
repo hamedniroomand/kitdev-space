@@ -8,7 +8,14 @@ const open = defineModel<boolean>('open', { default: false })
 const searchTerm = ref('')
 const { track } = useToolAnalytics()
 
-const categories: ToolCategory[] = ['data', 'crypto', 'color', 'network', 'image', 'dev']
+const categories: ToolCategory[] = [
+  'data',
+  'crypto',
+  'color',
+  'network',
+  'image',
+  'dev',
+]
 
 const groups = computed<CommandPaletteGroup[]>(() => {
   return categories.map((category) => {
@@ -17,9 +24,13 @@ const groups = computed<CommandPaletteGroup[]>(() => {
       .map(tool => ({
         id: tool.id,
         label: tool.name,
-        suffix: tool.status === 'coming-soon' ? 'Soon' : tool.description,
+        suffix: tool.status === 'coming-soon'
+          ? 'Soon'
+          : tool.description,
         icon: tool.icon,
-        to: tool.status === 'available' ? tool.route : undefined,
+        to: tool.status === 'available'
+          ? tool.route
+          : undefined,
         disabled: tool.status === 'coming-soon',
         onSelect(event: Event) {
           if (tool.status === 'coming-soon') {
@@ -28,7 +39,10 @@ const groups = computed<CommandPaletteGroup[]>(() => {
           }
 
           // The length range of the query is sent. The query itself is not.
-          track('search_result', { tool: tool.id, query_length: queryLengthBucket(searchTerm.value.trim().length) })
+          track('search_result', {
+            tool: tool.id,
+            query_length: queryLengthBucket(searchTerm.value.trim().length),
+          })
           track('tool_select', { tool: tool.id, source: 'palette' })
           open.value = false
         },

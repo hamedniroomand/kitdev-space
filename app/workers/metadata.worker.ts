@@ -16,7 +16,9 @@ globalThis.onmessage = (event: MessageEvent<MetadataWorkerRequest>) => {
     globalThis.postMessage({ meta } satisfies MetadataWorkerResponse)
   }
   catch (cause) {
-    const error = cause instanceof Error ? cause.message : 'The file could not be read.'
+    const error = cause instanceof Error
+      ? cause.message
+      : 'The file could not be read.'
     globalThis.postMessage({ error } satisfies MetadataWorkerResponse)
   }
 }

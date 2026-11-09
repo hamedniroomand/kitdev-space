@@ -9,7 +9,9 @@ import {
 const stateMap = new Map<string, any>()
 ;(globalThis as any).useState = (key: string, init?: () => any) => {
   if (!stateMap.has(key)) {
-    stateMap.set(key, ref(init ? init() : null))
+    stateMap.set(key, ref(init
+      ? init()
+      : null))
   }
   return stateMap.get(key)
 }

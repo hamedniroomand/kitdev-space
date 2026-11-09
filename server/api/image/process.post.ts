@@ -8,7 +8,13 @@ import { enforceRateLimit } from '#server/utils/network/rate-limit'
 
 const formats = new Set<ImageEncodeFormat>(['webp', 'avif', 'jpeg', 'png'])
 const fits = new Set<ImageFit>(['inside', 'fill'])
-const filters = new Set<ImageFilter>(['lanczos3', 'mitchell', 'nearest', 'cubic', 'box'])
+const filters = new Set<ImageFilter>([
+  'lanczos3',
+  'mitchell',
+  'nearest',
+  'cubic',
+  'box',
+])
 const rotates = new Set([90, 180, 270])
 
 function isEncodeFormat(value: string): value is ImageEncodeFormat {
@@ -41,7 +47,9 @@ export default defineEventHandler(async (event) => {
     const format = fields.format ?? 'webp'
     const fit = fields.fit ?? 'inside'
     const filter = fields.filter ?? 'lanczos3'
-    const quality = fields.quality != null ? Number(fields.quality) : 80
+    const quality = fields.quality != null
+      ? Number(fields.quality)
+      : 80
 
     if (!isEncodeFormat(format)) {
       throw new ImageError('Choose a valid output format.')

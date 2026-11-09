@@ -22,15 +22,21 @@ export default defineEventHandler(async (event) => {
       userAgent: resolveUserAgent(body.userAgent),
     })
     const data = await extractOgFromHtml(html, finalUrl)
-    const imageCheck = data.image ? await inspectOgImage(data.image) : null
+    const imageCheck = data.image
+      ? await inspectOgImage(data.image)
+      : null
 
-    return { result: { ...data, charset, imageCheck } }
+    return {
+      result: { ...data, charset, imageCheck },
+    }
   }
   catch (cause) {
     if (typeof cause === 'object' && cause !== null && 'statusCode' in cause) {
       throw cause
     }
-    const message = cause instanceof Error ? cause.message : 'The OpenGraph preview failed.'
+    const message = cause instanceof Error
+      ? cause.message
+      : 'The OpenGraph preview failed.'
     throw createError({
       statusCode: 400,
       message,

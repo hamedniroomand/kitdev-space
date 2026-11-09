@@ -11,7 +11,14 @@ import {
 } from '~/utils/sqlite/query-builder'
 
 function column(name: string, type: string, pk = 0): ColumnInfo {
-  return { cid: 0, name, type, notnull: 0, dflt_value: null, pk }
+  return {
+    cid: 0,
+    name,
+    type,
+    notnull: 0,
+    dflt_value: null,
+    pk,
+  }
 }
 
 describe('query builder', () => {
@@ -31,7 +38,10 @@ describe('query builder', () => {
   })
 
   it('selects the rowid under an alias with a limit and an offset', () => {
-    const { sql, countSql } = buildTableQuery(initialTableQuery('products'), { hasRowId: true, textColumns: ['name'] })
+    const { sql, countSql } = buildTableQuery(initialTableQuery('products'), {
+      hasRowId: true,
+      textColumns: ['name'],
+    })
     expect(sql).toBe('SELECT rowid AS "_rowid_", *\nFROM "products"\nLIMIT 100 OFFSET 0;')
     expect(countSql).toBe('SELECT COUNT(*) FROM "products";')
   })
@@ -42,8 +52,14 @@ describe('query builder', () => {
   })
 
   it('searches every text column and escapes LIKE wildcards', () => {
-    const state = { ...initialTableQuery('products'), search: '50%_off' }
-    const { sql, countSql } = buildTableQuery(state, { hasRowId: true, textColumns: ['name', 'sku'] })
+    const state = {
+      ...initialTableQuery('products'),
+      search: '50%_off',
+    }
+    const { sql, countSql } = buildTableQuery(state, {
+      hasRowId: true,
+      textColumns: ['name', 'sku'],
+    })
     expect(sql).toContain('WHERE ("name" LIKE \'%50\\%\\_off%\' ESCAPE \'\\\' OR "sku" LIKE \'%50\\%\\_off%\' ESCAPE \'\\\')')
     expect(countSql).toContain('WHERE ("name" LIKE')
   })
@@ -60,7 +76,10 @@ describe('query builder', () => {
       limit: 50,
       offset: 100,
     }
-    const { sql } = buildTableQuery(state, { hasRowId: true, textColumns: ['name'] })
+    const { sql } = buildTableQuery(state, {
+      hasRowId: true,
+      textColumns: ['name'],
+    })
     expect(sql).toBe([
       'SELECT rowid AS "_rowid_", *',
       'FROM "products"',
@@ -76,7 +95,11 @@ describe('query builder', () => {
   })
 
   it('builds snippets from the first text column', () => {
-    const snippets = tableSnippets('products', [column('id', 'INTEGER', 1), column('name', 'TEXT'), column('price', 'REAL')])
+    const snippets = tableSnippets('products', [
+      column('id', 'INTEGER', 1),
+      column('name', 'TEXT'),
+      column('price', 'REAL'),
+    ])
     expect(snippets.map(s => s.label)).toEqual(['Count the rows', 'Distinct values of name', 'Count by name'])
     expect(snippets[2]!.sql).toContain('GROUP BY "name"')
   })

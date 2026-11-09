@@ -9,7 +9,9 @@ describe('inspectEmailHealth', () => {
         return ['v=spf1 include:_spf.google.com -all']
       }
       if (type === 'MX' && domain === 'example.com') {
-        return [{ priority: 10, exchange: 'mail.example.com' }]
+        return [
+          { priority: 10, exchange: 'mail.example.com' },
+        ]
       }
       if (type === 'TXT' && domain === 'google._domainkey.example.com') {
         return ['v=DKIM1; k=rsa; p=abc']
@@ -45,7 +47,9 @@ describe('inspectEmailHealth', () => {
         return ['v=spf1 -all']
       }
       if (type === 'MX' && domain === 'example.com') {
-        return [{ priority: 10, exchange: 'mail.example.com' }]
+        return [
+          { priority: 10, exchange: 'mail.example.com' },
+        ]
       }
       return []
     })
@@ -67,7 +71,9 @@ describe('inspectEmailHealth', () => {
         throw new Error('The lookup failed.')
       }
       if (type === 'MX' && domain === 'example.com') {
-        return [{ priority: 10, exchange: 'mail.example.com' }]
+        return [
+          { priority: 10, exchange: 'mail.example.com' },
+        ]
       }
       return []
     })
@@ -93,7 +99,11 @@ describe('inspectEmailHealth', () => {
         return []
       }
       if (type === 'MX') {
-        return domain === 'example.com' ? [{ priority: 10, exchange: 'mail.example.com' }] : []
+        return domain === 'example.com'
+          ? [
+              { priority: 10, exchange: 'mail.example.com' },
+            ]
+          : []
       }
       const txt: Record<string, string[]> = {
         'example.com': ['v=spf1 ip4:203.0.113.0/24 -all'],

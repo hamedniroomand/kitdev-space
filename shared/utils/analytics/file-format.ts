@@ -46,5 +46,7 @@ const KNOWN_FORMATS = new Set([
 export function fileFormat(filename: string): string {
   const match = /\.([a-z0-9]+)$/i.exec(filename.trim())
   const extension = match?.[1]?.toLowerCase() ?? ''
-  return KNOWN_FORMATS.has(extension) ? extension : 'other'
+  return KNOWN_FORMATS.has(extension)
+    ? extension
+    : 'other'
 }

@@ -134,7 +134,9 @@ const delimiterLabel = computed(() => {
   return 'comma'
 })
 
-const inputLang = computed(() => (mode.value === 'json-csv' ? 'json' : 'text'))
+const inputLang = computed(() => (mode.value === 'json-csv'
+  ? 'json'
+  : 'text'))
 const outputLang = computed(() => {
   if (mode.value === 'csv-json') {
     return 'json'
@@ -171,7 +173,9 @@ async function convert() {
       })
       detectedDelimiter.value = next.delimiter ?? null
       if (next.excludedRowCount && next.excludedRowCount > 0) {
-        statusMeta.value = `Excluded ${next.excludedRowCount} invalid row${next.excludedRowCount > 1 ? 's' : ''}`
+        statusMeta.value = `Excluded ${next.excludedRowCount} invalid row${next.excludedRowCount > 1
+          ? 's'
+          : ''}`
       }
       return next.output
     }
@@ -276,9 +280,13 @@ function handleDownloadFiltered() {
   const filteredOutput = exportFilteredDataset({
     rows: filteredPreviewRows.value,
     columns: previewData.value.columns,
-    visibleColumnIndices: visibleColumnIndices.value.length > 0 ? visibleColumnIndices.value : undefined,
+    visibleColumnIndices: visibleColumnIndices.value.length > 0
+      ? visibleColumnIndices.value
+      : undefined,
     mode: mode.value,
-    delimiter: delimiter.value === 'auto' ? undefined : delimiter.value,
+    delimiter: delimiter.value === 'auto'
+      ? undefined
+      : delimiter.value,
     tableName: tableName.value,
     nullOptions: {
       nullValue: nullValue.value,

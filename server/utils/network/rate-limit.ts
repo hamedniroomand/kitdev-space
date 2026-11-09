@@ -40,7 +40,9 @@ export function enforceRateLimit(ip: string, key: string, maxRequests = MAX_REQU
   }
 
   const recent = (hits.get(id) ?? []).filter(stamp => now - stamp < WINDOW_MS)
-  const limit = maxRequests > 0 ? maxRequests : MAX_REQUESTS
+  const limit = maxRequests > 0
+    ? maxRequests
+    : MAX_REQUESTS
 
   if (recent.length >= limit) {
     hits.set(id, recent)

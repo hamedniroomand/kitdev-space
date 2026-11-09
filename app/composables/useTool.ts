@@ -61,15 +61,21 @@ export function useTool<TResult = string>() {
       track('tool_execute', {
         duration_ms: Math.round(performance.now() - started),
         input_bytes_bucket: inputBytesBucket(totalInputBytes()),
-        ...(options.runLocation ? { run_location: options.runLocation } : {}),
-        ...(options.option ? { option: options.option } : {}),
+        ...(options.runLocation
+          ? { run_location: options.runLocation }
+          : {}),
+        ...(options.option
+          ? { option: options.option }
+          : {}),
       })
     }
     catch (cause) {
       error.value = toErrorMessage(cause, fallbackMessage)
       status.value = 'error'
       // The kind comes from the error shape. The message can hold user input and never leaves the page.
-      track('tool_error', { error_kind: errorKind(cause) })
+      track('tool_error', {
+        error_kind: errorKind(cause),
+      })
     }
   }
 

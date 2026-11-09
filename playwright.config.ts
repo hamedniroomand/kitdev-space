@@ -28,7 +28,13 @@ export default defineConfig({
   // A GitHub runner has four cores. Locally, Playwright picks half of the cores.
   workers: process.env.CI ? 4 : undefined,
   reporter: process.env.CI
-    ? [['list'], ['html', { open: 'never' }]]
+    ? [
+        ['list'],
+        [
+          'html',
+          { open: 'never' },
+        ],
+      ]
     : 'list',
   use: {
     baseURL,

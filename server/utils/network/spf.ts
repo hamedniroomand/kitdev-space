@@ -108,18 +108,39 @@ export async function traceSpf(domain: string, options: TraceSpfOptions = {}): P
       : await query(resolvers.txt, name)
 
     if (records === null) {
-      nodes.push({ domain: name, via, depth, record: null, status: 'failed', mechanisms: [] })
+      nodes.push({
+        domain: name,
+        via,
+        depth,
+        record: null,
+        status: 'failed',
+        mechanisms: [],
+      })
       return
     }
 
     const record = findSpfRecords(records)[0] ?? null
     if (!record) {
-      nodes.push({ domain: name, via, depth, record: null, status: 'missing', mechanisms: [] })
+      nodes.push({
+        domain: name,
+        via,
+        depth,
+        record: null,
+        status: 'missing',
+        mechanisms: [],
+      })
       return
     }
 
     const mechanisms = parseSpfMechanisms(record)
-    nodes.push({ domain: name, via, depth, record, status: 'ok', mechanisms })
+    nodes.push({
+      domain: name,
+      via,
+      depth,
+      record,
+      status: 'ok',
+      mechanisms,
+    })
 
     for (const mechanism of mechanisms) {
       if (exceeded) {
@@ -182,7 +203,13 @@ export async function traceSpf(domain: string, options: TraceSpfOptions = {}): P
 
   await walk(domain, 'root', 0)
 
-  const counters = { lookupCount, voidLookupCount, exceeded, loops, failed }
+  const counters = {
+    lookupCount,
+    voidLookupCount,
+    exceeded,
+    loops,
+    failed,
+  }
 
   return {
     ...counters,

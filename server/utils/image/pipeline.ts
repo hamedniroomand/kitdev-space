@@ -32,7 +32,9 @@ function createPipeline(input: Uint8Array) {
 }
 
 function mimeFor(format: ImageEncodeFormat): string {
-  return format === 'jpeg' ? 'image/jpeg' : `image/${format}`
+  return format === 'jpeg'
+    ? 'image/jpeg'
+    : `image/${format}`
 }
 
 export function mapImageCause(cause: unknown, fallback: string): ImageError {

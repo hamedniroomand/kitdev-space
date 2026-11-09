@@ -62,9 +62,15 @@ async function execute() {
       body: {
         password: password.value,
         algorithm: algorithm.value,
-        memoryCost: algorithm.value === 'argon2id' ? memoryCost.value : undefined,
-        timeCost: algorithm.value === 'argon2id' ? timeCost.value : undefined,
-        cost: algorithm.value === 'bcrypt' ? cost.value : undefined,
+        memoryCost: algorithm.value === 'argon2id'
+          ? memoryCost.value
+          : undefined,
+        timeCost: algorithm.value === 'argon2id'
+          ? timeCost.value
+          : undefined,
+        cost: algorithm.value === 'bcrypt'
+          ? cost.value
+          : undefined,
         verify: verify.value,
         runs: runs.value,
       },

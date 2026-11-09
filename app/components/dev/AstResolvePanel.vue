@@ -29,7 +29,9 @@ const specifiers = computed(() => {
   if (!extra) {
     return props.imports
   }
-  return [...new Set([...props.imports, extra])]
+  return [
+    ...new Set([...props.imports, extra]),
+  ]
 })
 
 async function resolve() {

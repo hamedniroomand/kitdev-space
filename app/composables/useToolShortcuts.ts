@@ -7,7 +7,9 @@ export interface ToolShortcutsOptions {
 export function useToolShortcuts(
   optionsOrRun: ToolShortcutsOptions | (() => void | Promise<void>),
 ) {
-  const options = typeof optionsOrRun === 'function' ? { onRun: optionsOrRun } : optionsOrRun
+  const options = typeof optionsOrRun === 'function'
+    ? { onRun: optionsOrRun }
+    : optionsOrRun
 
   const shortcuts: Record<string, any> = {}
 

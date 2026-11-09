@@ -26,7 +26,9 @@ export function splitIntoWords(input: string): string[] {
 export function convertLines(input: string, convert: (line: string) => string): string {
   return input
     .split(/(\r\n|\r|\n)/)
-    .map((part, index) => (index % 2 === 0 ? convert(part) : part))
+    .map((part, index) => (index % 2 === 0
+      ? convert(part)
+      : part))
     .join('')
 }
 

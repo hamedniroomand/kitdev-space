@@ -50,19 +50,27 @@ describe('formatDnsRecord', () => {
 
 describe('toDnsRows', () => {
   it('keeps the ttl of address records', () => {
-    expect(toDnsRows('A', [{ address: '93.184.216.34', ttl: 60 }]))
-      .toEqual([{ type: 'A', value: '93.184.216.34', ttl: 60 }])
+    expect(toDnsRows('A', [
+      { address: '93.184.216.34', ttl: 60 },
+    ]))
+      .toEqual([
+        { type: 'A', value: '93.184.216.34', ttl: 60 },
+      ])
   })
 
   it('gives no ttl for records without one', () => {
     expect(toDnsRows('NS', ['a.iana-servers.net']))
-      .toEqual([{ type: 'NS', value: 'a.iana-servers.net', ttl: null }])
+      .toEqual([
+        { type: 'NS', value: 'a.iana-servers.net', ttl: null },
+      ])
   })
 })
 
 describe('buildDnsAnswer', () => {
   it('marks an answer with records as ok', () => {
-    const answer = buildDnsAnswer('A', [{ address: '93.184.216.34', ttl: 60 }])
+    const answer = buildDnsAnswer('A', [
+      { address: '93.184.216.34', ttl: 60 },
+    ])
     expect(answer.status).toBe('ok')
     expect(answer.records).toHaveLength(1)
   })
@@ -91,7 +99,9 @@ describe('buildDnsSummary', () => {
     const summary = buildDnsSummary({
       ...base,
       answers: [
-        buildDnsAnswer('A', [{ address: '93.184.216.34', ttl: 60 }]),
+        buildDnsAnswer('A', [
+          { address: '93.184.216.34', ttl: 60 },
+        ]),
         buildDnsAnswer('CAA', []),
       ],
     })
@@ -127,7 +137,10 @@ describe('buildDnsSummary', () => {
   it('keeps a nodata type separate from a failed type', () => {
     const summary = buildDnsSummary({
       ...base,
-      answers: [buildDnsAnswer('A', []), buildDnsAnswer('MX', null, 'ESERVFAIL')],
+      answers: [
+        buildDnsAnswer('A', []),
+        buildDnsAnswer('MX', null, 'ESERVFAIL'),
+      ],
     })
 
     expect(summary.status).toBe('nodata')

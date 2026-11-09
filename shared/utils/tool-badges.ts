@@ -17,7 +17,9 @@ export function toolRunBadge(tool: Tool, options: { includeMixed?: boolean } = {
   const runs = toolRunLocation(tool)
   if (runs === 'browser') {
     return {
-      label: toolWorksOffline(tool) ? '🔒 Client · Offline' : '🔒 Client',
+      label: toolWorksOffline(tool)
+        ? '🔒 Client · Offline'
+        : '🔒 Client',
       color: 'neutral',
       variant: 'subtle',
       size: 'xs',

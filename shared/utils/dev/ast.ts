@@ -137,8 +137,12 @@ function buildNode(
     return null
   }
 
-  const start = typeof node.start === 'number' ? node.start : 0
-  const end = typeof node.end === 'number' ? node.end : start
+  const start = typeof node.start === 'number'
+    ? node.start
+    : 0
+  const end = typeof node.end === 'number'
+    ? node.end
+    : start
   const children: AstTreeNode[] = []
   let childIndex = 0
 
@@ -170,7 +174,10 @@ function buildNode(
     label: nodeLabel(node),
     start,
     end,
-    span: { start: at(start), end: at(end) },
+    span: {
+      start: at(start),
+      end: at(end),
+    },
     children,
   }
 }

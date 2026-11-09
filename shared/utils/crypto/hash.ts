@@ -41,7 +41,9 @@ const HASHERS: Record<HashAlgorithm, () => Promise<IHasher>> = {
 const CHUNK_BYTES = 8 * 1024 * 1024
 
 export function toHex(buffer: ArrayBuffer): string {
-  return [...new Uint8Array(buffer)]
+  return [
+    ...new Uint8Array(buffer),
+  ]
     .map(byte => byte.toString(16).padStart(2, '0'))
     .join('')
 }
@@ -55,7 +57,9 @@ export async function hashBytes(bytes: BufferSource, algorithm: HashAlgorithm): 
 
   const hasher = await HASHERS[algorithm]()
   hasher.init()
-  hasher.update(bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes as ArrayBuffer))
+  hasher.update(bytes instanceof Uint8Array
+    ? bytes
+    : new Uint8Array(bytes as ArrayBuffer))
   return hasher.digest()
 }
 

@@ -51,13 +51,21 @@ export function fromPx(
     case 'px':
       return pxValue
     case 'rem':
-      return rootFontSize === 0 ? 0 : pxValue / rootFontSize
+      return rootFontSize === 0
+        ? 0
+        : pxValue / rootFontSize
     case 'em':
-      return parentFontSize === 0 ? 0 : pxValue / parentFontSize
+      return parentFontSize === 0
+        ? 0
+        : pxValue / parentFontSize
     case 'vw':
-      return viewportWidth === 0 ? 0 : (pxValue / viewportWidth) * 100
+      return viewportWidth === 0
+        ? 0
+        : (pxValue / viewportWidth) * 100
     case 'vh':
-      return viewportHeight === 0 ? 0 : (pxValue / viewportHeight) * 100
+      return viewportHeight === 0
+        ? 0
+        : (pxValue / viewportHeight) * 100
   }
 }
 
@@ -88,7 +96,9 @@ export function convertAllCssUnits(
 
 /** Print a length with up to 4 decimals and no trailing zero. */
 export function formatCssNumber(value: number): string {
-  return Number.isInteger(value) ? String(value) : String(Number(value.toFixed(4)))
+  return Number.isInteger(value)
+    ? String(value)
+    : String(Number(value.toFixed(4)))
 }
 
 // A comment, a string, or a `url()` keeps its text. The last alternative of

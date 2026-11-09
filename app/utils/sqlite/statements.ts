@@ -14,7 +14,9 @@ export function splitSqlStatements(sql: string): string[] {
 
     if (ch === '-' && next === '-') {
       const end = sql.indexOf('\n', index)
-      const stop = end === -1 ? sql.length : end
+      const stop = end === -1
+        ? sql.length
+        : end
       current += sql.slice(index, stop)
       index = stop
       continue
@@ -22,7 +24,9 @@ export function splitSqlStatements(sql: string): string[] {
 
     if (ch === '/' && next === '*') {
       const end = sql.indexOf('*/', index + 2)
-      const stop = end === -1 ? sql.length : end + 2
+      const stop = end === -1
+        ? sql.length
+        : end + 2
       current += sql.slice(index, stop)
       index = stop
       continue

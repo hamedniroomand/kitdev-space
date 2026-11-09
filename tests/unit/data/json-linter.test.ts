@@ -39,7 +39,9 @@ describe('json-linter', () => {
         toString: () => '{"name": "KitDev"}',
         length: 18,
       }
-      const diagnostics = linterFn({ state: { doc } })
+      const diagnostics = linterFn({
+        state: { doc },
+      })
       expect(diagnostics).toHaveLength(0)
     })
 
@@ -49,7 +51,9 @@ describe('json-linter', () => {
         toString: () => '   ',
         length: 3,
       }
-      const diagnostics = linterFn({ state: { doc } })
+      const diagnostics = linterFn({
+        state: { doc },
+      })
       expect(diagnostics).toHaveLength(0)
     })
 
@@ -60,7 +64,9 @@ describe('json-linter', () => {
         toString: () => invalidJson,
         length: invalidJson.length,
       }
-      const diagnostics = linterFn({ state: { doc } })
+      const diagnostics = linterFn({
+        state: { doc },
+      })
       expect(diagnostics).toHaveLength(1)
       expect(diagnostics[0]?.severity).toBe('error')
       expect(diagnostics[0]?.message).toContain('Line 3, column 1')

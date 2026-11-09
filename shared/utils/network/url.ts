@@ -53,7 +53,9 @@ export function encodeQueryPart(text: string): string {
 
 /** Read a query string into rows. Duplicate keys stay as separate rows. */
 export function parseQueryParams(search: string): UrlQueryParam[] {
-  const query = search.startsWith('?') ? search.slice(1) : search
+  const query = search.startsWith('?')
+    ? search.slice(1)
+    : search
   if (!query) {
     return []
   }
@@ -65,8 +67,12 @@ export function parseQueryParams(search: string): UrlQueryParam[] {
     }
     const separator = part.indexOf('=')
     const bare = separator === -1
-    const rawKey = bare ? part : part.slice(0, separator)
-    const rawValue = bare ? '' : part.slice(separator + 1)
+    const rawKey = bare
+      ? part
+      : part.slice(0, separator)
+    const rawValue = bare
+      ? ''
+      : part.slice(separator + 1)
     params.push({
       key: decodeQueryPart(rawKey),
       value: decodeQueryPart(rawValue),
@@ -81,7 +87,9 @@ export function parseQueryParams(search: string): UrlQueryParam[] {
 /** Write rows back to a query string. The raw text of an unchanged row stays the same. */
 export function buildQueryString(params: UrlQueryParam[]): string {
   return params
-    .map(param => (param.bare ? param.rawKey : `${param.rawKey}=${param.rawValue}`))
+    .map(param => (param.bare
+      ? param.rawKey
+      : `${param.rawKey}=${param.rawValue}`))
     .join('&')
 }
 
@@ -89,7 +97,9 @@ export function buildQueryString(params: UrlQueryParam[]): string {
 export function buildUrlWithParams(href: string, params: UrlQueryParam[]): string {
   const url = new URL(href)
   const query = buildQueryString(params)
-  url.search = query ? `?${query}` : ''
+  url.search = query
+    ? `?${query}`
+    : ''
   return url.href
 }
 

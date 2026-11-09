@@ -43,7 +43,9 @@ export default defineEventHandler(async (event) => {
     return { result }
   }
   catch (cause) {
-    const message = cause instanceof Error ? cause.message : 'The password benchmark failed.'
+    const message = cause instanceof Error
+      ? cause.message
+      : 'The password benchmark failed.'
     throw createError({
       statusCode: 400,
       message,

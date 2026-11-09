@@ -13,7 +13,9 @@ vi.mock('../../../app/composables/useDownload', () => ({
 vi.mock('@vueuse/core', () => ({
   useObjectUrl: (fn: () => Blob | null | undefined) => {
     const val = fn()
-    return { value: val ? 'blob:mock-url' : null }
+    return {
+      value: val ? 'blob:mock-url' : null,
+    }
   },
 }))
 

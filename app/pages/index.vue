@@ -13,7 +13,12 @@ const categories: { id: ToolCategory, description: string }[] = [
   { id: 'color', description: 'Convert colors, build a shade scale, and check text contrast.' },
   { id: 'crypto', description: 'Check a hash, inspect a token, or generate an ID or secret.' },
 ]
-const featuredIds = ['json-formatter', 'sqlite-studio', 'http-inspector', 'image-metadata']
+const featuredIds = [
+  'json-formatter',
+  'sqlite-studio',
+  'http-inspector',
+  'image-metadata',
+]
 const featuredTools = featuredIds.flatMap(id => getPrimaryTools().filter(tool => tool.id === id))
 const description = 'Format JSON, inspect a SQLite database, check a URL, and prepare images. Free developer tools, with browser processing where possible.'
 

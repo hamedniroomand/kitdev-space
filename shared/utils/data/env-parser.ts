@@ -61,7 +61,9 @@ export function envToJsonWithDiagnostics(envText: string): EnvParseResult {
     if ((firstChar === '"' || firstChar === '\'') && !value.endsWith(firstChar)) {
       diagnostics.push({
         line: lineNum,
-        message: `Line ${lineNum}: Unclosed ${firstChar === '"' ? 'double' : 'single'} quote in value for key "${key}".`,
+        message: `Line ${lineNum}: Unclosed ${firstChar === '"'
+          ? 'double'
+          : 'single'} quote in value for key "${key}".`,
         severity: 'error',
       })
       continue
@@ -134,7 +136,9 @@ export function jsonToEnv(jsonInput: Record<string, unknown> | string): string {
       continue
     }
 
-    const str = typeof value === 'object' ? JSON.stringify(value) : String(value)
+    const str = typeof value === 'object'
+      ? JSON.stringify(value)
+      : String(value)
     if (str.includes('\n') || str.includes(' ') || str.includes('"') || str.includes('\'')) {
       lines.push(`${key}="${str.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n')}"`)
     }
@@ -160,7 +164,9 @@ export function envToExample(envText: string): string {
     }
 
     let cleaned = trimmed
-    const exportPrefix = cleaned.startsWith('export ') ? 'export ' : ''
+    const exportPrefix = cleaned.startsWith('export ')
+      ? 'export '
+      : ''
     if (exportPrefix) {
       cleaned = cleaned.slice(7).trim()
     }

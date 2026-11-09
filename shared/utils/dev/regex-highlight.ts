@@ -71,7 +71,9 @@ const regexMatchField = StateField.define<DecorationSet>({
         return buildDecorations(effect.value, transaction.state.doc.length)
       }
     }
-    return transaction.docChanged ? value.map(transaction.changes) : value
+    return transaction.docChanged
+      ? value.map(transaction.changes)
+      : value
   },
   provide: field => EditorView.decorations.from(field),
 })
@@ -82,5 +84,7 @@ export function regexMatchHighlight(): Extension[] {
 
 /** Sends the matches to the editor. It skips a view that is not ready. */
 export function pushRegexMatches(view: EditorView | null, matches: RegexMatchResult[]): void {
-  view?.dispatch({ effects: setRegexMatches.of(matches) })
+  view?.dispatch({
+    effects: setRegexMatches.of(matches),
+  })
 }

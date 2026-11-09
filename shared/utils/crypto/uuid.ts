@@ -111,7 +111,12 @@ export function inspectId(input: string): IdInspection {
       throw new Error(`A UUID v${version} holds no timestamp. Paste a UUID v7 or a ULID.`)
     }
     const timestampMs = Number.parseInt(uuid[1]! + uuid[2]!, 16)
-    return { format: 'uuidv7', version, timestampMs, iso: new Date(timestampMs).toISOString() }
+    return {
+      format: 'uuidv7',
+      version,
+      timestampMs,
+      iso: new Date(timestampMs).toISOString(),
+    }
   }
 
   const ulid = value.toUpperCase()
@@ -123,7 +128,12 @@ export function inspectId(input: string): IdInspection {
     if (timestampMs > 0xFFFFFFFFFFFF) {
       throw new Error('The ULID timestamp is out of range.')
     }
-    return { format: 'ulid', version: null, timestampMs, iso: new Date(timestampMs).toISOString() }
+    return {
+      format: 'ulid',
+      version: null,
+      timestampMs,
+      iso: new Date(timestampMs).toISOString(),
+    }
   }
 
   throw new Error('The input is not a UUID v7 or a ULID.')

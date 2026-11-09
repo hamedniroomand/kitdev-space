@@ -36,7 +36,9 @@ function headersToRecord(headers: Headers): Record<string, string> {
     }
 
     const existing = record[key]
-    record[key] = existing === undefined ? value : `${existing}\n${value}`
+    record[key] = existing === undefined
+      ? value
+      : `${existing}\n${value}`
   })
 
   return record

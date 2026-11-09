@@ -6,13 +6,20 @@ describe('rdap parser', () => {
   it('parses entity vcard fields', () => {
     const rawEntity = {
       roles: ['registrar'],
-      publicIds: [{ type: 'IANA Registrar ID', identifier: '292' }],
+      publicIds: [
+        { type: 'IANA Registrar ID', identifier: '292' },
+      ],
       vcardArray: [
         'vcard',
         [
           ['version', {}, 'text', '4.0'],
           ['fn', {}, 'text', 'MarkMonitor Inc.'],
-          ['email', {}, 'text', 'abusecomplaints@markmonitor.com'],
+          [
+            'email',
+            {},
+            'text',
+            'abusecomplaints@markmonitor.com',
+          ],
           ['tel', {}, 'uri', '+1.2083895740'],
         ],
       ],
@@ -46,7 +53,14 @@ describe('rdap parser', () => {
           roles: ['registrar'],
           vcardArray: [
             'vcard',
-            [['fn', {}, 'text', 'RESERVED-Internet Assigned Numbers Authority']],
+            [
+              [
+                'fn',
+                {},
+                'text',
+                'RESERVED-Internet Assigned Numbers Authority',
+              ],
+            ],
           ],
         },
       ],
@@ -69,8 +83,18 @@ describe('rdap parser', () => {
       vcardArray: [
         'vcard',
         [
-          ['fn', {}, 'text', 'REDACTED FOR PRIVACY'],
-          ['email', {}, 'text', 'abuse@example.com'],
+          [
+            'fn',
+            {},
+            'text',
+            'REDACTED FOR PRIVACY',
+          ],
+          [
+            'email',
+            {},
+            'text',
+            'abuse@example.com',
+          ],
         ],
       ],
     }
@@ -84,8 +108,14 @@ describe('rdap parser', () => {
   it('reads the RFC 9537 redaction list', () => {
     const names = collectRedactedNames({
       redacted: [
-        { name: { type: 'Registrant Name' }, method: 'removal' },
-        { name: { description: 'Registrant Email' }, method: 'emptyValue' },
+        {
+          name: { type: 'Registrant Name' },
+          method: 'removal',
+        },
+        {
+          name: { description: 'Registrant Email' },
+          method: 'emptyValue',
+        },
         { method: 'removal' },
       ],
     })
@@ -94,11 +124,25 @@ describe('rdap parser', () => {
 
   it('separates privacy redaction from missing registry data', () => {
     const payload = {
-      redacted: [{ name: { type: 'Registrant Phone' } }],
+      redacted: [
+        {
+          name: { type: 'Registrant Phone' },
+        },
+      ],
       entities: [
         {
           roles: ['registrar'],
-          vcardArray: ['vcard', [['fn', {}, 'text', 'Redacted for Privacy']]],
+          vcardArray: [
+            'vcard',
+            [
+              [
+                'fn',
+                {},
+                'text',
+                'Redacted for Privacy',
+              ],
+            ],
+          ],
         },
       ],
     }
@@ -122,9 +166,18 @@ describe('rdap parser', () => {
   })
 
   const bootstrap: RdapBootstrapService[] = [
-    [['dev', 'app', 'page'], ['https://pubapi.registry.google/rdap/']],
-    [['com', 'net'], ['http://rdap.verisign.com/com/v1/', 'https://rdap.verisign.com/com/v1/']],
-    [['co.uk'], ['https://rdap.nominet.uk/uk/']],
+    [
+      ['dev', 'app', 'page'],
+      ['https://pubapi.registry.google/rdap/'],
+    ],
+    [
+      ['com', 'net'],
+      ['http://rdap.verisign.com/com/v1/', 'https://rdap.verisign.com/com/v1/'],
+    ],
+    [
+      ['co.uk'],
+      ['https://rdap.nominet.uk/uk/'],
+    ],
   ]
 
   it('resolves the authoritative server of a domain from the bootstrap table', () => {
@@ -133,7 +186,12 @@ describe('rdap parser', () => {
   })
 
   it('prefers https and adds the trailing slash', () => {
-    expect(resolveRdapBase('example.com', [[['com'], ['http://a.example/', 'https://b.example']]])).toBe('https://b.example/')
+    expect(resolveRdapBase('example.com', [
+      [
+        ['com'],
+        ['http://a.example/', 'https://b.example'],
+      ],
+    ])).toBe('https://b.example/')
   })
 
   it('matches the longest suffix first', () => {

@@ -18,7 +18,12 @@ useLiveTool(() => {
   if (error.value) {
     throw new Error(error.value)
   }
-  return { decimal: decimalVal.value, hex: hexVal.value, binary: binaryVal.value, octal: octalVal.value }
+  return {
+    decimal: decimalVal.value,
+    hex: hexVal.value,
+    binary: binaryVal.value,
+    octal: octalVal.value,
+  }
 })
 
 function updateFrom(val: string, base: NumberBase) {
@@ -48,7 +53,9 @@ function updateFrom(val: string, base: NumberBase) {
       octalVal.value = res.octal
   }
   catch (err) {
-    error.value = err instanceof Error ? err.message : 'Invalid number.'
+    error.value = err instanceof Error
+      ? err.message
+      : 'Invalid number.'
   }
 }
 

@@ -213,7 +213,9 @@ onRecipeChange(async (files) => {
     regenerate()
   }
   catch (cause) {
-    generateError.value = cause instanceof Error ? cause.message : 'Cannot read the recipe file.'
+    generateError.value = cause instanceof Error
+      ? cause.message
+      : 'Cannot read the recipe file.'
   }
 })
 

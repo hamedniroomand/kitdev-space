@@ -39,7 +39,9 @@ export function rgbToOklch({ r, g, b }: Rgb): Oklch {
 
   const chroma = Math.sqrt(a * a + bAxis * bAxis)
   // A gray color has no hue. Report 0 instead of a value from rounding noise.
-  const hue = chroma < 1e-6 ? 0 : ((Math.atan2(bAxis, a) * 180) / Math.PI + 360) % 360
+  const hue = chroma < 1e-6
+    ? 0
+    : ((Math.atan2(bAxis, a) * 180) / Math.PI + 360) % 360
 
   return {
     l: Number((lightness * 100).toFixed(3)),
@@ -84,7 +86,11 @@ function isInUnitRange(channels: [number, number, number]): boolean {
 
 export function oklchToRgb(oklch: Oklch): Rgb {
   const [r, g, b] = oklchToLinearSrgb(oklch)
-  return { r: toSrgb(r), g: toSrgb(g), b: toSrgb(b) }
+  return {
+    r: toSrgb(r),
+    g: toSrgb(g),
+    b: toSrgb(b),
+  }
 }
 
 /** True when the OKLCH color is outside the sRGB gamut. */
@@ -99,7 +105,9 @@ export function isOutOfP3Gamut(oklch: Oklch): boolean {
 
 /** `precision` sets the decimal places of each channel. It keeps the full value when it is absent. */
 export function toOklchString({ l, c, h, a }: Oklch, precision?: number): string {
-  const at = (value: number) => (precision === undefined ? value : roundTo(value, precision))
+  const at = (value: number) => (precision === undefined
+    ? value
+    : roundTo(value, precision))
   const channels = `${at(l)}% ${at(c)} ${at(h)}`
   if (a !== undefined && a < 1) {
     return `oklch(${channels} / ${a})`

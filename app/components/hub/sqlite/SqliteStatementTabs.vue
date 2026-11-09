@@ -13,10 +13,14 @@ watch(() => props.results, () => {
 
 function summary(result: QueryResult): string {
   if (result.rowsAffected !== undefined) {
-    return `${result.rowsAffected} ${result.rowsAffected === 1 ? 'row' : 'rows'} affected`
+    return `${result.rowsAffected} ${result.rowsAffected === 1
+      ? 'row'
+      : 'rows'} affected`
   }
   if (result.columns.length > 0) {
-    return `${result.rowCount} ${result.rowCount === 1 ? 'row' : 'rows'}`
+    return `${result.rowCount} ${result.rowCount === 1
+      ? 'row'
+      : 'rows'}`
   }
   return 'no rows'
 }
@@ -26,7 +30,9 @@ function shortSql(sql: string | undefined, index: number): string {
     return `Statement ${index + 1}`
   }
   const oneLine = sql.replace(/\s+/g, ' ').trim()
-  return oneLine.length > 40 ? `${oneLine.slice(0, 40)}…` : oneLine
+  return oneLine.length > 40
+    ? `${oneLine.slice(0, 40)}…`
+    : oneLine
 }
 </script>
 

@@ -35,6 +35,23 @@ const { track } = useToolAnalytics()
         <span>· Open source under the MIT license.</span>
       </p>
     </template>
+    <nav
+      aria-label="Other projects"
+      class="flex flex-col gap-1 font-mono text-xs tracking-wide text-muted"
+    >
+      <a
+        href="https://edgefit.kitdev.space/"
+        class="hover:text-highlighted transition-colors"
+      >
+        edgefit: Node.js compatibility checker for edge runtimes
+      </a>
+      <a
+        href="https://layerscope.kitdev.space/"
+        class="hover:text-highlighted transition-colors"
+      >
+        layerscope: linter for Nuxt layer boundaries
+      </a>
+    </nav>
     <template #right>
       <UButton
         to="https://github.com/hamedniroomand/kitdev-space"

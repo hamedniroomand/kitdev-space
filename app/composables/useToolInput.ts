@@ -53,5 +53,10 @@ export function useToolInput() {
     return total
   }
 
-  return { reportInput, reportBytes, clearBytes, totalInputBytes }
+  return {
+    reportInput,
+    reportBytes,
+    clearBytes,
+    totalInputBytes,
+  }
 }

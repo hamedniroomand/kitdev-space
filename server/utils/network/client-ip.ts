@@ -42,14 +42,18 @@ export function getClientKey(event: H3Event): string {
   if (edgeIsTrusted()) {
     for (const name of EDGE_IP_HEADERS) {
       const value = getHeader(event, name)
-      const address = value ? firstAddress(value) : undefined
+      const address = value
+        ? firstAddress(value)
+        : undefined
       if (address) {
         return address
       }
     }
 
     const forwarded = getHeader(event, 'x-forwarded-for')
-    const address = forwarded ? firstAddress(forwarded) : undefined
+    const address = forwarded
+      ? firstAddress(forwarded)
+      : undefined
     if (address) {
       return address
     }
@@ -58,7 +62,9 @@ export function getClientKey(event: H3Event): string {
     // No trusted edge. The rightmost entry is the hop that reached this
     // server, so a client cannot append a value after it.
     const forwarded = getHeader(event, 'x-forwarded-for')
-    const address = forwarded ? lastAddress(forwarded) : undefined
+    const address = forwarded
+      ? lastAddress(forwarded)
+      : undefined
     if (address) {
       return address
     }

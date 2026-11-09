@@ -63,7 +63,9 @@ export function jsonToTypeScript(
     return `${blocks.join('\n\n')}\n`
   }
   const alias = `${exportPrefix}type ${rootName} = ${render(rootTypes)}\n`
-  return blocks.length === 0 ? alias : `${blocks.join('\n\n')}\n\n${alias}`
+  return blocks.length === 0
+    ? alias
+    : `${blocks.join('\n\n')}\n\n${alias}`
 }
 
 function render(nodes: TypeNode[]): string {
@@ -82,7 +84,9 @@ function render(nodes: TypeNode[]): string {
         return 'unknown[]'
       }
       const inner = render(node.items)
-      return node.items.length === 1 && node.items[0]!.kind !== 'array' ? `${inner}[]` : `Array<${inner}>`
+      return node.items.length === 1 && node.items[0]!.kind !== 'array'
+        ? `${inner}[]`
+        : `Array<${inner}>`
     })
     .join(' | ')
 }

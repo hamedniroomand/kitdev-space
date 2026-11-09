@@ -62,7 +62,9 @@ export function octalToSpecial(digit: number): SpecialBits {
 export function permissionsToOctal(perms: ChmodPermissions): string {
   const special = specialToOctal(perms.special)
   const base = `${tripletToOctal(perms.owner)}${tripletToOctal(perms.group)}${tripletToOctal(perms.others)}`
-  return special === 0 ? base : `${special}${base}`
+  return special === 0
+    ? base
+    : `${special}${base}`
 }
 
 export function octalToPermissions(octal: string): ChmodPermissions {
@@ -70,7 +72,9 @@ export function octalToPermissions(octal: string): ChmodPermissions {
   if (!/^[0-7]{3,4}$/.test(clean)) {
     throw new Error('Enter 3 or 4 octal digits, from 000 to 7777.')
   }
-  const digits = clean.length === 4 ? clean : `0${clean}`
+  const digits = clean.length === 4
+    ? clean
+    : `0${clean}`
   return {
     special: octalToSpecial(Number(digits[0])),
     owner: octalToTriplet(Number(digits[1])),
@@ -87,7 +91,9 @@ export function tripletToSymbolic(
 ): string {
   let last = triplet.execute ? 'x' : '-'
   if (special) {
-    last = triplet.execute ? specialChar : specialChar.toUpperCase()
+    last = triplet.execute
+      ? specialChar
+      : specialChar.toUpperCase()
   }
   return `${triplet.read ? 'r' : '-'}${triplet.write ? 'w' : '-'}${last}`
 }
@@ -128,7 +134,9 @@ export function symbolicToPermissions(symbolic: string): ChmodPermissions {
   if (clean.length === 10 && !FILE_TYPE_CHAR.test(clean[0]!)) {
     throw new Error('The first character must be a file type, such as - or d.')
   }
-  const bits = clean.length === 10 ? clean.slice(1) : clean
+  const bits = clean.length === 10
+    ? clean.slice(1)
+    : clean
   if (!SYMBOLIC_BITS.test(bits)) {
     throw new Error('Use r, w, and x, - for no permission, s or S in an owner or group slot, and t or T in the other slot.')
   }
@@ -152,7 +160,9 @@ export function symbolicToPermissions(symbolic: string): ChmodPermissions {
  * name as a flag without it.
  */
 export function quoteShellPath(path: string): string {
-  const name = path.startsWith('-') ? `./${path}` : path
+  const name = path.startsWith('-')
+    ? `./${path}`
+    : path
   if (name !== '' && SAFE_SHELL_WORD.test(name)) {
     return name
   }

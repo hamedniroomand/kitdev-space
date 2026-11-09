@@ -24,7 +24,14 @@ const TRACKING_KEYS = new Set([
 ])
 
 /** Key starts that belong to one analytics product. */
-const TRACKING_PREFIXES = ['utm_', 'pk_', 'mtm_', 'matomo_', 'piwik_', 'hsa_']
+const TRACKING_PREFIXES = [
+  'utm_',
+  'pk_',
+  'mtm_',
+  'matomo_',
+  'piwik_',
+  'hsa_',
+]
 
 /**
  * A key such as `ref`, `source`, or `id` stays. An application can use it,

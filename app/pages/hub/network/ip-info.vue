@@ -41,7 +41,9 @@ const rdapLink = computed(() => `/hub/network/rdap-lookup?query=${encodeURICompo
 async function fetchInfo(targetIp?: string) {
   reportInput('url')
   await run(async () => {
-    const url = targetIp ? `/api/network/ip-info?ip=${encodeURIComponent(targetIp)}` : '/api/network/ip-info'
+    const url = targetIp
+      ? `/api/network/ip-info?ip=${encodeURIComponent(targetIp)}`
+      : '/api/network/ip-info'
     return await $fetch<ExtendedIpInfo>(url)
   }, 'Failed to fetch IP details.')
 }

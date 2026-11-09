@@ -117,7 +117,9 @@ export async function inspectOgImage(imageUrl: string): Promise<OgImageProbe> {
 
     const declared = Number(response.headers.get('content-length'))
     const bytes = await readCappedImage(response)
-    probe.byteSize = Number.isFinite(declared) && declared > 0 ? declared : bytes.byteLength
+    probe.byteSize = Number.isFinite(declared) && declared > 0
+      ? declared
+      : bytes.byteLength
 
     const metadata = readImageMetadata(bytes)
     probe.width = metadata.width
@@ -126,7 +128,9 @@ export async function inspectOgImage(imageUrl: string): Promise<OgImageProbe> {
     return probe
   }
   catch (cause) {
-    probe.error = cause instanceof Error ? cause.message : 'The image request failed.'
+    probe.error = cause instanceof Error
+      ? cause.message
+      : 'The image request failed.'
     return probe
   }
 }

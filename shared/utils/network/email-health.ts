@@ -81,7 +81,14 @@ export const SPF_LOOKUP_LIMIT = 10
 export const SPF_VOID_LOOKUP_LIMIT = 2
 
 /** The mechanisms that spend one of the 10 DNS lookups. */
-export const SPF_LOOKUP_TYPES = new Set(['a', 'mx', 'ptr', 'exists', 'include', 'redirect'])
+export const SPF_LOOKUP_TYPES = new Set([
+  'a',
+  'mx',
+  'ptr',
+  'exists',
+  'include',
+  'redirect',
+])
 
 export interface MxRecordInput {
   priority: number
@@ -277,7 +284,14 @@ export const DEFAULT_DKIM_SELECTORS = [
 export const MIN_DKIM_KEY_BITS = 1024
 export const RECOMMENDED_DKIM_KEY_BITS = 2048
 
-const AUTHORIZING_TYPES = new Set(['a', 'mx', 'ip4', 'ip6', 'include', 'exists'])
+const AUTHORIZING_TYPES = new Set([
+  'a',
+  'mx',
+  'ip4',
+  'ip6',
+  'include',
+  'exists',
+])
 
 const IPV4_RE = /^(?:\d{1,3}\.){3}\d{1,3}$/
 const IPV6_RE = /^[0-9a-f:]+$/i
@@ -287,13 +301,18 @@ function issue(level: HealthLevel, code: string, message: string, details: Issue
 }
 
 function queriedName(type: string, name: string | undefined): string {
-  return name ? `${type} ${name}: no matching record` : `${type} lookup: no matching record`
+  return name
+    ? `${type} ${name}: no matching record`
+    : `${type} lookup: no matching record`
 }
 
 function parseQualifier(token: string): { qualifier: SpfQualifier, rest: string } {
   const first = token[0]
   if (first === '+' || first === '-' || first === '~' || first === '?') {
-    return { qualifier: first, rest: token.slice(1) }
+    return {
+      qualifier: first,
+      rest: token.slice(1),
+    }
   }
   return { qualifier: '+', rest: token }
 }
@@ -358,8 +377,17 @@ export function parseSpf(txtRecords: string[], context: ReportContext = {}): Spf
   const lookup: LookupStatus = context.lookup ?? 'ok'
 
   if (lookup === 'failed') {
-    issues.push(lookupFailure('spf-lookup-failed', context.domain ? `TXT ${context.domain}` : undefined, 'SPF'))
-    return { lookup, present: false, raw: [], version: null, mechanisms: [], issues }
+    issues.push(lookupFailure('spf-lookup-failed', context.domain
+      ? `TXT ${context.domain}`
+      : undefined, 'SPF'))
+    return {
+      lookup,
+      present: false,
+      raw: [],
+      version: null,
+      mechanisms: [],
+      issues,
+    }
   }
 
   if (raw.length === 0) {
@@ -389,7 +417,9 @@ export function parseSpf(txtRecords: string[], context: ReportContext = {}): Spf
   const record = raw[0]!
   const tokens = record.split(/\s+/).filter(Boolean)
   const versionToken = tokens[0]?.toLowerCase() ?? ''
-  const version = versionToken.startsWith('v=') ? versionToken.slice(2) : null
+  const version = versionToken.startsWith('v=')
+    ? versionToken.slice(2)
+    : null
 
   if (versionToken !== 'v=spf1') {
     issues.push(issue('error', 'spf-version', 'SPF record must start with v=spf1.', {
@@ -461,7 +491,10 @@ export function parseSpf(txtRecords: string[], context: ReportContext = {}): Spf
 
   if (redirects.length > 0 && allMechanisms.length > 0) {
     issues.push(issue('warning', 'spf-redirect-with-all', 'SPF has both redirect and all. Redirect ignores later mechanisms.', {
-      observed: [...redirects, ...allMechanisms].map(item => item.raw).join(' '),
+      observed: [
+        ...redirects,
+        ...allMechanisms,
+      ].map(item => item.raw).join(' '),
       impact: 'The all mechanism wins and the redirect never runs. The policy of the other domain does not apply.',
       fix: 'Delete the all mechanism, or delete the redirect modifier.',
     }))
@@ -606,7 +639,9 @@ export function findDmarcRecords(txtRecords: string[]): string[] {
 export function parseDmarc(txtRecords: string[], context: ReportContext = {}): DmarcReport {
   const raw = findDmarcRecords(txtRecords)
   const issues: HealthIssue[] = []
-  const dmarcName = context.domain ? `_dmarc.${context.domain}` : undefined
+  const dmarcName = context.domain
+    ? `_dmarc.${context.domain}`
+    : undefined
   const lookup: LookupStatus = context.lookup ?? 'ok'
 
   const empty: DmarcReport = {
@@ -823,7 +858,10 @@ export function parseDmarc(txtRecords: string[], context: ReportContext = {}): D
     ))
   }
 
-  for (const uri of [...aggregateReportUris, ...forensicReportUris]) {
+  for (const uri of [
+    ...aggregateReportUris,
+    ...forensicReportUris,
+  ]) {
     if (!uri.toLowerCase().startsWith('mailto:')) {
       issues.push(issue('warning', 'dmarc-bad-report-uri', `DMARC report address must start with mailto: ${uri}`, {
         observed: uri,
@@ -868,7 +906,9 @@ export function analyzeMx(records: MxRecordInput[], context: ReportContext = {})
   const lookup: LookupStatus = context.lookup ?? 'ok'
 
   if (lookup === 'failed') {
-    issues.push(lookupFailure('mx-lookup-failed', context.domain ? `MX ${context.domain}` : undefined, 'MX'))
+    issues.push(lookupFailure('mx-lookup-failed', context.domain
+      ? `MX ${context.domain}`
+      : undefined, 'MX'))
     return { lookup, records: [], issues }
   }
 
@@ -1029,7 +1069,9 @@ function describeDkimKey(name: string, dkimName: string, key: DkimKey, records: 
 
   if (issues.length === 0) {
     issues.push(issue('ok', 'dkim-present', `DKIM record found for selector "${name}".`, {
-      observed: key.keyBits === null ? observed : `k=${key.keyType}, ${key.keyBits} bits`,
+      observed: key.keyBits === null
+        ? observed
+        : `k=${key.keyType}, ${key.keyBits} bits`,
     }))
   }
 
@@ -1103,8 +1145,12 @@ export function analyzeDkim(inputs: DkimSelectorInput[], context: ReportContext 
     issues.push(issue(
       'ok',
       'dkim-ok',
-      `Found DKIM for ${found.length} of ${selectors.length} selector${selectors.length === 1 ? '' : 's'}.`,
-      { observed: found.map(item => item.selector).join(', ') },
+      `Found DKIM for ${found.length} of ${selectors.length} selector${selectors.length === 1
+        ? ''
+        : 's'}.`,
+      {
+        observed: found.map(item => item.selector).join(', '),
+      },
     ))
   }
 
@@ -1323,7 +1369,10 @@ function parseRecordTags(record: string): RecordTag[] {
     if (equals < 0) {
       continue
     }
-    tags.push({ name: token.slice(0, equals).trim().toLowerCase(), value: token.slice(equals + 1).trim() })
+    tags.push({
+      name: token.slice(0, equals).trim().toLowerCase(),
+      value: token.slice(equals + 1).trim(),
+    })
   }
   return tags
 }
@@ -1381,7 +1430,15 @@ export function parseMailPolicy(
 
   if (lookup === 'failed') {
     issues.push(lookupFailure(`${kind}-lookup-failed`, name, spec.title))
-    return { kind, name, present: false, lookup, raw: [], tags: [], issues }
+    return {
+      kind,
+      name,
+      present: false,
+      lookup,
+      raw: [],
+      tags: [],
+      issues,
+    }
   }
 
   const raw = txtRecords
@@ -1389,12 +1446,22 @@ export function parseMailPolicy(
     .filter(record => record.toLowerCase().startsWith(`v=${spec.version}`))
 
   if (raw.length === 0) {
-    issues.push(issue(kind === 'bimi' ? 'info' : 'warning', `${kind}-missing`, `No ${spec.title} record found.`, {
+    issues.push(issue(kind === 'bimi'
+      ? 'info'
+      : 'warning', `${kind}-missing`, `No ${spec.title} record found.`, {
       observed: queriedName('TXT', name),
       impact: spec.missingImpact,
       fix: spec.missingFix,
     }))
-    return { kind, name, present: false, lookup, raw: [], tags: [], issues }
+    return {
+      kind,
+      name,
+      present: false,
+      lookup,
+      raw: [],
+      tags: [],
+      issues,
+    }
   }
 
   const record = raw[0]!
@@ -1446,7 +1513,15 @@ export function parseMailPolicy(
     issues.push(issue('ok', `${kind}-ok`, `${spec.title} record found.`, { observed: record }))
   }
 
-  return { kind, name, present: true, lookup, raw, tags, issues }
+  return {
+    kind,
+    name,
+    present: true,
+    lookup,
+    raw,
+    tags,
+    issues,
+  }
 }
 
 function scoreLine(label: string, points: number, max: number, detail: string): ScoreLine {
@@ -1502,21 +1577,33 @@ export function scoreEmailHealth(result: EmailHealthResult): EmailScore {
       : scoreLine('SPF record', 0, 10, 'The domain has no SPF record.'))
 
     const qualifier = spf.mechanisms.filter(item => item.type === 'all').pop()?.qualifier
-    const policyPoints = qualifier === '-' ? 10 : qualifier === '~' ? 6 : qualifier === '?' ? 2 : 0
+    const policyPoints = qualifier === '-'
+      ? 10
+      : qualifier === '~'
+        ? 6
+        : qualifier === '?'
+          ? 2
+          : 0
     lines.push(scoreLine(
       'SPF policy',
       spf.present ? policyPoints : 0,
       10,
-      qualifier ? `The record ends with ${qualifier}all.` : 'The record has no all mechanism.',
+      qualifier
+        ? `The record ends with ${qualifier}all.`
+        : 'The record has no all mechanism.',
     ))
 
     const trace = spf.trace
     const withinLimits = !trace || (!trace.exceeded && trace.voidLookupCount <= trace.voidLookupLimit)
     lines.push(scoreLine(
       'SPF lookup budget',
-      spf.present && withinLimits ? 5 : 0,
+      spf.present && withinLimits
+        ? 5
+        : 0,
       5,
-      trace ? `The tree uses ${trace.lookupCount} of ${trace.lookupLimit} DNS lookups.` : 'The tool did not trace the tree.',
+      trace
+        ? `The tree uses ${trace.lookupCount} of ${trace.lookupLimit} DNS lookups.`
+        : 'The tool did not trace the tree.',
     ))
   }
 
@@ -1525,19 +1612,31 @@ export function scoreEmailHealth(result: EmailHealthResult): EmailScore {
     lines.push(scoreLine('DKIM key', 0, 0, SKIPPED_DETAIL))
   }
   else {
-    const live = checkedSelectors.flatMap(item => (item.key && !item.key.revoked ? [item.key] : []))
+    const live = checkedSelectors.flatMap(item => (item.key && !item.key.revoked
+      ? [item.key]
+      : []))
     lines.push(live.length > 0
-      ? scoreLine('DKIM key', 12, 12, `${live.length} selector${live.length === 1 ? '' : 's'} publish a key.`)
+      ? scoreLine('DKIM key', 12, 12, `${live.length} selector${live.length === 1
+          ? ''
+          : 's'} publish a key.`)
       : scoreLine('DKIM key', 0, 12, 'No checked selector publishes a live key.'))
 
     const bits = live.map(key => key.keyBits ?? 0)
-    const smallest = bits.length > 0 ? Math.min(...bits) : 0
-    const strengthPoints = smallest >= RECOMMENDED_DKIM_KEY_BITS ? 8 : smallest >= MIN_DKIM_KEY_BITS ? 4 : 0
+    const smallest = bits.length > 0
+      ? Math.min(...bits)
+      : 0
+    const strengthPoints = smallest >= RECOMMENDED_DKIM_KEY_BITS
+      ? 8
+      : smallest >= MIN_DKIM_KEY_BITS
+        ? 4
+        : 0
     lines.push(scoreLine(
       'DKIM key strength',
       strengthPoints,
       8,
-      smallest > 0 ? `The smallest key is ${smallest} bits.` : 'The tool read no key size.',
+      smallest > 0
+        ? `The smallest key is ${smallest} bits.`
+        : 'The tool read no key size.',
     ))
   }
 
@@ -1549,8 +1648,16 @@ export function scoreEmailHealth(result: EmailHealthResult): EmailScore {
       ? scoreLine('DMARC record', 10, 10, 'The domain has one DMARC record.')
       : scoreLine('DMARC record', 0, 10, 'The domain has no DMARC record.'))
 
-    const policyPoints = dmarc.policy === 'reject' ? 20 : dmarc.policy === 'quarantine' ? 12 : dmarc.policy === 'none' ? 4 : 0
-    lines.push(scoreLine('DMARC policy', policyPoints, 20, dmarc.policy ? `The policy is p=${dmarc.policy}.` : 'The record has no p tag.'))
+    const policyPoints = dmarc.policy === 'reject'
+      ? 20
+      : dmarc.policy === 'quarantine'
+        ? 12
+        : dmarc.policy === 'none'
+          ? 4
+          : 0
+    lines.push(scoreLine('DMARC policy', policyPoints, 20, dmarc.policy
+      ? `The policy is p=${dmarc.policy}.`
+      : 'The record has no p tag.'))
 
     lines.push(dmarc.aggregateReportUris.length > 0
       ? scoreLine('DMARC reports', 5, 5, 'The record has a rua address.')
@@ -1563,8 +1670,12 @@ export function scoreEmailHealth(result: EmailHealthResult): EmailScore {
   else {
     const hasErrors = mx.records.some(row => row.issues.some(item => item.level === 'error'))
     lines.push(mx.records.length > 0 && !hasErrors
-      ? scoreLine('MX records', 10, 10, `The domain has ${mx.records.length} MX record${mx.records.length === 1 ? '' : 's'}.`)
-      : scoreLine('MX records', 0, 10, mx.records.length === 0 ? 'The domain has no MX record.' : 'One or more MX records have an error.'))
+      ? scoreLine('MX records', 10, 10, `The domain has ${mx.records.length} MX record${mx.records.length === 1
+          ? ''
+          : 's'}.`)
+      : scoreLine('MX records', 0, 10, mx.records.length === 0
+          ? 'The domain has no MX record.'
+          : 'One or more MX records have an error.'))
   }
 
   lines.push(policyLine('MTA-STS', result.mtaSts, 4))
@@ -1573,9 +1684,17 @@ export function scoreEmailHealth(result: EmailHealthResult): EmailScore {
 
   const points = lines.reduce((total, line) => total + line.points, 0)
   const max = lines.reduce((total, line) => total + line.max, 0)
-  const percent = max > 0 ? Math.round((points / max) * 100) : 0
+  const percent = max > 0
+    ? Math.round((points / max) * 100)
+    : 0
 
-  return { points, max, percent, grade: grade(percent), lines }
+  return {
+    points,
+    max,
+    percent,
+    grade: grade(percent),
+    lines,
+  }
 }
 
 export interface EmailHealthLookups {

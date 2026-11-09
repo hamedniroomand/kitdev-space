@@ -27,7 +27,9 @@ describe('suggestLightnessFix', () => {
         const fix = suggestLightnessFix(foreground, background, target)
         expect(fix).not.toBeNull()
 
-        const other = fix!.target === 'foreground' ? background : foreground
+        const other = fix!.target === 'foreground'
+          ? background
+          : foreground
         expect(contrastRatio(fix!.hex, other)).toBeGreaterThanOrEqual(target)
         expect(fix!.ratio).toBeGreaterThanOrEqual(target)
       })

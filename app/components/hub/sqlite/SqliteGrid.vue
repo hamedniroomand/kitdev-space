@@ -63,7 +63,9 @@ function blobLabel(value: Uint8Array): string {
 }
 
 function rowidOf(row: unknown[]): number | null {
-  return rowidIndex.value >= 0 ? Number(row[rowidIndex.value]) : null
+  return rowidIndex.value >= 0
+    ? Number(row[rowidIndex.value])
+    : null
 }
 
 function startEdit(rowIndex: number, colIndex: number, currentValue: unknown) {
@@ -71,7 +73,9 @@ function startEdit(rowIndex: number, colIndex: number, currentValue: unknown) {
     return
   }
   editingCell.value = { rowIndex, colIndex }
-  editValue.value = currentValue === null || currentValue === undefined ? '' : String(currentValue)
+  editValue.value = currentValue === null || currentValue === undefined
+    ? ''
+    : String(currentValue)
 }
 
 function commit(row: unknown[], column: string, value: SqlValue) {
@@ -80,7 +84,12 @@ function commit(row: unknown[], column: string, value: SqlValue) {
     return
   }
   editingCell.value = null
-  emit('updateCell', { table: props.activeTable, rowid, column, value })
+  emit('updateCell', {
+    table: props.activeTable,
+    rowid,
+    column,
+    value,
+  })
 }
 
 function commitEdit(row: unknown[], column: string) {
@@ -99,7 +108,9 @@ function sortIcon(column: string): string {
   if (props.sort?.column !== column) {
     return 'i-lucide-chevrons-up-down'
   }
-  return props.sort.direction === 'asc' ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'
+  return props.sort.direction === 'asc'
+    ? 'i-lucide-chevron-up'
+    : 'i-lucide-chevron-down'
 }
 </script>
 

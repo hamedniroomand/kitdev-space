@@ -33,11 +33,36 @@ const conversions = computed(() => {
   })
 
   return [
-    { label: 'Pixels (px)', unit: 'px', value: `${formatCssNumber(results.px)}px`, raw: results.px },
-    { label: 'Root EM (rem)', unit: 'rem', value: `${formatCssNumber(results.rem)}rem`, raw: results.rem },
-    { label: 'Element EM (em)', unit: 'em', value: `${formatCssNumber(results.em)}em`, raw: results.em },
-    { label: 'Viewport Width (vw)', unit: 'vw', value: `${formatCssNumber(results.vw)}vw`, raw: results.vw },
-    { label: 'Viewport Height (vh)', unit: 'vh', value: `${formatCssNumber(results.vh)}vh`, raw: results.vh },
+    {
+      label: 'Pixels (px)',
+      unit: 'px',
+      value: `${formatCssNumber(results.px)}px`,
+      raw: results.px,
+    },
+    {
+      label: 'Root EM (rem)',
+      unit: 'rem',
+      value: `${formatCssNumber(results.rem)}rem`,
+      raw: results.rem,
+    },
+    {
+      label: 'Element EM (em)',
+      unit: 'em',
+      value: `${formatCssNumber(results.em)}em`,
+      raw: results.em,
+    },
+    {
+      label: 'Viewport Width (vw)',
+      unit: 'vw',
+      value: `${formatCssNumber(results.vw)}vw`,
+      raw: results.vw,
+    },
+    {
+      label: 'Viewport Height (vh)',
+      unit: 'vh',
+      value: `${formatCssNumber(results.vh)}vh`,
+      raw: results.vh,
+    },
   ]
 })
 

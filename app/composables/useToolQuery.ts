@@ -46,7 +46,9 @@ export function useToolQuery<T extends Record<string, any>>(config: UseToolQuery
   const currentToolIdState = useCurrentToolId()
   const resolvedToolId = computed(() => {
     const explicit = toValue(config.toolId)
-    return explicit !== undefined ? explicit : currentToolIdState.value
+    return explicit !== undefined
+      ? explicit
+      : currentToolIdState.value
   })
 
   const { reportInput } = useToolInput()
@@ -83,7 +85,9 @@ export function useToolQuery<T extends Record<string, any>>(config: UseToolQuery
     if (live === undefined) {
       return undefined
     }
-    return Array.isArray(live) ? live[0] : live
+    return Array.isArray(live)
+      ? live[0]
+      : live
   }
 
   // Synchronize options with query string
@@ -186,7 +190,9 @@ export function useToolQuery<T extends Record<string, any>>(config: UseToolQuery
       return null
     }
 
-    const textToShare = customInput !== undefined ? customInput : (config.input ? config.input.value : '')
+    const textToShare = customInput !== undefined
+      ? customInput
+      : (config.input ? config.input.value : '')
     const bytes = typeof TextEncoder !== 'undefined'
       ? new TextEncoder().encode(textToShare).length
       : textToShare.length

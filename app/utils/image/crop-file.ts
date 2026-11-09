@@ -21,7 +21,9 @@ export async function cropImageFile(file: Blob, rect: CropRect): Promise<Blob> {
 
   const isLossy = file.type === 'image/jpeg' || file.type === 'image/webp'
   const mimeType = isLossy ? file.type : 'image/png'
-  const options = isLossy ? { type: mimeType, quality: 0.92 } : { type: mimeType }
+  const options = isLossy
+    ? { type: mimeType, quality: 0.92 }
+    : { type: mimeType }
 
   return canvas.convertToBlob(options)
 }

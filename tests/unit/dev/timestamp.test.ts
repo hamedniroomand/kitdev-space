@@ -128,7 +128,12 @@ describe('analyzeTimestamp', () => {
   })
 
   it('reads an ambiguous date with every separator', () => {
-    for (const text of ['01/02/2024', '01-02-2024', '1.2.2024', '01/02/2024 10:30:00']) {
+    for (const text of [
+      '01/02/2024',
+      '01-02-2024',
+      '1.2.2024',
+      '01/02/2024 10:30:00',
+    ]) {
       const found = analyzeTimestamp(text)
       expect(found, text).not.toBeNull()
       expect(found?.ambiguity?.used, text).toBe('2024-01-02')
@@ -198,13 +203,25 @@ describe('describeDuration', () => {
 
   it('reports an exact whole day', () => {
     const duration = describeDuration(0, 86_400_000)
-    expect(duration).toMatchObject({ days: 1, hours: 0, minutes: 0, seconds: 0, milliseconds: 0 })
+    expect(duration).toMatchObject({
+      days: 1,
+      hours: 0,
+      minutes: 0,
+      seconds: 0,
+      milliseconds: 0,
+    })
     expect(duration.text).toBe('1 day')
   })
 
   it('reports every part of a mixed duration', () => {
     const duration = describeDuration(0, 86_400_000 + 3_600_000 * 2 + 60_000 * 3 + 4000 + 5)
-    expect(duration).toMatchObject({ days: 1, hours: 2, minutes: 3, seconds: 4, milliseconds: 5 })
+    expect(duration).toMatchObject({
+      days: 1,
+      hours: 2,
+      minutes: 3,
+      seconds: 4,
+      milliseconds: 5,
+    })
     expect(duration.text).toBe('1 day 2 hours 3 minutes 4 seconds 5 milliseconds')
   })
 

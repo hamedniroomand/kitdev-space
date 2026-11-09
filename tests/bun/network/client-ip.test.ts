@@ -8,7 +8,12 @@ interface FakeEvent {
 
 function eventWith(headers: Record<string, string>, remoteAddress = '198.51.100.7'): FakeEvent {
   return {
-    node: { req: { headers, socket: { remoteAddress } } },
+    node: {
+      req: {
+        headers,
+        socket: { remoteAddress },
+      },
+    },
     context: {},
   }
 }

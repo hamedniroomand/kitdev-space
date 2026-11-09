@@ -61,8 +61,18 @@ describe('csv preview and column type detection', () => {
 
   it('extracts preview rows from JSON array of objects', () => {
     const json = JSON.stringify([
-      { id: 1, zip: '02138', active: true, registered: '2024-05-01' },
-      { id: 2, zip: '07030', active: false, registered: '2024-06-12' },
+      {
+        id: 1,
+        zip: '02138',
+        active: true,
+        registered: '2024-05-01',
+      },
+      {
+        id: 2,
+        zip: '07030',
+        active: false,
+        registered: '2024-06-12',
+      },
     ])
     const preview = extractPreviewData(json, 'json', 50)
 
@@ -80,23 +90,63 @@ describe('csv preview and column type detection', () => {
 describe('csv preview filterRows and sortRows', () => {
   const sampleRows = [
     ['1', 'Ada', '36', 'true', '2020-01-01'],
-    ['2', 'Grace', '45', 'false', '2015-06-15'],
-    ['3', 'Alan', '41', 'true', '2022-10-31'],
-    ['4', 'Margaret', '28', 'false', '2024-03-01'],
+    [
+      '2',
+      'Grace',
+      '45',
+      'false',
+      '2015-06-15',
+    ],
+    [
+      '3',
+      'Alan',
+      '41',
+      'true',
+      '2022-10-31',
+    ],
+    [
+      '4',
+      'Margaret',
+      '28',
+      'false',
+      '2024-03-01',
+    ],
   ]
 
   it('filters rows by column text values case-insensitively', () => {
     const filtered = filterRows(sampleRows, { 1: 'ar' })
-    expect(filtered).toEqual([['4', 'Margaret', '28', 'false', '2024-03-01']])
+    expect(filtered).toEqual([
+      [
+        '4',
+        'Margaret',
+        '28',
+        'false',
+        '2024-03-01',
+      ],
+    ])
     const filteredAlan = filterRows(sampleRows, { 1: 'alan' })
-    expect(filteredAlan).toEqual([['3', 'Alan', '41', 'true', '2022-10-31']])
+    expect(filteredAlan).toEqual([
+      [
+        '3',
+        'Alan',
+        '41',
+        'true',
+        '2022-10-31',
+      ],
+    ])
   })
 
   it('combines multiple column filters', () => {
     const filtered = filterRows(sampleRows, { 1: 'a', 3: 'true' })
     expect(filtered).toEqual([
       ['1', 'Ada', '36', 'true', '2020-01-01'],
-      ['3', 'Alan', '41', 'true', '2022-10-31'],
+      [
+        '3',
+        'Alan',
+        '41',
+        'true',
+        '2022-10-31',
+      ],
     ])
   })
 
@@ -270,7 +320,9 @@ describe('csv distinct download actions and filenames', () => {
     // Generate simulated heavy CSV (10,000 rows)
     const lines = ['id,name,role,department']
     for (let i = 1; i <= 10_000; i++) {
-      lines.push(`${i},Person ${i},${i % 2 === 0 ? 'Dev' : 'Designer'},Engineering`)
+      lines.push(`${i},Person ${i},${i % 2 === 0
+        ? 'Dev'
+        : 'Designer'},Engineering`)
     }
     const heavyCsv = lines.join('\n')
 

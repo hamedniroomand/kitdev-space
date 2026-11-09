@@ -18,15 +18,41 @@ useToolSeo('case-converter')
 const conversions = computed(() => {
   const text = input.value
   const apply = (convert: (line: string) => string) =>
-    lineMode.value ? convertLines(text, convert) : convert(text)
+    lineMode.value
+      ? convertLines(text, convert)
+      : convert(text)
 
   return [
-    { label: 'camelCase', value: apply(toCamelCase), id: 'camel' },
-    { label: 'PascalCase', value: apply(toPascalCase), id: 'pascal' },
-    { label: 'snake_case', value: apply(toSnakeCase), id: 'snake' },
-    { label: 'kebab-case', value: apply(toKebabCase), id: 'kebab' },
-    { label: 'URL slug', value: apply(toSlug), id: 'slug' },
-    { label: 'CONSTANT_CASE', value: apply(toConstantCase), id: 'constant' },
+    {
+      label: 'camelCase',
+      value: apply(toCamelCase),
+      id: 'camel',
+    },
+    {
+      label: 'PascalCase',
+      value: apply(toPascalCase),
+      id: 'pascal',
+    },
+    {
+      label: 'snake_case',
+      value: apply(toSnakeCase),
+      id: 'snake',
+    },
+    {
+      label: 'kebab-case',
+      value: apply(toKebabCase),
+      id: 'kebab',
+    },
+    {
+      label: 'URL slug',
+      value: apply(toSlug),
+      id: 'slug',
+    },
+    {
+      label: 'CONSTANT_CASE',
+      value: apply(toConstantCase),
+      id: 'constant',
+    },
   ]
 })
 useLiveTool(conversions, {
@@ -37,7 +63,9 @@ useLiveTool(conversions, {
 async function copyAll() {
   // A line-mode value is multiline, so it needs its own block under the label.
   const summary = conversions.value
-    .map(c => (lineMode.value ? `${c.label}:\n${c.value}` : `${c.label}: ${c.value}`))
+    .map(c => (lineMode.value
+      ? `${c.label}:\n${c.value}`
+      : `${c.label}: ${c.value}`))
     .join('\n')
   await copy(summary, 'all')
 }

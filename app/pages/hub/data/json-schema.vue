@@ -16,7 +16,10 @@ const sampleSchema = JSON.stringify(
       id: { type: 'integer' },
       name: { type: 'string' },
       email: { type: 'string', format: 'email' },
-      role: { type: 'string', enum: ['admin', 'editor', 'viewer'] },
+      role: {
+        type: 'string',
+        enum: ['admin', 'editor', 'viewer'],
+      },
       isActive: { type: 'boolean' },
     },
     required: ['id', 'name', 'email'],

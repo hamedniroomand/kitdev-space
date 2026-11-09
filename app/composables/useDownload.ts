@@ -9,7 +9,9 @@ export function useDownload() {
     anchor.download = filename
     anchor.click()
     // The extension comes from a fixed list. The file name never leaves the page.
-    track('tool_download', { file_format: fileFormat(filename) })
+    track('tool_download', {
+      file_format: fileFormat(filename),
+    })
   }
 
   function downloadBlob(filename: string, blob: Blob) {

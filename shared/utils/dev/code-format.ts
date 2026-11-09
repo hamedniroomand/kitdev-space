@@ -38,9 +38,21 @@ export const LANGUAGE_EXTENSIONS: Record<FormatLanguage, string> = {
   sql: 'sql',
 }
 
-const LANGUAGES = new Set<CodeLanguage>(['javascript', 'typescript', 'html', 'css', 'json'])
+const LANGUAGES = new Set<CodeLanguage>([
+  'javascript',
+  'typescript',
+  'html',
+  'css',
+  'json',
+])
 const ACTIONS = new Set<CodeAction>(['minify', 'beautify'])
-const MINIFY_LANGUAGES = new Set<FormatLanguage>(['javascript', 'typescript', 'html', 'css', 'json'])
+const MINIFY_LANGUAGES = new Set<FormatLanguage>([
+  'javascript',
+  'typescript',
+  'html',
+  'css',
+  'json',
+])
 
 export function isCodeLanguage(value: string): value is CodeLanguage {
   return LANGUAGES.has(value as CodeLanguage)
@@ -85,8 +97,12 @@ export function downloadFileName(
   }
 
   const dot = name.lastIndexOf('.')
-  const stem = dot > 0 ? name.slice(0, dot) : name
-  const ext = dot > 0 ? name.slice(dot + 1) : extension
+  const stem = dot > 0
+    ? name.slice(0, dot)
+    : name
+  const ext = dot > 0
+    ? name.slice(dot + 1)
+    : extension
   const base = stem.replace(/\.(min|pretty)$/i, '')
   return `${base}.${ACTION_SUFFIX[action]}.${ext}`
 }
@@ -109,7 +125,9 @@ export function measureBytes(input: string, output: string): ByteDelta {
   return {
     inputBytes,
     outputBytes,
-    gzipBytes: outputBytes === 0 ? 0 : gzipSync(encoded).length,
+    gzipBytes: outputBytes === 0
+      ? 0
+      : gzipSync(encoded).length,
     reductionPercent: inputBytes === 0
       ? 0
       : Math.round(((inputBytes - outputBytes) / inputBytes) * 100),
@@ -146,7 +164,9 @@ export async function minifyCss(code: string): Promise<string> {
     return minify(code).css
   }
   catch (cause) {
-    const message = cause instanceof Error ? cause.message : 'CSS minify failed.'
+    const message = cause instanceof Error
+      ? cause.message
+      : 'CSS minify failed.'
     throw new Error(`Syntax error.\n\n${message}`, { cause })
   }
 }
@@ -169,15 +189,42 @@ const PRETTIER_LANGUAGES: Record<Exclude<FormatLanguage, 'json' | 'sql'>, {
   parser: string
   plugins: PluginName[]
 }> = {
-  javascript: { parser: 'babel', plugins: ['babel', 'estree'] },
-  typescript: { parser: 'typescript', plugins: ['typescript', 'estree'] },
-  html: { parser: 'html', plugins: ['html'] },
-  vue: { parser: 'vue', plugins: ['html', 'postcss', 'babel', 'estree'] },
-  css: { parser: 'css', plugins: ['postcss'] },
-  scss: { parser: 'scss', plugins: ['postcss'] },
-  markdown: { parser: 'markdown', plugins: ['markdown'] },
-  yaml: { parser: 'yaml', plugins: ['yaml'] },
-  graphql: { parser: 'graphql', plugins: ['graphql'] },
+  javascript: {
+    parser: 'babel',
+    plugins: ['babel', 'estree'],
+  },
+  typescript: {
+    parser: 'typescript',
+    plugins: ['typescript', 'estree'],
+  },
+  html: {
+    parser: 'html',
+    plugins: ['html'],
+  },
+  vue: {
+    parser: 'vue',
+    plugins: ['html', 'postcss', 'babel', 'estree'],
+  },
+  css: {
+    parser: 'css',
+    plugins: ['postcss'],
+  },
+  scss: {
+    parser: 'scss',
+    plugins: ['postcss'],
+  },
+  markdown: {
+    parser: 'markdown',
+    plugins: ['markdown'],
+  },
+  yaml: {
+    parser: 'yaml',
+    plugins: ['yaml'],
+  },
+  graphql: {
+    parser: 'graphql',
+    plugins: ['graphql'],
+  },
 }
 
 async function loadPlugin(name: PluginName) {
@@ -196,7 +243,9 @@ async function beautifySql(code: string, style: FormatStyle): Promise<string> {
     })
   }
   catch (cause) {
-    const message = cause instanceof Error ? cause.message : 'Format failed.'
+    const message = cause instanceof Error
+      ? cause.message
+      : 'Format failed.'
     throw new Error(`Syntax error.\n\n${message}`, { cause })
   }
 }
@@ -238,7 +287,9 @@ export async function beautifyInBrowser(
     })
   }
   catch (cause) {
-    const message = cause instanceof Error ? cause.message : 'Format failed.'
+    const message = cause instanceof Error
+      ? cause.message
+      : 'Format failed.'
     throw new Error(`Syntax error.\n\n${message}`, { cause })
   }
 }
@@ -254,7 +305,9 @@ function beautifyEngine(language: FormatLanguage): string {
   if (language === 'json') {
     return 'json'
   }
-  return language === 'sql' ? 'sql-formatter' : 'prettier'
+  return language === 'sql'
+    ? 'sql-formatter'
+    : 'prettier'
 }
 
 export async function formatInBrowser(
@@ -279,7 +332,10 @@ export async function formatInBrowser(
     }
   }
   if (language === 'html') {
-    return { code: minifyHtml(text), engine: 'html' }
+    return {
+      code: minifyHtml(text),
+      engine: 'html',
+    }
   }
   if (language === 'css') {
     return { code: await minifyCss(text), engine: 'csso' }

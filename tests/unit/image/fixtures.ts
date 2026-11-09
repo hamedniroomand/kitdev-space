@@ -8,7 +8,12 @@ function u16be(value: number) {
 }
 
 function u32be(value: number) {
-  return [value >>> 24 & 0xFF, value >>> 16 & 0xFF, value >>> 8 & 0xFF, value & 0xFF]
+  return [
+    value >>> 24 & 0xFF,
+    value >>> 16 & 0xFF,
+    value >>> 8 & 0xFF,
+    value & 0xFF,
+  ]
 }
 
 function chars(text: string) {
@@ -24,7 +29,12 @@ interface TiffEntry {
 }
 
 function entry(tag: number, type: number, count: number, value: number[]): TiffEntry {
-  return { tag, type, count, value: [...value, 0, 0, 0, 0].slice(0, 4) }
+  return {
+    tag,
+    type,
+    count,
+    value: [...value, 0, 0, 0, 0].slice(0, 4),
+  }
 }
 
 /**
@@ -33,7 +43,12 @@ function entry(tag: number, type: number, count: number, value: number[]): TiffE
  */
 export function buildTiffBlock(includeSize = false): number[] {
   // Layout: header(8) IFD0 -> EXIF IFD -> GPS IFD -> value pool.
-  const header = [0x4D, 0x4D, ...u16be(42), ...u32be(8)]
+  const header = [
+    0x4D,
+    0x4D,
+    ...u16be(42),
+    ...u32be(8),
+  ]
 
   const makeText = chars('TestCam\0')
   const modelText = chars('Model X\0')
@@ -55,7 +70,10 @@ export function buildTiffBlock(includeSize = false): number[] {
   const lonAt = latAt + 24
 
   const size: TiffEntry[] = includeSize
-    ? [entry(0x0100, 3, 1, u16be(40)), entry(0x0101, 3, 1, u16be(30))]
+    ? [
+        entry(0x0100, 3, 1, u16be(40)),
+        entry(0x0101, 3, 1, u16be(30)),
+      ]
     : []
 
   const ifd0: TiffEntry[] = [
@@ -81,7 +99,9 @@ export function buildTiffBlock(includeSize = false): number[] {
   ]
 
   function writeIfd(entries: TiffEntry[]) {
-    const out = [...u16be(entries.length)]
+    const out = [
+      ...u16be(entries.length),
+    ]
     for (const item of entries) {
       out.push(...u16be(item.tag), ...u16be(item.type), ...u32be(item.count), ...item.value)
     }
@@ -90,7 +110,10 @@ export function buildTiffBlock(includeSize = false): number[] {
   }
 
   function rational(numerator: number, denominator: number) {
-    return [...u32be(numerator), ...u32be(denominator)]
+    return [
+      ...u32be(numerator),
+      ...u32be(denominator),
+    ]
   }
 
   const pool = [
@@ -107,15 +130,39 @@ export function buildTiffBlock(includeSize = false): number[] {
     ...rational(402, 10),
   ]
 
-  return [...header, ...writeIfd(ifd0), ...writeIfd(exif), ...writeIfd(gps), ...pool]
+  return [
+    ...header,
+    ...writeIfd(ifd0),
+    ...writeIfd(exif),
+    ...writeIfd(gps),
+    ...pool,
+  ]
 }
 
 /** A JPEG with an APP1 EXIF segment, a comment, an SOF0, and scan data. */
 export function buildJpeg(): Uint8Array {
   const tiff = buildTiffBlock()
-  const exifPayload = [...chars('Exif\0\0'), ...tiff]
+  const exifPayload = [
+    ...chars('Exif\0\0'),
+    ...tiff,
+  ]
   const comment = chars('private note')
-  const scan = [0xFF, 0xDA, ...u16be(8), 1, 1, 0, 0, 63, 0, 0x11, 0x22, 0x33, 0xFF, 0xD9]
+  const scan = [
+    0xFF,
+    0xDA,
+    ...u16be(8),
+    1,
+    1,
+    0,
+    0,
+    63,
+    0,
+    0x11,
+    0x22,
+    0x33,
+    0xFF,
+    0xD9,
+  ]
 
   return new Uint8Array([
     0xFF,
@@ -168,7 +215,12 @@ export function buildTiff(): Uint8Array {
 }
 
 function segment(marker: number, payload: number[]): number[] {
-  return [0xFF, marker, ...u16be(payload.length + 2), ...payload]
+  return [
+    0xFF,
+    marker,
+    ...u16be(payload.length + 2),
+    ...payload,
+  ]
 }
 
 /**
@@ -183,10 +235,56 @@ export function buildCmykJpeg(): Uint8Array {
     // A short stand-in for the profile body. The parser reads the marker only.
     ...chars('CMYK profile body'),
   ]
-  const adobe = [...chars('Adobe'), 0x00, 0x64, 0, 0, 0, 0, 0, 0, 2]
-  const exif = [...chars('Exif\0\0'), ...buildTiffBlock()]
-  const sof = [8, ...u16be(30), ...u16be(40), 4, 1, 0x11, 0, 2, 0x11, 0, 3, 0x11, 0, 4, 0x11, 0]
-  const scan = [0xFF, 0xDA, ...u16be(8), 1, 1, 0, 0, 63, 0, 0x44, 0x55, 0x66, 0xFF, 0xD9]
+  const adobe = [
+    ...chars('Adobe'),
+    0x00,
+    0x64,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    2,
+  ]
+  const exif = [
+    ...chars('Exif\0\0'),
+    ...buildTiffBlock(),
+  ]
+  const sof = [
+    8,
+    ...u16be(30),
+    ...u16be(40),
+    4,
+    1,
+    0x11,
+    0,
+    2,
+    0x11,
+    0,
+    3,
+    0x11,
+    0,
+    4,
+    0x11,
+    0,
+  ]
+  const scan = [
+    0xFF,
+    0xDA,
+    ...u16be(8),
+    1,
+    1,
+    0,
+    0,
+    63,
+    0,
+    0x44,
+    0x55,
+    0x66,
+    0xFF,
+    0xD9,
+  ]
 
   return new Uint8Array([
     0xFF,
@@ -204,7 +302,9 @@ const CRC_TABLE = (() => {
   for (let index = 0; index < 256; index += 1) {
     let value = index
     for (let bit = 0; bit < 8; bit += 1) {
-      value = value & 1 ? 0xEDB88320 ^ (value >>> 1) : value >>> 1
+      value = value & 1
+        ? 0xEDB88320 ^ (value >>> 1)
+        : value >>> 1
     }
     table[index] = value >>> 0
   }
@@ -220,8 +320,15 @@ export function crc32(bytes: number[]): number {
 }
 
 function pngChunk(name: string, payload: number[]): number[] {
-  const body = [...chars(name), ...payload]
-  return [...u32be(payload.length), ...body, ...u32be(crc32(body))]
+  const body = [
+    ...chars(name),
+    ...payload,
+  ]
+  return [
+    ...u32be(payload.length),
+    ...body,
+    ...u32be(crc32(body)),
+  ]
 }
 
 /** A PNG with an IHDR, an eXIf chunk, a tEXt chunk, an IDAT, and an IEND. */
@@ -235,19 +342,53 @@ export function buildPng(): Uint8Array {
     0x0A,
     0x1A,
     0x0A,
-    ...pngChunk('IHDR', [...u32be(40), ...u32be(30), 8, 2, 0, 0, 0]),
+    ...pngChunk('IHDR', [
+      ...u32be(40),
+      ...u32be(30),
+      8,
+      2,
+      0,
+      0,
+      0,
+    ]),
     ...pngChunk('eXIf', buildTiffBlock()),
-    ...pngChunk('tEXt', [...chars('Author'), 0, ...chars('Jane')]),
-    ...pngChunk('IDAT', [0x78, 0x9C, 0x63, 0x00, 0x00, 0x00, 0x01, 0x00, 0x01]),
+    ...pngChunk('tEXt', [
+      ...chars('Author'),
+      0,
+      ...chars('Jane'),
+    ]),
+    ...pngChunk('IDAT', [
+      0x78,
+      0x9C,
+      0x63,
+      0x00,
+      0x00,
+      0x00,
+      0x01,
+      0x00,
+      0x01,
+    ]),
     ...pngChunk('IEND', []),
   ])
 }
 
 function riffChunk(name: string, payload: number[]): number[] {
   const size = payload.length
-  const little = [size & 0xFF, size >> 8 & 0xFF, size >> 16 & 0xFF, size >>> 24 & 0xFF]
-  const padding = size % 2 ? [0] : []
-  return [...chars(name), ...little, ...payload, ...padding]
+  const little = [
+    size & 0xFF,
+    size >> 8 & 0xFF,
+    size >> 16 & 0xFF,
+    size >>> 24 & 0xFF,
+  ]
+  const padding = size % 2
+    ? [0]
+    : []
+  return [
+    ...chars(name),
+    ...little,
+    ...payload,
+    ...padding,
+  ]
 }
 
 /** An extended WebP with a VP8X, an EXIF chunk, and an XMP chunk. */
@@ -261,10 +402,14 @@ export function buildWebp(): Uint8Array {
     ...riffChunk('XMP ', chars('<x:xmpmeta/>')),
   ]
 
-  return new Uint8Array([...chars('RIFF'), ...[
-    body.length & 0xFF,
-    body.length >> 8 & 0xFF,
-    body.length >> 16 & 0xFF,
-    body.length >>> 24 & 0xFF,
-  ], ...body])
+  return new Uint8Array([
+    ...chars('RIFF'),
+    ...[
+      body.length & 0xFF,
+      body.length >> 8 & 0xFF,
+      body.length >> 16 & 0xFF,
+      body.length >>> 24 & 0xFF,
+    ],
+    ...body,
+  ])
 }

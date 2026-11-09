@@ -66,7 +66,12 @@ export interface ClientHints {
 
 export function unknownUserAgentInfo(): UserAgentInfo {
   return {
-    browser: { name: UNKNOWN, version: '', major: '', type: '' },
+    browser: {
+      name: UNKNOWN,
+      version: '',
+      major: '',
+      type: '',
+    },
     os: { name: UNKNOWN, version: '' },
     device: { type: 'unknown' },
     engine: { name: UNKNOWN, version: '' },
@@ -109,7 +114,9 @@ function loadParser(): Promise<ParserBundle> {
 }
 
 function named(value: string | undefined): string {
-  return value && value.trim() ? value : UNKNOWN
+  return value && value.trim()
+    ? value
+    : UNKNOWN
 }
 
 function optional(value: string | undefined): string {
@@ -125,7 +132,9 @@ function deviceType(raw: string | undefined, osName: string, isBot: boolean): Us
   }
   // The library omits the type for a desktop. It gives no operating system for
   // a string that it does not know, so that stays unknown.
-  return osName === UNKNOWN ? 'unknown' : 'desktop'
+  return osName === UNKNOWN
+    ? 'unknown'
+    : 'desktop'
 }
 
 /**
@@ -193,7 +202,10 @@ export function normalizeClientHints(raw: unknown): ClientHints | null {
   const brands = Array.isArray(data.brands)
     ? data.brands
         .filter((item): item is ClientHintBrand => Boolean(item) && typeof item === 'object' && typeof (item as ClientHintBrand).brand === 'string')
-        .map(item => ({ brand: item.brand, version: String(item.version ?? '') }))
+        .map(item => ({
+          brand: item.brand,
+          version: String(item.version ?? ''),
+        }))
     : []
 
   if (!brands.length && typeof data.platform !== 'string') {
@@ -203,6 +215,8 @@ export function normalizeClientHints(raw: unknown): ClientHints | null {
   return {
     brands,
     mobile: data.mobile === true,
-    platform: typeof data.platform === 'string' && data.platform ? data.platform : UNKNOWN,
+    platform: typeof data.platform === 'string' && data.platform
+      ? data.platform
+      : UNKNOWN,
   }
 }

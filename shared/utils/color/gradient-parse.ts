@@ -97,7 +97,9 @@ function toAngle(token: string): number | null {
     return null
   }
   const value = Number.parseFloat(match[1]!) * ANGLE_UNITS[match[2]!.toLowerCase()]!
-  return Number.isFinite(value) ? value : null
+  return Number.isFinite(value)
+    ? value
+    : null
 }
 
 const POSITION_TOKEN = /^-?[\d.]+%$/
@@ -229,9 +231,13 @@ function readStops(args: string[], warnings: string[]): GradientStop[] {
 
   return collected.map((item, index) => {
     // CSS spreads a stop with no position across the gradient.
-    const even = collected.length > 1 ? (index / (collected.length - 1)) * 100 : 0
+    const even = collected.length > 1
+      ? (index / (collected.length - 1)) * 100
+      : 0
     const stop = createGradientStop(item.color, item.position ?? even)
-    return item.alpha === undefined ? stop : { ...stop, alpha: item.alpha }
+    return item.alpha === undefined
+      ? stop
+      : { ...stop, alpha: item.alpha }
   })
 }
 
@@ -277,7 +283,9 @@ export function parseGradientCss(input: string): GradientParseResult {
     throw new Error('The gradient has no color stops.')
   }
 
-  let angle = type === 'linear' ? 180 : 0
+  let angle = type === 'linear'
+    ? 180
+    : 0
   let interpolation: GradientInterpolation = 'srgb'
 
   if (!isStopArg(args[0]!)) {
@@ -291,5 +299,11 @@ export function parseGradientCss(input: string): GradientParseResult {
     throw new Error('A gradient needs two color stops or more.')
   }
 
-  return { type, angle: clampAngle(angle), interpolation, stops, warnings }
+  return {
+    type,
+    angle: clampAngle(angle),
+    interpolation,
+    stops,
+    warnings,
+  }
 }

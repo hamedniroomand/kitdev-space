@@ -46,7 +46,9 @@ describe('formatMarkdownTable', () => {
   it('exports a newline inside a cell as a <br> tag', () => {
     const table = formatMarkdownTable({
       headers: ['Step', 'Detail'],
-      rows: [['Install', 'run bun install\nthen bun dev']],
+      rows: [
+        ['Install', 'run bun install\nthen bun dev'],
+      ],
     })
 
     expect(table).toContain('| Install | run bun install<br>then bun dev |')
@@ -63,7 +65,9 @@ describe('parseMarkdownTable', () => {
     ].join('\n'))
 
     expect(parsed.headers).toEqual(['Name', 'Price'])
-    expect(parsed.rows).toEqual([['Apple', '$1.00']])
+    expect(parsed.rows).toEqual([
+      ['Apple', '$1.00'],
+    ])
   })
 
   it('parses a table without leading and trailing pipes', () => {
@@ -74,7 +78,9 @@ describe('parseMarkdownTable', () => {
     ].join('\n'))
 
     expect(parsed.headers).toEqual(['Name', 'Price'])
-    expect(parsed.rows).toEqual([['Apple', '$1.00']])
+    expect(parsed.rows).toEqual([
+      ['Apple', '$1.00'],
+    ])
   })
 
   it('reads every alignment marker', () => {
@@ -94,7 +100,9 @@ describe('parseMarkdownTable', () => {
       '| 1 | 2 |',
     ].join('\n'))
 
-    expect(parsed.rows).toEqual([['1', '2', '']])
+    expect(parsed.rows).toEqual([
+      ['1', '2', ''],
+    ])
   })
 
   it('drops the extra cells of a row with more cells than the header', () => {
@@ -104,7 +112,9 @@ describe('parseMarkdownTable', () => {
       '| 1 | 2 | 3 | 4 |',
     ].join('\n'))
 
-    expect(parsed.rows).toEqual([['1', '2']])
+    expect(parsed.rows).toEqual([
+      ['1', '2'],
+    ])
   })
 
   it('turns an escaped pipe inside a cell back into a pipe', () => {
@@ -114,7 +124,9 @@ describe('parseMarkdownTable', () => {
       '| Bitwise | a \\| b |',
     ].join('\n'))
 
-    expect(parsed.rows).toEqual([['Bitwise', 'a | b']])
+    expect(parsed.rows).toEqual([
+      ['Bitwise', 'a | b'],
+    ])
   })
 
   it('turns <br>, <br/>, and <br /> back into a newline', () => {
@@ -173,23 +185,32 @@ describe('parseDelimitedTable', () => {
     const parsed = parseDelimitedTable('City\tPop\nParis\t2161000\nTokyo\t13960000')
 
     expect(parsed.headers).toEqual(['City', 'Pop'])
-    expect(parsed.rows).toEqual([['Paris', '2161000'], ['Tokyo', '13960000']])
+    expect(parsed.rows).toEqual([
+      ['Paris', '2161000'],
+      ['Tokyo', '13960000'],
+    ])
   })
 
   it('parses a quoted field that holds a comma or a newline', () => {
     const parsed = parseDelimitedTable('name,note\n"Ada, Lovelace","first\nsecond"')
 
     expect(parsed.headers).toEqual(['name', 'note'])
-    expect(parsed.rows).toEqual([['Ada, Lovelace', 'first\nsecond']])
+    expect(parsed.rows).toEqual([
+      ['Ada, Lovelace', 'first\nsecond'],
+    ])
   })
 })
 
 describe('parseTableInput', () => {
   it('picks the markdown parser for a markdown table', () => {
-    expect(parseTableInput('| A | B |\n| --- | --- |\n| 1 | 2 |').rows).toEqual([['1', '2']])
+    expect(parseTableInput('| A | B |\n| --- | --- |\n| 1 | 2 |').rows).toEqual([
+      ['1', '2'],
+    ])
   })
 
   it('picks the delimited parser for spreadsheet text', () => {
-    expect(parseTableInput('A,B\n1,2').rows).toEqual([['1', '2']])
+    expect(parseTableInput('A,B\n1,2').rows).toEqual([
+      ['1', '2'],
+    ])
   })
 })

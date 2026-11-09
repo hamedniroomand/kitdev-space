@@ -50,10 +50,18 @@ const comparison = computed<{ match: boolean, error: null } | { match: null, err
     return null
   }
   try {
-    return { match: digestsMatch(expected.value, output.value), error: null }
+    return {
+      match: digestsMatch(expected.value, output.value),
+      error: null,
+    }
   }
   catch (cause) {
-    return { match: null, error: cause instanceof Error ? cause.message : 'The hash is not valid.' }
+    return {
+      match: null,
+      error: cause instanceof Error
+        ? cause.message
+        : 'The hash is not valid.',
+    }
   }
 })
 
@@ -95,13 +103,17 @@ async function hash() {
 }
 
 /** The name that the checksum file holds. `-` marks input that is not a file. */
-const checksumName = computed(() => (source.value === 'file' && file.value ? file.value.name : '-'))
+const checksumName = computed(() => (source.value === 'file' && file.value
+  ? file.value.name
+  : '-'))
 
 function handleDownloadChecksum() {
   if (!output.value) {
     return
   }
-  const base = checksumName.value === '-' ? 'checksum' : checksumName.value
+  const base = checksumName.value === '-'
+    ? 'checksum'
+    : checksumName.value
   downloadText(`${base}.${algorithm.value}`, checksumFileLine(output.value, checksumName.value), 'text/plain')
 }
 

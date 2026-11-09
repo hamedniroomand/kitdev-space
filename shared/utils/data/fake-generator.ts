@@ -112,7 +112,9 @@ function rawValue(field: FakeFieldConfig, index: number): FakeValue {
       })
     case 'enum': {
       const values = field.enumValues?.filter(v => v.trim()) ?? []
-      return values.length > 0 ? faker.helpers.arrayElement(values) : ''
+      return values.length > 0
+        ? faker.helpers.arrayElement(values)
+        : ''
     }
     case 'date': {
       if (field.dateFrom && field.dateTo) {
@@ -148,7 +150,9 @@ export function generateFieldValues(options: GenerateOptions): FakeValue[][] {
   }
   // A relative date such as "past" moves every day. Anchoring it keeps a
   // seeded run identical on a later day.
-  faker.setDefaultRefDate(options.refDate ? new Date(options.refDate) : new Date('2024-01-01T00:00:00.000Z'))
+  faker.setDefaultRefDate(options.refDate
+    ? new Date(options.refDate)
+    : new Date('2024-01-01T00:00:00.000Z'))
 
   const safeCount = Math.max(1, Math.min(options.count, MAX_ROWS))
   const values: FakeValue[][] = []
@@ -200,7 +204,9 @@ export function mapValuesToRows(
     const record: Record<string, FakeValue> = {}
     fieldNames.forEach((name, idx) => {
       // A null is a real generated value, so only a missing column becomes ''.
-      record[name] = idx < row.length ? row[idx]! : ''
+      record[name] = idx < row.length
+        ? row[idx]!
+        : ''
     })
     return record
   })
@@ -216,7 +222,9 @@ function sqlColumnType(rows: Record<string, FakeValue>[], column: string): strin
       return 'BOOLEAN'
     }
     if (typeof value === 'number') {
-      return Number.isInteger(value) ? 'INTEGER' : 'DECIMAL(12,2)'
+      return Number.isInteger(value)
+        ? 'INTEGER'
+        : 'DECIMAL(12,2)'
     }
     return 'TEXT'
   }
@@ -329,10 +337,18 @@ export function parseRecipe(input: string): FakeRecipe {
 
   return {
     version: 1,
-    count: typeof recipe.count === 'number' ? recipe.count : 10,
-    seed: typeof recipe.seed === 'number' ? recipe.seed : undefined,
-    refDate: typeof recipe.refDate === 'string' ? recipe.refDate : undefined,
-    tableName: typeof recipe.tableName === 'string' ? recipe.tableName : undefined,
+    count: typeof recipe.count === 'number'
+      ? recipe.count
+      : 10,
+    seed: typeof recipe.seed === 'number'
+      ? recipe.seed
+      : undefined,
+    refDate: typeof recipe.refDate === 'string'
+      ? recipe.refDate
+      : undefined,
+    tableName: typeof recipe.tableName === 'string'
+      ? recipe.tableName
+      : undefined,
     fields,
   }
 }

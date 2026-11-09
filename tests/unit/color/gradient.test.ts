@@ -40,7 +40,10 @@ describe('formatGradientCss', () => {
       type: 'linear',
       angle: 90,
       stops: [
-        { ...createGradientStop('#7c3aed', 0, 'a'), alpha: 0.5 },
+        {
+          ...createGradientStop('#7c3aed', 0, 'a'),
+          alpha: 0.5,
+        },
         createGradientStop('#06b6d4', 100, 'b'),
       ],
     })

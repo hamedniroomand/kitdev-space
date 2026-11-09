@@ -140,7 +140,9 @@ export function encodeWith(text: string, format: CodecFormat, options: CodecOpti
     case 'hex':
       return encodeHex(text)
     case 'url':
-      return options.urlScope === 'full' ? encodeURI(text) : urlEncode(text)
+      return options.urlScope === 'full'
+        ? encodeURI(text)
+        : urlEncode(text)
     case 'html':
       return htmlEntityEncode(text)
     default:
@@ -161,7 +163,9 @@ export function decodeWith(text: string, format: CodecFormat, options: CodecOpti
     case 'url': {
       assertPercentEscapes(text)
       try {
-        return options.urlScope === 'full' ? decodeURI(text) : decodeURIComponent(text)
+        return options.urlScope === 'full'
+          ? decodeURI(text)
+          : decodeURIComponent(text)
       }
       catch {
         return throwBadUtf8Escape(text)
@@ -199,7 +203,9 @@ export function extensionForMime(mime: string): string {
   if (subtype === 'jpeg') {
     return 'jpg'
   }
-  return /^[a-z0-9]+$/.test(subtype) ? subtype : 'bin'
+  return /^[a-z0-9]+$/.test(subtype)
+    ? subtype
+    : 'bin'
 }
 
 export interface BinaryPayload {
@@ -215,8 +221,14 @@ export interface BinaryPayload {
 export function decodeBinaryBase64(text: string): BinaryPayload {
   const parsed = parseDataUrl(text)
   const data = parsed?.data ?? text
-  const base = parsed ? text.indexOf(DATA_URL_MARKER) + DATA_URL_MARKER.length : 0
+  const base = parsed
+    ? text.indexOf(DATA_URL_MARKER) + DATA_URL_MARKER.length
+    : 0
   assertAlphabet(data, BASE64_ALLOWED, 'Base64', base)
   const mime = parsed?.mime ?? 'application/octet-stream'
-  return { bytes: base64ToBytes(data), mime, extension: extensionForMime(mime) }
+  return {
+    bytes: base64ToBytes(data),
+    mime,
+    extension: extensionForMime(mime),
+  }
 }

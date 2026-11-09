@@ -32,7 +32,14 @@ defineShortcuts({
   },
 })
 
-const categoryOrder: ToolCategory[] = ['data', 'network', 'crypto', 'color', 'image', 'dev']
+const categoryOrder: ToolCategory[] = [
+  'data',
+  'network',
+  'crypto',
+  'color',
+  'image',
+  'dev',
+]
 
 const categorizedTools = computed(() => {
   const query = searchQuery.value.trim().toLowerCase()

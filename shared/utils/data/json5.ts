@@ -60,7 +60,9 @@ export function toStrictJson(input: string): string {
         }
 
         // A double quote inside a single-quoted string needs an escape.
-        value += inner === '"' ? '\\"' : inner
+        value += inner === '"'
+          ? '\\"'
+          : inner
         index += 1
       }
 

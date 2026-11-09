@@ -40,14 +40,18 @@ function toggleSort(colIdx: number) {
 
 function getAriaSort(colIdx: number): 'ascending' | 'descending' | 'none' {
   if (sortState.value?.columnIndex === colIdx) {
-    return sortState.value.direction === 'asc' ? 'ascending' : 'descending'
+    return sortState.value.direction === 'asc'
+      ? 'ascending'
+      : 'descending'
   }
   return 'none'
 }
 
 function getSortIcon(colIdx: number): string {
   if (sortState.value?.columnIndex === colIdx) {
-    return sortState.value.direction === 'asc' ? 'i-lucide-arrow-up' : 'i-lucide-arrow-down'
+    return sortState.value.direction === 'asc'
+      ? 'i-lucide-arrow-up'
+      : 'i-lucide-arrow-down'
   }
   return 'i-lucide-arrow-up-down'
 }

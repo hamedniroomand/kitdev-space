@@ -28,7 +28,9 @@ const HIDDEN_CHARS = /[\s\p{Cc}]/gu
  */
 function safeUrl(href: string): string | null {
   const value = href.replace(HIDDEN_CHARS, '')
-  return SAFE_SCHEME.test(value) ? value : null
+  return SAFE_SCHEME.test(value)
+    ? value
+    : null
 }
 
 export interface MarkdownHeadingItem {
@@ -154,15 +156,26 @@ function parseImageAttributes(raw: string): ImageAttributes | null {
   if (!src) {
     return null
   }
-  return { src, alt, title, width, height, loading }
+  return {
+    src,
+    alt,
+    title,
+    width,
+    height,
+    loading,
+  }
 }
 
 function sanitizeHtmlTag(fullTag: string): string {
   const isClosing = fullTag.startsWith('</')
   const inside = fullTag.slice(isClosing ? 2 : 1, -1).trim()
   const spaceIdx = inside.search(/\s/)
-  const tagName = (spaceIdx === -1 ? inside : inside.slice(0, spaceIdx)).replace(/\/$/, '').toLowerCase()
-  const rawAttrs = spaceIdx === -1 ? '' : inside.slice(spaceIdx).trim()
+  const tagName = (spaceIdx === -1
+    ? inside
+    : inside.slice(0, spaceIdx)).replace(/\/$/, '').toLowerCase()
+  const rawAttrs = spaceIdx === -1
+    ? ''
+    : inside.slice(spaceIdx).trim()
 
   if (isClosing) {
     if (['details', 'summary', 'kbd'].includes(tagName) && !rawAttrs) {
@@ -254,7 +267,9 @@ marked.use({
       const baseSlug = slugifyHeading(plainText)
       const count = headingSlugCounts.get(baseSlug) ?? 0
       headingSlugCounts.set(baseSlug, count + 1)
-      const slug = count === 0 ? baseSlug : `${baseSlug}-${count}`
+      const slug = count === 0
+        ? baseSlug
+        : `${baseSlug}-${count}`
       return `<h${depth} id="${slug}">${text}</h${depth}>\n`
     },
 
@@ -264,7 +279,9 @@ marked.use({
       if (url === null) {
         return text
       }
-      const titleAttr = title ? ` title="${escapeHtml(title)}"` : ''
+      const titleAttr = title
+        ? ` title="${escapeHtml(title)}"`
+        : ''
       return `<a href="${escapeHtml(url)}"${titleAttr} rel="nofollow noopener noreferrer">${text}</a>`
     },
 
@@ -273,7 +290,9 @@ marked.use({
       if (url === null) {
         return escapeHtml(text)
       }
-      const titleAttr = title ? ` title="${escapeHtml(title)}"` : ''
+      const titleAttr = title
+        ? ` title="${escapeHtml(title)}"`
+        : ''
       return `<img src="${escapeHtml(url)}" alt="${escapeHtml(text)}"${titleAttr}>`
     },
   },
@@ -353,7 +372,9 @@ export function extractMarkdownHeadings(markdown: string): MarkdownHeadingItem[]
       const baseSlug = slugifyHeading(cleanText)
       const count = slugCounts.get(baseSlug) ?? 0
       slugCounts.set(baseSlug, count + 1)
-      const slug = count === 0 ? baseSlug : `${baseSlug}-${count}`
+      const slug = count === 0
+        ? baseSlug
+        : `${baseSlug}-${count}`
 
       headings.push({
         level,
@@ -373,7 +394,9 @@ export function deriveMarkdownFilename(
   defaultName = 'document',
 ): string {
   const heading = extractMarkdownHeading(markdown)
-  const ext = extension.startsWith('.') ? extension : `.${extension}`
+  const ext = extension.startsWith('.')
+    ? extension
+    : `.${extension}`
   if (!heading) {
     return `${defaultName}${ext}`
   }

@@ -52,12 +52,19 @@ describe('validateYaml multi-document streams', () => {
     const res = validateYaml('a: 1\n---\nb: 2\n---\nc: 3\n')
     expect(res.isValid).toBe(true)
     expect(res.documentCount).toBe(3)
-    expect(res.documents).toEqual([{ a: 1 }, { b: 2 }, { c: 3 }])
+    expect(res.documents).toEqual([
+      { a: 1 },
+      { b: 2 },
+      { c: 3 },
+    ])
   })
 
   it('returns an array as parsed when the stream holds many documents', () => {
     const res = validateYaml('a: 1\n---\nb: 2\n')
-    expect(res.parsed).toEqual([{ a: 1 }, { b: 2 }])
+    expect(res.parsed).toEqual([
+      { a: 1 },
+      { b: 2 },
+    ])
   })
 
   it('keeps the single value as parsed when the stream holds one document', () => {

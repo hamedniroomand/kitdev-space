@@ -55,13 +55,24 @@ function addFilter() {
   if (!draft.column) {
     return
   }
-  emit('update', { filters: [...props.state.filters, { column: draft.column, operator: draft.operator as FilterOperator, value: draftNeedsValue.value ? draft.value : '' }] })
+  emit('update', {
+    filters: [
+      ...props.state.filters,
+      {
+        column: draft.column,
+        operator: draft.operator as FilterOperator,
+        value: draftNeedsValue.value ? draft.value : '',
+      },
+    ],
+  })
   draft.value = ''
   filterOpen.value = false
 }
 
 function removeFilter(index: number) {
-  emit('update', { filters: props.state.filters.filter((_, i) => i !== index) })
+  emit('update', {
+    filters: props.state.filters.filter((_, i) => i !== index),
+  })
 }
 
 function clearAll() {
@@ -69,7 +80,9 @@ function clearAll() {
   emit('update', { search: '', filters: [], sort: null })
 }
 
-const pageStart = computed(() => (props.shownRows ? props.state.offset + 1 : 0))
+const pageStart = computed(() => (props.shownRows
+  ? props.state.offset + 1
+  : 0))
 const pageEnd = computed(() => props.state.offset + props.shownRows)
 const hasPrevious = computed(() => props.state.offset > 0)
 const hasNext = computed(() => props.total !== null && pageEnd.value < props.total)

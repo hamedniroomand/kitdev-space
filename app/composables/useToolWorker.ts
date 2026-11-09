@@ -67,7 +67,9 @@ export function useToolWorker<TArgs extends any[], TReturn>(
       if (isCancelled.value) {
         throw new Error('Operation stopped by user.')
       }
-      const message = cause instanceof Error ? cause.message : String(cause)
+      const message = cause instanceof Error
+        ? cause.message
+        : String(cause)
       workerError.value = message
       throw cause
     }

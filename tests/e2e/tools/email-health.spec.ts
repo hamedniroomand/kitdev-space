@@ -43,7 +43,9 @@ const detailedFixture = {
     dkim: {
       ...emailHealthFixture.result.dkim,
       tested: ['default'],
-      skipped: [{ selector: 'google', provider: 'Google Workspace' }],
+      skipped: [
+        { selector: 'google', provider: 'Google Workspace' },
+      ],
     },
     mtaSts: {
       kind: 'mta-sts',
@@ -51,8 +53,13 @@ const detailedFixture = {
       present: true,
       lookup: 'ok',
       raw: ['v=STSv1; id=20240101'],
-      tags: [{ name: 'v', value: 'STSv1' }, { name: 'id', value: '20240101' }],
-      issues: [{ level: 'ok', code: 'mta-sts-ok', message: 'MTA-STS record found.' }],
+      tags: [
+        { name: 'v', value: 'STSv1' },
+        { name: 'id', value: '20240101' },
+      ],
+      issues: [
+        { level: 'ok', code: 'mta-sts-ok', message: 'MTA-STS record found.' },
+      ],
     },
     score: {
       points: 74,
@@ -60,8 +67,18 @@ const detailedFixture = {
       percent: 74,
       grade: 'C',
       lines: [
-        { label: 'SPF record', points: 10, max: 10, detail: 'The domain has one SPF record.' },
-        { label: 'MTA-STS', points: 4, max: 4, detail: '_mta-sts.example.com has a record.' },
+        {
+          label: 'SPF record',
+          points: 10,
+          max: 10,
+          detail: 'The domain has one SPF record.',
+        },
+        {
+          label: 'MTA-STS',
+          points: 4,
+          max: 4,
+          detail: '_mta-sts.example.com has a record.',
+        },
       ],
     },
   },

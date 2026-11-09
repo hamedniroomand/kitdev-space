@@ -80,7 +80,9 @@ export function jsonToZod(
           }
           return `  ${fieldName(field.key)}: ${fieldType},`
         })
-        const objectBody = lines.length === 0 ? '{}' : `{\n${lines.join('\n')}\n}`
+        const objectBody = lines.length === 0
+          ? '{}'
+          : `{\n${lines.join('\n')}\n}`
         let schemaDef = `z.object(${objectBody})`
         if (readonlyModifier) {
           schemaDef = `${schemaDef}.readonly()`
@@ -105,7 +107,9 @@ export function jsonToZod(
       rootZodType = `${rootZodType}.readonly()`
     }
     const rootBlock = `${exportPrefix}const ${rootSchemaName} = ${rootZodType}\n\n${exportPrefix}type ${rootName} = z.infer<typeof ${rootSchemaName}>`
-    rootCode = blocks.length === 0 ? rootBlock : `${blocks.join('\n\n')}\n\n${rootBlock}`
+    rootCode = blocks.length === 0
+      ? rootBlock
+      : `${blocks.join('\n\n')}\n\n${rootBlock}`
   }
 
   return `import { z } from 'zod'\n\n${rootCode}\n`

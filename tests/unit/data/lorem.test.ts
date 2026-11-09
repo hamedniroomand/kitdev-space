@@ -47,7 +47,11 @@ describe('lorem count preservation across mode toggles', () => {
 
     function switchMode(newMode: LoremMode) {
       mode = newMode
-      const max = newMode === 'words' ? 5000 : (newMode === 'sentences' ? 500 : 50)
+      const max = newMode === 'words'
+        ? 5000
+        : (newMode === 'sentences'
+            ? 500
+            : 50)
       if (count > max) {
         count = max
       }
@@ -72,7 +76,11 @@ describe('lorem count preservation across mode toggles', () => {
 
     function switchMode(newMode: LoremMode) {
       mode = newMode
-      const max = newMode === 'words' ? 5000 : (newMode === 'sentences' ? 500 : 50)
+      const max = newMode === 'words'
+        ? 5000
+        : (newMode === 'sentences'
+            ? 500
+            : 50)
       if (count > max) {
         count = max
       }

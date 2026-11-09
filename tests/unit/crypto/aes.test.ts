@@ -85,7 +85,9 @@ describe('aES-GCM error classification', () => {
 
   it('reports a tag failure for tampered ciphertext', async () => {
     const encrypted = await encryptAesGcm('Tamper test', 'pass')
-    const tampered = encrypted.slice(0, 40) + (encrypted[40] === 'A' ? 'B' : 'A') + encrypted.slice(41)
+    const tampered = encrypted.slice(0, 40) + (encrypted[40] === 'A'
+      ? 'B'
+      : 'A') + encrypted.slice(41)
 
     await expect(decryptAesGcm(tampered, 'pass')).rejects.toThrow(AUTH_ERROR)
   })

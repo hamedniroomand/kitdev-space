@@ -40,7 +40,9 @@ const expiryLabel = computed(() => {
   if (days === undefined) {
     return '—'
   }
-  return days < 0 ? 'Expired' : `${days} days`
+  return days < 0
+    ? 'Expired'
+    : `${days} days`
 })
 
 const redactedFields = computed(() => new Set(result.value?.redactedFields ?? []))

@@ -64,13 +64,21 @@ function toHextets(ipString: string): number[] {
   let parts: string[]
   if (doubleColons === 1) {
     const [head = '', rest = ''] = address.split('::')
-    const headParts = head ? head.split(':') : []
-    const tailParts = rest ? rest.split(':') : []
+    const headParts = head
+      ? head.split(':')
+      : []
+    const tailParts = rest
+      ? rest.split(':')
+      : []
     const missing = 8 - (headParts.length + tailParts.length)
     if (missing < 1) {
       throw invalid(original)
     }
-    parts = [...headParts, ...Array.from<string>({ length: missing }).fill('0'), ...tailParts]
+    parts = [
+      ...headParts,
+      ...Array.from<string>({ length: missing }).fill('0'),
+      ...tailParts,
+    ]
   }
   else {
     parts = address.split(':')
@@ -136,7 +144,9 @@ export function compressIpv6(value: bigint): string {
 function splitCidrV6(cidrInput: string): { address: bigint, prefix: number } {
   const trimmed = cidrInput.trim()
   const parts = trimmed.split('/')
-  const prefixString = parts.length > 1 ? (parts[1]?.trim() ?? '') : '128'
+  const prefixString = parts.length > 1
+    ? (parts[1]?.trim() ?? '')
+    : '128'
 
   if (!PREFIX_RE.test(prefixString) || Number.parseInt(prefixString, 10) > 128) {
     throw new Error('Prefix length must be between 0 and 128.')

@@ -30,7 +30,9 @@ export function randomStringAlphabet(options: Omit<RandomStringOptions, 'length'
     alphabet += RANDOM_SYMBOLS
   }
   if (options.excludeAmbiguous) {
-    alphabet = Array.from(alphabet, char => AMBIGUOUS_CHARACTERS.includes(char) ? '' : char).join('')
+    alphabet = Array.from(alphabet, char => AMBIGUOUS_CHARACTERS.includes(char)
+      ? ''
+      : char).join('')
   }
   return alphabet
 }

@@ -6,7 +6,9 @@ const tool = inject<ComputedRef<Tool> | undefined>('currentTool', undefined)
 
 const badge = computed(() => {
   const current = tool?.value
-  return current ? toolRunBadge(current, { includeMixed: true }) : undefined
+  return current
+    ? toolRunBadge(current, { includeMixed: true })
+    : undefined
 })
 </script>
 

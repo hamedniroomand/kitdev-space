@@ -6,7 +6,9 @@ const props = defineProps<{ trace: SpfTrace }>()
 
 const lookupColor = computed(() => (props.trace.exceeded ? 'error' : 'highlighted'))
 const voidColor = computed(() => (
-  props.trace.voidLookupCount > props.trace.voidLookupLimit ? 'warning' : 'highlighted'
+  props.trace.voidLookupCount > props.trace.voidLookupLimit
+    ? 'warning'
+    : 'highlighted'
 ))
 
 const NODE_COLOR = {

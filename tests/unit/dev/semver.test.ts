@@ -100,8 +100,16 @@ describe('semverMatrix', () => {
     expect(semverMatrix(['1.2.0', '2.0.0'], ['^1.0.0', '>=2.0.0'])).toEqual({
       ranges: ['^1.0.0', '>=2.0.0'],
       rows: [
-        { version: '1.2.0', valid: true, cells: [true, false] },
-        { version: '2.0.0', valid: true, cells: [false, true] },
+        {
+          version: '1.2.0',
+          valid: true,
+          cells: [true, false],
+        },
+        {
+          version: '2.0.0',
+          valid: true,
+          cells: [false, true],
+        },
       ],
     })
   })

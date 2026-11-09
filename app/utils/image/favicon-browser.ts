@@ -57,8 +57,12 @@ export async function generateFaviconPackageInBrowser(
 
   // `contain` scales the long edge to the square. `cover` scales the short edge.
   // Both keep the source aspect ratio, so a non-square icon never distorts.
-  const fitDim = options.fit === 'cover' ? Math.min(srcW, srcH) : Math.max(srcW, srcH)
-  const background = options.fit === 'cover' ? '' : options.backgroundColor?.trim() || ''
+  const fitDim = options.fit === 'cover'
+    ? Math.min(srcW, srcH)
+    : Math.max(srcW, srcH)
+  const background = options.fit === 'cover'
+    ? ''
+    : options.backgroundColor?.trim() || ''
 
   for (const { name, size } of FAVICON_SIZES) {
     let canvas: OffscreenCanvas | HTMLCanvasElement
@@ -103,14 +107,20 @@ export async function generateFaviconPackageInBrowser(
     else {
       blob = await new Promise<Blob>((resolve, reject) => {
         (canvas as HTMLCanvasElement).toBlob(
-          b => (b ? resolve(b) : reject(new Error('toBlob failed'))),
+          b => (b
+            ? resolve(b)
+            : reject(new Error('toBlob failed'))),
           'image/png',
         )
       })
     }
 
     icons.push({ name, size, bytes: await blobToBytes(blob) })
-    previews.push({ name, size, dataUrl: URL.createObjectURL(blob) })
+    previews.push({
+      name,
+      size,
+      dataUrl: URL.createObjectURL(blob),
+    })
   }
 
   source.close?.()

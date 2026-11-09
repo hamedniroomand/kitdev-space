@@ -8,23 +8,33 @@ function clampByte(value: number): number {
 
 /** Writes an 8-digit hex when the color has alpha, so the alpha value stays. */
 export function rgbToHex({ r, g, b, a }: Rgb): string {
-  const channels = a !== undefined && a < 1 ? [r, g, b, a * 255] : [r, g, b]
+  const channels = a !== undefined && a < 1
+    ? [r, g, b, a * 255]
+    : [r, g, b]
   return `#${channels.map(value => clampByte(value).toString(16).padStart(2, '0')).join('')}`
 }
 
 function describe(rgb: Rgb, hsl?: Hsl, oklchInput?: Oklch, alpha?: number): ParsedColor {
-  const finalRgb: Rgb = alpha !== undefined && alpha < 1 ? { ...rgb, a: alpha } : { ...rgb }
+  const finalRgb: Rgb = alpha !== undefined && alpha < 1
+    ? { ...rgb, a: alpha }
+    : { ...rgb }
   const computedHsl = hsl ?? rgbToHsl(rgb)
-  const finalHsl: Hsl = alpha !== undefined && alpha < 1 ? { ...computedHsl, a: alpha } : { ...computedHsl }
+  const finalHsl: Hsl = alpha !== undefined && alpha < 1
+    ? { ...computedHsl, a: alpha }
+    : { ...computedHsl }
   const computedOklch = oklchInput ?? rgbToOklch(rgb)
-  const finalOklch: Oklch = alpha !== undefined && alpha < 1 ? { ...computedOklch, a: alpha } : { ...computedOklch }
+  const finalOklch: Oklch = alpha !== undefined && alpha < 1
+    ? { ...computedOklch, a: alpha }
+    : { ...computedOklch }
 
   return {
     hex: rgbToHex(finalRgb),
     rgb: finalRgb,
     hsl: finalHsl,
     oklch: finalOklch,
-    alpha: alpha !== undefined && alpha < 1 ? alpha : undefined,
+    alpha: alpha !== undefined && alpha < 1
+      ? alpha
+      : undefined,
   }
 }
 
@@ -340,7 +350,9 @@ export function parseColor(input: string): ParsedColor {
     if (fn === 'oklch') {
       const rawLStr = parts[0]!
       const isPercent = rawLStr.endsWith('%')
-      const rawL = rawLStr.toLowerCase() === 'none' ? 0 : Number.parseFloat(rawLStr)
+      const rawL = rawLStr.toLowerCase() === 'none'
+        ? 0
+        : Number.parseFloat(rawLStr)
       const lightness = isPercent || rawL > 1.0
         ? Math.min(100, Math.max(0, rawL))
         : Math.min(100, Math.max(0, rawL * 100))

@@ -25,8 +25,12 @@ function boxSize(
   baseH: number,
   options: SvgRasterizeOptions,
 ): { width: number, height: number } {
-  const boxW = options.width && options.width > 0 ? options.width : null
-  const boxH = options.height && options.height > 0 ? options.height : null
+  const boxW = options.width && options.width > 0
+    ? options.width
+    : null
+  const boxH = options.height && options.height > 0
+    ? options.height
+    : null
 
   if (boxW && boxH) {
     if (options.stretch) {
@@ -90,7 +94,9 @@ export async function rasterizeSvgInBrowser(
     }
 
     // JPEG has no alpha channel. An unfilled canvas gives black edges.
-    const fill = options.background ?? (format === 'jpeg' ? '#ffffff' : null)
+    const fill = options.background ?? (format === 'jpeg'
+      ? '#ffffff'
+      : null)
     if (fill) {
       ctx.fillStyle = fill
       ctx.fillRect(0, 0, targetW, targetH)
@@ -100,7 +106,9 @@ export async function rasterizeSvgInBrowser(
     ctx.imageSmoothingQuality = 'high'
     ctx.drawImage(img, 0, 0, targetW, targetH)
 
-    const mime = format === 'png' ? 'image/png' : `image/${format}`
+    const mime = format === 'png'
+      ? 'image/png'
+      : `image/${format}`
     const q = quality / 100
 
     let blob: Blob
@@ -110,7 +118,9 @@ export async function rasterizeSvgInBrowser(
     else {
       blob = await new Promise<Blob>((resolve, reject) => {
         (canvas as HTMLCanvasElement).toBlob(
-          b => (b ? resolve(b) : reject(new Error('Failed to encode rasterized SVG.'))),
+          b => (b
+            ? resolve(b)
+            : reject(new Error('Failed to encode rasterized SVG.'))),
           mime,
           q,
         )

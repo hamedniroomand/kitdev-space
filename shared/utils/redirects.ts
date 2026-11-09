@@ -78,7 +78,14 @@ export const legacyRedirects: Record<string, string> = {
   '/dev/tar': '/hub/dev/tar',
 }
 
-const legacyPrefixes = ['/data/', '/network/', '/crypto/', '/color/', '/image/', '/dev/']
+const legacyPrefixes = [
+  '/data/',
+  '/network/',
+  '/crypto/',
+  '/color/',
+  '/image/',
+  '/dev/',
+]
 
 export function resolveLegacyRedirect(path: string): string | null {
   const normalized = path.replace(/\/+$/, '') || '/'

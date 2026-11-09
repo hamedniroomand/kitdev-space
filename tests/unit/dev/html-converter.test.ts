@@ -130,7 +130,9 @@ describe('convertHtmlToJsx structure', () => {
   it('names a doctype instead of writing it', () => {
     const result = convertHtmlToJsx('<!DOCTYPE html><p>A</p>')
     expect(result.code).toBe('<p>A</p>')
-    expect(result.notes).toEqual([{ kind: 'doctype', detail: '<!DOCTYPE html>' }])
+    expect(result.notes).toEqual([
+      { kind: 'doctype', detail: '<!DOCTYPE html>' },
+    ])
   })
 
   it('drops a script block and names it', () => {
@@ -319,7 +321,9 @@ describe('convertHtmlToJsx inline style', () => {
   it('names a style declaration that it cannot read', () => {
     const result = convertHtmlToJsx('<div style="color: red; font-weight"></div>')
     expect(result.code).toContain('style={{ color: \'red\' }}')
-    expect(result.notes).toEqual([{ kind: 'style', detail: 'font-weight on <div>' }])
+    expect(result.notes).toEqual([
+      { kind: 'style', detail: 'font-weight on <div>' },
+    ])
   })
 
   it('parses a style string with a custom property', () => {
@@ -368,7 +372,9 @@ describe('convertHtmlToVue', () => {
   it('drops a script block and names it', () => {
     const result = convertHtmlToVue('<div><script>var a = 1;</script>Text</div>')
     expect(result.code).toBe('<div>Text</div>')
-    expect(result.notes).toEqual([{ kind: 'script', detail: '<script> block' }])
+    expect(result.notes).toEqual([
+      { kind: 'script', detail: '<script> block' },
+    ])
   })
 
   it('renames a duplicate id and its reference', () => {

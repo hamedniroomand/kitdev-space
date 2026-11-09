@@ -18,7 +18,9 @@ const crop = defineModel<CropRect | null>({ default: null })
 const imageRef = ref<HTMLImageElement | null>(null)
 const natural = ref({ width: 0, height: 0 })
 const { width: shownWidth } = useElementSize(imageRef)
-const scale = computed(() => (natural.value.width ? shownWidth.value / natural.value.width : 1))
+const scale = computed(() => (natural.value.width
+  ? shownWidth.value / natural.value.width
+  : 1))
 
 function resetCrop() {
   if (natural.value.width && natural.value.height) {
@@ -47,7 +49,12 @@ function startDrag(kind: DragKind, event: PointerEvent) {
   }
   // No preventDefault here: it would stop the box from taking focus, and the
   // arrow keys need that focus. The image is not draggable, so nothing else moves.
-  drag.value = { kind, startX: event.clientX, startY: event.clientY, start: crop.value }
+  drag.value = {
+    kind,
+    startX: event.clientX,
+    startY: event.clientY,
+    start: crop.value,
+  }
 }
 
 useEventListener(window, 'pointermove', (event: PointerEvent) => {
@@ -110,7 +117,10 @@ function setField(key: keyof CropRect, value: number) {
     return
   }
 
-  const next = { ...rect, [key]: Math.round(value) }
+  const next = {
+    ...rect,
+    [key]: Math.round(value),
+  }
   if (props.aspect && props.aspect > 0) {
     if (key === 'width') {
       next.height = Math.round(next.width / props.aspect)

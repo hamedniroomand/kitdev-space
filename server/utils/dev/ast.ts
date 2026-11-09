@@ -16,7 +16,12 @@ const MAX_INPUT_CHARS = 200_000
 
 export type { AstLanguage, ResolveMode }
 
-const LANGUAGES = new Set<AstLanguage>(['javascript', 'jsx', 'typescript', 'tsx'])
+const LANGUAGES = new Set<AstLanguage>([
+  'javascript',
+  'jsx',
+  'typescript',
+  'tsx',
+])
 const RESOLVE_MODES = new Set<ResolveMode>(['esm', 'node'])
 
 export function isAstLanguage(value: string): value is AstLanguage {
@@ -114,7 +119,9 @@ export function transformSourceAst(code: string, language: AstLanguage): AstTran
   return {
     code: result.code,
     errors: (result.errors ?? []).map(error => ({
-      message: typeof error === 'string' ? error : (error as { message?: string }).message || 'Transform error.',
+      message: typeof error === 'string'
+        ? error
+        : (error as { message?: string }).message || 'Transform error.',
     })),
     helpersUsed: result.helpersUsed,
   }
@@ -160,7 +167,9 @@ function toRootRelative(target: string): string {
   if (target === root) {
     return '.'
   }
-  return target.startsWith(root + sep) ? target.slice(root.length + 1) : target
+  return target.startsWith(root + sep)
+    ? target.slice(root.length + 1)
+    : target
 }
 
 function createResolver(mode: ResolveMode): ResolverFactory {
@@ -169,9 +178,22 @@ function createResolver(mode: ResolveMode): ResolverFactory {
     : ['require', 'node', 'default']
 
   return new ResolverFactory({
-    extensions: ['.ts', '.tsx', '.mts', '.cts', '.js', '.jsx', '.mjs', '.cjs', '.json', '.node'],
+    extensions: [
+      '.ts',
+      '.tsx',
+      '.mts',
+      '.cts',
+      '.js',
+      '.jsx',
+      '.mjs',
+      '.cjs',
+      '.json',
+      '.node',
+    ],
     conditionNames,
-    mainFields: mode === 'esm' ? ['module', 'main'] : ['main', 'module'],
+    mainFields: mode === 'esm'
+      ? ['module', 'main']
+      : ['main', 'module'],
     exportsFields: ['exports'],
     modules: ['node_modules'],
   })
@@ -189,7 +211,9 @@ export function resolveSpecifiers(input: {
 
   const directory = resolveInsideAppRoot(input.directory)
   const resolver = createResolver(mode)
-  const unique = [...new Set(input.specifiers.map(item => item.trim()).filter(Boolean))]
+  const unique = [
+    ...new Set(input.specifiers.map(item => item.trim()).filter(Boolean)),
+  ]
 
   if (unique.length === 0) {
     throw new Error('Enter at least one module specifier.')
@@ -219,7 +243,9 @@ export function resolveSpecifiers(input: {
       ok: true,
       path: toRootRelative(result.path),
       error: null,
-      packageJsonPath: result.packageJsonPath ? toRootRelative(result.packageJsonPath) : null,
+      packageJsonPath: result.packageJsonPath
+        ? toRootRelative(result.packageJsonPath)
+        : null,
     }
   })
 }

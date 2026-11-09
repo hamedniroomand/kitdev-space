@@ -53,13 +53,19 @@ const conversion = computed(() => {
       }
     }
     else {
-      return { output: jsonToEnv(input.value), error: null, diagnostics: [] }
+      return {
+        output: jsonToEnv(input.value),
+        error: null,
+        diagnostics: [],
+      }
     }
   }
   catch (err) {
     return {
       output: '',
-      error: err instanceof Error ? err.message : 'Conversion failed.',
+      error: err instanceof Error
+        ? err.message
+        : 'Conversion failed.',
       diagnostics: [],
     }
   }
@@ -77,7 +83,9 @@ function handleModeChange(newMode: ConversionMode) {
 
   // Keep the work of the user. Move the result into the input, and load the
   // sample only when the input still holds a sample.
-  const carried = holdsSample() ? '' : output.value
+  const carried = holdsSample()
+    ? ''
+    : output.value
   mode.value = newMode
 
   if (carried) {

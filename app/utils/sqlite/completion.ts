@@ -5,7 +5,10 @@ import { keywordCompletionSource, schemaCompletionSource, SQLite } from '@codemi
 
 export function buildSqlSchema(tables: TableInfo[]): Record<string, string[]> {
   return Object.fromEntries(
-    tables.map(table => [table.name, table.columns.map(column => column.name)]),
+    tables.map(table => [
+      table.name,
+      table.columns.map(column => column.name),
+    ]),
   )
 }
 

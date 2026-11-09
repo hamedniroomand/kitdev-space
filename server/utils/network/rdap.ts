@@ -136,7 +136,9 @@ export function collectRedactedNames(data: Record<string, unknown>): string[] {
     const name = (item as Record<string, unknown>).name as Record<string, unknown> | undefined
     const label = typeof name?.type === 'string'
       ? name.type
-      : typeof name?.description === 'string' ? name.description : ''
+      : typeof name?.description === 'string'
+        ? name.description
+        : ''
     if (label) {
       names.add(label)
     }
@@ -145,7 +147,9 @@ export function collectRedactedNames(data: Record<string, unknown>): string[] {
 }
 
 export function parseRdapData(data: Record<string, unknown>, query: string, type: 'domain' | 'ip'): RdapLookupResult {
-  const status: string[] = Array.isArray(data.status) ? data.status.map(String) : []
+  const status: string[] = Array.isArray(data.status)
+    ? data.status.map(String)
+    : []
 
   let registrationDate: string | undefined
   let expirationDate: string | undefined
@@ -188,7 +192,9 @@ export function parseRdapData(data: Record<string, unknown>, query: string, type
     const regEntity = data.entities.find((e) => {
       if (!e || typeof e !== 'object')
         return false
-      const roles = Array.isArray(e.roles) ? e.roles : []
+      const roles = Array.isArray(e.roles)
+        ? e.roles
+        : []
       return roles.includes('registrar') || roles.includes('registrant')
     }) as Record<string, unknown> | undefined
 
@@ -258,7 +264,9 @@ export function resolveRdapBase(domain: string, services: RdapBootstrapService[]
       }
       const base = urls.find(url => url.startsWith('https://')) ?? urls[0]
       if (base) {
-        return base.endsWith('/') ? base : `${base}/`
+        return base.endsWith('/')
+          ? base
+          : `${base}/`
       }
     }
   }
@@ -284,7 +292,10 @@ async function loadDnsBootstrap(): Promise<RdapBootstrapService[] | null> {
     if (!Array.isArray(data.services)) {
       return bootstrapCache?.services ?? null
     }
-    bootstrapCache = { services: data.services, fetchedAt: Date.now() }
+    bootstrapCache = {
+      services: data.services,
+      fetchedAt: Date.now(),
+    }
     return data.services
   }
   catch {
@@ -333,7 +344,9 @@ export function findRelatedRdapLink(data: Record<string, unknown>): string | nul
     if (String(item.rel ?? '').toLowerCase() !== 'related') {
       continue
     }
-    const href = typeof item.href === 'string' ? item.href : ''
+    const href = typeof item.href === 'string'
+      ? item.href
+      : ''
     const mediaType = String(item.type ?? '').toLowerCase()
     if (!href.startsWith('https://') || (mediaType && !mediaType.includes('rdap'))) {
       continue
@@ -350,11 +363,17 @@ export function isThinResult(result: RdapLookupResult): boolean {
 
 /** Adds registrar fields that the registry answer does not have. It changes no other field. */
 function mergeRegistrar(target: RdapLookupResult, source: RdapLookupResult): void {
-  const merged = { ...source.registrar, ...target.registrar }
+  const merged = {
+    ...source.registrar,
+    ...target.registrar,
+  }
   if (merged.name || merged.ianaId || merged.abuseEmail || merged.abusePhone) {
     target.registrar = merged
   }
-  const fields = new Set([...(target.redactedFields ?? []), ...(source.redactedFields ?? [])])
+  const fields = new Set([
+    ...(target.redactedFields ?? []),
+    ...(source.redactedFields ?? []),
+  ])
   target.redactedFields = [...fields]
 }
 
@@ -418,7 +437,9 @@ export async function lookupRdap(rawQuery: string): Promise<RdapLookupResult> {
 
   // A domain goes to the authoritative server in one hop. An IP keeps the
   // rdap.org redirector, because the IP bootstrap needs a CIDR match.
-  const base = isIp ? null : resolveRdapBase(clean, (await loadDnsBootstrap()) ?? [])
+  const base = isIp
+    ? null
+    : resolveRdapBase(clean, (await loadDnsBootstrap()) ?? [])
   const targetUrl = `${base ?? FALLBACK_BASE}${type}/${encodeURIComponent(clean)}`
   const startedAt = Date.now()
   const source = () => ({
@@ -447,7 +468,10 @@ export async function lookupRdap(rawQuery: string): Promise<RdapLookupResult> {
     }
 
     const data = await res.json() as Record<string, unknown>
-    const result: RdapLookupResult = { ...parseRdapData(data, clean, type), ...source() }
+    const result: RdapLookupResult = {
+      ...parseRdapData(data, clean, type),
+      ...source(),
+    }
 
     if (type === 'domain') {
       await followRegistrarReferrals(result, data, targetUrl)

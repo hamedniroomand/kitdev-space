@@ -157,10 +157,14 @@ export function analyzeTimestamp(
   if (numeric) {
     const whole = numeric[2] ?? '0'
     const fraction = numeric[3] ?? ''
-    const resolved = unit === 'auto' ? detectTimestampUnit(whole) : unit
+    const resolved = unit === 'auto'
+      ? detectTimestampUnit(whole)
+      : unit
     const exponent = NANOSECOND_EXPONENT[resolved]
     const scaled = BigInt(whole + fraction.slice(0, exponent).padEnd(exponent, '0'))
-    return fromNanoseconds(numeric[1] === '-' ? -scaled : scaled, resolved)
+    return fromNanoseconds(numeric[1] === '-'
+      ? -scaled
+      : scaled, resolved)
   }
 
   const date = new Date(text)
@@ -174,7 +178,12 @@ export function analyzeTimestamp(
     unit: null,
     nanoseconds: BigInt(date.getTime()) * 1_000_000n,
     subMillisecondNs: 0,
-    ambiguity: readings ? { ...readings, used: localIsoDate(date) } : null,
+    ambiguity: readings
+      ? {
+          ...readings,
+          used: localIsoDate(date),
+        }
+      : null,
   }
 }
 
@@ -227,11 +236,15 @@ export function describeDuration(fromMs: number, toMs: number): TimestampDuratio
 
   const words = Object.entries(parts)
     .filter(([, value]) => value > 0)
-    .map(([name, value]) => `${value} ${value === 1 ? name.slice(0, -1) : name}`)
+    .map(([name, value]) => `${value} ${value === 1
+      ? name.slice(0, -1)
+      : name}`)
 
   return {
     ...parts,
     totalMilliseconds: total,
-    text: words.length > 0 ? words.join(' ') : '0 milliseconds',
+    text: words.length > 0
+      ? words.join(' ')
+      : '0 milliseconds',
   }
 }

@@ -175,7 +175,9 @@ function getMimeType(format: CsvExportFormat): string {
 async function scanHeavyInput() {
   const payload = {
     text: input.value,
-    delimiter: delimiter.value === 'auto' ? undefined : delimiter.value,
+    delimiter: delimiter.value === 'auto'
+      ? undefined
+      : delimiter.value,
   }
   try {
     return await workerScan(payload)
@@ -186,7 +188,9 @@ async function scanHeavyInput() {
 }
 
 async function convert() {
-  const heavyScan = isHeavy.value ? await scanHeavyInput() : null
+  const heavyScan = isHeavy.value
+    ? await scanHeavyInput()
+    : null
 
   await run(() => {
     try {
@@ -194,7 +198,9 @@ async function convert() {
         rows: previewData.value.rows,
         columns: previewData.value.columns,
         format: exportFormat.value,
-        delimiter: delimiter.value === 'auto' ? undefined : delimiter.value,
+        delimiter: delimiter.value === 'auto'
+          ? undefined
+          : delimiter.value,
         tableName: tableName.value,
         includeCreateTable: includeCreateTable.value,
         sqlDialect: sqlDialect.value,
@@ -242,7 +248,9 @@ function handleDownloadAll() {
     rows: previewData.value.rows,
     columns: previewData.value.columns,
     format: exportFormat.value,
-    delimiter: delimiter.value === 'auto' ? undefined : delimiter.value,
+    delimiter: delimiter.value === 'auto'
+      ? undefined
+      : delimiter.value,
     tableName: tableName.value,
     includeCreateTable: includeCreateTable.value,
     sqlDialect: sqlDialect.value,
@@ -262,9 +270,13 @@ function handleDownloadFiltered() {
   const content = exportFilteredDataset({
     rows: filteredPreviewRows.value,
     columns: previewData.value.columns,
-    visibleColumnIndices: visibleColumnIndices.value.length > 0 ? visibleColumnIndices.value : undefined,
+    visibleColumnIndices: visibleColumnIndices.value.length > 0
+      ? visibleColumnIndices.value
+      : undefined,
     format: exportFormat.value,
-    delimiter: delimiter.value === 'auto' ? undefined : delimiter.value,
+    delimiter: delimiter.value === 'auto'
+      ? undefined
+      : delimiter.value,
     tableName: tableName.value,
     includeCreateTable: includeCreateTable.value,
     sqlDialect: sqlDialect.value,

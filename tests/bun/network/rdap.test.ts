@@ -9,7 +9,12 @@ const REGISTRAR_URL = 'https://8.8.8.8/rdap/domain/example.com'
 const SECOND_REGISTRAR_URL = 'https://8.8.4.4/rdap/domain/example.com'
 
 const bootstrap = {
-  services: [[['com', 'net'], [COM_BASE]]],
+  services: [
+    [
+      ['com', 'net'],
+      [COM_BASE],
+    ],
+  ],
 }
 
 const registrarPayload = {
@@ -17,12 +22,24 @@ const registrarPayload = {
   entities: [
     {
       roles: ['registrar'],
-      publicIds: [{ type: 'IANA Registrar ID', identifier: '292' }],
+      publicIds: [
+        { type: 'IANA Registrar ID', identifier: '292' },
+      ],
       vcardArray: [
         'vcard',
         [
-          ['fn', {}, 'text', 'Example Registrar LLC'],
-          ['email', {}, 'text', 'abuse@registrar.example'],
+          [
+            'fn',
+            {},
+            'text',
+            'Example Registrar LLC',
+          ],
+          [
+            'email',
+            {},
+            'text',
+            'abuse@registrar.example',
+          ],
         ],
       ],
     },
@@ -34,11 +51,23 @@ function thinPayload(relatedHref: string) {
     objectClassName: 'domain',
     ldhName: 'EXAMPLE.COM',
     status: ['client transfer prohibited'],
-    events: [{ eventAction: 'expiration', eventDate: '2030-01-01T00:00:00Z' }],
+    events: [
+      { eventAction: 'expiration', eventDate: '2030-01-01T00:00:00Z' },
+    ],
     entities: [
       {
         roles: ['registrar'],
-        vcardArray: ['vcard', [['fn', {}, 'text', 'REDACTED FOR PRIVACY']]],
+        vcardArray: [
+          'vcard',
+          [
+            [
+              'fn',
+              {},
+              'text',
+              'REDACTED FOR PRIVACY',
+            ],
+          ],
+        ],
       },
     ],
     links: [
@@ -67,7 +96,11 @@ let calls: string[] = []
 /** Answers the IANA table always, and the RDAP queries from `routes`. */
 function mockFetch(routes: Record<string, () => Promise<Response>>) {
   globalThis.fetch = (async (input: string | URL | Request) => {
-    const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
+    const url = typeof input === 'string'
+      ? input
+      : input instanceof URL
+        ? input.href
+        : input.url
     calls.push(url)
     if (url === BOOTSTRAP_URL) {
       return json(bootstrap)
@@ -93,7 +126,9 @@ describe('lookupRdap', () => {
     mockFetch({
       [`${COM_BASE}domain/example.com`]: async () => json({
         ...registrarPayload,
-        events: [{ eventAction: 'expiration', eventDate: '2030-01-01T00:00:00Z' }],
+        events: [
+          { eventAction: 'expiration', eventDate: '2030-01-01T00:00:00Z' },
+        ],
       }),
     })
 

@@ -26,8 +26,18 @@ describe('parseSpf', () => {
     const report = parseSpf(['v=spf1 include:_spf.google.com ~all'])
     expect(report.present).toBe(true)
     expect(report.mechanisms).toEqual([
-      { qualifier: '+', type: 'include', value: '_spf.google.com', raw: 'include:_spf.google.com' },
-      { qualifier: '~', type: 'all', value: undefined, raw: '~all' },
+      {
+        qualifier: '+',
+        type: 'include',
+        value: '_spf.google.com',
+        raw: 'include:_spf.google.com',
+      },
+      {
+        qualifier: '~',
+        type: 'all',
+        value: undefined,
+        raw: '~all',
+      },
     ])
     expect(report.issues.some(issue => issue.code === 'spf-softfail')).toBe(true)
   })
@@ -60,7 +70,9 @@ describe('analyzeMx', () => {
   })
 
   it('flags IP exchange hosts', () => {
-    const report = analyzeMx([{ priority: 10, exchange: '203.0.113.10' }])
+    const report = analyzeMx([
+      { priority: 10, exchange: '203.0.113.10' },
+    ])
     expect(report.records[0]?.issues.some(issue => issue.code === 'mx-ip-exchange')).toBe(true)
   })
 
@@ -73,7 +85,10 @@ describe('analyzeMx', () => {
 describe('analyzeDkim', () => {
   it('marks selectors with DKIM keys as present', () => {
     const report = analyzeDkim([
-      { selector: 'google', records: ['v=DKIM1; k=rsa; p=MIGf'] },
+      {
+        selector: 'google',
+        records: ['v=DKIM1; k=rsa; p=MIGf'],
+      },
       { selector: 'default', records: [] },
     ])
 
@@ -171,8 +186,15 @@ describe('buildEmailHealthResult', () => {
       domain: 'example.com',
       txtRecords: ['v=spf1 mx -all'],
       dmarcRecords: ['v=DMARC1; p=reject; rua=mailto:r@example.com'],
-      mxRecords: [{ priority: 10, exchange: 'mail.example.com' }],
-      dkim: [{ selector: 'default', records: ['v=DKIM1; p=abc'] }],
+      mxRecords: [
+        { priority: 10, exchange: 'mail.example.com' },
+      ],
+      dkim: [
+        {
+          selector: 'default',
+          records: ['v=DKIM1; p=abc'],
+        },
+      ],
     })
 
     expect(result.domain).toBe('example.com')
@@ -205,8 +227,12 @@ describe('issue remediation details', () => {
 
   it('gives details for DMARC, MX, and DKIM issues', () => {
     const dmarc = parseDmarc(['v=DMARC1; p=none'], { domain: 'example.com' })
-    const mx = analyzeMx([{ priority: 10, exchange: '203.0.113.10' }], { domain: 'example.com' })
-    const dkim = analyzeDkim([{ selector: 'default', records: [] }], { domain: 'example.com' })
+    const mx = analyzeMx([
+      { priority: 10, exchange: '203.0.113.10' },
+    ], { domain: 'example.com' })
+    const dkim = analyzeDkim([
+      { selector: 'default', records: [] },
+    ], { domain: 'example.com' })
 
     for (const item of [
       ...dmarc.issues,
@@ -268,7 +294,10 @@ describe('lookup failure versus missing record', () => {
 describe('unchecked DKIM selectors', () => {
   it('lists the tested selectors and the skipped common selectors', () => {
     const report = analyzeDkim([
-      { selector: 'google', records: ['v=DKIM1; k=rsa; p=MIGf'] },
+      {
+        selector: 'google',
+        records: ['v=DKIM1; k=rsa; p=MIGf'],
+      },
       { selector: 'default', records: [] },
     ], { domain: 'example.com' })
 
@@ -283,7 +312,9 @@ describe('unchecked DKIM selectors', () => {
   })
 
   it('explains why a selector cannot be enumerated', () => {
-    const report = analyzeDkim([{ selector: 'default', records: [] }])
+    const report = analyzeDkim([
+      { selector: 'default', records: [] },
+    ])
     const note = report.issues.find(item => item.code === 'dkim-enumeration')
     expect(note?.level).toBe('info')
     expect(note?.impact).toContain('_domainkey')
@@ -329,9 +360,18 @@ describe('parseDkimRecord and rsaKeyBits', () => {
 
   it('flags a revoked selector and a weak key', () => {
     const report = analyzeDkim([
-      { selector: 'revoked', records: ['v=DKIM1; k=rsa; p='] },
-      { selector: 'weak', records: [`v=DKIM1; k=rsa; p=${RSA_1024}`] },
-      { selector: 'strong', records: [`v=DKIM1; k=rsa; p=${RSA_2048}`] },
+      {
+        selector: 'revoked',
+        records: ['v=DKIM1; k=rsa; p='],
+      },
+      {
+        selector: 'weak',
+        records: [`v=DKIM1; k=rsa; p=${RSA_1024}`],
+      },
+      {
+        selector: 'strong',
+        records: [`v=DKIM1; k=rsa; p=${RSA_2048}`],
+      },
     ], { domain: 'example.com' })
 
     expect(report.selectors[0]?.issues.map(item => item.code)).toContain('dkim-revoked')
@@ -348,7 +388,10 @@ describe('modern mail policies', () => {
     const report = parseMailPolicy('mta-sts', ['v=STSv1; id=20240101T000000'], { domain: 'example.com' })
     expect(report.name).toBe('_mta-sts.example.com')
     expect(report.present).toBe(true)
-    expect(report.tags).toEqual([{ name: 'v', value: 'STSv1' }, { name: 'id', value: '20240101T000000' }])
+    expect(report.tags).toEqual([
+      { name: 'v', value: 'STSv1' },
+      { name: 'id', value: '20240101T000000' },
+    ])
     expect(report.issues.map(item => item.code)).toEqual(['mta-sts-ok'])
   })
 
@@ -388,8 +431,15 @@ describe('scoreEmailHealth', () => {
       domain: 'example.com',
       txtRecords: [`v=spf1 include:_spf.example.net -all`],
       dmarcRecords: ['v=DMARC1; p=reject; rua=mailto:r@example.com'],
-      mxRecords: [{ priority: 10, exchange: 'mail.example.com' }],
-      dkim: [{ selector: 'default', records: [`v=DKIM1; k=rsa; p=${RSA_2048}`] }],
+      mxRecords: [
+        { priority: 10, exchange: 'mail.example.com' },
+      ],
+      dkim: [
+        {
+          selector: 'default',
+          records: [`v=DKIM1; k=rsa; p=${RSA_2048}`],
+        },
+      ],
     })
     result.mtaSts = parseMailPolicy('mta-sts', ['v=STSv1; id=1'], { domain: 'example.com' })
     result.tlsRpt = parseMailPolicy('tls-rpt', ['v=TLSRPTv1; rua=mailto:t@example.com'], { domain: 'example.com' })
@@ -409,7 +459,9 @@ describe('scoreEmailHealth', () => {
       txtRecords: [],
       dmarcRecords: [],
       mxRecords: [],
-      dkim: [{ selector: 'default', records: [] }],
+      dkim: [
+        { selector: 'default', records: [] },
+      ],
     }))
 
     expect(score.points).toBe(0)
@@ -421,8 +473,15 @@ describe('scoreEmailHealth', () => {
       domain: 'example.com',
       txtRecords: [],
       dmarcRecords: ['v=DMARC1; p=reject; rua=mailto:r@example.com'],
-      mxRecords: [{ priority: 10, exchange: 'mail.example.com' }],
-      dkim: [{ selector: 'default', records: [`v=DKIM1; k=rsa; p=${RSA_2048}`] }],
+      mxRecords: [
+        { priority: 10, exchange: 'mail.example.com' },
+      ],
+      dkim: [
+        {
+          selector: 'default',
+          records: [`v=DKIM1; k=rsa; p=${RSA_2048}`],
+        },
+      ],
       lookups: { txt: 'failed' },
     }))
 

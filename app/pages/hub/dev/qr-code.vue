@@ -61,7 +61,9 @@ const typed = computed(() => ({
 const settled = refDebounced(typed, PREVIEW_DELAY)
 
 function encode(values: typeof typed.value) {
-  if (!(values.kind === 'wifi' ? values.ssid.trim() : values.text.trim())) {
+  if (!(values.kind === 'wifi'
+    ? values.ssid.trim()
+    : values.text.trim())) {
     return null
   }
   const payload = buildQrPayload(
@@ -81,7 +83,10 @@ function encode(values: typeof typed.value) {
 
 const { error, result: code } = useLiveTool(
   () => encode(settled.value),
-  { runLocation: 'browser', option: () => ecc.value },
+  {
+    runLocation: 'browser',
+    option: () => ecc.value,
+  },
 )
 
 /**
@@ -94,7 +99,9 @@ function currentCode() {
 
 const previewUrl = computed(() => {
   const svg = code.value?.svg
-  return svg ? `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}` : null
+  return svg
+    ? `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`
+    : null
 })
 
 const downloadError = ref<string | null>(null)
@@ -151,7 +158,9 @@ async function handleDownloadPng() {
     downloadBlob(qrPngFilename(pixels), await canvas.convertToBlob({ type: 'image/png' }))
   }
   catch (cause) {
-    downloadError.value = cause instanceof Error ? cause.message : 'The PNG download failed.'
+    downloadError.value = cause instanceof Error
+      ? cause.message
+      : 'The PNG download failed.'
   }
 }
 

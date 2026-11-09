@@ -36,7 +36,9 @@ const RSA_HASHES: Record<string, string> = {
 
 function padBase64(value: string): string {
   const rem = value.length % 4
-  return rem === 0 ? value : value + '='.repeat(4 - rem)
+  return rem === 0
+    ? value
+    : value + '='.repeat(4 - rem)
 }
 
 export function decodeBase64Url(value: string): Uint8Array {
@@ -87,7 +89,9 @@ export function decodeJwt(token: string, nowSec = Math.floor(Date.now() / 1000))
 
   const exp = readUnixClaim(payload.exp)
   const nbf = readUnixClaim(payload.nbf)
-  const algorithm = typeof header.alg === 'string' ? header.alg : null
+  const algorithm = typeof header.alg === 'string'
+    ? header.alg
+    : null
 
   return {
     header,
@@ -95,8 +99,12 @@ export function decodeJwt(token: string, nowSec = Math.floor(Date.now() / 1000))
     signature,
     headerJson: JSON.stringify(header, null, 2),
     payloadJson: JSON.stringify(payload, null, 2),
-    expired: exp == null ? null : nowSec >= exp,
-    notBeforeValid: nbf == null ? null : nowSec >= nbf,
+    expired: exp == null
+      ? null
+      : nowSec >= exp,
+    notBeforeValid: nbf == null
+      ? null
+      : nowSec >= nbf,
     algorithm,
   }
 }
@@ -115,10 +123,14 @@ export function matchJwtClaim(expected: string, claim: unknown): JwtClaimMatch {
     return 'not-checked'
   }
   if (typeof claim === 'string') {
-    return claim === wanted ? 'match' : 'mismatch'
+    return claim === wanted
+      ? 'match'
+      : 'mismatch'
   }
   if (Array.isArray(claim)) {
-    return claim.includes(wanted) ? 'match' : 'mismatch'
+    return claim.includes(wanted)
+      ? 'match'
+      : 'mismatch'
   }
   return 'mismatch'
 }
@@ -198,7 +210,9 @@ export async function verifyJwt(token: string, key: string): Promise<JwtVerifySt
 
   if (hmacHash) {
     const expected = await hmacSign(key, hmacHash, signingInput)
-    return timingSafeEqual(expected, signature) ? 'valid' : 'invalid'
+    return timingSafeEqual(expected, signature)
+      ? 'valid'
+      : 'invalid'
   }
 
   const publicKey = await importRsaPublicKey(key, rsaHash!)

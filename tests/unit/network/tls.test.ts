@@ -37,8 +37,20 @@ const baseResult: TlsReport = {
   fingerprint: 'AB',
   isSelfSigned: false,
   chain: [
-    { subject: { commonName: 'example.com' }, issuer: { commonName: 'Example CA', organization: 'Example Trust' }, validFrom: '2026-01-01T00:00:00.000Z', validTo: '2026-12-31T23:59:59.000Z', serialNumber: '1234' },
-    { subject: { commonName: 'Example CA', organization: 'Example Trust' }, issuer: { commonName: 'Example CA', organization: 'Example Trust' }, validFrom: '2020-01-01T00:00:00.000Z', validTo: '2030-12-31T23:59:59.000Z', serialNumber: '99' },
+    {
+      subject: { commonName: 'example.com' },
+      issuer: { commonName: 'Example CA', organization: 'Example Trust' },
+      validFrom: '2026-01-01T00:00:00.000Z',
+      validTo: '2026-12-31T23:59:59.000Z',
+      serialNumber: '1234',
+    },
+    {
+      subject: { commonName: 'Example CA', organization: 'Example Trust' },
+      issuer: { commonName: 'Example CA', organization: 'Example Trust' },
+      validFrom: '2020-01-01T00:00:00.000Z',
+      validTo: '2030-12-31T23:59:59.000Z',
+      serialNumber: '99',
+    },
   ],
 }
 
@@ -193,8 +205,16 @@ describe('certificate chain', () => {
   it('names the leaf, the intermediate, and the root', () => {
     const chain: TlsChainCertificate[] = [
       baseResult.chain[0]!,
-      { ...baseResult.chain[0]!, subject: { commonName: 'Intermediate CA' }, issuer: { commonName: 'Root CA' } },
-      { ...baseResult.chain[0]!, subject: { commonName: 'Root CA' }, issuer: { commonName: 'Root CA' } },
+      {
+        ...baseResult.chain[0]!,
+        subject: { commonName: 'Intermediate CA' },
+        issuer: { commonName: 'Root CA' },
+      },
+      {
+        ...baseResult.chain[0]!,
+        subject: { commonName: 'Root CA' },
+        issuer: { commonName: 'Root CA' },
+      },
     ]
     expect(chain.map((cert, index) => chainRole(cert, index))).toEqual(['leaf', 'intermediate', 'root'])
     expect(chainRoleLabel('leaf')).toBe('Leaf (server)')
@@ -212,7 +232,10 @@ describe('certificate chain', () => {
   })
 
   it('flags a missing intermediate', () => {
-    const short: TlsReport = { ...baseResult, chain: [baseResult.chain[0]!] }
+    const short: TlsReport = {
+      ...baseResult,
+      chain: [baseResult.chain[0]!],
+    }
     expect(chainIssues(short).map(issue => issue.id)).toEqual(['missing-intermediate'])
   })
 
@@ -220,7 +243,12 @@ describe('certificate chain', () => {
     const selfSigned: TlsReport = {
       ...baseResult,
       isSelfSigned: true,
-      chain: [{ ...baseResult.chain[0]!, issuer: { commonName: 'example.com' } }],
+      chain: [
+        {
+          ...baseResult.chain[0]!,
+          issuer: { commonName: 'example.com' },
+        },
+      ],
     }
     expect(chainIssues(selfSigned).map(issue => issue.id)).toEqual(['self-signed'])
   })
@@ -255,7 +283,19 @@ describe('x.509 details', () => {
   })
 
   it('reads the signature algorithm OID from DER bytes', () => {
-    const sha256WithRsa = [0x06, 0x09, 0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x0B]
+    const sha256WithRsa = [
+      0x06,
+      0x09,
+      0x2A,
+      0x86,
+      0x48,
+      0x86,
+      0xF7,
+      0x0D,
+      0x01,
+      0x01,
+      0x0B,
+    ]
     const der = new Uint8Array(tlv(0x30, [
       ...tlv(0x30, []),
       ...tlv(0x30, [...sha256WithRsa, 0x05, 0x00]),

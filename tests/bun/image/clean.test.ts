@@ -9,7 +9,13 @@ const tiny = new Uint8Array(readFileSync(join(import.meta.dir, 'fixtures/tiny.pn
 
 function segment(marker: number, payload: number[]): number[] {
   const length = payload.length + 2
-  return [0xFF, marker, length >> 8, length & 0xFF, ...payload]
+  return [
+    0xFF,
+    marker,
+    length >> 8,
+    length & 0xFF,
+    ...payload,
+  ]
 }
 
 /** A real JPEG from Bun, with an EXIF block that holds a GPS position and a comment block. */
@@ -17,7 +23,13 @@ async function taggedJpeg(): Promise<Uint8Array> {
   const jpeg = await new Bun.Image(tiny).jpeg({ quality: 80 }).bytes()
   const exif = [...'Exif\0\0'].map(c => c.charCodeAt(0)).concat(buildTiffBlock())
   const comment = [...'private note'].map(c => c.charCodeAt(0))
-  return new Uint8Array([0xFF, 0xD8, ...segment(0xE1, exif), ...segment(0xFE, comment), ...jpeg.slice(2)])
+  return new Uint8Array([
+    0xFF,
+    0xD8,
+    ...segment(0xE1, exif),
+    ...segment(0xFE, comment),
+    ...jpeg.slice(2),
+  ])
 }
 
 describe('cleanImageMetadata', () => {

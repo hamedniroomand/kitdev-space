@@ -32,41 +32,192 @@ interface IgnoredFlag {
 
 /** Options that cURL accepts and the generated code does not apply. */
 const IGNORED_FLAGS: IgnoredFlag[] = [
-  { names: ['-b', '--cookie'], takesValue: true, security: true, message: 'The code sends no cookie. Add a Cookie header.' },
-  { names: ['-c', '--cookie-jar'], takesValue: true, message: 'The code saves no cookie file.' },
-  { names: ['-A', '--user-agent'], takesValue: true, message: 'The code sets no user agent. Add a User-Agent header.' },
-  { names: ['-e', '--referer'], takesValue: true, message: 'The code sets no referrer. Add a Referer header.' },
-  { names: ['-F', '--form', '--form-string'], takesValue: true, message: 'The code sends no multipart body. Build a FormData body.' },
-  { names: ['--json'], takesValue: true, message: 'The code sends no body for this option. Use -d and a Content-Type header.' },
-  { names: ['-T', '--upload-file'], takesValue: true, message: 'The code uploads no file.' },
-  { names: ['-o', '--output'], takesValue: true, message: 'The code saves no response file.' },
-  { names: ['-O', '--remote-name'], takesValue: false, message: 'The code saves no response file.' },
-  { names: ['-D', '--dump-header'], takesValue: true, message: 'The code saves no response headers.' },
-  { names: ['-w', '--write-out'], takesValue: true, message: 'The code prints no report.' },
-  { names: ['-m', '--max-time', '--connect-timeout'], takesValue: true, message: 'The code sets no timeout.' },
-  { names: ['--retry'], takesValue: true, message: 'The code makes no retry.' },
-  { names: ['-x', '--proxy', '--preproxy'], takesValue: true, security: true, message: 'The code uses no proxy. The request goes direct.' },
-  { names: ['-U', '--proxy-user'], takesValue: true, security: true, message: 'The code drops the proxy credentials.' },
-  { names: ['-E', '--cert'], takesValue: true, security: true, message: 'The code uses no client certificate.' },
-  { names: ['--key'], takesValue: true, security: true, message: 'The code uses no client key.' },
-  { names: ['--cacert', '--capath'], takesValue: true, security: true, message: 'The code uses no custom certificate authority.' },
-  { names: ['-k', '--insecure'], takesValue: false, security: true, message: 'The code validates the TLS certificate. It does not skip the check.' },
-  { names: ['-C', '--continue-at'], takesValue: true, message: 'The code makes no resumed transfer.' },
-  { names: ['-r', '--range'], takesValue: true, message: 'The code sets no Range header.' },
-  { names: ['--limit-rate'], takesValue: true, message: 'The code sets no rate limit.' },
-  { names: ['--resolve'], takesValue: true, message: 'The code uses no custom host address.' },
-  { names: ['--interface'], takesValue: true, message: 'The code selects no network interface.' },
-  { names: ['--max-redirs'], takesValue: true, message: 'The code sets no redirect limit.' },
-  { names: ['-L', '--location'], takesValue: false, message: 'The code sets no redirect option. Check the default of the client.' },
-  { names: ['--compressed'], takesValue: false, message: 'The code sets no Accept-Encoding header.' },
-  { names: ['-I', '--head'], takesValue: false, message: 'The code uses no HEAD method. Set the method to HEAD in the code.' },
   {
-    names: ['-s', '--silent', '-S', '--show-error', '-v', '--verbose', '-i', '--include', '-f', '--fail', '--fail-with-body', '-#', '--progress-bar', '--no-progress-meter', '-N', '--no-buffer'],
+    names: ['-b', '--cookie'],
+    takesValue: true,
+    security: true,
+    message: 'The code sends no cookie. Add a Cookie header.',
+  },
+  {
+    names: ['-c', '--cookie-jar'],
+    takesValue: true,
+    message: 'The code saves no cookie file.',
+  },
+  {
+    names: ['-A', '--user-agent'],
+    takesValue: true,
+    message: 'The code sets no user agent. Add a User-Agent header.',
+  },
+  {
+    names: ['-e', '--referer'],
+    takesValue: true,
+    message: 'The code sets no referrer. Add a Referer header.',
+  },
+  {
+    names: ['-F', '--form', '--form-string'],
+    takesValue: true,
+    message: 'The code sends no multipart body. Build a FormData body.',
+  },
+  {
+    names: ['--json'],
+    takesValue: true,
+    message: 'The code sends no body for this option. Use -d and a Content-Type header.',
+  },
+  {
+    names: ['-T', '--upload-file'],
+    takesValue: true,
+    message: 'The code uploads no file.',
+  },
+  {
+    names: ['-o', '--output'],
+    takesValue: true,
+    message: 'The code saves no response file.',
+  },
+  {
+    names: ['-O', '--remote-name'],
+    takesValue: false,
+    message: 'The code saves no response file.',
+  },
+  {
+    names: ['-D', '--dump-header'],
+    takesValue: true,
+    message: 'The code saves no response headers.',
+  },
+  {
+    names: ['-w', '--write-out'],
+    takesValue: true,
+    message: 'The code prints no report.',
+  },
+  {
+    names: ['-m', '--max-time', '--connect-timeout'],
+    takesValue: true,
+    message: 'The code sets no timeout.',
+  },
+  {
+    names: ['--retry'],
+    takesValue: true,
+    message: 'The code makes no retry.',
+  },
+  {
+    names: ['-x', '--proxy', '--preproxy'],
+    takesValue: true,
+    security: true,
+    message: 'The code uses no proxy. The request goes direct.',
+  },
+  {
+    names: ['-U', '--proxy-user'],
+    takesValue: true,
+    security: true,
+    message: 'The code drops the proxy credentials.',
+  },
+  {
+    names: ['-E', '--cert'],
+    takesValue: true,
+    security: true,
+    message: 'The code uses no client certificate.',
+  },
+  {
+    names: ['--key'],
+    takesValue: true,
+    security: true,
+    message: 'The code uses no client key.',
+  },
+  {
+    names: ['--cacert', '--capath'],
+    takesValue: true,
+    security: true,
+    message: 'The code uses no custom certificate authority.',
+  },
+  {
+    names: ['-k', '--insecure'],
+    takesValue: false,
+    security: true,
+    message: 'The code validates the TLS certificate. It does not skip the check.',
+  },
+  {
+    names: ['-C', '--continue-at'],
+    takesValue: true,
+    message: 'The code makes no resumed transfer.',
+  },
+  {
+    names: ['-r', '--range'],
+    takesValue: true,
+    message: 'The code sets no Range header.',
+  },
+  {
+    names: ['--limit-rate'],
+    takesValue: true,
+    message: 'The code sets no rate limit.',
+  },
+  {
+    names: ['--resolve'],
+    takesValue: true,
+    message: 'The code uses no custom host address.',
+  },
+  {
+    names: ['--interface'],
+    takesValue: true,
+    message: 'The code selects no network interface.',
+  },
+  {
+    names: ['--max-redirs'],
+    takesValue: true,
+    message: 'The code sets no redirect limit.',
+  },
+  {
+    names: ['-L', '--location'],
+    takesValue: false,
+    message: 'The code sets no redirect option. Check the default of the client.',
+  },
+  {
+    names: ['--compressed'],
+    takesValue: false,
+    message: 'The code sets no Accept-Encoding header.',
+  },
+  {
+    names: ['-I', '--head'],
+    takesValue: false,
+    message: 'The code uses no HEAD method. Set the method to HEAD in the code.',
+  },
+  {
+    names: [
+      '-s',
+      '--silent',
+      '-S',
+      '--show-error',
+      '-v',
+      '--verbose',
+      '-i',
+      '--include',
+      '-f',
+      '--fail',
+      '--fail-with-body',
+      '-#',
+      '--progress-bar',
+      '--no-progress-meter',
+      '-N',
+      '--no-buffer',
+    ],
     takesValue: false,
     message: 'This option changes the terminal output only.',
   },
   {
-    names: ['-g', '--globoff', '-4', '--ipv4', '-6', '--ipv6', '--http1.1', '--http2', '--http3', '--no-keepalive', '--tlsv1.2', '--tlsv1.3', '-Z', '--parallel'],
+    names: [
+      '-g',
+      '--globoff',
+      '-4',
+      '--ipv4',
+      '-6',
+      '--ipv6',
+      '--http1.1',
+      '--http2',
+      '--http3',
+      '--no-keepalive',
+      '--tlsv1.2',
+      '--tlsv1.3',
+      '-Z',
+      '--parallel',
+    ],
     takesValue: false,
     message: 'The code uses the transport defaults of the client.',
   },
@@ -87,11 +238,16 @@ export function curlFilePlaceholder(file: string): string {
  */
 export function encodeUrlencodedParam(spec: string): { part: string, file?: string } {
   if (spec.startsWith('=')) {
-    return { part: encodeURIComponent(spec.slice(1)) }
+    return {
+      part: encodeURIComponent(spec.slice(1)),
+    }
   }
   if (spec.startsWith('@')) {
     const file = spec.slice(1)
-    return { part: curlFilePlaceholder(file), file }
+    return {
+      part: curlFilePlaceholder(file),
+      file,
+    }
   }
 
   const equals = spec.indexOf('=')
@@ -104,7 +260,9 @@ export function encodeUrlencodedParam(spec: string): { part: string, file?: stri
     const file = spec.slice(at + 1)
     return { part: `${spec.slice(0, at)}=${curlFilePlaceholder(file)}`, file }
   }
-  return { part: encodeURIComponent(spec) }
+  return {
+    part: encodeURIComponent(spec),
+  }
 }
 
 export function tokenizeCurl(cmd: string): string[] {
@@ -284,7 +442,9 @@ export function parseCurl(curlCommand: string): ParsedCurl {
     }
     else if (token.startsWith('-') && token.length > 1) {
       // A joined short option, such as `-Acurl/8.0`, holds its value in the same token.
-      const joined = token.startsWith('--') ? undefined : IGNORED_BY_NAME.get(token.slice(0, 2))
+      const joined = token.startsWith('--')
+        ? undefined
+        : IGNORED_BY_NAME.get(token.slice(0, 2))
       if (joined?.takesValue) {
         addNotice(token.slice(0, 2), joined.message, joined.security === true)
       }
@@ -297,12 +457,18 @@ export function parseCurl(curlCommand: string): ParsedCurl {
     }
   }
 
-  let data: string | undefined = dataParts.length > 0 ? dataParts.join('&') : undefined
+  let data: string | undefined = dataParts.length > 0
+    ? dataParts.join('&')
+    : undefined
 
   if (isGetFlag) {
     method = method || 'GET'
     if (data) {
-      const sep = url.includes('?') ? (url.endsWith('?') || url.endsWith('&') ? '' : '&') : '?'
+      const sep = url.includes('?')
+        ? (url.endsWith('?') || url.endsWith('&')
+            ? ''
+            : '&')
+        : '?'
       url = `${url}${sep}${data}`
       data = undefined
     }
@@ -342,7 +508,9 @@ function maskHeaderValue(name: string, value: string): string {
   }
 
   const scheme = value.split(/\s+/)[0] ?? ''
-  return scheme && scheme !== value ? `${scheme} ${CURL_REDACTED}` : CURL_REDACTED
+  return scheme && scheme !== value
+    ? `${scheme} ${CURL_REDACTED}`
+    : CURL_REDACTED
 }
 
 /** Replace the secret in an Authorization header, a cookie, and a password. */
@@ -357,7 +525,9 @@ export function maskCurlCredentials(parsed: ParsedCurl): ParsedCurl {
   return {
     ...parsed,
     headers,
-    auth: parsed.auth ? { ...parsed.auth, password: CURL_REDACTED } : undefined,
+    auth: parsed.auth
+      ? { ...parsed.auth, password: CURL_REDACTED }
+      : undefined,
   }
 }
 
@@ -498,7 +668,9 @@ export function toPythonRequests(parsed: ParsedCurl): string {
     authArg = `, auth=("${parsed.auth.username}", "${parsed.auth.password || ''}")`
   }
 
-  const headersArg = Object.keys(parsed.headers).length > 0 ? ', headers=headers' : ''
+  const headersArg = Object.keys(parsed.headers).length > 0
+    ? ', headers=headers'
+    : ''
   const method = parsed.method.toLowerCase()
 
   lines.push(`response = requests.${method}(url${headersArg}${dataArg}${authArg})\n`)
@@ -568,7 +740,9 @@ export function generateCode(
     throw new Error('Could not find URL in curl command.')
   }
 
-  const source = options.maskCredentials ? maskCurlCredentials(parsed) : parsed
+  const source = options.maskCredentials
+    ? maskCurlCredentials(parsed)
+    : parsed
 
   switch (target) {
     case 'fetch':

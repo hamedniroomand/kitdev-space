@@ -143,7 +143,11 @@ function readEntryValues(
 
   if (type === 2) {
     const text = ascii(view, valueOffset, count)
-    return { tag, values: [text], text }
+    return {
+      tag,
+      values: [text],
+      text,
+    }
   }
 
   if (type === 7) {
@@ -193,8 +197,12 @@ function readEntryValues(
     text = values
       .map((_, index) => {
         const at = valueOffset + index * unit
-        const numerator = type === 5 ? view.getUint32(at, little) : view.getInt32(at, little)
-        const denominator = type === 5 ? view.getUint32(at + 4, little) : view.getInt32(at + 4, little)
+        const numerator = type === 5
+          ? view.getUint32(at, little)
+          : view.getInt32(at, little)
+        const denominator = type === 5
+          ? view.getUint32(at + 4, little)
+          : view.getInt32(at + 4, little)
         return formatRational(numerator, denominator)
       })
       .join(', ')
@@ -242,7 +250,11 @@ function readIfd(
     }
   }
 
-  return { entries, subIfds, next: view.getUint32(end, little) }
+  return {
+    entries,
+    subIfds,
+    next: view.getUint32(end, little),
+  }
 }
 
 function toDegrees(parts: (number | string)[], ref: string): number | null {
@@ -252,7 +264,9 @@ function toDegrees(parts: (number | string)[], ref: string): number | null {
   }
 
   const value = degrees + minutes / 60 + (seconds ?? 0) / 3600
-  const sign = ref === 'S' || ref === 'W' ? -1 : 1
+  const sign = ref === 'S' || ref === 'W'
+    ? -1
+    : 1
   return Number((value * sign).toFixed(6))
 }
 
@@ -283,8 +297,12 @@ export function parseTiffBlock(
   function push(group: MetadataGroup, names: Record<number, string>, entries: RawTag[]) {
     for (const entry of entries) {
       const name = names[entry.tag] ?? `Tag 0x${entry.tag.toString(16).toUpperCase()}`
-      const single = entry.values.length === 1 ? entry.values[0] : null
-      const label = typeof single === 'number' ? enumLabel(name, single) : null
+      const single = entry.values.length === 1
+        ? entry.values[0]
+        : null
+      const label = typeof single === 'number'
+        ? enumLabel(name, single)
+        : null
 
       tags.push({
         group,
@@ -347,7 +365,9 @@ export function readTiffOrientation(view: DataView, tiffStart: number): number |
   const ifd0 = readIfd(view, tiffStart, tiffStart + view.getUint32(tiffStart + 4, little), little)
   const entry = ifd0.entries.find(item => item.tag === 0x0112)
   const value = entry?.values[0]
-  return typeof value === 'number' ? value : null
+  return typeof value === 'number'
+    ? value
+    : null
 }
 
 export function detectContainer(bytes: Uint8Array): ImageContainer {
@@ -424,15 +444,30 @@ function readJpeg(view: DataView, result: ImageMetadata) {
     }
     else if (marker === 0xE1 && startsWith(view, payload, 'http://ns.adobe.com/xap/1.0/')) {
       result.blocks.push('XMP')
-      result.tags.push({ group: 'XMP', name: 'XMP packet', value: `${payloadLength} bytes`, private: true })
+      result.tags.push({
+        group: 'XMP',
+        name: 'XMP packet',
+        value: `${payloadLength} bytes`,
+        private: true,
+      })
     }
     else if (marker === 0xED) {
       result.blocks.push('IPTC')
-      result.tags.push({ group: 'Text', name: 'Photoshop IRB', value: `${payloadLength} bytes`, private: true })
+      result.tags.push({
+        group: 'Text',
+        name: 'Photoshop IRB',
+        value: `${payloadLength} bytes`,
+        private: true,
+      })
     }
     else if (marker === 0xFE) {
       result.blocks.push('Comment')
-      result.tags.push({ group: 'Text', name: 'Comment', value: ascii(view, payload, payloadLength), private: true })
+      result.tags.push({
+        group: 'Text',
+        name: 'Comment',
+        value: ascii(view, payload, payloadLength),
+        private: true,
+      })
     }
     else if (marker === 0xE2 && startsWith(view, payload, 'ICC_PROFILE\0')) {
       result.colorProfile = 'ICC profile'
@@ -467,16 +502,34 @@ function readPng(view: DataView, bytes: Uint8Array, result: ImageMetadata) {
     else if (type === 'tEXt' || type === 'iTXt') {
       result.blocks.push('Text')
       const separator = bytes.indexOf(0, payload)
-      const key = separator > payload ? ascii(view, payload, separator - payload) : type
-      const start = type === 'tEXt' ? separator + 1 : payload + length
-      const value = type === 'tEXt' ? ascii(view, start, payload + length - start) : `${length} bytes`
-      result.tags.push({ group: 'Text', name: key, value, private: true })
+      const key = separator > payload
+        ? ascii(view, payload, separator - payload)
+        : type
+      const start = type === 'tEXt'
+        ? separator + 1
+        : payload + length
+      const value = type === 'tEXt'
+        ? ascii(view, start, payload + length - start)
+        : `${length} bytes`
+      result.tags.push({
+        group: 'Text',
+        name: key,
+        value,
+        private: true,
+      })
     }
     else if (type === 'zTXt') {
       result.blocks.push('Text')
       const separator = bytes.indexOf(0, payload)
-      const key = separator > payload ? ascii(view, payload, separator - payload) : 'zTXt'
-      result.tags.push({ group: 'Text', name: key, value: 'compressed text', private: true })
+      const key = separator > payload
+        ? ascii(view, payload, separator - payload)
+        : 'zTXt'
+      result.tags.push({
+        group: 'Text',
+        name: key,
+        value: 'compressed text',
+        private: true,
+      })
     }
     else if (type === 'tIME') {
       result.blocks.push('Time')
@@ -523,14 +576,21 @@ function readWebp(view: DataView, result: ImageMetadata) {
     else if (type === 'EXIF') {
       result.blocks.push('EXIF')
       // Some encoders put the Exif\0\0 marker before the TIFF header.
-      const start = startsWith(view, payload, 'Exif\0\0') ? payload + 6 : payload
+      const start = startsWith(view, payload, 'Exif\0\0')
+        ? payload + 6
+        : payload
       const block = parseTiffBlock(view, start)
       result.tags.push(...block.tags)
       result.gps = result.gps ?? block.gps
     }
     else if (type === 'XMP ') {
       result.blocks.push('XMP')
-      result.tags.push({ group: 'XMP', name: 'XMP packet', value: `${length} bytes`, private: true })
+      result.tags.push({
+        group: 'XMP',
+        name: 'XMP packet',
+        value: `${length} bytes`,
+        private: true,
+      })
     }
     else if (type === 'ICCP') {
       result.colorProfile = 'ICC profile'
@@ -554,7 +614,9 @@ function readTiff(view: DataView, result: ImageMetadata) {
 
   const size = (name: string) => {
     const value = Number(block.tags.find(item => item.name === name)?.value)
-    return Number.isFinite(value) ? value : null
+    return Number.isFinite(value)
+      ? value
+      : null
   }
   result.width = size('ImageWidth')
   result.height = size('ImageHeight')
@@ -617,14 +679,18 @@ function readItemInfo(view: DataView, payload: number, end: number): Map<number,
   const types = new Map<number, string>()
   const version = view.getUint8(payload)
   // Version 0 counts the entries in two bytes. Every later version uses four.
-  const listAt = payload + 4 + (version === 0 ? 2 : 4)
+  const listAt = payload + 4 + (version === 0
+    ? 2
+    : 4)
 
   walkBoxes(view, listAt, end, (type, itemPayload) => {
     if (type !== 'infe') {
       return
     }
     const itemVersion = view.getUint8(itemPayload)
-    const idSize = itemVersion >= 3 ? 4 : 2
+    const idSize = itemVersion >= 3
+      ? 4
+      : 2
     const id = intAt(view, itemPayload + 4, idSize)
     types.set(id, fourCC(view, itemPayload + 4 + idSize + 2))
   })
@@ -640,18 +706,28 @@ function readItemLocations(view: DataView, payload: number): Map<number, ItemExt
   const offsetSize = sizes >> 4
   const lengthSize = sizes & 0x0F
   const baseSize = bases >> 4
-  const indexSize = version === 1 || version === 2 ? bases & 0x0F : 0
-  const idSize = version === 2 ? 4 : 2
+  const indexSize = version === 1 || version === 2
+    ? bases & 0x0F
+    : 0
+  const idSize = version === 2
+    ? 4
+    : 2
 
-  let at = payload + 6 + (version === 2 ? 4 : 2)
-  const count = version === 2 ? view.getUint32(payload + 6, false) : view.getUint16(payload + 6, false)
+  let at = payload + 6 + (version === 2
+    ? 4
+    : 2)
+  const count = version === 2
+    ? view.getUint32(payload + 6, false)
+    : view.getUint16(payload + 6, false)
 
   for (let index = 0; index < count; index += 1) {
     if (at + idSize + 4 > view.byteLength) {
       break
     }
     const id = intAt(view, at, idSize)
-    at += idSize + (version === 1 || version === 2 ? 2 : 0) + 2
+    at += idSize + (version === 1 || version === 2
+      ? 2
+      : 0) + 2
     const base = intAt(view, at, baseSize)
     at += baseSize
     const extents = view.getUint16(at, false)
@@ -703,7 +779,9 @@ function readAvif(view: DataView, result: ImageMetadata) {
             }
             else if (itemType === 'colr') {
               const kind = fourCC(view, itemPayload)
-              result.colorProfile = kind === 'rICC' || kind === 'prof' ? 'ICC profile' : 'nclx'
+              result.colorProfile = kind === 'rICC' || kind === 'prof'
+                ? 'ICC profile'
+                : 'nclx'
             }
           })
         })
@@ -721,13 +799,20 @@ function readAvif(view: DataView, result: ImageMetadata) {
       result.blocks.push('EXIF')
       // The first four bytes give the offset of the TIFF header inside the item.
       const start = place.offset + 4 + view.getUint32(place.offset, false)
-      const block = parseTiffBlock(view, startsWith(view, start, 'Exif\0\0') ? start + 6 : start)
+      const block = parseTiffBlock(view, startsWith(view, start, 'Exif\0\0')
+        ? start + 6
+        : start)
       result.tags.push(...block.tags)
       result.gps = result.gps ?? block.gps
     }
     else if (type === 'mime') {
       result.blocks.push('XMP')
-      result.tags.push({ group: 'XMP', name: 'XMP packet', value: `${place.length} bytes`, private: true })
+      result.tags.push({
+        group: 'XMP',
+        name: 'XMP packet',
+        value: `${place.length} bytes`,
+        private: true,
+      })
     }
   }
 }
@@ -767,6 +852,8 @@ export function readImageMetadata(bytes: Uint8Array): ImageMetadata {
     // A malformed file gives the tags that the parser read before the error.
   }
 
-  result.blocks = [...new Set(result.blocks)]
+  result.blocks = [
+    ...new Set(result.blocks),
+  ]
   return result
 }

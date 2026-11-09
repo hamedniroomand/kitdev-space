@@ -11,7 +11,9 @@ const props = withDefaults(defineProps<{
   siteName: 'kitdev.space',
 })
 
-const titleSize = computed(() => props.title.length > 48 ? 56 : 72)
+const titleSize = computed(() => props.title.length > 48
+  ? 56
+  : 72)
 </script>
 
 <template>

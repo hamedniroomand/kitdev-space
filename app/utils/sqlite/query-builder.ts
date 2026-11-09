@@ -49,7 +49,9 @@ export function buildUpdateQuery(table: string, column: string): string {
 
 function likeLiteral(value: string, mode: 'contains' | 'starts'): string {
   const escaped = value.replace(/[\\%_]/g, match => `\\${match}`).replace(/'/g, '\'\'')
-  return mode === 'contains' ? `'%${escaped}%' ESCAPE '\\'` : `'${escaped}%' ESCAPE '\\'`
+  return mode === 'contains'
+    ? `'%${escaped}%' ESCAPE '\\'`
+    : `'${escaped}%' ESCAPE '\\'`
 }
 
 /** SQLite has type affinity: a column with TEXT, CHAR, or CLOB in its type holds text. An untyped column can hold anything. */
@@ -59,7 +61,14 @@ export function isTextColumn(column: ColumnInfo): boolean {
 }
 
 export function initialTableQuery(table: string, limit = 100): TableQueryState {
-  return { table, search: '', filters: [], sort: null, limit, offset: 0 }
+  return {
+    table,
+    search: '',
+    filters: [],
+    sort: null,
+    limit,
+    offset: 0,
+  }
 }
 
 export function filterToSql(filter: TableFilter): string {
@@ -97,7 +106,9 @@ export function filterLabel(filter: TableFilter): string {
     notnull: 'is not null',
   }
   const needsValue = FILTER_OPERATORS.find(op => op.value === filter.operator)?.needsValue
-  return needsValue ? `${filter.column} ${symbol[filter.operator]} ${JSON.stringify(filter.value)}` : `${filter.column} ${symbol[filter.operator]}`
+  return needsValue
+    ? `${filter.column} ${symbol[filter.operator]} ${JSON.stringify(filter.value)}`
+    : `${filter.column} ${symbol[filter.operator]}`
 }
 
 export function buildWhere(state: TableQueryState, textColumns: string[]): string | null {
@@ -110,7 +121,9 @@ export function buildWhere(state: TableQueryState, textColumns: string[]): strin
   for (const filter of state.filters) {
     parts.push(filterToSql(filter))
   }
-  return parts.length ? parts.join(' AND ') : null
+  return parts.length
+    ? parts.join(' AND ')
+    : null
 }
 
 /**
@@ -123,9 +136,15 @@ export function buildTableQuery(
 ): { sql: string, countSql: string } {
   const table = quoteIdentifier(state.table)
   const where = buildWhere(state, options.textColumns)
-  const whereClause = where ? `\nWHERE ${where}` : ''
-  const select = options.hasRowId ? `SELECT rowid AS ${quoteIdentifier(ROWID_ALIAS)}, *` : 'SELECT *'
-  const order = state.sort ? `\nORDER BY ${quoteIdentifier(state.sort.column)} ${state.sort.direction.toUpperCase()}` : ''
+  const whereClause = where
+    ? `\nWHERE ${where}`
+    : ''
+  const select = options.hasRowId
+    ? `SELECT rowid AS ${quoteIdentifier(ROWID_ALIAS)}, *`
+    : 'SELECT *'
+  const order = state.sort
+    ? `\nORDER BY ${quoteIdentifier(state.sort.column)} ${state.sort.direction.toUpperCase()}`
+    : ''
   const limit = Math.max(1, Math.floor(state.limit))
   const offset = Math.max(0, Math.floor(state.offset))
   return {
@@ -138,7 +157,9 @@ export function buildTableQuery(
 export function tableSnippets(table: string, columns: ColumnInfo[]): { label: string, sql: string }[] {
   const quoted = quoteIdentifier(table)
   const text = columns.find(isTextColumn)
-  const snippets = [{ label: 'Count the rows', sql: `SELECT COUNT(*) AS row_count\nFROM ${quoted};` }]
+  const snippets = [
+    { label: 'Count the rows', sql: `SELECT COUNT(*) AS row_count\nFROM ${quoted};` },
+  ]
   if (text) {
     const column = quoteIdentifier(text.name)
     snippets.push(

@@ -19,7 +19,9 @@ export function createPalette(base: string, count = 5): string[] {
   // An even count has no middle step, so move the nearest step onto the base color.
   if (!steps.includes(anchor)) {
     const nearest = steps.reduce(
-      (best, step, index) => Math.abs(step - anchor) < Math.abs(steps[best]! - anchor) ? index : best,
+      (best, step, index) => Math.abs(step - anchor) < Math.abs(steps[best]! - anchor)
+        ? index
+        : best,
       0,
     )
     steps[nearest] = anchor

@@ -30,8 +30,33 @@ describe('favicon utility', () => {
   })
 
   it('builds an ICO binary structure', () => {
-    const dummyPng16 = new Uint8Array([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 1, 2, 3])
-    const dummyPng32 = new Uint8Array([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 4, 5, 6, 7])
+    const dummyPng16 = new Uint8Array([
+      0x89,
+      0x50,
+      0x4E,
+      0x47,
+      0x0D,
+      0x0A,
+      0x1A,
+      0x0A,
+      1,
+      2,
+      3,
+    ])
+    const dummyPng32 = new Uint8Array([
+      0x89,
+      0x50,
+      0x4E,
+      0x47,
+      0x0D,
+      0x0A,
+      0x1A,
+      0x0A,
+      4,
+      5,
+      6,
+      7,
+    ])
 
     const ico = buildIco([
       { width: 16, height: 16, bytes: dummyPng16 },

@@ -33,7 +33,13 @@ function readString(text: string, state: ScanState): string {
         state.index += 6
         continue
       }
-      const map: Record<string, string> = { n: '\n', t: '\t', r: '\r', b: '\b', f: '\f' }
+      const map: Record<string, string> = {
+        n: '\n',
+        t: '\t',
+        r: '\r',
+        b: '\b',
+        f: '\f',
+      }
       out += map[next ?? ''] ?? next ?? ''
       state.index += 2
       continue
@@ -57,7 +63,9 @@ function skipValue(text: string, state: ScanState): void {
   }
   if (ch === '{' || ch === '[') {
     const open = ch
-    const close = ch === '{' ? '}' : ']'
+    const close = ch === '{'
+      ? '}'
+      : ']'
     let depth = 0
     while (state.index < text.length) {
       const cur = text[state.index]!
@@ -96,7 +104,9 @@ export function findJsonPointerOffset(text: string, pointer: string): number | n
   skipWhitespace(text, state)
 
   if (segments.length === 0) {
-    return state.index < text.length ? state.index : null
+    return state.index < text.length
+      ? state.index
+      : null
   }
 
   for (let depth = 0; depth < segments.length; depth++) {

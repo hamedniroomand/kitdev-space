@@ -65,7 +65,10 @@ describe('jsonToCsv', () => {
   })
 
   it('converts array rows to CSV', () => {
-    expect(jsonToCsv([['a', 'b'], ['1', '2']], { delimiter: ';' })).toBe('a;b\n1;2')
+    expect(jsonToCsv([
+      ['a', 'b'],
+      ['1', '2'],
+    ], { delimiter: ';' })).toBe('a;b\n1;2')
   })
 })
 
@@ -89,7 +92,9 @@ describe('convertCsvJsonSql', () => {
       text: 'name\trole\nAda\tEngineer',
     })
     expect(result.delimiter).toBe('\t')
-    expect(JSON.parse(result.output)).toEqual([{ name: 'Ada', role: 'Engineer' }])
+    expect(JSON.parse(result.output)).toEqual([
+      { name: 'Ada', role: 'Engineer' },
+    ])
   })
 })
 

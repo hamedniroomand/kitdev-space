@@ -117,8 +117,18 @@ describe('evaluateGlobRules', () => {
   it('keeps the order when a negative pattern comes first', () => {
     const patterns = ['!**/*.test.ts', 'src/**/*.ts']
     expect(evaluateGlobRules(patterns, ['src/app.test.ts', 'docs/a.test.ts'])).toEqual([
-      { path: 'src/app.test.ts', included: true, decidedBy: 'src/**/*.ts', ruleIndex: 1 },
-      { path: 'docs/a.test.ts', included: false, decidedBy: '!**/*.test.ts', ruleIndex: 0 },
+      {
+        path: 'src/app.test.ts',
+        included: true,
+        decidedBy: 'src/**/*.ts',
+        ruleIndex: 1,
+      },
+      {
+        path: 'docs/a.test.ts',
+        included: false,
+        decidedBy: '!**/*.test.ts',
+        ruleIndex: 0,
+      },
     ])
   })
 
@@ -137,9 +147,24 @@ describe('evaluateGlobRules', () => {
   it('evaluates gitignore rules in order', () => {
     const patterns = ['# build output', 'dist/', '!dist/keep.txt']
     expect(evaluateGlobRules(patterns, ['dist/app.js', 'dist/keep.txt', 'src/app.ts'], 'gitignore')).toEqual([
-      { path: 'dist/app.js', included: true, decidedBy: 'dist/', ruleIndex: 1 },
-      { path: 'dist/keep.txt', included: false, decidedBy: '!dist/keep.txt', ruleIndex: 2 },
-      { path: 'src/app.ts', included: false, decidedBy: null, ruleIndex: -1 },
+      {
+        path: 'dist/app.js',
+        included: true,
+        decidedBy: 'dist/',
+        ruleIndex: 1,
+      },
+      {
+        path: 'dist/keep.txt',
+        included: false,
+        decidedBy: '!dist/keep.txt',
+        ruleIndex: 2,
+      },
+      {
+        path: 'src/app.ts',
+        included: false,
+        decidedBy: null,
+        ruleIndex: -1,
+      },
     ])
   })
 })

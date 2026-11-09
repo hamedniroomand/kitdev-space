@@ -45,7 +45,9 @@ async function handleRun() {
     }
   }
   catch (err) {
-    errorMsg.value = err instanceof Error ? err.message : 'Operation failed.'
+    errorMsg.value = err instanceof Error
+      ? err.message
+      : 'Operation failed.'
     output.value = ''
   }
   finally {

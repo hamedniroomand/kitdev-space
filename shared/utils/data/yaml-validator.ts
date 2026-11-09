@@ -97,7 +97,9 @@ export function validateYaml(
   }
 
   const documents = docs.map(doc => doc.toJS())
-  const parsed = documents.length === 1 ? documents[0] : documents
+  const parsed = documents.length === 1
+    ? documents[0]
+    : documents
 
   let formattedJson = ''
   try {
@@ -111,7 +113,9 @@ export function validateYaml(
       : 'This document cannot convert to JSON.'
     return {
       isValid: false,
-      errors: [{ message }],
+      errors: [
+        { message },
+      ],
       warnings,
       parsed,
       documents,

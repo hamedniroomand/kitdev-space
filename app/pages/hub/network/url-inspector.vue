@@ -13,7 +13,9 @@ useToolSeo('url-inspector')
 useToolQuery({ input })
 const { reportInput } = useToolInput()
 
-const rebuiltUrl = computed(() => (result.value ? buildUrlWithParams(result.value.href, rows.value) : ''))
+const rebuiltUrl = computed(() => (result.value
+  ? buildUrlWithParams(result.value.href, rows.value)
+  : ''))
 
 const activeParts = computed<UrlParts | null>(() => {
   if (status.value !== 'success' || !result.value) {
@@ -32,7 +34,9 @@ const displayParts = computed<UrlParts | null>(() => {
   if (!activeParts.value) {
     return null
   }
-  return revealCredentials.value ? activeParts.value : maskUrlParts(activeParts.value)
+  return revealCredentials.value
+    ? activeParts.value
+    : maskUrlParts(activeParts.value)
 })
 
 const hasCredentials = computed(() => Boolean(activeParts.value?.username || activeParts.value?.password))

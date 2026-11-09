@@ -69,7 +69,9 @@ const canDownloadFile = computed(
 )
 /** A data URL in the input holds a file. The tool never reads it as text. */
 const binaryInput = computed(
-  () => direction.value === 'decode' && isBinaryFormat.value ? parseDataUrl(input.value) : null,
+  () => direction.value === 'decode' && isBinaryFormat.value
+    ? parseDataUrl(input.value)
+    : null,
 )
 
 const conversion = computed(() => {
@@ -91,12 +93,17 @@ const conversion = computed(() => {
   catch (cause) {
     return {
       output: '',
-      error: cause instanceof Error ? cause.message : 'The operation failed.',
+      error: cause instanceof Error
+        ? cause.message
+        : 'The operation failed.',
     }
   }
 })
 
-useLiveTool(conversion, { runLocation: 'browser', option: () => format.value })
+useLiveTool(conversion, {
+  runLocation: 'browser',
+  option: () => format.value,
+})
 
 const output = computed(() => conversion.value.output)
 const error = computed(() => conversion.value.error)
@@ -146,7 +153,9 @@ function swap() {
     return
   }
   input.value = output.value
-  direction.value = direction.value === 'encode' ? 'decode' : 'encode'
+  direction.value = direction.value === 'encode'
+    ? 'decode'
+    : 'encode'
 }
 
 async function handleCopy() {
@@ -167,11 +176,15 @@ function handleDownloadFile() {
     const payload = decodeBinaryBase64(input.value)
     downloadBlob(
       `decoded.${payload.extension}`,
-      new Blob([payload.bytes.slice()], { type: payload.mime }),
+      new Blob([
+        payload.bytes.slice(),
+      ], { type: payload.mime }),
     )
   }
   catch (cause) {
-    downloadError.value = cause instanceof Error ? cause.message : 'The download failed.'
+    downloadError.value = cause instanceof Error
+      ? cause.message
+      : 'The download failed.'
   }
 }
 

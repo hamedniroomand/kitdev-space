@@ -6,7 +6,9 @@ test.describe('RegEx Tester Tool', () => {
     await gotoHydrated(page, '/hub/dev/regex-tester')
 
     const matchesSection = page.locator('section')
-      .filter({ has: page.getByRole('heading', { name: 'Matches', exact: true }) })
+      .filter({
+        has: page.getByRole('heading', { name: 'Matches', exact: true }),
+      })
 
     await test.step('tests default pattern against sample text', async () => {
       await expect(page.getByRole('heading', { level: 1 })).toBeVisible()

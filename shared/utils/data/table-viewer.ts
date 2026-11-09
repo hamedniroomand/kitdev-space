@@ -112,19 +112,29 @@ export function filterAndSortRows(
 
       if (valA === valB)
         return 0
-      if (valA === undefined || valA === null)
-        return sortAsc ? 1 : -1
-      if (valB === undefined || valB === null)
-        return sortAsc ? -1 : 1
+      if (valA === undefined || valA === null) {
+        return sortAsc
+          ? 1
+          : -1
+      }
+      if (valB === undefined || valB === null) {
+        return sortAsc
+          ? -1
+          : 1
+      }
 
       if (typeof valA === 'number' && typeof valB === 'number') {
-        return sortAsc ? valA - valB : valB - valA
+        return sortAsc
+          ? valA - valB
+          : valB - valA
       }
 
       const strA = String(valA).toLowerCase()
       const strB = String(valB).toLowerCase()
       const cmp = strA.localeCompare(strB, undefined, { numeric: true })
-      return sortAsc ? cmp : -cmp
+      return sortAsc
+        ? cmp
+        : -cmp
     })
   }
 

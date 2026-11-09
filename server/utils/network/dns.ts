@@ -84,7 +84,9 @@ async function resolveRaw(domain: string, type: DnsRecordType): Promise<unknown[
     case 'A':
     case 'AAAA': {
       const records = await dns.resolve(domain, type)
-      return Array.isArray(records) ? records : []
+      return Array.isArray(records)
+        ? records
+        : []
     }
     case 'CNAME':
       return dns.resolveCname(domain)
@@ -110,7 +112,9 @@ export async function lookupDns(domain: string, type: DnsRecordType): Promise<st
 
   try {
     const raw = await resolveRaw(host, type)
-    return type === 'A' || type === 'AAAA' ? addresses(raw) : raw as string[] | object[]
+    return type === 'A' || type === 'AAAA'
+      ? addresses(raw)
+      : raw as string[] | object[]
   }
   catch (cause) {
     if (isNoData(cause)) {

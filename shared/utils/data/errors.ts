@@ -9,7 +9,9 @@ export class DataError extends Error {
     message: string,
     options?: { line?: number, column?: number, position?: number, cause?: unknown },
   ) {
-    super(message, options?.cause ? { cause: options.cause } : undefined)
+    super(message, options?.cause
+      ? { cause: options.cause }
+      : undefined)
     this.name = 'DataError'
     this.line = options?.line
     this.column = options?.column
@@ -55,13 +57,22 @@ export function formatJsonError(cause: unknown, input: string): DataError {
     if (lezerPos) {
       return new DataError(
         `Invalid JSON.\n\nCheck the syntax near this point.\n\nLine ${lezerPos.line}, column ${lezerPos.column}.`,
-        { line: lezerPos.line, column: lezerPos.column, position: lezerPos.position, cause },
+        {
+          line: lezerPos.line,
+          column: lezerPos.column,
+          position: lezerPos.position,
+          cause,
+        },
       )
     }
 
     const err = cause as SyntaxError & { line?: number, column?: number, position?: number }
     const match = /position\s+(\d+)/i.exec(cause.message)
-    const position = match ? Number(match[1]) : (typeof err.position === 'number' ? err.position : undefined)
+    const position = match
+      ? Number(match[1])
+      : (typeof err.position === 'number'
+          ? err.position
+          : undefined)
     if (position !== undefined && !Number.isNaN(position)) {
       const { line, column } = positionToLineColumn(input, position)
       return new DataError(
@@ -84,7 +95,12 @@ export function formatJsonError(cause: unknown, input: string): DataError {
         const { line, column } = positionToLineColumn(input, snippetPos)
         return new DataError(
           `Invalid JSON.\n\nCheck the syntax near this point.\n\nLine ${line}, column ${column}.`,
-          { line, column, position: snippetPos, cause },
+          {
+            line,
+            column,
+            position: snippetPos,
+            cause,
+          },
         )
       }
     }

@@ -6,8 +6,12 @@
  * at that moment too. This module reads both when the entry chunk loads, which
  * happens first, so the values survive for `useToolQuery`.
  */
-const capturedHash = import.meta.client ? window.location.hash : ''
-const capturedSearch = import.meta.client ? window.location.search : ''
+const capturedHash = import.meta.client
+  ? window.location.hash
+  : ''
+const capturedSearch = import.meta.client
+  ? window.location.search
+  : ''
 
 export default defineNuxtPlugin(() => {
   return {

@@ -63,7 +63,9 @@ const EXIF_ITEMS = [
 ]
 
 const files = ref<File[]>([])
-const file = computed(() => (files.value.length === 1 ? files.value[0]! : null))
+const file = computed(() => (files.value.length === 1
+  ? files.value[0]!
+  : null))
 const isBatch = computed(() => files.value.length > 1)
 const audit = ref<AuditRow[]>([])
 const batchZip = ref<Blob | null>(null)
@@ -93,7 +95,9 @@ const visibleTags = computed(() => {
 
 const mapLink = computed(() => {
   const gps = meta.value?.gps
-  return gps ? `https://www.openstreetmap.org/?mlat=${gps.latitude}&mlon=${gps.longitude}#map=16/${gps.latitude}/${gps.longitude}` : null
+  return gps
+    ? `https://www.openstreetmap.org/?mlat=${gps.latitude}&mlon=${gps.longitude}#map=16/${gps.latitude}/${gps.longitude}`
+    : null
 })
 
 const baseName = computed(() => (file.value?.name ?? 'image').replace(/\.[^.]+$/, ''))
@@ -250,10 +254,14 @@ async function handleServerClean() {
     cleaned.value = {
       blob: result.blob,
       bytes: result.outputBytes,
-      removed: meta.value?.blocks.length ? meta.value.blocks : ['every metadata block'],
+      removed: meta.value?.blocks.length
+        ? meta.value.blocks
+        : ['every metadata block'],
       kept: [],
       path: 'server',
-      remainingTags: check.container === 'unknown' ? null : check.tags.length,
+      remainingTags: check.container === 'unknown'
+        ? null
+        : check.tags.length,
       name: `clean-${baseName.value}.${extension}`,
     }
     return 'cleaned'

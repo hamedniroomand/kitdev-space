@@ -125,7 +125,15 @@ describe('readImageMetadata with a WebP', () => {
 
 describe('readImageMetadata with a bad file', () => {
   it('returns an empty result and does not throw', () => {
-    const result = readImageMetadata(new Uint8Array([0xFF, 0xD8, 0xFF, 0xE1, 0xFF, 0xFF, 0x01]))
+    const result = readImageMetadata(new Uint8Array([
+      0xFF,
+      0xD8,
+      0xFF,
+      0xE1,
+      0xFF,
+      0xFF,
+      0x01,
+    ]))
     expect(result.container).toBe('jpeg')
     expect(result.tags).toEqual([])
     expect(result.gps).toBeNull()

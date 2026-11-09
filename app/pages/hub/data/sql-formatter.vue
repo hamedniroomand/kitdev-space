@@ -64,7 +64,9 @@ const { execute: workerFormat, isRunning: workerRunning, stop: stopWorker } = us
     return data.sqlText.replace(pattern, (match) => {
       const keyword = data.keywordCase === 'lower'
         ? match.toLowerCase()
-        : (data.keywordCase === 'preserve' ? match : match.toUpperCase())
+        : (data.keywordCase === 'preserve'
+            ? match
+            : match.toUpperCase())
       return `\n${keyword} `
     }).trim()
   },

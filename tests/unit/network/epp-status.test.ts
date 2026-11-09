@@ -25,7 +25,13 @@ describe('explainEppStatus', () => {
   })
 
   it('gives a sentence for every known code', () => {
-    const codes = ['ok', 'inactive', 'pendingDelete', 'autoRenewPeriod', 'serverUpdateProhibited']
+    const codes = [
+      'ok',
+      'inactive',
+      'pendingDelete',
+      'autoRenewPeriod',
+      'serverUpdateProhibited',
+    ]
     for (const code of codes) {
       expect(explainEppStatus(code).endsWith('.')).toBe(true)
     }

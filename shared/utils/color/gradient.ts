@@ -40,7 +40,9 @@ export function clampAngle(value: number): number {
     return 0
   }
   const next = Math.round(value) % 360
-  return next < 0 ? next + 360 : next
+  return next < 0
+    ? next + 360
+    : next
 }
 
 export function createGradientStop(color: string, position: number, id?: string): GradientStop {
@@ -64,7 +66,9 @@ export function formatGradientCss(options: GradientOptions): string {
     .map(stop => `${stopColorCss(stop)} ${clampPosition(stop.position)}%`)
     .join(', ')
 
-  const space = options.interpolation === 'oklch' ? ' in oklch' : ''
+  const space = options.interpolation === 'oklch'
+    ? ' in oklch'
+    : ''
 
   if (options.type === 'radial') {
     return `radial-gradient(circle${space}, ${stops})`
@@ -132,7 +136,9 @@ export function checkGradientTextContrast(
     ratio: contrastRatio(textColor, sample.color),
   }))
 
-  const worst = samples.reduce((min, sample) => (sample.ratio < min.ratio ? sample : min))
+  const worst = samples.reduce((min, sample) => (sample.ratio < min.ratio
+    ? sample
+    : min))
   return {
     textColor: parseColor(textColor).hex,
     worstRatio: worst.ratio,

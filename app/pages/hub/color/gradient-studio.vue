@@ -42,10 +42,14 @@ const gradient = computed(() => ({
 
 const { result: cssValue, error: cssError } = useLiveTool(
   () => formatGradientCss(gradient.value),
-  { option: () => type.value },
+  {
+    option: () => type.value,
+  },
 )
 
-const cssDeclaration = computed(() => (cssValue.value ? formatGradientDeclaration(gradient.value) : ''))
+const cssDeclaration = computed(() => (cssValue.value
+  ? formatGradientDeclaration(gradient.value)
+  : ''))
 
 const contrast = computed(() => {
   try {
@@ -74,7 +78,9 @@ function loadCss() {
     parseWarnings.value = parsed.warnings
   }
   catch (cause) {
-    parseError.value = cause instanceof Error ? cause.message : 'The gradient is not valid.'
+    parseError.value = cause instanceof Error
+      ? cause.message
+      : 'The gradient is not valid.'
   }
 }
 
@@ -95,7 +101,9 @@ function updateStopPosition(id: string, position: number) {
 function updateStopAlpha(id: string, alpha: number) {
   const stop = stops.value.find(item => item.id === id)
   if (stop) {
-    stop.alpha = Number.isFinite(alpha) ? Math.min(1, Math.max(0, alpha)) : 1
+    stop.alpha = Number.isFinite(alpha)
+      ? Math.min(1, Math.max(0, alpha))
+      : 1
   }
 }
 
@@ -128,7 +136,9 @@ watch([pointerX, pressed], () => {
 
 function addStop() {
   const last = stops.value[stops.value.length - 1]
-  const position = last ? Math.min(100, last.position + 10) : 50
+  const position = last
+    ? Math.min(100, last.position + 10)
+    : 50
   stops.value.push(createGradientStop('#f59e0b', position))
 }
 

@@ -195,7 +195,9 @@ function orientationSegment(orientation: number): Uint8Array {
 
 function stripJpeg(bytes: Uint8Array, options: StripPlan): StripResult {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength)
-  const parts: Uint8Array[] = [bytes.subarray(0, 2)]
+  const parts: Uint8Array[] = [
+    bytes.subarray(0, 2),
+  ]
   const removed: string[] = []
   const kept: string[] = []
   let offset = 2
@@ -246,7 +248,9 @@ function stripJpeg(bytes: Uint8Array, options: StripPlan): StripResult {
       }
       else {
         drop = 'EXIF'
-        const orientation = options.keepOrientation ? readTiffOrientation(view, payload + 6) : null
+        const orientation = options.keepOrientation
+          ? readTiffOrientation(view, payload + 6)
+          : null
         if (orientation !== null && orientation > 1 && orientation <= 8) {
           parts.push(orientationSegment(orientation))
           kept.push('Orientation')
@@ -284,7 +288,16 @@ function stripJpeg(bytes: Uint8Array, options: StripPlan): StripResult {
     parts.push(bytes.subarray(offset))
   }
 
-  return { bytes: join(parts), mime: 'image/jpeg', removed: [...new Set(removed)], kept: [...new Set(kept)] }
+  return {
+    bytes: join(parts),
+    mime: 'image/jpeg',
+    removed: [
+      ...new Set(removed),
+    ],
+    kept: [
+      ...new Set(kept),
+    ],
+  }
 }
 
 const CRC_TABLE = /* @__PURE__ */ (() => {
@@ -292,7 +305,9 @@ const CRC_TABLE = /* @__PURE__ */ (() => {
   for (let index = 0; index < 256; index += 1) {
     let value = index
     for (let bit = 0; bit < 8; bit += 1) {
-      value = value & 1 ? 0xEDB88320 ^ (value >>> 1) : value >>> 1
+      value = value & 1
+        ? 0xEDB88320 ^ (value >>> 1)
+        : value >>> 1
     }
     table[index] = value >>> 0
   }
@@ -309,7 +324,9 @@ function crc32(bytes: Uint8Array): number {
 
 function stripPng(bytes: Uint8Array, options: StripPlan): StripResult {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength)
-  const parts: Uint8Array[] = [bytes.subarray(0, 8)]
+  const parts: Uint8Array[] = [
+    bytes.subarray(0, 8),
+  ]
   const removed: string[] = []
   const kept: string[] = []
   let offset = 8
@@ -335,7 +352,9 @@ function stripPng(bytes: Uint8Array, options: StripPlan): StripResult {
     }
     else {
       const label = PNG_METADATA_CHUNKS[name]
-      const drop = label && (label === 'EXIF' ? true : options.comments)
+      const drop = label && (label === 'EXIF'
+        ? true
+        : options.comments)
       if (drop) {
         removed.push(label)
       }
@@ -351,7 +370,16 @@ function stripPng(bytes: Uint8Array, options: StripPlan): StripResult {
     }
   }
 
-  return { bytes: join(parts), mime: 'image/png', removed: [...new Set(removed)], kept: [...new Set(kept)] }
+  return {
+    bytes: join(parts),
+    mime: 'image/png',
+    removed: [
+      ...new Set(removed),
+    ],
+    kept: [
+      ...new Set(kept),
+    ],
+  }
 }
 
 function stripWebp(bytes: Uint8Array, options: StripPlan): StripResult {
@@ -361,7 +389,9 @@ function stripWebp(bytes: Uint8Array, options: StripPlan): StripResult {
   const kept: string[] = []
   let offset = 12
   // VP8X states which blocks the file holds. Clear the bit of each block that goes.
-  const clearFlags = (options.exif === 'all' ? 0x08 : 0) | (options.xmp ? 0x04 : 0)
+  const clearFlags = (options.exif === 'all'
+    ? 0x08
+    : 0) | (options.xmp ? 0x04 : 0)
 
   while (offset + 8 <= bytes.length) {
     const name = chunkName(bytes, offset)
@@ -376,7 +406,9 @@ function stripWebp(bytes: Uint8Array, options: StripPlan): StripResult {
     if (name === 'EXIF' && options.exif === 'gps') {
       // The chunk stays. Only the GPS block inside it goes.
       const chunk = bytes.slice(offset, end)
-      const start = matches(chunk, 8, 'Exif\0\0') ? 14 : 8
+      const start = matches(chunk, 8, 'Exif\0\0')
+        ? 14
+        : 8
       if (removeGpsIfd(chunk.subarray(start, 8 + length))) {
         removed.push('GPS')
       }
@@ -384,7 +416,9 @@ function stripWebp(bytes: Uint8Array, options: StripPlan): StripResult {
       parts.push(chunk)
     }
     else if ((name === 'EXIF' && options.exif === 'all') || (name === 'XMP ' && options.xmp)) {
-      removed.push(name === 'EXIF' ? 'EXIF' : 'XMP')
+      removed.push(name === 'EXIF'
+        ? 'EXIF'
+        : 'XMP')
     }
     else {
       const chunk = bytes.slice(offset, end)
@@ -404,7 +438,16 @@ function stripWebp(bytes: Uint8Array, options: StripPlan): StripResult {
   // The RIFF size counts every byte after the size field.
   new DataView(out.buffer).setUint32(4, out.length - 8, true)
 
-  return { bytes: out, mime: 'image/webp', removed: [...new Set(removed)], kept: [...new Set(kept)] }
+  return {
+    bytes: out,
+    mime: 'image/webp',
+    removed: [
+      ...new Set(removed),
+    ],
+    kept: [
+      ...new Set(kept),
+    ],
+  }
 }
 
 /** True when the metadata can be removed with no re-encode of the pixels. */

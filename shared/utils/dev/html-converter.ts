@@ -212,8 +212,12 @@ export function parseCssToJsxStyle(styleStr: string, dropped?: string[]): string
 function getParser(): DOMParser | null {
   // Some DOM environments bind the class to their window, so read it from there when it exists.
   const Parser = (globalThis as { window?: { DOMParser?: typeof DOMParser } }).window?.DOMParser
-    ?? (typeof DOMParser === 'undefined' ? undefined : DOMParser)
-  return Parser ? new Parser() : null
+    ?? (typeof DOMParser === 'undefined'
+      ? undefined
+      : DOMParser)
+  return Parser
+    ? new Parser()
+    : null
 }
 
 /** True when the runtime has the `DOMParser` that the conversion needs. */
@@ -279,7 +283,9 @@ function collectIds(
       continue
     }
     const element = node as Element
-    const nextRoot = element.localName === 'svg' ? element : root
+    const nextRoot = element.localName === 'svg'
+      ? element
+      : root
     const id = element.getAttribute('id')
 
     if (id) {
@@ -310,7 +316,9 @@ function rewriteRefs(name: string, value: string, refs: Map<string, string>): st
     /url\(\s*(['"]?)#([^'")\s]+)\1\s*\)/g,
     (match, quote: string, id: string) => {
       const next = refs.get(id)
-      return next ? `url(${quote}#${next}${quote})` : match
+      return next
+        ? `url(${quote}#${next}${quote})`
+        : match
     },
   )
 
@@ -331,7 +339,9 @@ function rewriteRefs(name: string, value: string, refs: Map<string, string>): st
         }
         const id = part.slice(0, dot).trim()
         const next = refs.get(id)
-        return next ? part.replace(id, next) : part
+        return next
+          ? part.replace(id, next)
+          : part
       })
       .join(';')
   }
@@ -414,7 +424,9 @@ function serializeElement(
 
   if (tag === 'script') {
     const src = element.getAttribute('src')
-    addNote(ctx, 'script', src ? `<script src="${src}">` : '<script> block')
+    addNote(ctx, 'script', src
+      ? `<script src="${src}">`
+      : '<script> block')
     return ''
   }
 
@@ -422,7 +434,9 @@ function serializeElement(
     return ''
   }
 
-  const nextRefs = tag === 'svg' ? (renames.get(element) ?? new Map<string, string>()) : refs
+  const nextRefs = tag === 'svg'
+    ? (renames.get(element) ?? new Map<string, string>())
+    : refs
   const parts: string[] = []
 
   for (const attr of Array.from(element.attributes)) {
@@ -450,12 +464,16 @@ function serializeElement(
     parts.unshift(extraAttrs)
   }
 
-  const attrText = parts.length ? ` ${parts.join(' ')}` : ''
+  const attrText = parts.length
+    ? ` ${parts.join(' ')}`
+    : ''
   const children = Array.from(element.childNodes)
 
   if (tag === 'style') {
     const css = element.textContent ?? ''
-    const body = ctx.target === 'jsx' ? `{\`${escapeTemplateLiteral(css)}\`}` : css
+    const body = ctx.target === 'jsx'
+      ? `{\`${escapeTemplateLiteral(css)}\`}`
+      : css
     return `<${tag}${attrText}>${body}</${tag}>`
   }
 
@@ -526,7 +544,10 @@ function convert(html: string, options: ConvertInternalOptions): ConvertInternal
   }
 
   // A leading <style>, <title>, or <meta> lands in the head, so read both.
-  const roots = [...Array.from(doc.head.childNodes), ...Array.from(doc.body.childNodes)]
+  const roots = [
+    ...Array.from(doc.head.childNodes),
+    ...Array.from(doc.body.childNodes),
+  ]
   const elementRoots = roots.filter(node => node.nodeType === ELEMENT_NODE) as Element[]
   // The props spread and the title prop belong to the first root of the body.
   const firstRoot = elementRoots.find(element => element.parentElement === doc.body)
@@ -541,7 +562,9 @@ function convert(html: string, options: ConvertInternalOptions): ConvertInternal
   const ctx: WalkContext = {
     target: options.target,
     notes,
-    titleRoot: options.titleProp && isSvgRoot ? firstRoot : null,
+    titleRoot: options.titleProp && isSvgRoot
+      ? firstRoot
+      : null,
   }
 
   const extraAttrs = options.spreadProps ? '{...props}' : ''
@@ -566,7 +589,9 @@ function convert(html: string, options: ConvertInternalOptions): ConvertInternal
   const needsFragment = options.target === 'jsx' && elementRoots.length > 1
 
   return {
-    code: needsFragment ? `<>${code}</>` : code,
+    code: needsFragment
+      ? `<>${code}</>`
+      : code,
     notes,
     titleApplied: ctx.titleRoot !== null,
   }
@@ -586,7 +611,9 @@ export function convertHtmlToJsx(html: string, options: JsxConvertOptions = {}):
   const name = options.componentName?.trim() || 'MyComponent'
   const indented = code
     .split('\n')
-    .map(line => (line ? `    ${line}` : ''))
+    .map(line => (line
+      ? `    ${line}`
+      : ''))
     .join('\n')
 
   // Only an SVG root gets the title element, so a different root takes no title parameter.
@@ -609,7 +636,9 @@ export function convertHtmlToVue(html: string, options: VueConvertOptions = {}):
 
   const indented = code
     .split('\n')
-    .map(line => (line ? `  ${line}` : ''))
+    .map(line => (line
+      ? `  ${line}`
+      : ''))
     .join('\n')
 
   return {

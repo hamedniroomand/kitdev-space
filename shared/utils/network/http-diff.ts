@@ -35,7 +35,9 @@ interface ReportLike {
 }
 
 function asReportLike(value: unknown): ReportLike | null {
-  return typeof value === 'object' && value !== null ? value as ReportLike : null
+  return typeof value === 'object' && value !== null
+    ? value as ReportLike
+    : null
 }
 
 /**
@@ -69,14 +71,23 @@ export function parseHttpReport(text: string): HttpReport | null {
 }
 
 export function diffHttpReports(previous: HttpReport, current: HttpReport): HttpReportDiff {
-  const before = new Map(previous.security.findings.map(item => [keyOf(item), item]))
-  const after = new Map(current.security.findings.map(item => [keyOf(item), item]))
+  const before = new Map(previous.security.findings.map(item => [
+    keyOf(item),
+    item,
+  ]))
+  const after = new Map(current.security.findings.map(item => [
+    keyOf(item),
+    item,
+  ]))
 
   const added: SecurityFinding[] = []
   const resolved: SecurityFinding[] = []
   const changed: FindingChange[] = []
 
-  for (const key of new Set([...before.keys(), ...after.keys()])) {
+  for (const key of new Set([
+    ...before.keys(),
+    ...after.keys(),
+  ])) {
     const past = before.get(key)
     const now = after.get(key)
 

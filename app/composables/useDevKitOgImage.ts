@@ -30,7 +30,9 @@ export function useKitDevOgImage(props: KitDevOgImageProps) {
         return new URL(url, String(site.url || 'https://kitdev.space')).pathname
       }
       catch {
-        return url.startsWith('/') ? url : `/${url}`
+        return url.startsWith('/')
+          ? url
+          : `/${url}`
       }
     })
     prerenderRoutes(paths)

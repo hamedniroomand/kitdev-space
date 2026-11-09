@@ -399,8 +399,17 @@ export function getEscapeFormats(ch: string): EscapeFormats {
   const jsCodePoint = `\\u{${hexLower}}`
   const htmlEntity = `&#x${hexUpper};`
   const css = `\\${hex4}`
-  const python = cp <= 0xFFFF ? `\\u${hexUpper.padStart(4, '0')}` : `\\U${hexUpper.padStart(8, '0')}`
+  const python = cp <= 0xFFFF
+    ? `\\u${hexUpper.padStart(4, '0')}`
+    : `\\U${hexUpper.padStart(8, '0')}`
   const url = encodeURIComponent(ch)
 
-  return { jsUnicode, jsCodePoint, htmlEntity, css, python, url }
+  return {
+    jsUnicode,
+    jsCodePoint,
+    htmlEntity,
+    css,
+    python,
+    url,
+  }
 }

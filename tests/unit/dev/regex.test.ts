@@ -117,12 +117,16 @@ describe('parseRegexTestCases', () => {
     const json = serializeRegexTestCases({
       pattern: '\\d+',
       flags: 'g',
-      cases: [{ text: '42', expectMatch: true }],
+      cases: [
+        { text: '42', expectMatch: true },
+      ],
     })
     const { file, error } = parseRegexTestCases(json)
     expect(error).toBeNull()
     expect(file?.pattern).toBe('\\d+')
-    expect(file?.cases).toEqual([{ text: '42', expectMatch: true }])
+    expect(file?.cases).toEqual([
+      { text: '42', expectMatch: true },
+    ])
   })
 
   it('reports a malformed file', () => {

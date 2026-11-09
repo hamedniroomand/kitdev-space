@@ -23,7 +23,9 @@ describe('toStrictJson', () => {
   it('removes a trailing comma in an object and an array', () => {
     expect(round('{ "a": 1, }')).toEqual({ a: 1 })
     expect(round('[1, 2, ]')).toEqual([1, 2])
-    expect(round('{ "a": [1,], }')).toEqual({ a: [1] })
+    expect(round('{ "a": [1,], }')).toEqual({
+      a: [1],
+    })
   })
 
   it('removes a trailing comma that a comment follows', () => {

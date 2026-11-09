@@ -65,10 +65,16 @@ export function inferJsonShape(
     }
 
     if (objects.length > 0) {
-      nodes.push({ kind: 'shape', shape: mergeShape(objects, path, fromArray) })
+      nodes.push({
+        kind: 'shape',
+        shape: mergeShape(objects, path, fromArray),
+      })
     }
     if (sawArray) {
-      nodes.push({ kind: 'array', items: typesOf(arrayItems, path, true) })
+      nodes.push({
+        kind: 'array',
+        items: typesOf(arrayItems, path, true),
+      })
     }
     return nodes
   }
@@ -99,20 +105,32 @@ export function inferJsonShape(
     if (existing) {
       return existing
     }
-    const shape: Shape = { path, fromArray, fields, signature, name: '' }
+    const shape: Shape = {
+      path,
+      fromArray,
+      fields,
+      signature,
+      name: '',
+    }
     shapesBySignature.set(signature, shape)
     return shape
   }
 
   const rootTypes = typesOf([value], [rootName], false)
-  const rootShape = rootTypes.length === 1 && rootTypes[0]!.kind === 'shape' ? rootTypes[0]!.shape : null
+  const rootShape = rootTypes.length === 1 && rootTypes[0]!.kind === 'shape'
+    ? rootTypes[0]!.shape
+    : null
 
-  assignNames([...shapesBySignature.values()], rootShape, rootName)
+  assignNames([
+    ...shapesBySignature.values(),
+  ], rootShape, rootName)
 
   return {
     rootTypes,
     rootShape,
-    shapes: [...shapesBySignature.values()],
+    shapes: [
+      ...shapesBySignature.values(),
+    ],
   }
 }
 
@@ -193,7 +211,9 @@ export function primitiveText(value: unknown): string {
 }
 
 export function fieldName(key: string): string {
-  return /^[a-z_$][\w$]*$/i.test(key) ? key : `'${key.replace(/'/g, '\\\'')}'`
+  return /^[a-z_$][\w$]*$/i.test(key)
+    ? key
+    : `'${key.replace(/'/g, '\\\'')}'`
 }
 
 export function pascalCase(value: string): string {
@@ -202,7 +222,9 @@ export function pascalCase(value: string): string {
     return 'Field'
   }
   const name = parts.map(part => part.charAt(0).toUpperCase() + part.slice(1)).join('')
-  return /^\d/.test(name) ? `_${name}` : name
+  return /^\d/.test(name)
+    ? `_${name}`
+    : name
 }
 
 export function toCamelCase(value: string): string {

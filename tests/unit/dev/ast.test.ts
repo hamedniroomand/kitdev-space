@@ -107,7 +107,9 @@ describe('collectImportSpecifiers', () => {
           expression: {
             type: 'CallExpression',
             callee: { type: 'Identifier', name: 'require' },
-            arguments: [{ type: 'Literal', value: 'node:fs' }],
+            arguments: [
+              { type: 'Literal', value: 'node:fs' },
+            ],
           },
         },
       ],

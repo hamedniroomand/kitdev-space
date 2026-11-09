@@ -11,7 +11,9 @@ function reportOf(headers: Record<string, string>, checkedAt = '2026-01-01T00:00
     statusText: 'OK',
     headers,
     url: 'https://example.com/',
-    hops: [{ url: 'https://example.com/', status: 200 }],
+    hops: [
+      { url: 'https://example.com/', status: 200 },
+    ],
     security: analyzeSecurityHeaders(headers),
     checkedAt,
     requestedUrl: 'https://example.com',
@@ -26,7 +28,9 @@ function findingOf(id: string, level: SecurityFinding['level'], value: string | 
     header: id.toUpperCase(),
     title: `${id} title`,
     detail: 'detail',
-    fix: level === 'ok' ? null : 'fix it',
+    fix: level === 'ok'
+      ? null
+      : 'fix it',
     present: value !== null,
     value,
   }
@@ -144,8 +148,12 @@ describe('parseHttpReport', () => {
 
 describe('diffHttpReports', () => {
   it('lists a new problem as added', () => {
-    const previous = reportOfFindings([findingOf('csp', 'ok', 'default-src \'self\'')])
-    const current = reportOfFindings([findingOf('csp', 'error')])
+    const previous = reportOfFindings([
+      findingOf('csp', 'ok', 'default-src \'self\''),
+    ])
+    const current = reportOfFindings([
+      findingOf('csp', 'error'),
+    ])
 
     const diff = diffHttpReports(previous, current)
 
@@ -155,8 +163,12 @@ describe('diffHttpReports', () => {
   })
 
   it('lists a fixed problem as resolved', () => {
-    const previous = reportOfFindings([findingOf('hsts', 'error')])
-    const current = reportOfFindings([findingOf('hsts', 'ok', 'max-age=31536000')])
+    const previous = reportOfFindings([
+      findingOf('hsts', 'error'),
+    ])
+    const current = reportOfFindings([
+      findingOf('hsts', 'ok', 'max-age=31536000'),
+    ])
 
     const diff = diffHttpReports(previous, current)
 
@@ -165,8 +177,12 @@ describe('diffHttpReports', () => {
   })
 
   it('lists a level change as modified', () => {
-    const previous = reportOfFindings([findingOf('csp', 'error')])
-    const current = reportOfFindings([findingOf('csp', 'warning', 'default-src *')])
+    const previous = reportOfFindings([
+      findingOf('csp', 'error'),
+    ])
+    const current = reportOfFindings([
+      findingOf('csp', 'warning', 'default-src *'),
+    ])
 
     const diff = diffHttpReports(previous, current)
 
@@ -176,8 +192,12 @@ describe('diffHttpReports', () => {
   })
 
   it('lists a value change as modified', () => {
-    const previous = reportOfFindings([findingOf('hsts', 'ok', 'max-age=31536000')])
-    const current = reportOfFindings([findingOf('hsts', 'ok', 'max-age=63072000')])
+    const previous = reportOfFindings([
+      findingOf('hsts', 'ok', 'max-age=31536000'),
+    ])
+    const current = reportOfFindings([
+      findingOf('hsts', 'ok', 'max-age=63072000'),
+    ])
 
     const diff = diffHttpReports(previous, current)
 
@@ -197,8 +217,12 @@ describe('diffHttpReports', () => {
   })
 
   it('gives the score delta and the prior context', () => {
-    const previous = reportOfFindings([findingOf('csp', 'error')], 40)
-    const current = reportOfFindings([findingOf('csp', 'ok', 'default-src \'self\'')], 90)
+    const previous = reportOfFindings([
+      findingOf('csp', 'error'),
+    ], 40)
+    const current = reportOfFindings([
+      findingOf('csp', 'ok', 'default-src \'self\''),
+    ], 90)
 
     const diff = diffHttpReports(previous, current)
 
@@ -209,7 +233,9 @@ describe('diffHttpReports', () => {
 
   it('treats a check that only the new report has as added', () => {
     const previous = reportOfFindings([])
-    const current = reportOfFindings([findingOf('coop', 'warning')])
+    const current = reportOfFindings([
+      findingOf('coop', 'warning'),
+    ])
 
     expect(diffHttpReports(previous, current).added.map(item => item.id)).toEqual(['coop'])
   })

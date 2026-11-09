@@ -25,7 +25,9 @@ onMounted(() => {
   if (restoreInputFromHash() || input.value !== DEFAULT_INPUT || !options.ip) {
     return
   }
-  input.value = `${options.ip}/${options.ip.includes(':') ? 64 : 24}`
+  input.value = `${options.ip}/${options.ip.includes(':')
+    ? 64
+    : 24}`
 })
 
 const presets = [
@@ -65,7 +67,9 @@ const calculation = computed(() => {
   catch (err) {
     return {
       data: null,
-      error: err instanceof Error ? err.message : 'Invalid CIDR notation.',
+      error: err instanceof Error
+        ? err.message
+        : 'Invalid CIDR notation.',
     }
   }
 })
@@ -86,7 +90,9 @@ const stats = computed<StatItem[]>(() => {
   const scope: StatItem = {
     label: 'Scope',
     value: SCOPE_LABEL[data.scope],
-    color: data.scope === 'public' ? 'success' : 'warning',
+    color: data.scope === 'public'
+      ? 'success'
+      : 'warning',
   }
 
   if (data.version === 6) {
@@ -159,7 +165,9 @@ const ipCheck = computed(() => {
     const inside = cidrContainsIp(input.value, address)
     return {
       inside,
-      text: inside ? `${address} is inside ${block}.` : `${address} is outside ${block}.`,
+      text: inside
+        ? `${address} is inside ${block}.`
+        : `${address} is outside ${block}.`,
       error: null,
     }
   }
@@ -167,7 +175,9 @@ const ipCheck = computed(() => {
     return {
       inside: false,
       text: null,
-      error: err instanceof Error ? err.message : 'Invalid IP address.',
+      error: err instanceof Error
+        ? err.message
+        : 'Invalid IP address.',
     }
   }
 })
@@ -187,7 +197,9 @@ const overlap = computed(() => {
       overlaps: false,
       sharedAddresses: '0',
       text: null,
-      error: err instanceof Error ? err.message : 'Invalid CIDR notation.',
+      error: err instanceof Error
+        ? err.message
+        : 'Invalid CIDR notation.',
     }
   }
 })

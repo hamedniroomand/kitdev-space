@@ -134,7 +134,15 @@ describe('detectArchiveFormat', () => {
 
   it('reports bzip2 and xz as unsupported', () => {
     const bz2 = new Uint8Array([0x42, 0x5A, 0x68, 0x39, 0x31])
-    const xz = new Uint8Array([0xFD, 0x37, 0x7A, 0x58, 0x5A, 0x00, 0x00])
+    const xz = new Uint8Array([
+      0xFD,
+      0x37,
+      0x7A,
+      0x58,
+      0x5A,
+      0x00,
+      0x00,
+    ])
     expect(() => detectArchiveFormat(bz2)).toThrow(/Unsupported compression format/)
     expect(() => detectArchiveFormat(xz)).toThrow(/Unsupported compression format/)
     expect(() => openArchive(bz2)).toThrow(/Unsupported compression format/)
@@ -185,7 +193,9 @@ describe('buildPathTree', () => {
   })
 
   it('builds a folder that the archive does not list', () => {
-    const tree = buildPathTree([{ path: 'a/b/c.txt', size: 3, type: 'file' }])
+    const tree = buildPathTree([
+      { path: 'a/b/c.txt', size: 3, type: 'file' },
+    ])
     expect(tree).toHaveLength(1)
     expect(tree[0]?.name).toBe('a')
     expect(tree[0]?.type).toBe('directory')
@@ -242,7 +252,9 @@ describe('packEntries', () => {
   })
 
   it('rejects a selection of more than 25 MB', () => {
-    expect(() => packEntries({ 'big.bin': new Uint8Array(26 * 1024 * 1024) }))
+    expect(() => packEntries({
+      'big.bin': new Uint8Array(26 * 1024 * 1024),
+    }))
       .toThrow(/too large/)
   })
 })

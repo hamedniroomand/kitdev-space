@@ -61,7 +61,12 @@ export async function processImageInBrowser(
     throw new Error('The browser cannot decode this image.')
   }
 
-  const crop = options.cropRect ?? { x: 0, y: 0, width: bitmap.width, height: bitmap.height }
+  const crop = options.cropRect ?? {
+    x: 0,
+    y: 0,
+    width: bitmap.width,
+    height: bitmap.height,
+  }
 
   let destWidth = crop.width
   let destHeight = crop.height

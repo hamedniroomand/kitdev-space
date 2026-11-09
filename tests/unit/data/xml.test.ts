@@ -5,7 +5,9 @@ import { mixedContentXml, namespaceXml, repeatedChildrenXml } from './fixtures-x
 
 // The parser reads `DOMParser` from `window`. A happy-dom window gives the
 // tests one. happy-dom flags CDATA as an error, so the browser test covers it.
-Object.assign(globalThis, { window: new Window() })
+Object.assign(globalThis, {
+  window: new Window(),
+})
 
 describe('stringifyXml', () => {
   it('uses the single key as the root and wraps several keys in root', () => {
@@ -17,14 +19,22 @@ describe('stringifyXml', () => {
   })
 
   it('writes arrays as repeated elements and invalid keys as item elements', () => {
-    const xml = stringifyXml({ dependencies: { '@nuxt/ui': '^4.11.0', 'vue': '^3.5.42', 'tags': ['a', 'b'] } })
+    const xml = stringifyXml({
+      dependencies: {
+        '@nuxt/ui': '^4.11.0',
+        'vue': '^3.5.42',
+        'tags': ['a', 'b'],
+      },
+    })
     expect(xml).toContain('<item key="@nuxt/ui">^4.11.0</item>')
     expect(xml).toContain('<vue>^3.5.42</vue>')
     expect(xml).toContain('<tags>a</tags>\n  <tags>b</tags>')
   })
 
   it('writes attributes, text, nulls, and escapes special characters', () => {
-    const xml = stringifyXml({ note: { '@lang': 'en', '#text': 'a < b & "c"', 'empty': null } })
+    const xml = stringifyXml({
+      note: { '@lang': 'en', '#text': 'a < b & "c"', 'empty': null },
+    })
     expect(xml).toContain('<note lang="en">')
     expect(xml).toContain('a &lt; b &amp; "c"')
     expect(xml).toContain('<empty/>')
@@ -51,7 +61,9 @@ describe('parseXml', () => {
 
   it('drops comments and the declaration and decodes entities', () => {
     const value = parseXml('<?xml version="1.0"?><!-- c --><doc><code>a &lt; b &amp; c</code></doc>')
-    expect(value).toEqual({ doc: { code: 'a < b & c' } })
+    expect(value).toEqual({
+      doc: { code: 'a < b & c' },
+    })
   })
 
   it('reports a syntax error as a DataError', () => {
@@ -59,11 +71,18 @@ describe('parseXml', () => {
   })
 
   it('round-trips the package.json shape', () => {
-    const input = { name: 'kitdev', scripts: { 'test:watch': 'vitest' }, deps: { '@nuxt/ui': '4' }, ready: true }
+    const input = {
+      name: 'kitdev',
+      scripts: { 'test:watch': 'vitest' },
+      deps: { '@nuxt/ui': '4' },
+      ready: true,
+    }
     const back = parseXml(stringifyXml(input)) as { root: Record<string, unknown> }
     expect(back.root.name).toBe('kitdev')
     expect(back.root.ready).toBe('true')
-    expect(back.root.scripts).toEqual({ item: { '@key': 'test:watch', '#text': 'vitest' } })
+    expect(back.root.scripts).toEqual({
+      item: { '@key': 'test:watch', '#text': 'vitest' },
+    })
   })
 })
 

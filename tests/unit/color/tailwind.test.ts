@@ -17,7 +17,9 @@ const TAILWIND_BLUE = {
 function toLab(hex: string): [number, number, number] {
   const channel = (value: number) => {
     const part = value / 255
-    return part <= 0.04045 ? part / 12.92 : ((part + 0.055) / 1.055) ** 2.4
+    return part <= 0.04045
+      ? part / 12.92
+      : ((part + 0.055) / 1.055) ** 2.4
   }
   const r = channel(Number.parseInt(hex.slice(1, 3), 16))
   const g = channel(Number.parseInt(hex.slice(3, 5), 16))
@@ -25,7 +27,9 @@ function toLab(hex: string): [number, number, number] {
   const x = (0.4124564 * r + 0.3575761 * g + 0.1804375 * b) / 0.95047
   const y = 0.2126729 * r + 0.7151522 * g + 0.0721750 * b
   const z = (0.0193339 * r + 0.1191920 * g + 0.9503041 * b) / 1.08883
-  const f = (value: number) => value > 0.008856 ? Math.cbrt(value) : 7.787 * value + 16 / 116
+  const f = (value: number) => value > 0.008856
+    ? Math.cbrt(value)
+    : 7.787 * value + 16 / 116
   return [116 * f(y) - 16, 500 * (f(x) - f(y)), 200 * (f(y) - f(z))]
 }
 

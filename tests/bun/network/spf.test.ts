@@ -35,9 +35,16 @@ describe('traceSpf', () => {
           'one.example.net': ['v=spf1 ip4:203.0.113.0/24 a:mail.example.net -all'],
           'two.example.net': ['v=spf1 ip6:2001:db8::/32 mx -all'],
         },
-        a: { 'mail.example.net': ['198.51.100.7'], 'mx1.example.net': ['198.51.100.8'] },
-        aaaa: { 'mail.example.net': ['2001:db8::1'] },
-        mx: { 'two.example.net': ['mx1.example.net'] },
+        a: {
+          'mail.example.net': ['198.51.100.7'],
+          'mx1.example.net': ['198.51.100.8'],
+        },
+        aaaa: {
+          'mail.example.net': ['2001:db8::1'],
+        },
+        mx: {
+          'two.example.net': ['mx1.example.net'],
+        },
       }),
     })
 
@@ -56,12 +63,16 @@ describe('traceSpf', () => {
   })
 
   it('stops at the RFC 7208 limit of 10 lookups', async () => {
-    const txt: Fixture = { 'example.com': ['v=spf1 include:hop0.example.net -all'] }
+    const txt: Fixture = {
+      'example.com': ['v=spf1 include:hop0.example.net -all'],
+    }
     for (let index = 0; index < 20; index += 1) {
       txt[`hop${index}.example.net`] = [`v=spf1 include:hop${index + 1}.example.net -all`]
     }
 
-    const trace = await traceSpf('example.com', { resolvers: resolvers({ txt }) })
+    const trace = await traceSpf('example.com', {
+      resolvers: resolvers({ txt }),
+    })
 
     expect(trace.lookupCount).toBe(10)
     expect(trace.lookupLimit).toBe(10)

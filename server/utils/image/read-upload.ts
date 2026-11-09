@@ -16,7 +16,9 @@ function fieldText(data: Buffer | string | undefined): string | undefined {
   if (data == null) {
     return undefined
   }
-  return typeof data === 'string' ? data : new TextDecoder().decode(data)
+  return typeof data === 'string'
+    ? data
+    : new TextDecoder().decode(data)
 }
 
 export async function readImageForm(event: H3Event): Promise<{
@@ -56,7 +58,9 @@ export async function readImageForm(event: H3Event): Promise<{
   if (!raw) {
     throw new ImageError('Choose an image file before you run the tool.')
   }
-  const bytes = raw instanceof Uint8Array ? raw : new Uint8Array(raw)
+  const bytes = raw instanceof Uint8Array
+    ? raw
+    : new Uint8Array(raw)
   assertImageSize(bytes.byteLength)
 
   const query = getQuery(event)

@@ -47,7 +47,9 @@ export function rasterizeSvg(
 
   try {
     const buf = Buffer.from(input.buffer, input.byteOffset, input.byteLength)
-    const base = new Resvg(buf, { font: resvgFontOpts() })
+    const base = new Resvg(buf, {
+      font: resvgFontOpts(),
+    })
     const srcW = base.width
     const srcH = base.height
     if (!(srcW > 0 && srcH > 0)) {
@@ -88,7 +90,10 @@ export function rasterizeSvg(
     const renderer
       = fitTo.mode === 'original'
         ? base
-        : new Resvg(buf, { font: resvgFontOpts(), fitTo })
+        : new Resvg(buf, {
+            font: resvgFontOpts(),
+            fitTo,
+          })
 
     const pngData = renderer.render()
     return new Uint8Array(pngData.asPng())

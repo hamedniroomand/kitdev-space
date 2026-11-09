@@ -47,7 +47,9 @@ export function useSqliteStudio() {
 
   const activeTableInfo = computed(() => tables.value.find(table => table.name === activeTable.value) ?? null)
   const textColumns = computed(() => activeTableInfo.value?.columns.filter(isTextColumn).map(column => column.name) ?? [])
-  const snippets = computed(() => (activeTableInfo.value ? tableSnippets(activeTableInfo.value.name, activeTableInfo.value.columns) : []))
+  const snippets = computed(() => (activeTableInfo.value
+    ? tableSnippets(activeTableInfo.value.name, activeTableInfo.value.columns)
+    : []))
 
   function post(message: Parameters<Worker['postMessage']>[0]) {
     if (!worker) {
@@ -193,7 +195,10 @@ export function useSqliteStudio() {
     if (!clean) {
       return
     }
-    history.value = [clean, ...history.value.filter(item => item !== clean)].slice(0, HISTORY_LIMIT)
+    history.value = [
+      clean,
+      ...history.value.filter(item => item !== clean),
+    ].slice(0, HISTORY_LIMIT)
   }
 
   /** Runs the SQL in the editor. A query that the bar did not build turns the filters off. */
@@ -250,15 +255,25 @@ export function useSqliteStudio() {
       return
     }
     const offsetOnly = Object.keys(patch).every(key => key === 'offset')
-    tableQuery.value = { ...tableQuery.value, ...patch, ...(offsetOnly ? {} : { offset: 0 }) }
+    tableQuery.value = {
+      ...tableQuery.value,
+      ...patch,
+      ...(offsetOnly
+        ? {}
+        : { offset: 0 }),
+    }
     selectedRowid.value = null
     runTableQuery()
   }
 
   function toggleSort(column: string) {
     const current: TableSort | null = tableQuery.value?.sort ?? null
-    const direction = current?.column === column && current.direction === 'asc' ? 'desc' : 'asc'
-    updateTableQuery({ sort: { column, direction } })
+    const direction = current?.column === column && current.direction === 'asc'
+      ? 'desc'
+      : 'asc'
+    updateTableQuery({
+      sort: { column, direction },
+    })
   }
 
   function backToTable() {
@@ -268,7 +283,13 @@ export function useSqliteStudio() {
   }
 
   function updateCell(table: string, rowid: number, column: string, value: SqlValue) {
-    post({ type: 'UPDATE_CELL', table, rowid, column, value })
+    post({
+      type: 'UPDATE_CELL',
+      table,
+      rowid,
+      column,
+      value,
+    })
   }
 
   function insertRow() {
@@ -296,7 +317,9 @@ export function useSqliteStudio() {
   }
 
   function selectRow(rowid: number | null) {
-    selectedRowid.value = selectedRowid.value === rowid ? null : rowid
+    selectedRowid.value = selectedRowid.value === rowid
+      ? null
+      : rowid
   }
 
   const csvImport = ref<{
@@ -326,7 +349,9 @@ export function useSqliteStudio() {
       }
     }
     catch (cause) {
-      error.value = cause instanceof Error ? cause.message : 'Cannot read that CSV file.'
+      error.value = cause instanceof Error
+        ? cause.message
+        : 'Cannot read that CSV file.'
     }
   }
 
@@ -355,7 +380,9 @@ export function useSqliteStudio() {
       columns: columns.map(column => column.name),
       rows: pending.rows,
       booleanColumns: columns
-        .map((column, index) => (column.type === 'boolean' ? index : -1))
+        .map((column, index) => (column.type === 'boolean'
+          ? index
+          : -1))
         .filter(index => index >= 0),
     })
   }
@@ -402,7 +429,10 @@ export function useSqliteStudio() {
     pendingEdits.value = 0
 
     if (reloadPlan === 'bytes' && restoreFrom) {
-      post({ type: 'INIT_DB', bytes: restoreFrom.slice() })
+      post({
+        type: 'INIT_DB',
+        bytes: restoreFrom.slice(),
+      })
       error.value = 'The query was stopped. The database reloaded from the last saved state.'
     }
     else if (reloadPlan === 'sample') {

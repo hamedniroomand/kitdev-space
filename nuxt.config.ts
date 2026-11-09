@@ -11,12 +11,18 @@ const umamiWebsiteId = process.env.NUXT_PUBLIC_SCRIPTS_UMAMI_ANALYTICS_WEBSITE_I
 const umamiHostUrl = process.env.NUXT_PUBLIC_UMAMI_HOST_URL || ''
 const sentryDsn = process.env.NUXT_PUBLIC_SENTRY_DSN || ''
 const sentryEnvironment = process.env.VERCEL_ENV || process.env.NODE_ENV || 'development'
-const sentryOrigin = sentryDsn ? new URL(sentryDsn).origin : ''
+const sentryOrigin = sentryDsn
+  ? new URL(sentryDsn).origin
+  : ''
 
 const legacyRouteRules: Record<string, { redirect: { to: string, statusCode: number } }> = {}
 for (const [oldPath, newPath] of Object.entries(legacyRedirects)) {
-  legacyRouteRules[oldPath] = { redirect: { to: newPath, statusCode: 301 } }
-  legacyRouteRules[`${oldPath}/`] = { redirect: { to: newPath, statusCode: 301 } }
+  legacyRouteRules[oldPath] = {
+    redirect: { to: newPath, statusCode: 301 },
+  }
+  legacyRouteRules[`${oldPath}/`] = {
+    redirect: { to: newPath, statusCode: 301 },
+  }
 }
 
 const hubCategoryRoutes = Object.keys(categoryLabels).map(category => `/hub/${category}`)
@@ -53,7 +59,9 @@ const contentSecurityPolicy = [
   'font-src \'self\' data: https://fonts.gstatic.com',
   'style-src \'self\' \'unsafe-inline\'',
   'script-src \'self\' \'unsafe-inline\' \'wasm-unsafe-eval\' https://va.vercel-scripts.com',
-  `connect-src 'self' https://va.vercel-scripts.com${sentryOrigin ? ` ${sentryOrigin}` : ''}`,
+  `connect-src 'self' https://va.vercel-scripts.com${sentryOrigin
+    ? ` ${sentryOrigin}`
+    : ''}`,
   'worker-src \'self\' blob:',
   'upgrade-insecure-requests',
 ].join('; ')
@@ -138,7 +146,9 @@ export default defineNuxtConfig({
 
   sourcemap: { client: 'hidden' },
 
-  components: [{ path: '~/components', pathPrefix: false }],
+  components: [
+    { path: '~/components', pathPrefix: false },
+  ],
 
   devtools: {
     enabled: process.env.NUXT_DEVTOOLS !== 'false',
@@ -179,12 +189,24 @@ export default defineNuxtConfig({
     // The Sentry tunnel is a POST-only relay, not a page.
     '/tunnel': { prerender: false, robots: false, headers: apiSecurityHeaders },
     ...legacyRouteRules,
-    '/data/**': { redirect: { to: '/hub/data/**', statusCode: 301 } },
-    '/network/**': { redirect: { to: '/hub/network/**', statusCode: 301 } },
-    '/crypto/**': { redirect: { to: '/hub/crypto/**', statusCode: 301 } },
-    '/color/**': { redirect: { to: '/hub/color/**', statusCode: 301 } },
-    '/image/**': { redirect: { to: '/hub/image/**', statusCode: 301 } },
-    '/dev/**': { redirect: { to: '/hub/dev/**', statusCode: 301 } },
+    '/data/**': {
+      redirect: { to: '/hub/data/**', statusCode: 301 },
+    },
+    '/network/**': {
+      redirect: { to: '/hub/network/**', statusCode: 301 },
+    },
+    '/crypto/**': {
+      redirect: { to: '/hub/crypto/**', statusCode: 301 },
+    },
+    '/color/**': {
+      redirect: { to: '/hub/color/**', statusCode: 301 },
+    },
+    '/image/**': {
+      redirect: { to: '/hub/image/**', statusCode: 301 },
+    },
+    '/dev/**': {
+      redirect: { to: '/hub/dev/**', statusCode: 301 },
+    },
   },
 
   experimental: {
@@ -217,7 +239,28 @@ export default defineNuxtConfig({
 
   vite: {
     optimizeDeps: {
-      include: ['@codemirror/lang-css', '@codemirror/lang-html', '@codemirror/lang-javascript', '@codemirror/lang-json', '@codemirror/lang-markdown', '@codemirror/lang-sql', '@codemirror/lint', '@codemirror/theme-one-dark', '@codemirror/view', 'sql-formatter', 'sql.js', 'vue-codemirror6', '@unhead/schema-org/vue', '@codemirror/commands', '@vue/devtools-core', '@vue/devtools-kit', 'uqr', '@lezer/json', '@codemirror/lang-yaml', '@codemirror/autocomplete'],
+      include: [
+        '@codemirror/lang-css',
+        '@codemirror/lang-html',
+        '@codemirror/lang-javascript',
+        '@codemirror/lang-json',
+        '@codemirror/lang-markdown',
+        '@codemirror/lang-sql',
+        '@codemirror/lint',
+        '@codemirror/theme-one-dark',
+        '@codemirror/view',
+        'sql-formatter',
+        'sql.js',
+        'vue-codemirror6',
+        '@unhead/schema-org/vue',
+        '@codemirror/commands',
+        '@vue/devtools-core',
+        '@vue/devtools-kit',
+        'uqr',
+        '@lezer/json',
+        '@codemirror/lang-yaml',
+        '@codemirror/autocomplete',
+      ],
     },
     // No manualChunks here. Rollup pulls every static dependency of a manual
     // chunk into it, so a "codemirror" chunk also swallowed Vue and every page
@@ -330,7 +373,12 @@ export default defineNuxtConfig({
       icons: [
         { src: '/favicon-192x192.png', sizes: '192x192', type: 'image/png' },
         { src: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
-        { src: '/favicon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
+        {
+          src: '/favicon.svg',
+          sizes: 'any',
+          type: 'image/svg+xml',
+          purpose: 'any',
+        },
       ],
     },
     workbox: {

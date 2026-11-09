@@ -29,7 +29,12 @@ function parseIpv4Octets(ip: string): [number, number, number, number] {
   if (octets.length !== 4 || octets.some(o => Number.isNaN(o) || o < 0 || o > 255)) {
     throw new Error(`Invalid IPv4 address: "${ip}"`)
   }
-  return [octets[0]!, octets[1]!, octets[2]!, octets[3]!]
+  return [
+    octets[0]!,
+    octets[1]!,
+    octets[2]!,
+    octets[3]!,
+  ]
 }
 
 function parseIpv6Hextets(ip: string): number[] {
@@ -53,14 +58,22 @@ function parseIpv6Hextets(ip: string): number[] {
   let parts: string[]
   if (doubleColonCount === 1) {
     const [head, tail] = address.split('::')
-    const headParts = head ? head.split(':') : []
-    const tailParts = tail ? tail.split(':') : []
+    const headParts = head
+      ? head.split(':')
+      : []
+    const tailParts = tail
+      ? tail.split(':')
+      : []
     const missing = 8 - (headParts.length + tailParts.length)
     if (missing < 1) {
       throw new Error(`Invalid IPv6 address: "${ip}"`)
     }
     const zeroes = Array.from<string>({ length: missing }).fill('0')
-    parts = [...headParts, ...zeroes, ...tailParts]
+    parts = [
+      ...headParts,
+      ...zeroes,
+      ...tailParts,
+    ]
   }
   else {
     parts = address.split(':')

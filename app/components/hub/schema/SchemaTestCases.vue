@@ -10,9 +10,20 @@ const props = defineProps<{
 
 const SAMPLE_CASES = JSON.stringify(
   [
-    { name: 'Complete record', data: { id: 1, name: 'Jane Doe', email: 'jane@example.com' } },
-    { name: 'Missing email', data: { id: 2, name: 'No Email' }, expectValid: false },
-    { name: 'Wrong id type', data: { id: 'abc', name: 'Bad Id', email: 'a@b.com' }, expectValid: false },
+    {
+      name: 'Complete record',
+      data: { id: 1, name: 'Jane Doe', email: 'jane@example.com' },
+    },
+    {
+      name: 'Missing email',
+      data: { id: 2, name: 'No Email' },
+      expectValid: false,
+    },
+    {
+      name: 'Wrong id type',
+      data: { id: 'abc', name: 'Bad Id', email: 'a@b.com' },
+      expectValid: false,
+    },
   ],
   null,
   2,

@@ -13,8 +13,12 @@ function makeLines(types: Array<'equal' | 'insert' | 'delete'>): DiffLine[] {
     const item: DiffLine = {
       type,
       text: `line-${i + 1}`,
-      oldLine: type === 'insert' ? null : oldLine++,
-      newLine: type === 'delete' ? null : newLine++,
+      oldLine: type === 'insert'
+        ? null
+        : oldLine++,
+      newLine: type === 'delete'
+        ? null
+        : newLine++,
     }
     return item
   })

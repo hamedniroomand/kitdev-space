@@ -155,8 +155,13 @@ const quoteItems = [
 
 const actionItems = computed(() => (
   canMinify(language.value)
-    ? [{ label: 'Minify', value: 'minify' }, { label: 'Beautify', value: 'beautify' }]
-    : [{ label: 'Beautify', value: 'beautify' }]
+    ? [
+        { label: 'Minify', value: 'minify' },
+        { label: 'Beautify', value: 'beautify' },
+      ]
+    : [
+        { label: 'Beautify', value: 'beautify' },
+      ]
 ))
 
 useToolSeo('code-minifier')
@@ -164,7 +169,9 @@ useToolSeo('code-minifier')
 const editorLang = computed(() => EDITOR_LANGUAGES[language.value])
 
 const style = computed<FormatStyle>(() => ({
-  tabWidth: indent.value === '4' ? 4 : 2,
+  tabWidth: indent.value === '4'
+    ? 4
+    : 2,
   useTabs: indent.value === 'tab',
   singleQuote: quotes.value === 'single',
 }))

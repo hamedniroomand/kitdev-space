@@ -9,7 +9,13 @@ describe('toolToolbar', () => {
       global: {
         stubs: {
           UButton: {
-            props: ['label', 'disabled', 'icon', 'color', 'variant'],
+            props: [
+              'label',
+              'disabled',
+              'icon',
+              'color',
+              'variant',
+            ],
             template: '<button :disabled="disabled" :data-label="label">{{ label }}</button>',
           },
         },

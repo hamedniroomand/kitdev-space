@@ -56,10 +56,16 @@ export function compileRegex(pattern: string, flagsInput = ''): {
   // The caller sets the d flag to read group positions. The page offers that
   // flag only when the engine supports it, so no fallback is needed here.
   try {
-    return { regex: new RegExp(pattern, flags), flags, error: null }
+    return {
+      regex: new RegExp(pattern, flags),
+      flags,
+      error: null,
+    }
   }
   catch (cause) {
-    const message = cause instanceof Error ? cause.message : 'Invalid regular expression.'
+    const message = cause instanceof Error
+      ? cause.message
+      : 'Invalid regular expression.'
     return {
       regex: null,
       flags,
@@ -79,11 +85,17 @@ function readClass(pattern: string, start: number): { token: string, end: number
       continue
     }
     if (pattern[i] === ']') {
-      return { token: pattern.slice(start, i + 1), end: i + 1 }
+      return {
+        token: pattern.slice(start, i + 1),
+        end: i + 1,
+      }
     }
     i += 1
   }
-  return { token: pattern.slice(start), end: pattern.length }
+  return {
+    token: pattern.slice(start),
+    end: pattern.length,
+  }
 }
 
 function readGroup(pattern: string, start: number): { token: string, end: number, meaning: string } {
@@ -189,7 +201,11 @@ export function explainRegex(pattern: string): RegexTokenExplanation[] {
 
     if (char === '\\' && i + 1 < pattern.length) {
       const token = pattern.slice(i, i + 2)
-      explanations.push({ token, meaning: explainEscape(token), index })
+      explanations.push({
+        token,
+        meaning: explainEscape(token),
+        index,
+      })
       i += 2
       continue
     }
@@ -285,7 +301,9 @@ export function extractGroupNames(pattern: string): (string | null)[] {
         || rest.startsWith('(?<=')
         || rest.startsWith('(?<!')
       ) {
-        i += rest.startsWith('(?<=') || rest.startsWith('(?<!') ? 4 : 3
+        i += rest.startsWith('(?<=') || rest.startsWith('(?<!')
+          ? 4
+          : 3
         continue
       }
       if (rest.startsWith('(?<')) {
@@ -309,7 +327,9 @@ export function extractGroupNames(pattern: string): (string | null)[] {
 function collectMatches(regex: RegExp, sample: string, pattern = ''): RegexMatchResult[] {
   const matches: RegexMatchResult[] = []
   const global = regex.global
-  const groupNames = pattern ? extractGroupNames(pattern) : []
+  const groupNames = pattern
+    ? extractGroupNames(pattern)
+    : []
   regex.lastIndex = 0
 
   let guard = 0
@@ -532,8 +552,12 @@ export function parseRegexTestCases(json: string): {
 
   return {
     file: {
-      pattern: typeof record.pattern === 'string' ? record.pattern : '',
-      flags: typeof record.flags === 'string' ? normalizeRegexFlags(record.flags) : '',
+      pattern: typeof record.pattern === 'string'
+        ? record.pattern
+        : '',
+      flags: typeof record.flags === 'string'
+        ? normalizeRegexFlags(record.flags)
+        : '',
       cases,
     },
     error: null,

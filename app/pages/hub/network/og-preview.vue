@@ -56,9 +56,13 @@ const data = computed<OgPreviewData | null>(() => {
   }
 })
 
-const findings = computed(() => (data.value ? auditOgData(data.value, result.value?.imageCheck) : []))
+const findings = computed(() => (data.value
+  ? auditOgData(data.value, result.value?.imageCheck)
+  : []))
 const problemCount = computed(() => findings.value.filter(item => item.level === 'error' || item.level === 'warning').length)
-const snippet = computed(() => (data.value ? buildMetaTagSnippet(data.value, findings.value) : ''))
+const snippet = computed(() => (data.value
+  ? buildMetaTagSnippet(data.value, findings.value)
+  : ''))
 const imageCheck = computed(() => result.value?.imageCheck ?? null)
 
 async function inspect() {
@@ -70,7 +74,10 @@ async function inspect() {
       if (!html.value.trim()) {
         throw new Error('Paste the HTML of the page.')
       }
-      return { ...extractOgInBrowser(html.value, url.value), imageCheck: null }
+      return {
+        ...extractOgInBrowser(html.value, url.value),
+        imageCheck: null,
+      }
     }, 'The HTML did not parse.', { runLocation: 'browser' })
     return
   }

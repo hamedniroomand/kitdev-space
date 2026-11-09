@@ -36,7 +36,9 @@ export function buildWifiPayload(options: QrWifiOptions): string {
     throw new Error('Enter a Wi-Fi network name.')
   }
   const security = options.security
-  const password = security === 'nopass' ? '' : options.password
+  const password = security === 'nopass'
+    ? ''
+    : options.password
   if (security !== 'nopass' && !password) {
     throw new Error('Enter a Wi-Fi password.')
   }
@@ -54,7 +56,9 @@ export function buildQrPayload(kind: QrPayloadKind, value: string, wifi?: QrWifi
 
   const trimmed = value.trim()
   if (!trimmed) {
-    throw new Error(kind === 'url' ? 'Enter a URL.' : 'Enter text.')
+    throw new Error(kind === 'url'
+      ? 'Enter a URL.'
+      : 'Enter text.')
   }
   if (kind === 'url') {
     try {
@@ -131,7 +135,10 @@ export function qrPngLayout(count: number, pixels: number): { moduleSize: number
   if (moduleSize < 1) {
     throw new Error('The selected resolution is too small for this QR code.')
   }
-  return { moduleSize, offset: Math.floor((pixels - moduleSize * count) / 2) }
+  return {
+    moduleSize,
+    offset: Math.floor((pixels - moduleSize * count) / 2),
+  }
 }
 
 /**
@@ -251,12 +258,16 @@ function readBits(matrix: boolean[][], types: readonly (readonly number[])[], ma
       for (let step = 0; step < 2; step++) {
         const x = right - step
         const upward = ((right + 1) & 2) === 0
-        const y = upward ? size - 1 - vert : vert
+        const y = upward
+          ? size - 1 - vert
+          : vert
         // Module type 0 is a payload module. Function patterns hold no payload bits.
         if (types[y]?.[x] !== 0) {
           continue
         }
-        bits.push(matrix[y]![x] !== isMasked(mask, x, y) ? 1 : 0)
+        bits.push(matrix[y]![x] !== isMasked(mask, x, y)
+          ? 1
+          : 0)
       }
     }
   }

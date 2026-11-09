@@ -22,7 +22,14 @@ import { parseXml, stringifyXml } from './xml'
  */
 
 const READ_FORMATS = new Set<DataFormat>(['json', 'yaml', 'toml', 'json5', 'xml'])
-const WRITE_FORMATS = new Set<DataFormat>(['json', 'yaml', 'toml', 'json5', 'xml', 'typescript'])
+const WRITE_FORMATS = new Set<DataFormat>([
+  'json',
+  'yaml',
+  'toml',
+  'json5',
+  'xml',
+  'typescript',
+])
 
 export function canConvertInBrowser(from: DataFormat, to: DataFormat): boolean {
   return READ_FORMATS.has(from) && WRITE_FORMATS.has(to)

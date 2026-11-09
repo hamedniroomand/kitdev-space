@@ -20,7 +20,9 @@ globalThis.onmessage = (event: MessageEvent<RegexWorkerRequest>) => {
     globalThis.postMessage({ id, result } satisfies RegexWorkerResponse)
   }
   catch (err) {
-    const errorMsg = err instanceof Error ? err.message : 'Regex execution failed'
+    const errorMsg = err instanceof Error
+      ? err.message
+      : 'Regex execution failed'
     globalThis.postMessage({
       id,
       result: {

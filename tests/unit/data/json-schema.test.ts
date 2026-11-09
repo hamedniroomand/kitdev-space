@@ -79,14 +79,18 @@ describe('local $ref resolution', () => {
   const mainSchema = JSON.stringify({
     $schema: 'https://json-schema.org/draft/2020-12/schema',
     type: 'object',
-    properties: { addr: { $ref: 'https://example.com/address.json' } },
+    properties: {
+      addr: { $ref: 'https://example.com/address.json' },
+    },
     required: ['addr'],
   })
 
   const addressSchema = JSON.stringify({
     $id: 'https://example.com/address.json',
     type: 'object',
-    properties: { zip: { type: 'string' } },
+    properties: {
+      zip: { type: 'string' },
+    },
     required: ['zip'],
   })
 
@@ -128,8 +132,12 @@ describe('local $ref resolution', () => {
   it('leaves a local pointer $ref alone', () => {
     const schema = JSON.stringify({
       type: 'object',
-      properties: { a: { $ref: '#/$defs/x' } },
-      $defs: { x: { type: 'string' } },
+      properties: {
+        a: { $ref: '#/$defs/x' },
+      },
+      $defs: {
+        x: { type: 'string' },
+      },
     })
     const res = validateJsonSchema(schema, '{"a":"ok"}')
     expect(res.refError).toBeUndefined()
@@ -141,7 +149,12 @@ describe('anyOf and oneOf branch grouping', () => {
   const schema = JSON.stringify({
     type: 'object',
     properties: {
-      v: { anyOf: [{ type: 'string' }, { type: 'number', minimum: 10 }] },
+      v: {
+        anyOf: [
+          { type: 'string' },
+          { type: 'number', minimum: 10 },
+        ],
+      },
     },
   })
 
@@ -173,7 +186,10 @@ describe('anyOf and oneOf branch grouping', () => {
 
   it('groups a failed oneOf', () => {
     const oneOfSchema = JSON.stringify({
-      oneOf: [{ type: 'string' }, { type: 'boolean' }],
+      oneOf: [
+        { type: 'string' },
+        { type: 'boolean' },
+      ],
     })
     const res = validateJsonSchema(oneOfSchema, '42')
     expect(res.branchGroups[0]?.keyword).toBe('oneOf')
@@ -184,14 +200,22 @@ describe('anyOf and oneOf branch grouping', () => {
 describe('schema test cases', () => {
   const schema = JSON.stringify({
     type: 'object',
-    properties: { id: { type: 'integer' } },
+    properties: {
+      id: { type: 'integer' },
+    },
     required: ['id'],
   })
 
   it('parses a list of test cases', () => {
     const { cases, error } = parseTestCases('[{"name":"ok","data":{"id":1}}]')
     expect(error).toBeUndefined()
-    expect(cases).toEqual([{ name: 'ok', data: { id: 1 }, expectValid: true }])
+    expect(cases).toEqual([
+      {
+        name: 'ok',
+        data: { id: 1 },
+        expectValid: true,
+      },
+    ])
   })
 
   it('names a case that has no name', () => {

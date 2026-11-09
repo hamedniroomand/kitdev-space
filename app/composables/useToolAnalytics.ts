@@ -65,28 +65,38 @@ export type ToolAnalyticsPayload<E extends ToolAnalyticsEvent> = ToolAnalyticsPa
 export function useToolAnalytics() {
   const config = useRuntimeConfig()
   const umamiId = String(config.public.scripts?.umamiAnalytics?.websiteId || '')
-  const analytics = umamiId ? useScriptUmamiAnalytics() : null
+  const analytics = umamiId
+    ? useScriptUmamiAnalytics()
+    : null
 
   const currentToolId = useCurrentToolId()
 
   function track<E extends ToolAnalyticsEvent>(event: E, payload: ToolAnalyticsPayload<E> = {} as ToolAnalyticsPayload<E>) {
     const { tool: toolOverride, ...params } = payload as ToolAnalyticsPayload<E> & Record<string, unknown>
     // A site event describes the site, so it carries no tool, even on a tool page.
-    const tool = SITE_EVENTS.has(event) ? undefined : (toolOverride ?? currentToolId.value ?? undefined)
+    const tool = SITE_EVENTS.has(event)
+      ? undefined
+      : (toolOverride ?? currentToolId.value ?? undefined)
 
     // A tool event with no tool cannot be read, so do not send it.
     if (!tool && !SITE_EVENTS.has(event)) {
       return
     }
 
-    const info = tool ? getToolById(tool) : undefined
+    const info = tool
+      ? getToolById(tool)
+      : undefined
     const data: Record<string, unknown> = {
-      ...(tool ? { tool_id: tool } : {}),
+      ...(tool
+        ? { tool_id: tool }
+        : {}),
       ...(info
         ? {
             tool_category: info.category,
             run_location: runLocationFor(info),
-            ...(info.variantOf ? { tool_variant_of: info.variantOf } : {}),
+            ...(info.variantOf
+              ? { tool_variant_of: info.variantOf }
+              : {}),
           }
         : {}),
       ...params,

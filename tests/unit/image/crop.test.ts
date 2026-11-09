@@ -8,8 +8,18 @@ describe('crop math', () => {
   })
 
   it('starts with the largest centered box of the aspect', () => {
-    expect(initialCrop(1000, 1000, 2)).toEqual({ x: 0, y: 250, width: 1000, height: 500 })
-    expect(initialCrop(1000, 1000, 0.5)).toEqual({ x: 250, y: 0, width: 500, height: 1000 })
+    expect(initialCrop(1000, 1000, 2)).toEqual({
+      x: 0,
+      y: 250,
+      width: 1000,
+      height: 500,
+    })
+    expect(initialCrop(1000, 1000, 0.5)).toEqual({
+      x: 250,
+      y: 0,
+      width: 500,
+      height: 1000,
+    })
     expect(initialCrop(1200, 630, 1200 / 630)).toEqual({ x: 0, y: 0, width: 1200, height: 630 })
   })
 
@@ -17,32 +27,92 @@ describe('crop math', () => {
     const rect = { x: 10, y: 10, width: 100, height: 50 }
     expect(moveCrop(rect, 5, 5, 800, 600)).toEqual({ x: 15, y: 15, width: 100, height: 50 })
     expect(moveCrop(rect, -50, -50, 800, 600)).toEqual({ x: 0, y: 0, width: 100, height: 50 })
-    expect(moveCrop(rect, 10000, 10000, 800, 600)).toEqual({ x: 700, y: 550, width: 100, height: 50 })
+    expect(moveCrop(rect, 10000, 10000, 800, 600)).toEqual({
+      x: 700,
+      y: 550,
+      width: 100,
+      height: 50,
+    })
   })
 
   it('resizes from a corner and keeps the opposite corner fixed', () => {
-    const rect = { x: 100, y: 100, width: 200, height: 100 }
-    expect(resizeCrop(rect, 'se', 50, 20, 800, 600)).toEqual({ x: 100, y: 100, width: 250, height: 120 })
-    expect(resizeCrop(rect, 'nw', -50, -20, 800, 600)).toEqual({ x: 50, y: 80, width: 250, height: 120 })
-    expect(resizeCrop(rect, 'ne', 50, -20, 800, 600)).toEqual({ x: 100, y: 80, width: 250, height: 120 })
-    expect(resizeCrop(rect, 'sw', -50, 20, 800, 600)).toEqual({ x: 50, y: 100, width: 250, height: 120 })
+    const rect = {
+      x: 100,
+      y: 100,
+      width: 200,
+      height: 100,
+    }
+    expect(resizeCrop(rect, 'se', 50, 20, 800, 600)).toEqual({
+      x: 100,
+      y: 100,
+      width: 250,
+      height: 120,
+    })
+    expect(resizeCrop(rect, 'nw', -50, -20, 800, 600)).toEqual({
+      x: 50,
+      y: 80,
+      width: 250,
+      height: 120,
+    })
+    expect(resizeCrop(rect, 'ne', 50, -20, 800, 600)).toEqual({
+      x: 100,
+      y: 80,
+      width: 250,
+      height: 120,
+    })
+    expect(resizeCrop(rect, 'sw', -50, 20, 800, 600)).toEqual({
+      x: 50,
+      y: 100,
+      width: 250,
+      height: 120,
+    })
   })
 
   it('never crosses the image edge or the minimum size', () => {
-    const rect = { x: 100, y: 100, width: 200, height: 100 }
-    expect(resizeCrop(rect, 'se', 10000, 10000, 800, 600)).toEqual({ x: 100, y: 100, width: 700, height: 500 })
-    expect(resizeCrop(rect, 'se', -10000, -10000, 800, 600)).toEqual({ x: 100, y: 100, width: MIN_CROP_SIZE, height: MIN_CROP_SIZE })
+    const rect = {
+      x: 100,
+      y: 100,
+      width: 200,
+      height: 100,
+    }
+    expect(resizeCrop(rect, 'se', 10000, 10000, 800, 600)).toEqual({
+      x: 100,
+      y: 100,
+      width: 700,
+      height: 500,
+    })
+    expect(resizeCrop(rect, 'se', -10000, -10000, 800, 600)).toEqual({
+      x: 100,
+      y: 100,
+      width: MIN_CROP_SIZE,
+      height: MIN_CROP_SIZE,
+    })
   })
 
   it('clamps a typed box to the image', () => {
     expect(clampCrop({ x: 10, y: 20, width: 100, height: 50 }, 800, 600))
       .toEqual({ x: 10, y: 20, width: 100, height: 50 })
-    expect(clampCrop({ x: -50, y: -50, width: 100, height: 50 }, 800, 600))
+    expect(clampCrop({
+      x: -50,
+      y: -50,
+      width: 100,
+      height: 50,
+    }, 800, 600))
       .toEqual({ x: 0, y: 0, width: 100, height: 50 })
-    expect(clampCrop({ x: 700, y: 500, width: 5000, height: 5000 }, 800, 600))
+    expect(clampCrop({
+      x: 700,
+      y: 500,
+      width: 5000,
+      height: 5000,
+    }, 800, 600))
       .toEqual({ x: 0, y: 0, width: 800, height: 600 })
     expect(clampCrop({ x: 0, y: 0, width: 1, height: 1 }, 800, 600))
-      .toEqual({ x: 0, y: 0, width: MIN_CROP_SIZE, height: MIN_CROP_SIZE })
+      .toEqual({
+        x: 0,
+        y: 0,
+        width: MIN_CROP_SIZE,
+        height: MIN_CROP_SIZE,
+      })
   })
 
   it('keeps the aspect during a resize', () => {

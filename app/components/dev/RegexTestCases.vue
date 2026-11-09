@@ -33,7 +33,10 @@ function statusOf(index: number) {
 }
 
 function addCase() {
-  model.value = [...model.value, { text: '', expectMatch: true }]
+  model.value = [
+    ...model.value,
+    { text: '', expectMatch: true },
+  ]
 }
 
 function removeCase(index: number) {

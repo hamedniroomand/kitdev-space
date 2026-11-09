@@ -43,7 +43,9 @@ const tableState = computed<ParsedTable>(() => ({
 /** The name of a column for a screen reader. The index keeps each name unique. */
 function columnLabel(index: number): string {
   const name = headers.value[index]?.trim()
-  return name ? `column ${index + 1} (${name})` : `column ${index + 1}`
+  return name
+    ? `column ${index + 1} (${name})`
+    : `column ${index + 1}`
 }
 
 function moveItem<T>(list: T[], from: number, to: number) {
@@ -105,7 +107,9 @@ function handleImport() {
     importError.value = null
   }
   catch (cause) {
-    importError.value = cause instanceof Error ? cause.message : 'The import failed.'
+    importError.value = cause instanceof Error
+      ? cause.message
+      : 'The import failed.'
   }
 }
 

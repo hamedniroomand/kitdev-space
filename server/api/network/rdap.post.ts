@@ -25,7 +25,9 @@ export default defineEventHandler(async (event) => {
     return { result }
   }
   catch (cause) {
-    const message = cause instanceof Error ? cause.message : 'The RDAP lookup failed.'
+    const message = cause instanceof Error
+      ? cause.message
+      : 'The RDAP lookup failed.'
     throw createError({
       statusCode: 400,
       message,

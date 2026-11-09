@@ -52,15 +52,31 @@ export interface CookieDelivery {
 const MAX_COOKIE_BYTES = 4096
 /** Chrome caps a cookie lifetime at 400 days. */
 const MAX_LIFETIME_SECONDS = 400 * 24 * 60 * 60
-const ATTRIBUTE_NAMES = ['domain', 'path', 'expires', 'max-age', 'secure', 'httponly', 'samesite', 'partitioned', 'priority']
+const ATTRIBUTE_NAMES = [
+  'domain',
+  'path',
+  'expires',
+  'max-age',
+  'secure',
+  'httponly',
+  'samesite',
+  'partitioned',
+  'priority',
+]
 const SAME_SITE_VALUES = ['strict', 'lax', 'none']
 
 function splitPair(part: string): [string, string | undefined] {
   const index = part.indexOf('=')
   if (index < 0) {
-    return [part.trim(), undefined]
+    return [
+      part.trim(),
+      undefined,
+    ]
   }
-  return [part.slice(0, index).trim(), part.slice(index + 1).trim()]
+  return [
+    part.slice(0, index).trim(),
+    part.slice(index + 1).trim(),
+  ]
 }
 
 /** Parses one Set-Cookie header value and checks its attributes. */
@@ -92,8 +108,12 @@ export function parseSetCookie(line: string, now = Date.now()): SetCookie {
         cookie.path = attributeValue
         break
       case 'expires': {
-        const time = attributeValue ? Date.parse(attributeValue) : Number.NaN
-        cookie.expires = Number.isNaN(time) ? null : new Date(time).toISOString()
+        const time = attributeValue
+          ? Date.parse(attributeValue)
+          : Number.NaN
+        cookie.expires = Number.isNaN(time)
+          ? null
+          : new Date(time).toISOString()
         if (Number.isNaN(time)) {
           findings.push({ level: 'warning', message: `Expires "${attributeValue ?? ''}" is not a valid date. Browsers ignore it, and the cookie becomes a session cookie.` })
         }
@@ -212,10 +232,14 @@ export function inspectCookies(input: string, now = Date.now()): CookieReport {
     }
 
     const prefixed = /^(set-cookie|cookie)\s*:\s*/i.exec(line)
-    const body = prefixed ? line.slice(prefixed[0].length) : line
+    const body = prefixed
+      ? line.slice(prefixed[0].length)
+      : line
     const kind = prefixed
       ? prefixed[1]!.toLowerCase()
-      : (looksLikeSetCookie(body) || body.split(';').length === 1 ? 'set-cookie' : 'cookie')
+      : (looksLikeSetCookie(body) || body.split(';').length === 1
+          ? 'set-cookie'
+          : 'cookie')
 
     if (kind === 'cookie') {
       report.requestCookies.push(...parseCookieHeader(body))
@@ -267,17 +291,29 @@ export function evaluateCookieDelivery(cookie: SetCookie, requestUrl: string, co
     url = new URL(requestUrl)
   }
   catch {
-    return { sent: false, blocks: ['The request URL is not valid. Use a full URL, such as https://example.com/app.'], notes: [] }
+    return {
+      sent: false,
+      blocks: ['The request URL is not valid. Use a full URL, such as https://example.com/app.'],
+      notes: [],
+    }
   }
 
   if (url.protocol !== 'http:' && url.protocol !== 'https:') {
-    return { sent: false, blocks: ['The browser sends a cookie over HTTP and HTTPS only.'], notes: [] }
+    return {
+      sent: false,
+      blocks: ['The browser sends a cookie over HTTP and HTTPS only.'],
+      notes: [],
+    }
   }
 
   // An error finding is a rejection rule. The browser does not keep the cookie,
   // so it never sends it.
   if (cookie.findings.some(finding => finding.level === 'error')) {
-    return { sent: false, blocks: ['The browser rejects this cookie. Correct the errors below first.'], notes: [] }
+    return {
+      sent: false,
+      blocks: ['The browser rejects this cookie. Correct the errors below first.'],
+      notes: [],
+    }
   }
 
   const blocks: string[] = []
@@ -313,7 +349,9 @@ export function evaluateCookieDelivery(cookie: SetCookie, requestUrl: string, co
   }
 
   const sameSite = cookie.sameSite?.toLowerCase()
-  const effective = sameSite === 'strict' || sameSite === 'none' ? sameSite : 'lax'
+  const effective = sameSite === 'strict' || sameSite === 'none'
+    ? sameSite
+    : 'lax'
   if (context !== 'same-site' && effective === 'strict') {
     blocks.push('SameSite=Strict. The browser sends the cookie with a same-site request only.')
   }

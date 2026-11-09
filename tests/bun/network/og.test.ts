@@ -38,7 +38,16 @@ const parityData = {
 /** A PNG file with an IHDR chunk only. It holds the pixel size. */
 function pngBytes(width: number, height: number): Uint8Array {
   const bytes = new Uint8Array(8 + 8 + 13 + 4)
-  bytes.set([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A], 0)
+  bytes.set([
+    0x89,
+    0x50,
+    0x4E,
+    0x47,
+    0x0D,
+    0x0A,
+    0x1A,
+    0x0A,
+  ], 0)
   const view = new DataView(bytes.buffer)
   view.setUint32(8, 13, false)
   bytes.set([0x49, 0x48, 0x44, 0x52], 12)
@@ -96,7 +105,10 @@ describe('inspectOgImage', () => {
     const bytes = pngBytes(1200, 630)
     fetchSpy.mockResolvedValue(new Response(bytes, {
       status: 200,
-      headers: { 'content-type': 'image/png', 'content-length': String(bytes.byteLength) },
+      headers: {
+        'content-type': 'image/png',
+        'content-length': String(bytes.byteLength),
+      },
     }))
 
     const probe = await inspectOgImage('https://example.com/og.png')

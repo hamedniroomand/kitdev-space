@@ -3,7 +3,10 @@ export function ianaTimeZones(): string[] {
   const zones = typeof Intl.supportedValuesOf === 'function'
     ? Intl.supportedValuesOf('timeZone')
     : []
-  return ['UTC', ...zones.filter(zone => zone !== 'UTC')]
+  return [
+    'UTC',
+    ...zones.filter(zone => zone !== 'UTC'),
+  ]
 }
 
 export function isValidTimeZone(timeZone: string): boolean {

@@ -25,6 +25,8 @@ export default defineNuxtPlugin(() => {
   // One session property: the color mode preference, from a fixed list.
   const { proxy } = useScriptUmamiAnalytics()
   const colorMode = useColorMode()
-  const preference = ['light', 'dark', 'system'].includes(colorMode.preference) ? colorMode.preference : 'system'
+  const preference = ['light', 'dark', 'system'].includes(colorMode.preference)
+    ? colorMode.preference
+    : 'system'
   proxy.identify({ color_mode: preference })
 })

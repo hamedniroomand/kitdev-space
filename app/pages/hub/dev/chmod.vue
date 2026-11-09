@@ -26,7 +26,9 @@ const chmodCommand = computed(
 )
 
 function message(err: unknown, fallback: string) {
-  return err instanceof Error ? err.message : fallback
+  return err instanceof Error
+    ? err.message
+    : fallback
 }
 
 /** Each handler writes the other field only, so it never replaces the input of the user. */
